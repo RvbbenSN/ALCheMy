@@ -1,0 +1,42 @@
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Database Data Directories & Persistence (Ocultos de GitHub por Propiedad Intelectual)
+data/
+data/postgres/
+data/n8n/
+data/pgadmin/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+!data/sample_demo/
+
+# Carpeta Privada de Metodología, Diario y Protocolos (OCULTA EN GITHUB)
+methodology/
+.agents/
+
+# IDEs & System Files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
