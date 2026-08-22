@@ -1,0 +1,583 @@
+{
+  "name": "M7-3.1 · A · La matriz de permisos",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Workflow A · La matriz de permisos\n**Modulo 7 · Submodulo 3 · 6 de agosto**\n\nAqui la matriz que escribimos ayer en papel se convierte en nodos.\n\nEl cambio importante: **el agente ya no ejecuta nada**. Devuelve una INTENCION en JSON y es el flujo el que decide.\n\n### Antes de ejecutar\n1. Crea la Data Table `matriz_permisos` (columnas en la nota amarilla).\n2. Crea la Data Table `log_auditoria`.\n3. Configura la credencial de OpenAI.",
+        "height": 300,
+        "width": 640,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -420
+      ],
+      "id": "N_intro",
+      "name": "N_intro"
+    },
+    {
+      "parameters": {
+        "content": "## La Data Table `matriz_permisos`\n| columna | tipo | ejemplo |\n|---|---|---|\n| accion | string | avisar_suspension_clase |\n| nivel | string | L2 |\n| max_destinos | number | 60 |\n| antelacion_min_h | number | 24 |\n| aprobador | string | marta@yayafit.es |\n| activa | boolean | true |\n| motivo | string | alcance amplio e irreversible |\n\n**Las filas estan en `MATRIZ_PERMISOS_YAYAFIT.md`**, listas para copiar.",
+        "height": 340,
+        "width": 640,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -100
+      ],
+      "id": "N_tabla",
+      "name": "N_tabla"
+    },
+    {
+      "parameters": {
+        "formTitle": "YayaFit · peticion a la coordinacion",
+        "formDescription": "Escribe lo que quieres que haga el asistente. El sistema decidira si puede hacerlo solo.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Peticion",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -340,
+        -180
+      ],
+      "id": "Peticion",
+      "name": "Peticion"
+    },
+    {
+      "parameters": {
+        "content": "### 1 · El agente PROPONE\nFijate en dos cosas:\n\n- **No tiene ninguna herramienta de envio colgada.** No puede enviar aunque quiera.\n- Devuelve **JSON estructurado**, no texto libre.\n\nEso es el patron guardian.",
+        "height": 220,
+        "width": 420,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        -420
+      ],
+      "id": "N_agente",
+      "name": "N_agente"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Peticion }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres el asistente de coordinacion de YayaFit, un gimnasio para personas mayores (centro Las Acacias, unas 60 socias, 5 clases).\\n\\nIMPORTANTE: tu NO ejecutas nada. Tu unica tarea es PROPONER una accion, describiendola con precision para que el sistema decida si se puede hacer.\\n\\nAcciones que puedes proponer:\\n- consultar_documentos, consultar_tiempo, redactar_borrador\\n- apuntar_incidencia\\n- responder_a_una_socia, avisar_suspension_clase, cancelar_clase\\n\\nDevuelve SIEMPRE los campos numericos con numeros reales, nunca con palabras. Si no sabes cuantas socias hay en un grupo, di 0 y explicalo en el motivo.\\nEl tono con las socias es cercano y respetuoso: son personas mayores con nombre y familia.",
+          "maxIterations": 6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -120,
+        -180
+      ],
+      "id": "El_agente_propone",
+      "name": "El agente propone"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -170,
+        20
+      ],
+      "id": "Modelo",
+      "name": "Modelo"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"accion\": {\"type\": \"string\", \"description\": \"nombre exacto de la accion propuesta\"}, \"destinatarios\": {\"type\": \"number\", \"description\": \"cuantas personas la reciben; 0 si ninguna\"}, \"clase\": {\"type\": \"string\", \"description\": \"clase afectada, o cadena vacia\"}, \"antelacion_h\": {\"type\": \"number\", \"description\": \"horas de antelacion; 0 si no aplica\"}, \"motivo\": {\"type\": \"string\", \"description\": \"por que se propone\"}, \"texto\": {\"type\": \"string\", \"description\": \"el texto literal que se enviaria, si aplica\"}}, \"required\": [\"accion\", \"destinatarios\", \"motivo\"]}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -20,
+        20
+      ],
+      "id": "Formato_de_la_intencion",
+      "name": "Formato de la intencion"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.stringify($json.output) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        120,
+        -180
+      ],
+      "id": "Extraer_la_intencion",
+      "name": "Extraer la intencion"
+    },
+    {
+      "parameters": {
+        "content": "### 2 · Buscar la regla\nLeemos **toda** la matriz y buscamos la fila de esta accion en el nodo Code.\n\nSe podria filtrar aqui, pero leerla entera permite denegar tambien cuando la accion **no existe** en la matriz — que es el caso mas peligroso.",
+        "height": 200,
+        "width": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -420
+      ],
+      "id": "N_lookup",
+      "name": "N_lookup"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "matriz_permisos",
+          "mode": "name"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        360,
+        -180
+      ],
+      "id": "Leer_la_matriz",
+      "name": "Leer la matriz"
+    },
+    {
+      "parameters": {
+        "content": "### 3 · El guardian\n**Aqui no hay IA.** Cinco comprobaciones en orden:\n\n1. ¿existe la accion?\n2. ¿esta activa?\n3. ¿respeta los limites duros?\n4. ¿que nivel tiene?\n5. devuelve UNA palabra\n\nLo prohibido se comprueba antes que lo permitido.",
+        "height": 200,
+        "width": 420,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        600,
+        -420
+      ],
+      "id": "N_code",
+      "name": "N_code"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// EL GUARDIÁN · aquí se decide, y aquí NO hay inteligencia artificial.\n// Cinco comprobaciones en orden. La primera que falla, manda.\n// ============================================================\nconst intencion = $('Extraer la intencion').first().json;\nconst filas = $input.all().map(i => i.json);\n\n// La fila de la matriz que corresponde a la acción propuesta\nconst regla = filas.find(f => f.accion === intencion.accion);\n\nfunction veredicto(v, motivo, aprobador) {\n  return [{ json: { ...intencion, veredicto: v, motivo, aprobador: aprobador || '' } }];\n}\n\n// 1 · ¿Existe la acción en la matriz? Lo desconocido se deniega.\nif (!regla) {\n  return veredicto('denegar', 'La accion \"' + intencion.accion + '\" no esta en la matriz de permisos.');\n}\n\n// 2 · ¿Está activa? (el interruptor por accion)\nif (regla.activa === false || regla.activa === 'false') {\n  return veredicto('denegar', 'La accion esta desactivada temporalmente.');\n}\n\n// 3 · Limites duros: alcance y antelacion\nconst maxDest = Number(regla.max_destinos || 0);\nif (maxDest > 0 && Number(intencion.destinatarios || 0) > maxDest) {\n  return veredicto('denegar',\n    'Alcance excedido: ' + intencion.destinatarios + ' destinatarios (maximo ' + maxDest + ').');\n}\nconst minH = Number(regla.antelacion_min_h || 0);\nif (minH > 0 && Number(intencion.antelacion_h || 0) < minH) {\n  return veredicto('denegar',\n    'Antelacion insuficiente: ' + intencion.antelacion_h + ' h (minimo ' + minH + ' h).');\n}\n\n// 4 · El nivel decide quien ejecuta\nif (regla.nivel === 'L4' || regla.nivel === 'L3') {\n  return veredicto('permitir', 'Nivel ' + regla.nivel + ': el agente puede ejecutar solo.');\n}\nif (regla.nivel === 'L2') {\n  return veredicto('pedir_ok', 'Nivel L2: requiere aprobacion humana.', regla.aprobador);\n}\n// 5 · L0, L1 o cualquier otra cosa: no lo ejecuta el agente\nreturn veredicto('denegar', 'Nivel ' + regla.nivel + ': esta accion no la ejecuta el agente.');\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        -180
+      ],
+      "id": "Aplicar_la_politica",
+      "name": "Aplicar la politica"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.veredicto }}",
+                    "rightValue": "permitir",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "permitir"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.veredicto }}",
+                    "rightValue": "pedir_ok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "pedir_ok"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.veredicto }}",
+                    "rightValue": "denegar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "denegar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        840,
+        -180
+      ],
+      "id": "Que_hacemos",
+      "name": "Que hacemos"
+    },
+    {
+      "parameters": {
+        "content": "### 4 · Las tres salidas\n- **permitir** → se ejecuta la herramienta (hoy solo lo apuntamos)\n- **pedir_ok** → manana esto ira al flujo de aprobacion\n- **denegar** → se responde explicando por que, y **tambien se apunta**\n\n**Las tres escriben en `log_auditoria`.** Guardar las denegaciones es lo que te dice, un mes despues, si tu matriz esta bien calibrada.",
+        "height": 300,
+        "width": 460,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        -460
+      ],
+      "id": "N_ramas",
+      "name": "N_ramas"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "resultado",
+              "value": "EJECUTADO",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "detalle",
+              "value": "={{ $json.motivo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1080,
+        -320
+      ],
+      "id": "PERMITIR",
+      "name": "PERMITIR"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "resultado",
+              "value": "PENDIENTE DE APROBACION",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "detalle",
+              "value": "={{ 'Debe aprobarlo: ' + $json.aprobador }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1080,
+        -180
+      ],
+      "id": "PEDIR_OK",
+      "name": "PEDIR OK"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "resultado",
+              "value": "DENEGADO",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "detalle",
+              "value": "={{ $json.motivo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1080,
+        -40
+      ],
+      "id": "DENEGAR",
+      "name": "DENEGAR"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "log_auditoria",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cuando": "={{ $now.toISO() }}",
+            "agente": "agente_coordinacion_v1",
+            "accion": "={{ $json.accion }}",
+            "destinatarios": "={{ $json.destinatarios }}",
+            "veredicto": "={{ $json.veredicto }}",
+            "motivo": "={{ $json.motivo }}",
+            "resultado": "={{ $json.resultado }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -180
+      ],
+      "id": "Registrar_en_auditoria",
+      "name": "Registrar en auditoria"
+    },
+    {
+      "parameters": {
+        "content": "### Como probarlo en clase\nEscribe estas tres peticiones, una detras de otra:\n\n1. «¿Que dice el protocolo de calor?» → **permitir**\n2. «Avisa a las 12 socias del aquagym de que manana no hay clase» → **pedir_ok**\n3. «Cancela el aquagym de esta tarde» → **denegar** (antelacion < 24 h)\n\nY luego mira la tabla `log_auditoria`: tres filas, tres veredictos.",
+        "height": 240,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1330,
+        -460
+      ],
+      "id": "N_probar",
+      "name": "N_probar"
+    }
+  ],
+  "connections": {
+    "Peticion": {
+      "main": [
+        [
+          {
+            "node": "El agente propone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "El agente propone",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato de la intencion": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "El agente propone",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "El agente propone": {
+      "main": [
+        [
+          {
+            "node": "Extraer la intencion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer la intencion": {
+      "main": [
+        [
+          {
+            "node": "Leer la matriz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer la matriz": {
+      "main": [
+        [
+          {
+            "node": "Aplicar la politica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar la politica": {
+      "main": [
+        [
+          {
+            "node": "Que hacemos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Que hacemos": {
+      "main": [
+        [
+          {
+            "node": "PERMITIR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PEDIR OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DENEGAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PERMITIR": {
+      "main": [
+        [
+          {
+            "node": "Registrar en auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PEDIR OK": {
+      "main": [
+        [
+          {
+            "node": "Registrar en auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DENEGAR": {
+      "main": [
+        [
+          {
+            "node": "Registrar en auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

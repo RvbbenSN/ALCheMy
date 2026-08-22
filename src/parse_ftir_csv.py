@@ -1,0 +1,67 @@
+"""
+ALCheMy Characterization Parser - FTIR (.csv)
+Parses Thermo Nicolet FTIR 2D spectrum .csv files into standard ALCheMy schema.
+
+Unlike PXRD/.xrdml, VT-XRD/.brml and TGA/.txt, this format carries NO header at all -
+just two columns of numbers, wavenumber and transmittance, nothing else. There is
+genuinely no more metadata to extract from the file itself.
+
+Specification Document: notebooks/CHARACTERIZATION_DICTIONARY_SPEC.md
+"""
+
+import os
+import pandas as pd
+
+
+def parse_ftir_csv(file_path, sample_code=None, measurement_tag='as_synthesized'):
+    # Two real delimiter conventions exist in this data lake: most exports use ';' as
+    # the column separator with ',' as the decimal point (European), but at least one
+    # uses ',' as the column separator with '.' as the decimal point (English). The old
+    # code split on BOTH characters at once (sep=r'[,;]'), which silently cut every
+    # number in half on the European files - e.g. "3,996747e+002" (399.6747) became two
+    # garbage columns "3" and "996747e+002". Every FTIR spectrum parsed with the old
+    # code was wrong. Detect which convention this file uses instead of guessing both.
+    with open(file_path, 'r', encoding='latin1', errors='ignore') as f:
+        first_line = f.readline()
+    sep = ';' if ';' in first_line else ','
+
+    df = pd.read_csv(file_path, sep=sep, header=None, engine='python')
+    df = df.dropna().iloc[:, :2]
+    df.columns = ['wavenumber', 'transmittance']
+
+    # Comma-to-dot is a no-op (and harmless) on files that already use '.' as decimal
+    df['wavenumber'] = pd.to_numeric(df['wavenumber'].astype(str).str.replace(',', '.'), errors='coerce')
+    df['transmittance'] = pd.to_numeric(df['transmittance'].astype(str).str.replace(',', '.'), errors='coerce')
+    df = df.dropna()
+
+    df = df.sort_values(by='wavenumber')
+
+    if not sample_code:
+        base_name = os.path.basename(file_path)
+        code_match = pd.Series([base_name]).str.extract(r'(RS\d+|LP\d+|RSMix\d+|IEF-\d+)', expand=False).dropna()
+        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'
+
+    return {
+        'sample_code': sample_code,
+        'technique': 'FTIR',
+        'measurement_tag': measurement_tag,
+        'operator_name': 'Rubén S.N.',
+        'instrument_name': 'Thermo Nicolet OMNIC FTIR',
+        'file_name': os.path.basename(file_path),
+        'raw_file_path': file_path,
+        'data_json': {
+            'header_metadata': {
+                'sample_name_raw': os.path.basename(file_path),
+                'column_separator_detected': sep,
+                'spectral_range_cm-1': [float(df['wavenumber'].min()), float(df['wavenumber'].max())],
+                'atr_crystal': 'Diamond ATR',
+                'num_data_points': len(df)
+            },
+            'raw_data': {
+                'x_label': 'wavenumber_cm-1',
+                'y_label': 'transmittance_percent',
+                'x': df['wavenumber'].round(2).tolist(),
+                'y': df['transmittance'].round(2).tolist()
+            }
+        }
+    }

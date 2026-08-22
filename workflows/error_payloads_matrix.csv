@@ -1,0 +1,10 @@
+workflow_zone,verdict,cause,result
+whitelist_unauthorized,DENIED,"=""UNAUTHORIZED_RESEARCHER_EMAIL: Access denied for email '"" + ($json.researcher_email || 'UNKNOWN') + ""'""",SECURITY_DENIED
+file_size_exceeded,DENIED,"=""FILE_SIZE_EXCEEDED: File size exceeds maximum 10MB limit.""",PAYLOAD_TOO_LARGE
+duplicate_measurement,DENIED,"=""DUPLICATE_MEASUREMENT_SKIPPED: Measurement hash already exists in PostgreSQL.""",DUPLICATE_SKIPPED
+invalid_file_extension,DENIED,"=""INVALID_FILE_EXTENSION: File extension is not valid for technique '"" + ($json.technique || 'NULL') + ""'""",INVALID_FORMAT
+human_rejection_l2,DENIED,"=""REJECTED_BY_RESEARCHER: Researcher clicked Decline in L2 approval email.""",HUMAN_REJECTED
+approval_timeout_or_error,DENIED,"=""APPROVAL_TIMEOUT_OR_ERROR: L2 approval email timed out or failed to send.""",APPROVAL_ERROR
+ai_agent_extraction_failed,DENIED,"=""AI_AGENT_EXTRACTION_FAILED: PDF Parser agent raised an error (LLM/API failure).""",AI_AGENT_ERROR
+missing_sample_code,DENIED,"=""MISSING_SAMPLE_CODE: No sample_code could be determined from the submitted fields or the file name.""",MISSING_SAMPLE_CODE
+unrecognized_technique,DENIED,"=""UNRECOGNIZED_TECHNIQUE: Technique '"" + ($json.technique || 'NULL') + ""' is not supported.""",UNKNOWN_TECHNIQUE

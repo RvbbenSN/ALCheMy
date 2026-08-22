@@ -1,0 +1,14 @@
+FROM n8nio/runners:latest
+
+# n8n's official task-runner sidecar image ships the Python runner with only its own
+# minimal deps (urllib3, websockets) - no pandas/numpy, and its allow-lists are empty
+# by default (see docker/n8n-task-runners.json), so plain Code nodes can't import
+# anything beyond what's explicitly whitelisted there.
+USER root
+RUN set -eux; \
+    /opt/runners/task-runner-python/.venv/bin/python -m ensurepip --upgrade; \
+    /opt/runners/task-runner-python/.venv/bin/python -m pip install --no-cache-dir pandas numpy openpyxl xlrd
+
+COPY docker/n8n-task-runners.json /etc/n8n-task-runners.json
+
+USER runner

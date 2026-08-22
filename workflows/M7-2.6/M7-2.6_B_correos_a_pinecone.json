@@ -1,0 +1,382 @@
+{
+  "name": "M7-2.6 · B · Leer correos (IMAP) y guardarlos en el RAG (YayaFit)",
+  "nodes": [
+    {
+      "parameters": {
+        "mailbox": "INBOX",
+        "postProcessAction": "read",
+        "format": "simple",
+        "options": {}
+      },
+      "id": "4a92b278-6b9d-475b-94db-eac7e897d68e",
+      "name": "Email Trigger (IMAP)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [
+        220,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f5e16a3f-9a32-420c-b822-fc1a43d85024",
+              "name": "asunto",
+              "type": "string",
+              "value": "={{ $json.subject }}"
+            },
+            {
+              "id": "44e71803-eaf6-48f1-81a4-eff0a80ecc9b",
+              "name": "remitente",
+              "type": "string",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "id": "89e0fed8-d795-4fde-a33b-1b9b04212593",
+              "name": "fecha",
+              "type": "string",
+              "value": "={{ $json.date || $now.toISO() }}"
+            },
+            {
+              "id": "b5e1d6f5-ff03-47ec-80eb-76804d1443b6",
+              "name": "cuerpo",
+              "type": "string",
+              "value": "={{ $json.textPlain || $json.textHtml }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "38215a8c-6f75-4c03-9f7f-17ec56c208fe",
+      "name": "Normalizar correo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "inputText": "=Asunto: {{ $json.asunto }}\n\n{{ $json.cuerpo }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "consulta_socia",
+              "description": "Una socia o su familia pregunta por clases, horarios o si hay actividad."
+            },
+            {
+              "category": "aviso_instalacion",
+              "description": "Una instalacion o proveedor informa de cierres, restricciones o mantenimiento."
+            },
+            {
+              "category": "reclamacion",
+              "description": "Una queja por falta de aviso, una incidencia o un mal servicio."
+            },
+            {
+              "category": "interno",
+              "description": "Mensajes del equipo: cuadrantes, reuniones, organizacion."
+            }
+          ]
+        },
+        "options": {
+          "fallback": true
+        }
+      },
+      "id": "77d5c97c-cc18-4ad7-84a3-a2efbabdcc3f",
+      "name": "Clasificar correo",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        680,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "842d55e1-c8fe-4338-a75e-6145aa493e54",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        680,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29be4a65-d292-4369-b21a-192901cc421e",
+              "name": "texto",
+              "type": "string",
+              "value": "=CORREO RECIBIDO\nCategoria: {{ $json.category || 'sin_clasificar' }}\nAsunto: {{ $('Normalizar correo').item.json.asunto }}\nDe: {{ $('Normalizar correo').item.json.remitente }}\nFecha: {{ $('Normalizar correo').item.json.fecha }}\n\n{{ $('Normalizar correo').item.json.cuerpo }}"
+            },
+            {
+              "id": "186de655-6ae3-41f4-b666-59ff69518c80",
+              "name": "asunto",
+              "type": "string",
+              "value": "={{ $('Normalizar correo').item.json.asunto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3f931a4-e911-4ed7-b3e2-81cc89ae6a0e",
+      "name": "Preparar texto para el RAG",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        980,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "yayafit",
+          "cachedResultName": "yayafit"
+        },
+        "options": {
+          "pineconeNamespace": "correos"
+        }
+      },
+      "id": "0160a61c-3962-4d2d-a274-e60556dd3a79",
+      "name": "Pinecone · Insert (correos)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        1220,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "047cfd54-eeb3-4585-b06d-f5a3cab291f9",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1140,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "json",
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.texto }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fuente",
+                "value": "=correo: {{ $json.asunto }}"
+              },
+              {
+                "name": "tipo",
+                "value": "email"
+              }
+            ]
+          }
+        }
+      },
+      "id": "39220b45-12eb-42ed-b10d-af5756cd163a",
+      "name": "Data Loader (texto del correo)",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 800,
+        "chunkOverlap": 120,
+        "options": {}
+      },
+      "id": "c5b715ab-a77d-460c-a15f-8f42e4229f5d",
+      "name": "Text Splitter (recursive)",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## B · LOS CORREOS TAMBIEN AL RAG\nCada correo de socias, familias o instalaciones se clasifica y se guarda en Pinecone (namespace `correos`).\n\nCategorias: consulta_socia / aviso_instalacion / reclamacion / interno.\n\n⚠️ Leer es **IMAP** (993). Enviar sera SMTP.",
+        "height": 300,
+        "width": 520,
+        "color": 5
+      },
+      "id": "6672179d-eaa0-4ad1-8203-1193bb38db0f",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Metadatos del correo\n`fuente` = «correo: <asunto>»\n\nAsi el briefing puede decir «segun el correo 'Aviso: restriccion de uso de la piscina El Pinar'».",
+        "height": 250,
+        "width": 460,
+        "color": 6
+      },
+      "id": "b30afb86-d066-4df5-a7ef-111cde9f910d",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        110
+      ]
+    }
+  ],
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Normalizar correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar correo": {
+      "main": [
+        [
+          {
+            "node": "Clasificar correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasificar correo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar correo": {
+      "main": [
+        [
+          {
+            "node": "Preparar texto para el RAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar texto para el RAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar texto para el RAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar texto para el RAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar texto para el RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar texto para el RAG": {
+      "main": [
+        [
+          {
+            "node": "Pinecone · Insert (correos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone · Insert (correos)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Loader (texto del correo)": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone · Insert (correos)",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Splitter (recursive)": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Data Loader (texto del correo)",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

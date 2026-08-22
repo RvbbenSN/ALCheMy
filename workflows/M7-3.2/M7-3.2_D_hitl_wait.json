@@ -1,0 +1,442 @@
+{
+  "name": "M7-3.2 · D · HITL minimo con Wait",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Workflow D · El HITL minimo\n**Modulo 7 · Submodulo 3 · 7 de agosto**\n\nEl mas pequeno que ensena el concepto entero: **una accion, una aprobacion, tres finales.**\n\n### La pieza nueva: el nodo Wait\nDetiene la ejecucion **sin consumir nada** hasta que alguien llama a `{{ $execution.resumeUrl }}`.\n\nEsa URL la metemos en los dos enlaces del correo, con `?decision=aprobar` o `?decision=rechazar`.\n\nAl reanudar, la decision llega en `{{ $json.query.decision }}`.",
+        "height": 320,
+        "width": 640,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -400
+      ],
+      "id": "N_intro",
+      "name": "N_intro"
+    },
+    {
+      "parameters": {
+        "content": "## Como probarlo en clase (importante)\n1. Pon en el nodo Wait **Resume amount = 2 minutos**.\n2. Ejecutalo tres veces:\n   - una la **apruebas**\n   - otra la **rechazas**\n   - la tercera **la dejas caducar**\n3. Abre la tabla `aprobaciones`: tres estados distintos.\n\nVer el estado EXPIRADA es lo que fija el concepto. No te lo saltes.",
+        "height": 240,
+        "width": 640,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -60
+      ],
+      "id": "N_prueba",
+      "name": "N_prueba"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -60
+      ],
+      "id": "Ejecutar_manualmente",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "accion",
+              "value": "avisar_suspension_clase",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "clase",
+              "value": "Aquagym del martes",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "destinatarios",
+              "value": 12,
+              "type": "number"
+            },
+            {
+              "id": "4",
+              "name": "motivo",
+              "value": "Prevision de 38 grados. Protocolo de calor, punto 3.",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "fuente",
+              "value": "03_protocolos_seguridad.pdf + correo de la piscina",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "aprobador",
+              "value": "coordinacion@yayafit.es",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "texto",
+              "value": "Buenos dias. Por la prevision de calor, el aquagym del martes se traslada a la sala climatizada, a la misma hora. Si tiene cualquier duda, llamenos al centro.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -180,
+        -60
+      ],
+      "id": "La_accion_propuesta",
+      "name": "La accion propuesta"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "aprobaciones",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_ejecucion": "={{ $execution.id }}",
+            "cuando": "={{ $now.toISO() }}",
+            "accion": "={{ $json.accion }}",
+            "destinatarios": "={{ $json.destinatarios }}",
+            "aprobador": "={{ $json.aprobador }}",
+            "estado": "PENDIENTE",
+            "decidido_en": "",
+            "motivo_rechazo": ""
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -60
+      ],
+      "id": "Abrir_la_aprobacion",
+      "name": "Abrir la aprobacion"
+    },
+    {
+      "parameters": {
+        "content": "### La tarjeta de aprobacion\nResponde las **seis preguntas**:\n\nque, a quien, por que, de donde, que pasa si no hago nada y **el texto literal**.\n\nFijate en el asunto: lleva la accion, el numero de socias y la hora de caducidad. Se decide sin abrir el correo.\n\n**Cuidado:** la resumeUrl es publica y no lleva contrasena. Para clase vale; en produccion, token largo y caducidad corta.",
+        "height": 260,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        260,
+        -400
+      ],
+      "id": "N_tarjeta",
+      "name": "N_tarjeta"
+    },
+    {
+      "parameters": {
+        "fromEmail": "asistente@yayafit.es",
+        "toEmail": "={{ $json.aprobador }}",
+        "subject": "=[YayaFit] Aprobar aviso a {{ $json.destinatarios }} socias · {{ $json.clase }} · caduca en 2 h",
+        "emailFormat": "html",
+        "html": "=<div style=\"font-family:Arial,sans-serif;font-size:16px;max-width:640px\"><h2 style=\"background:#FFC000;padding:12px;margin:0\">YayaFit &middot; Aprobaci&oacute;n pendiente</h2><table style=\"width:100%;border-collapse:collapse;margin-top:12px\"><tr><td style=\"padding:8px;color:#666;width:180px\">QU&Eacute; QUIERE HACER</td><td style=\"padding:8px\"><b>{{ $json.accion }}</b> &mdash; {{ $json.clase }}</td></tr><tr><td style=\"padding:8px;color:#666\">A QUI&Eacute;N</td><td style=\"padding:8px\"><b>{{ $json.destinatarios }}</b> socias</td></tr><tr><td style=\"padding:8px;color:#666\">POR QU&Eacute;</td><td style=\"padding:8px\">{{ $json.motivo }}</td></tr><tr><td style=\"padding:8px;color:#666\">EN QU&Eacute; SE BASA</td><td style=\"padding:8px\">{{ $json.fuente }}</td></tr><tr><td style=\"padding:8px;color:#666\">SI NO HACES NADA</td><td style=\"padding:8px\"><b>Caduca en 2 horas y NO se env&iacute;a nada.</b></td></tr></table><p style=\"color:#666;margin-top:16px\">TEXTO EXACTO QUE RECIBIR&Aacute;N:</p><div style=\"background:#f5f5f5;padding:14px;border-left:4px solid #FFC000\">{{ $json.texto }}</div><p style=\"margin-top:24px\"><a href=\"{{ $execution.resumeUrl }}?decision=aprobar\" style=\"background:#1B7F4B;color:#fff;padding:14px 28px;text-decoration:none;font-weight:bold\">APROBAR Y ENVIAR</a>&nbsp;&nbsp;&nbsp;<a href=\"{{ $execution.resumeUrl }}?decision=rechazar\" style=\"background:#B00020;color:#fff;padding:14px 28px;text-decoration:none;font-weight:bold\">RECHAZAR</a></p></div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        300,
+        -60
+      ],
+      "id": "Enviar_la_tarjeta",
+      "name": "Enviar la tarjeta"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": true,
+        "resumeAmount": 2,
+        "resumeUnit": "hours",
+        "httpMethod": "GET",
+        "responseMode": "onReceived",
+        "options": {
+          "webhookSuffix": ""
+        }
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        540,
+        -60
+      ],
+      "id": "Esperar_la_decision",
+      "name": "Esperar la decision"
+    },
+    {
+      "parameters": {
+        "content": "### Configuracion del nodo Wait\n| campo | valor |\n|---|---|\n| Resume | On Webhook Call |\n| Limit wait time | **activado** |\n| Resume amount | 2 hours |\n| HTTP Method | GET |\n| Respond | Immediately |\n\n**Sin `Limit wait time` la ejecucion vive para siempre.** Es el error mas comun.",
+        "height": 260,
+        "width": 420,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -400
+      ],
+      "id": "N_wait",
+      "name": "N_wait"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.query.decision }}",
+              "rightValue": "aprobar",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        780,
+        -60
+      ],
+      "id": "Que_ha_decidido",
+      "name": "Que ha decidido"
+    },
+    {
+      "parameters": {
+        "fromEmail": "coordinacion@yayafit.es",
+        "toEmail": "aquagym@yayafit.es",
+        "subject": "={{ 'YayaFit · ' + $('La accion propuesta').first().json.clase }}",
+        "emailFormat": "text",
+        "text": "={{ $('La accion propuesta').first().json.texto }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        -180
+      ],
+      "id": "Enviar_a_las_socias",
+      "name": "Enviar a las socias"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "estado",
+              "value": "RECHAZADA",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "motivo_rechazo",
+              "value": "Rechazada por la coordinacion desde el correo.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1020,
+        60
+      ],
+      "id": "Anotar_el_rechazo",
+      "name": "Anotar el rechazo"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "aprobaciones",
+          "mode": "name"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_ejecucion",
+              "condition": "eq",
+              "keyValue": "={{ $execution.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "={{ $json.estado || 'APROBADA' }}",
+            "decidido_en": "={{ $now.toISO() }}",
+            "motivo_rechazo": "={{ $json.motivo_rechazo || '' }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -60
+      ],
+      "id": "Cerrar_la_aprobacion",
+      "name": "Cerrar la aprobacion"
+    },
+    {
+      "parameters": {
+        "content": "### ¿Y si nadie contesta?\nCon `Limit wait time` activado, al cumplirse el plazo el flujo **continua igual**, pero `$json.query.decision` viene **vacio**.\n\nComo el IF pregunta por `= 'aprobar'`, el silencio cae en la rama **falsa**: no se envia nada. Ese es el comportamiento correcto.\n\nEn el workflow E lo distinguimos de un rechazo explicito y lo marcamos como **EXPIRADA**.",
+        "height": 260,
+        "width": 460,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        -400
+      ],
+      "id": "N_silencio",
+      "name": "N_silencio"
+    }
+  ],
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "La accion propuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "La accion propuesta": {
+      "main": [
+        [
+          {
+            "node": "Abrir la aprobacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir la aprobacion": {
+      "main": [
+        [
+          {
+            "node": "Enviar la tarjeta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar la tarjeta": {
+      "main": [
+        [
+          {
+            "node": "Esperar la decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar la decision": {
+      "main": [
+        [
+          {
+            "node": "Que ha decidido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Que ha decidido": {
+      "main": [
+        [
+          {
+            "node": "Enviar a las socias",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Anotar el rechazo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar a las socias": {
+      "main": [
+        [
+          {
+            "node": "Cerrar la aprobacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anotar el rechazo": {
+      "main": [
+        [
+          {
+            "node": "Cerrar la aprobacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

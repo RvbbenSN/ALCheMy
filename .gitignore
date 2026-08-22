@@ -28,11 +28,16 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/raw_datalake/*
+!data/raw_datalake/.gitkeep
 !data/sample_demo/
 
 # Carpeta Privada de Metodología, Diario y Protocolos (OCULTA EN GITHUB)
 methodology/
 .agents/
+
+# MCP config (contains n8n API key)
+.mcp.json
 
 # IDEs & System Files
 .vscode/
@@ -43,4 +48,8 @@ Thumbs.db
 
 # Backups Privados (Ocultos de GitHub)
 backups/
+
+# Scripts Temporales y Borradores de Trabajo (Scratch)
+scratch/
+
 

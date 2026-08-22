@@ -1,0 +1,2428 @@
+{
+  "name": "ALCheMy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingest-characterization",
+        "options": {
+          "binaryPropertyName": "data_file"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        160,
+        1120
+      ],
+      "id": "f5d09309-d2d0-4a44-b427-8111856015ee",
+      "name": "Webhook",
+      "webhookId": "e0b79ccd-c3ba-4d0b-82f4-8b0928510c77"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/data/sample_datalake_demo/**/*",
+        "options": {
+          "dataPropertyName": "data_file"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        736
+      ],
+      "id": "2d7c6e7f-703d-4fd9-bdac-e44bd990fec3",
+      "name": "Local Folder Watcher - Data Lake"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        736
+      ],
+      "id": "e6a4ca72-c483-451c-8088-9ceea6659811",
+      "name": "Click"
+    },
+    {
+      "parameters": {
+        "formTitle": "ALCheMy - Upload Portal",
+        "formDescription": "Laboratory Data Ingestion",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "User",
+              "fieldName": "researcher_name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "e-mail",
+              "fieldType": "email",
+              "fieldName": "researcher_email"
+            },
+            {
+              "fieldLabel": "Sample Code",
+              "fieldName": "sample_code",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Characterization Technique",
+              "fieldType": "dropdown",
+              "fieldName": "technique",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "PXRD"
+                  },
+                  {
+                    "option": "TGA"
+                  },
+                  {
+                    "option": "FTIR"
+                  },
+                  {
+                    "option": "UV-Vis"
+                  },
+                  {
+                    "option": "Adsorption"
+                  },
+                  {
+                    "option": "VT-XRD"
+                  },
+                  {
+                    "option": "SEM"
+                  },
+                  {
+                    "option": "ICP-OES"
+                  },
+                  {
+                    "option": "EA"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "File",
+              "fieldType": "file",
+              "fieldName": "data_file"
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "buttonLabel": "Submit",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your characterization file has been parsed and registered into ALCheMy PostgreSQL database. Wait for confirmation email."
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -64,
+        928
+      ],
+      "id": "b296ff63-f2d4-4dab-9ea5-c7383e815140",
+      "name": "Lab Upload Portal",
+      "webhookId": "2ad1775c-5f99-4030-8c5b-b93216103298"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55b4f4a7-c9c0-4ded-9c66-d27b6653b241",
+              "name": "sample_code",
+              "value": "={{ $json.sample_code || ($binary.data_file?.fileName || $json.name || '')?.match(/(RS\\w+|IEF-\\d+|RSMIX\\d+)/i)?.[0]?.toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "84085be9-d32c-44f3-8af5-6978d32d9b17",
+              "name": "operator_name",
+              "value": "Rubén",
+              "type": "string"
+            },
+            {
+              "id": "aac48ff4-7a71-41d2-aa35-b503820cac34",
+              "name": "researcher_email",
+              "value": "rubbenserrano@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "f70e6aac-b54b-44a7-bc0b-0b3c4d0c9cd0",
+              "name": "technique",
+              "value": "={{ $json.technique || ($binary.data_file?.directory || $binary.data?.directory || $json.directory)?.match(/(PXRD|VT-XRD|TGA|FTIR|BET|UV_Vis|SEM|ICP|EA)/i)?.[0]?.toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "33565bf1-6379-4795-8992-cb663db2b4bd",
+              "name": "measurement_tag",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "33950d85-baa7-4960-a1d5-142c851c92d2",
+              "name": "instrument_name",
+              "value": "={{ $json.technique == 'PXRD' ? 'PANalytical Empyrean XRD' : ($json.technique == 'TGA' ? 'NETZSCH STA 449 F3' : ($json.technique == 'SEM' ? 'Hitachi S-4800 Field Emission SEM' : ($json.technique == 'BET' ? 'Micromeritics ASAP 2420' : 'Core Facility Equipment'))) }}",
+              "type": "string"
+            },
+            {
+              "id": "9e9d25f1-52dc-4bb5-89fe-1baf9236edab",
+              "name": "file_name",
+              "value": "={{ $binary.data_file?.fileName || $json.name || 'unknown_file' }}",
+              "type": "string"
+            },
+            {
+              "id": "daad9d5f-9d50-49ff-a725-5860cbef5467",
+              "name": "raw_file_path",
+              "value": "={{ $binary.data_file?.directory ? ($binary.data_file.directory + '/' + ($binary.data_file?.fileName || $json.name)) : ('data/sample_datalake_demo/' + $json.technique + '/' + ($binary.data_file?.fileName || $json.name)) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        736
+      ],
+      "id": "bdb96173-0a21-408f-ac1d-8031d664dc80",
+      "name": "Extract Technique from Path"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Sanitize Input').item.json.technique }}",
+                    "rightValue": "=^(PXRD|VT-XRD|TGA|FTIR|adsorption|UV_VIS)$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "cad78218-2414-4a53-a4a1-1c8f4b6f78b9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Deterministic Parsers"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2ae9047f-7346-4eae-9158-0f357f4f97e2",
+                    "leftValue": "={{ $('Sanitize Input').item.json.technique }}",
+                    "rightValue": "=^(ICP_OES|ICP|EA)$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI PDF Extractor"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1a6b7cb7-d55d-47e8-b03a-6ef495739d74",
+                    "leftValue": "={{ $('Sanitize Input').item.json.technique }}",
+                    "rightValue": "=^(SEM)$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI Vision SEM"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2176,
+        496
+      ],
+      "id": "7e720446-3cd0-4352-b7bb-b5b4cf28f50c",
+      "name": "Technique Router"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3335055f-f7bc-441e-8674-0ca67410a39d",
+              "leftValue": "={{ $('Unzip File').item.json.file_ext }}",
+              "rightValue": "^(xrdml|brml|txt|csv|xls|asc|XRDML|BRML|TXT|CSV|XLS|ASC)$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3200,
+        -160
+      ],
+      "id": "9ff18cf4-9975-4e46-9577-774c3153ed9c",
+      "name": "If - Valid Deterministic Extension?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3335055f-f7bc-441e-8674-0ca67410a39d",
+              "leftValue": "={{ $json.data_file?.[0]?.fileExtension || $json.fileExtension || $json.fileName?.split('.').pop() }}",
+              "rightValue": "^(pdf|PDF)$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2400,
+        304
+      ],
+      "id": "48c97b73-8518-4032-b49d-abcab3dcecb8",
+      "name": "If - Valid PDF Extension?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3335055f-f7bc-441e-8674-0ca67410a39d",
+              "leftValue": "=={{ $json.data_file?.[0]?.fileExtension || $json.fileExtension || $json.fileName?.split('.').pop() }}",
+              "rightValue": "^(jpg|jpeg|png|JPG|JPEG|PNG)$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3200,
+        784
+      ],
+      "id": "94e64060-f36e-4162-b1e7-01ad7f0492bb",
+      "name": "If - Valid Image Extension?"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {
+          "temperature": 0.1,
+          "topK": 10,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        272
+      ],
+      "id": "ea2a1f6a-39d6-45aa-b66f-a087ecdc420f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RPHHSBb04tJjn7BZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0b3fb82e-d6e0-4a11-a984-32d013ee7f00",
+              "leftValue": "={{ $(\"Sanitize Input\").item.json.data_file?.[0]?.size || $(\"Extract Technique from Path\").item.binary?.data_file?.fileSize }}",
+              "rightValue": 26214400,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        736
+      ],
+      "id": "9fdd8d77-972e-478a-aeaa-e65a63871712",
+      "name": "Check File Size"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "\"\"\"\nALCheMy Standardized Characterization Parser Module\nParses raw characterization files (.xrdml, .csv, .txt) in the Data Lake\ninto minimal metadata rows + standard JSONB payloads for PostgreSQL & n8n AI Agents.\n\nSpecification Document: notebooks/CHARACTERIZATION_DICTIONARY_SPEC.md\n\"\"\"\n\nimport os\nimport json\nimport xml.etree.ElementTree as ET\nimport pandas as pd\nimport numpy as np\n\ndef parse_pxrd_xrdml(file_path, sample_code=None, measurement_tag='as_synthesized', operator_name=None, researcher_email=None):\n    \"\"\"\n    Parses native PANalytical EMPYREAN .xrdml XML files into standard ALCheMy schema.\n    \"\"\"\n    tree = ET.parse(file_path)\n    root = tree.getroot()\n    \n    # Strip namespaces\n    for elem in root.iter():\n        if '}' in elem.tag:\n            elem.tag = elem.tag.split('}', 1)[1]\n            \n    # Extract metadata\n    s_id = root.find('.//sample/id').text if root.find('.//sample/id') is not None else ''\n    s_name = root.find('.//sample/name').text if root.find('.//sample/name') is not None else ''\n    prep_by = root.find('.//sample/preparedBy').text if root.find('.//sample/preparedBy') is not None else ''\n    operator_final = operator_name or prep_by or ''\n    instrument = root.find('.//diffractometerSystem').text if root.find('.//diffractometerSystem') is not None else 'PANalytical EMPYREAN'\n    anode = root.find('.//anodeMaterial').text if root.find('.//anodeMaterial') is not None else 'Cu'\n    kalpha1 = float(root.find('.//kAlpha1').text) if root.find('.//kAlpha1') is not None else 1.540598\n    kalpha2 = float(root.find('.//kAlpha2').text) if root.find('.//kAlpha2') is not None else 1.544426\n    voltage = float(root.find('.//tension').text) if root.find('.//tension') is not None else 45.0\n    current = float(root.find('.//current').text) if root.find('.//current') is not None else 40.0\n    detector = root.find('.//detector').attrib.get('name', 'PIXcel3D') if root.find('.//detector') is not None else 'PIXcel3D'\n    \n    # Resolve sample_code if not passed explicitly\n    if not sample_code:\n        base_name = os.path.basename(file_path)\n        code_match = pd.Series([base_name, s_id, s_name]).str.extract(r'(RS\\d+|LP\\d+)', expand=False).dropna()\n        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n        \n    # Extract numerical curve\n    counts_elem = root.find('.//counts')\n    start_pos_elem = root.find('.//positions[@axis=\"2Theta\"]/startPosition')\n    end_pos_elem = root.find('.//positions[@axis=\"2Theta\"]/endPosition')\n    \n    counts_str = counts_elem.text.strip() if counts_elem is not None else ''\n    y_counts = np.array([float(val) for val in counts_str.split()])\n    \n    start_2theta = float(start_pos_elem.text) if start_pos_elem is not None else 3.0\n    end_2theta = float(end_pos_elem.text) if end_pos_elem is not None else 50.0\n    \n    x_2theta = np.linspace(start_2theta, end_2theta, len(y_counts))\n    step_size = round(float((end_2theta - start_2theta) / (len(y_counts) - 1)), 4) if len(y_counts) > 1 else 0.0131\n    \n    return {\n        'sample_code': sample_code,\n        'technique': 'PXRD',\n        'measurement_tag': measurement_tag,\n        'operator_name': prep_by,\n        'instrument_name': instrument,\n        'file_name': os.path.basename(file_path),\n        'raw_file_path': file_path,\n        'data_json': {\n            'header_metadata': {\n                'sample_name_raw': s_name or s_id or os.path.basename(file_path),\n                'anode_material': anode,\n                'wavelength_kalpha1_angstrom': kalpha1,\n                'wavelength_kalpha2_angstrom': kalpha2,\n                'voltage_kv': voltage,\n                'current_ma': current,\n                'detector': detector,\n                'scan_start_2theta_deg': round(start_2theta, 4),\n                'scan_end_2theta_deg': round(end_2theta, 4),\n                'step_size_2theta_deg': step_size,\n                'num_data_points': len(y_counts)\n            },\n            'raw_data': {\n                'x_label': '2theta_deg',\n                'y_label': 'intensity_counts',\n                'x': x_2theta.round(4).tolist(),\n                'y': y_counts.round(2).tolist()\n            }\n        }\n    }\n\ndef parse_bruker_brml(file_path, sample_code=None, measurement_tag='as_synthesized'):\n    \"\"\"\n    Parses native Bruker D8 Advance .brml ZIP/XML containers into standard ALCheMy schema.\n    Supports multi-temperature VT-XRD series (RawData pairs) and single scans.\n    \"\"\"\n    import zipfile\n    \n    with zipfile.ZipFile(file_path, 'r') as zf:\n        namelist = zf.namelist()\n        \n        # Check if this is a multi-temperature VT-XRD container\n        raw_files = [f for f in namelist if f.startswith('Experiment0/RawData') and f.endswith('.xml')]\n        \n        # Resolve sample code\n        if not sample_code:\n            base_name = os.path.basename(file_path)\n            code_match = pd.Series([base_name]).str.extract(r'(RS\\d+|LP\\d+|RSMix\\d+)', expand=False).dropna()\n            sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n\n        if len(raw_files) > 2:\n            # Multi-temperature VT-XRD Series\n            temp_scans = []\n            num_pairs = len(raw_files) // 2\n            \n            for i in range(num_pairs):\n                t_file = f'Experiment0/RawData{2*i}.xml'\n                s_file = f'Experiment0/RawData{2*i + 1}.xml'\n                \n                temp_c = 25.0 + (i * 10.0) # default fallback\n                if t_file in namelist:\n                    t_root = ET.fromstring(zf.read(t_file))\n                    d_list = t_root.findall('.//Datum')\n                    if d_list and d_list[0].text:\n                        parts = [p.strip() for p in d_list[0].text.split(',')]\n                        if len(parts) >= 3:\n                            try:\n                                temp_c = float(parts[2])\n                            except:\n                                pass\n                                \n                if s_file in namelist:\n                    s_root = ET.fromstring(zf.read(s_file))\n                    d_list = s_root.findall('.//Datum')\n                    x_arr, y_arr = [], []\n                    for d in d_list:\n                        if d.text:\n                            parts = [p.strip() for p in d.text.split(',')]\n                            if len(parts) >= 5:\n                                x_arr.append(float(parts[2]))\n                                y_arr.append(float(parts[4]))\n                                \n                    if len(x_arr) > 0:\n                        temp_scans.append({\n                            'temperature_c': temp_c,\n                            'x_2theta': np.array(x_arr).round(4).tolist(),\n                            'y_counts': np.array(y_arr).round(2).tolist()\n                        })\n                        \n            first_scan_x = temp_scans[0]['x_2theta'] if temp_scans else [3.0, 35.0]\n            return {\n                'sample_code': sample_code,\n                'technique': 'VT-XRD',\n                'measurement_tag': 'temperature_series',\n                'operator_name': 'Lab Manager',\n                'instrument_name': 'Bruker D8 Advance',\n                'file_name': os.path.basename(file_path),\n                'raw_file_path': file_path,\n                'data_json': {\n                    'header_metadata': {\n                        'sample_name_raw': os.path.basename(file_path),\n                        'anode_material': 'Cu',\n                        'temperature_steps_count': len(temp_scans),\n                        'temperatures_recorded_c': [s['temperature_c'] for s in temp_scans],\n                        'scan_start_2theta_deg': first_scan_x[0],\n                        'scan_end_2theta_deg': first_scan_x[-1],\n                        'num_data_points_per_scan': len(first_scan_x)\n                    },\n                    'raw_data': {\n                        'x_label': '2theta_deg',\n                        'y_label': 'intensity_counts',\n                        'temperature_label': 'temperature_c',\n                        'temperature_series': temp_scans\n                    }\n                }\n            }\n        else:\n            # Single PXRD scan\n            raw_xml_bytes = zf.read('Experiment0/RawData0.xml')\n            root = ET.fromstring(raw_xml_bytes)\n            for elem in root.iter():\n                if '}' in elem.tag:\n                    elem.tag = elem.tag.split('}', 1)[1]\n            datum_elements = root.findall('.//Datum')\n            x_2theta, y_counts = [], []\n            for d in datum_elements:\n                if d.text:\n                    parts = [p.strip() for p in d.text.split(',')]\n                    if len(parts) >= 5:\n                        x_2theta.append(float(parts[2]))\n                        y_counts.append(float(parts[4]))\n            x_arr, y_arr = np.array(x_2theta), np.array(y_counts)\n            start_2theta = float(x_arr[0]) if len(x_arr) > 0 else 3.0\n            end_2theta = float(x_arr[-1]) if len(x_arr) > 0 else 50.0\n            step_size = round(float((end_2theta - start_2theta) / (len(x_arr) - 1)), 4) if len(x_arr) > 1 else 0.01\n            return {\n                'sample_code': sample_code,\n                'technique': 'PXRD',\n                'measurement_tag': measurement_tag,\n                'operator_name': 'Lab Manager',\n                'instrument_name': 'Bruker D8 Advance',\n                'file_name': os.path.basename(file_path),\n                'raw_file_path': file_path,\n                'data_json': {\n                    'header_metadata': {\n                        'sample_name_raw': os.path.basename(file_path),\n                        'anode_material': 'Cu',\n                        'scan_start_2theta_deg': round(start_2theta, 4),\n                        'scan_end_2theta_deg': round(end_2theta, 4),\n                        'step_size_2theta_deg': step_size,\n                        'num_data_points': len(y_arr)\n                    },\n                    'raw_data': {\n                        'x_label': '2theta_deg',\n                        'y_label': 'intensity_counts',\n                        'x': x_arr.round(4).tolist(),\n                        'y': y_arr.round(2).tolist()\n                    }\n                }\n            }\n\ndef parse_hitachi_sem(image_path, sample_code=None):\n    \"\"\"\n    Parses Hitachi TM-1000 SEM image (.jpg) and companion metadata file (.txt) into standard ALCheMy schema.\n    \"\"\"\n    txt_path = os.path.splitext(image_path)[0] + '.txt'\n    metadata = {}\n    \n    if os.path.exists(txt_path):\n        with open(txt_path, 'r', encoding='latin1', errors='ignore') as f:\n            for line in f:\n                if '=' in line:\n                    k, v = line.strip().split('=', 1)\n                    metadata[k] = v\n                    \n    # Resolve sample code\n    if not sample_code:\n        base_name = os.path.basename(image_path)\n        code_match = pd.Series([base_name]).str.extract(r'(RS\\d+|LP\\d+|RSMix\\d+|IEF-\\d+)', expand=False).dropna()\n        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n        \n    mag = float(metadata.get('Magnification', '1000').replace('x', '')) if 'Magnification' in metadata else 1000.0\n    scale_marker = metadata.get('MicronMarker', '100 um')\n    voltage = metadata.get('AcceleratingVoltage', '15000V')\n    signal = metadata.get('SignalName', 'BSE')\n    res = metadata.get('DataSize', '1280x1100')\n    instr = metadata.get('InstructName', 'Hitachi TM-1000 Tabletop SEM')\n    \n    return {\n        'sample_code': sample_code,\n        'technique': 'SEM',\n        'measurement_tag': f\"mag_{int(mag)}x\",\n        'operator_name': 'Rubén S.N.',\n        'instrument_name': f\"Hitachi {instr}\",\n        'file_name': os.path.basename(image_path),\n        'raw_file_path': image_path,\n        'data_json': {\n            'header_metadata': {\n                'sample_name_raw': metadata.get('DataNumber', os.path.basename(image_path)),\n                'magnification_x': mag,\n                'scale_bar_marker': scale_marker,\n                'accelerating_voltage': voltage,\n                'detector_signal': signal,\n                'image_resolution': res,\n                'acquisition_date': metadata.get('Date', ''),\n                'acquisition_time': metadata.get('Time', '')\n            },\n            'raw_data': {\n                'image_file': os.path.basename(image_path),\n                'companion_metadata_file': os.path.basename(txt_path) if os.path.exists(txt_path) else None,\n                'ai_vision_analysis': None # Reserved for GPT-4o Vision / Claude Sonnet morphology summary\n            }\n        }\n    }\n\ndef parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized'):\n    \"\"\"\n    Parses TA Instruments SDT Q600 thermogravimetric .txt files (7 signals) into standard ALCheMy schema.\n    \"\"\"\n    import io\n    metadata = {}\n    data_lines = []\n    in_data = False\n    \n    # Try utf-16 first, fallback to latin1\n    encoding = 'utf-16'\n    try:\n        with open(file_path, 'r', encoding='utf-16') as test_f:\n            test_f.readline()\n    except:\n        encoding = 'latin1'\n        \n    with open(file_path, 'r', encoding=encoding, errors='ignore') as f:\n        for line in f:\n            l = line.strip()\n            if not in_data:\n                if l.startswith('Sample'):\n                    metadata['sample_name_raw'] = l.split(maxsplit=1)[1] if len(l.split()) > 1 else ''\n                elif l.startswith('Size'):\n                    try:\n                        metadata['initial_sample_mass_mg'] = float(l.split()[1])\n                    except:\n                        metadata['initial_sample_mass_mg'] = 1.0\n                elif l.startswith('Operator'):\n                    metadata['operator_name'] = l.split(maxsplit=1)[1] if len(l.split()) > 1 else 'Rubén'\n                elif l.startswith('Instrument'):\n                    metadata['instrument_name'] = l.split(maxsplit=1)[1] if len(l.split()) > 1 else 'SDT Q600 V20.9'\n                elif l.startswith('StartOfData') or l.startswith('Start of Data'):\n                    in_data = True\n                elif len(l.split()) == 7:\n                    try:\n                        float(l.split()[0])\n                        in_data = True\n                        data_lines.append(l)\n                    except:\n                        pass\n            else:\n                if l:\n                    data_lines.append(l)\n                \n    # Resolve sample_code\n    if not sample_code:\n        base_name = os.path.basename(file_path)\n        code_match = pd.Series([base_name, metadata.get('sample_name_raw', '')]).str.extract(r'(RS\\d+|LP\\d+|RSMix\\d+|IEF-\\d+)', expand=False).dropna()\n        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n        \n    data_str = \"\\n\".join(data_lines)\n    df = pd.read_csv(io.StringIO(data_str), sep=r'\\s+', header=None, engine='python', on_bad_lines='skip')\n    # Filter 7 numeric columns\n    df = df.iloc[:, :7]\n    df.columns = ['time_min', 'temp_c', 'weight_mg', 'heat_flow_mw', 'temp_diff_c', 'temp_diff_uv', 'purge_flow_ml_min']\n    \n    # Coerce to float\n    for c in df.columns:\n        df[c] = pd.to_numeric(df[c], errors='coerce')\n    df = df.dropna()\n    \n    initial_mass = metadata.get('initial_sample_mass_mg', 1.0)\n    weight_pct = (df['weight_mg'] / initial_mass) * 100.0 if initial_mass > 0 else df['weight_mg']\n    \n    return {\n        'sample_code': sample_code,\n        'technique': 'TGA',\n        'measurement_tag': measurement_tag,\n        'operator_name': metadata.get('operator_name', 'Rubén'),\n        'instrument_name': metadata.get('instrument_name', 'SDT Q600 V20.9'),\n        'file_name': os.path.basename(file_path),\n        'raw_file_path': file_path,\n        'data_json': {\n            'header_metadata': {\n                'sample_name_raw': metadata.get('sample_name_raw', os.path.basename(file_path)),\n                'initial_sample_mass_mg': initial_mass,\n                'num_data_points': len(df)\n            },\n            'raw_data': {\n                'x_label': 'temperature_c',\n                'y_label': 'weight_percent',\n                'time_min': df['time_min'].round(2).tolist(),\n                'temperature_c': df['temp_c'].round(2).tolist(),\n                'weight_mg': df['weight_mg'].round(4).tolist(),\n                'weight_percent': weight_pct.round(2).tolist(),\n                'heat_flow_mw': df['heat_flow_mw'].round(4).tolist(),\n                'temp_difference_c': df['temp_diff_c'].round(4).tolist(),\n                'temp_difference_uv': df['temp_diff_uv'].round(4).tolist(),\n                'purge_flow_ml_min': df['purge_flow_ml_min'].round(2).tolist()\n            }\n        }\n    }\n\ndef parse_ftir_csv(file_path, sample_code=None, measurement_tag='as_synthesized'):\n    \"\"\"\n    Parses Thermo Nicolet FTIR 2D spectrum .csv files into standard ALCheMy schema.\n    \"\"\"\n    df = pd.read_csv(file_path, sep=r'[,;]', header=None, engine='python')\n    df = df.dropna().iloc[:, :2]\n    df.columns = ['wavenumber', 'transmittance']\n    \n    # Coerce to numeric\n    df['wavenumber'] = pd.to_numeric(df['wavenumber'].astype(str).str.replace(',', '.'), errors='coerce')\n    df['transmittance'] = pd.to_numeric(df['transmittance'].astype(str).str.replace(',', '.'), errors='coerce')\n    df = df.dropna()\n    \n    # Sort by ascending wavenumber\n    df = df.sort_values(by='wavenumber')\n    \n    if not sample_code:\n        base_name = os.path.basename(file_path)\n        code_match = pd.Series([base_name]).str.extract(r'(RS\\d+|LP\\d+|RSMix\\d+|IEF-\\d+)', expand=False).dropna()\n        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n        \n    return {\n        'sample_code': sample_code,\n        'technique': 'FTIR',\n        'measurement_tag': measurement_tag,\n        'operator_name': 'Rubén S.N.',\n        'instrument_name': 'Thermo Nicolet OMNIC FTIR',\n        'file_name': os.path.basename(file_path),\n        'raw_file_path': file_path,\n        'data_json': {\n            'header_metadata': {\n                'sample_name_raw': os.path.basename(file_path),\n                'spectral_range_cm-1': [float(df['wavenumber'].min()), float(df['wavenumber'].max())],\n                'atr_crystal': 'Diamond ATR',\n                'num_data_points': len(df)\n            },\n            'raw_data': {\n                'x_label': 'wavenumber_cm-1',\n                'y_label': 'transmittance_percent',\n                'x': df['wavenumber'].round(2).tolist(),\n                'y': df['transmittance'].round(2).tolist()\n            }\n        }\n    }\n\ndef parse_bet_xls(file_path, sample_code=None, measurement_tag='N2_77K'):\n    \"\"\"\n    Parses Micromeritics 3Flex BET .xls physisorption reports into standard ALCheMy schema.\n    \"\"\"\n    excel = pd.ExcelFile(file_path)\n    \n    # Read Isotherm Linear Plot sheet\n    iso_sheet = [s for s in excel.sheet_names if 'isotherm' in s.lower() or 'plot' in s.lower()]\n    sheet_name = iso_sheet[0] if iso_sheet else excel.sheet_names[0]\n    \n    df_iso = pd.read_excel(file_path, sheet_name=sheet_name)\n    \n    if not sample_code:\n        base_name = os.path.basename(file_path)\n        code_match = pd.Series([base_name]).str.extract(r'(RS\\d+|LP\\d+|RSMix\\d+|IEF-\\d+)', expand=False).dropna()\n        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n        \n    col1 = pd.to_numeric(df_iso.iloc[:, 0], errors='coerce').dropna()\n    col2 = pd.to_numeric(df_iso.iloc[:, 1], errors='coerce').dropna()\n    \n    min_len = min(len(col1), len(col2))\n    p_rel = col1.iloc[:min_len].values\n    q_ads = col2.iloc[:min_len].values\n    \n    return {\n        'sample_code': sample_code,\n        'technique': 'BET',\n        'measurement_tag': measurement_tag,\n        'operator_name': 'Lab Manager',\n        'instrument_name': 'Micromeritics 3Flex',\n        'file_name': os.path.basename(file_path),\n        'raw_file_path': file_path,\n        'data_json': {\n            'header_metadata': {\n                'sample_name_raw': os.path.basename(file_path),\n                'adsorptive_gas': 'N2',\n                'analysis_bath_temp_k': 77.35,\n                'bet_surface_area_m2_g': None,\n                'num_data_points': len(p_rel)\n            },\n            'raw_data': {\n                'x_label': 'relative_pressure_p_p0',\n                'y_label': 'quantity_adsorbed_cm3_g_stp',\n                'adsorption_branch': {\n                    'x': np.round(p_rel, 4).tolist(),\n                    'y': np.round(q_ads, 2).tolist()\n                }\n            }\n        }\n    }\n\n\ndef parse_uvvis_asc(file_path, sample_code=None, measurement_tag='diffuse_reflectance'):\n    \"\"\"\n    Parses PerkinElmer Lambda 1050 UV-Vis .asc/.csv spectrum files into standard ALCheMy schema.\n    \"\"\"\n    x_wave, y_ref = [], []\n    \n    with open(file_path, 'r', encoding='latin1', errors='ignore') as f:\n        for line in f:\n            l = line.strip()\n            parts = l.replace(';', ' ').replace(',', '.').split()\n            if len(parts) == 2:\n                try:\n                    w = float(parts[0])\n                    r = float(parts[1])\n                    if 190.0 <= w <= 1200.0:\n                        x_wave.append(w)\n                        y_ref.append(r)\n                except:\n                    pass\n                    \n    x_arr = np.array(x_wave)\n    y_arr = np.array(y_ref)\n    \n    # Sort ascending by wavelength\n    sort_idx = np.argsort(x_arr)\n    x_arr = x_arr[sort_idx]\n    y_arr = y_arr[sort_idx]\n    \n    if not sample_code:\n        base_name = os.path.basename(file_path)\n        code_match = pd.Series([base_name]).str.extract(r'(RS\\d+|LP\\d+|RSMix\\d+|IEF-\\d+)', expand=False).dropna()\n        sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'\n        \n    # Tauc plot derived vectors: Photon energy (eV) = 1239.8 / wavelength_nm\n    ev = 1239.8 / np.maximum(x_arr, 1.0)\n    # Kubelka-Munk F(R) = (1 - R/100)^2 / (2 * R/100)\n    r_norm = np.clip(y_arr / 100.0, 0.001, 0.999)\n    fr = ((1.0 - r_norm) ** 2) / (2.0 * r_norm)\n    \n    return {\n        'sample_code': sample_code,\n        'technique': 'UV_VIS',\n        'measurement_tag': measurement_tag,\n        'operator_name': 'Analyst',\n        'instrument_name': 'PerkinElmer Lambda 1050 UV/Vis/NIR Spectrometer',\n        'file_name': os.path.basename(file_path),\n        'raw_file_path': file_path,\n        'data_json': {\n            'header_metadata': {\n                'sample_name_raw': os.path.basename(file_path),\n                'wavelength_range_nm': [float(x_arr[0]), float(x_arr[-1])] if len(x_arr) > 0 else [250.0, 800.0],\n                'measurement_mode': 'Diffuse Reflectance',\n                'num_data_points': len(x_arr)\n            },\n            'raw_data': {\n                'x_label': 'wavelength_nm',\n                'y_label': 'reflectance_percent',\n                'x': x_arr.round(2).tolist(),\n                'y': y_arr.round(2).tolist(),\n                'tauc_plot_derived': {\n                    'photon_energy_ev': ev.round(3).tolist(),\n                    'kubelka_munk_f_r': fr.round(2).tolist()\n                }\n            }\n        }\n    }\n\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3488,
+        -256
+      ],
+      "id": "4aa85828-137f-4234-946e-ce18f8f1349c",
+      "name": "Data Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Confidence Evaluator Node (n8n Code Node)\n// Evalúa la puntuación de confianza de la IA contra la Matriz de Permisos (Umbral L2 = 85%)\n\nfor (const item of $input.all()) {\n  const payload = item.json;\n  \n  // Extraer la puntuación de confianza (número del 0 al 100)\n  const confidence = Number(payload.confidence || 0);\n  const sampleCode = payload.sample_code || 'UNKNOWN';\n  const technique = payload.technique || 'ICP';\n  \n  // Umbral oficial de la Matriz de Permisos L2\n  const CONFIDENCE_THRESHOLD = 85;\n  \n  if (confidence >= CONFIDENCE_THRESHOLD) {\n    // Nivel L4 (AUTÓNOMO): Pasa directo a guardar en PostgreSQL\n    item.json.verdict = 'ALLOW';\n    item.json.autonomy_level = 'L4';\n    item.json.requires_human_approval = false;\n    item.json.status_message = `HIGH_CONFIDENCE (${confidence}%): Autonomous insertion granted.`;\n  } else {\n    // Nivel L2 (PIDE OK): Se desvía al correo para aprobación humana\n    item.json.verdict = 'REQUIRE_APPROVAL';\n    item.json.autonomy_level = 'L2';\n    item.json.requires_human_approval = true;\n    item.json.status_message = `LOW_CONFIDENCE (${confidence}% < ${CONFIDENCE_THRESHOLD}%): Human approval required.`;\n    \n    // Preparar el cuerpo del mensaje para el correo\n    item.json.approval_email_subject = `[ALCheMy L2 Approval Required] Low Confidence PDF Ingestion (${sampleCode})`;\n    item.json.approval_email_body = `Action Required by Rubén S.N.:\\n\\nThe AI Agent extracted chemical data for sample ${sampleCode} (${technique}), but confidence score was ${confidence}% (Threshold: ${CONFIDENCE_THRESHOLD}%).\\n\\nAI Reasoning: ${payload.reasoning || 'N/A'}\\n\\nPlease click Approval or Rejection button below.`;\n  }\n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2976,
+        160
+      ],
+      "id": "1b780eff-fa94-4e3d-8731-794727d5052c",
+      "name": "Confidence Evaluator"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "fromEmail": "rubbenserrano@gmail.com",
+        "toEmail": "=={{ $json.approver || 'rubbenserrano@gmail.com' }}",
+        "subject": "=={{ $json.approval_email_subject || '[ALCheMy L2 Approval] PDF Ingestion' }}",
+        "message": "=={{ $json.approval_email_body }}",
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 5,
+              "resumeUnit": "minutes"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3200,
+        160
+      ],
+      "id": "3dbcaa6f-cf57-4e76-9c41-a46b4345e73a",
+      "name": "Send message and wait for response",
+      "webhookId": "7f0e118f-ad59-4244-a5d5-16ca48ada3b0",
+      "credentials": {
+        "smtp": {
+          "id": "AK2AHsrvkt9fSgu0",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {
+          "temperature": 0.1,
+          "topK": 10,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        3440,
+        752
+      ],
+      "id": "6fc8ec64-7d72-4243-854f-1cec24c635fb",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RPHHSBb04tJjn7BZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        1456
+      ],
+      "id": "ed20fb7d-2d9c-472f-8304-d7d301f7ed1f",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        1680
+      ],
+      "id": "d73f256d-ac8d-4325-8c22-09cac7240e22",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        1680
+      ],
+      "id": "ede7d401-889e-46bf-82e5-23aae253fca2",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RPHHSBb04tJjn7BZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT measurement_id \nFROM characterization_measurements \nWHERE file_hash = '{{ $binary.data_file?.hash || $json.file_hash }}';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1504,
+        560
+      ],
+      "id": "5016355f-5d15-4054-a892-daddd1375a71",
+      "name": "Check Duplicates",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7965b857-2c04-4884-877c-c4d09353ee43",
+              "leftValue": "={{ $json.measurement_id === undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1952,
+        640
+      ],
+      "id": "100b7c06-37ba-4760-b125-943356396cf7",
+      "name": "If - Is New Measurement?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c8635df9-d161-455b-8c79-0de61371c44d",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3488,
+        160
+      ],
+      "id": "f29aeec1-d961-4f37-98bd-d13244f3b544",
+      "name": "If - Email Answer yes?"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={\n  \"sample_code\": \"={{ $json.sample_code }}\",\n  \"technique\": \"={{ $json.technique }}\",\n  \"file_name\": \"={{ $json.fileName || $json.data_file?.[0]?.filename }}\",\n  \"data_json\": {\n    \"header_metadata\": {\n      \"operator\": \"={{ $json.operator_name }}\",\n      \"technique\": \"={{ $json.technique }}\"\n    },\n    \"raw_data\": {\n      \"elemental_ratios\": [\n        {\n          \"element\": \"<ELEMENT_SYMBOL_e.g._Ni_Fe_C_H_N_S>\",\n          \"value_wt_percent\": \"<NUMERICAL_VALUE_FLOAT>\"\n        }\n      ]\n    }\n  },\n  \"confidence\": \"<CALCULATED_CONFIDENCE_0_TO_100_INTEGER>\",\n  \"reasoning\": \"<BRIEF_EXPLANATION_OF_EXTRACTION_SOURCE>\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2768,
+        272
+      ],
+      "id": "7f40e2d1-1a09-4180-a0e1-cc0e5544f5fd",
+      "name": "Structured Output Parser",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ \"Analyze the attached PDF document '\" + ($json.fileName || $json.data_file?.[0]?.filename || '') + \"' for sample code \" + $json.sample_code + \" measured with technique \" + $json.technique + \". Extract all elemental mass percentage ratios and calculate extraction confidence.\" }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert Materials Chemistry AI Agent specialized in parsing unstructured laboratory characterization PDF reports (ICP-OES spectrometry and Elemental Analysis EA CHNS).\n\nYOUR OBJECTIVES:\n1. Carefully inspect the attached binary PDF document provided in the execution context.\n2. Identify the target sample code and verify the measurement technique (ICP or EA).\n3. Locate all data tables containing measured element mass percentages (wt%) or molar ratios.\n4. Extract all element symbols (e.g. Ni, Fe, Co, C, H, N, S) and their exact numerical values.\n5. Evaluate your own extraction confidence percentage (integer between 0 and 100) based on document legibility, table layout clarity, and absence of ambiguity.\n\nRULES & CONSTRAINTS:\n- Do NOT guess or hallucinate chemical values if they are not present in the document tables.\n- Return ONLY a valid JSON payload matching the required output schema.\n",
+          "maxIterations": 3,
+          "passthroughBinaryPdfs": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2624,
+        48
+      ],
+      "id": "fd3b72a3-1225-4ec1-a3f5-0770e9736ca5",
+      "name": "AI Agent - PDF Parser",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ \"Analyze the attached SEM electron microscopy image '\" + ($json.fileName || $json.data_file?.[0]?.filename || '') + \"' for sample code \" + $json.sample_code + \" measured with technique \" + $json.technique + \". Extract particle morphology, average size in nm, and determine if it is a valid micrograph image.\" }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert Materials Chemistry Vision AI Agent specialized in analyzing Electron Microscopy micrographs (SEM, FESEM, TEM, HRTEM, and STEM).\n\nYOUR OBJECTIVES:\n1. Inspect the attached binary electron microscopy micrograph image.\n2. Verify if the provided image is a genuine electron microscopy micrograph (set is_microscopy_image: true or false). If the image is a personal photo, plot, text, or non-microscopy image, set is_microscopy_image: false and confidence: 0.\n3. Identify the specific microscopy technique modality (e.g. SEM, FESEM, TEM, HRTEM, STEM).\n4. Describe particle or nanostructure morphology (e.g. octahedral crystals, nanorods, core-shell nanoparticles, porous sheets, lattice fringes).\n5. Estimate average particle or domain size in nanometers (nm) using the scale bar if visible.\n6. Calculate your overall analysis confidence score (integer between 0 and 100).\n",
+          "maxIterations": 3,
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3424,
+        528
+      ],
+      "id": "cd30ac33-8e80-4218-a216-06827c1f1dec",
+      "name": "AI Agent - Image Analizer",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={\n{\n  \"sample_code\": \"={{ $json.sample_code }}\",\n  \"technique\": \"={{ $json.technique }}\",\n  \"file_name\": \"={{ $json.fileName || $json.data_file?.[0]?.filename }}\",\n  \"is_microscopy_image\": true,\n  \"data_json\": {\n    \"header_metadata\": {\n      \"operator\": \"={{ $json.operator_name }}\",\n      \"technique\": \"={{ $json.technique }}\"\n    },\n    \"raw_data\": {\n      \"microscopy_analysis\": {\n        \"modality\": \"SEM\",\n        \"morphology\": \"Octahedral microcrystals with smooth facets\",\n        \"particle_shape\": \"octahedral\",\n        \"avg_particle_size_nm\": 450,\n        \"porosity_observed\": false\n      }\n    }\n  },\n  \"confidence\": 95,\n  \"reasoning\": \"High resolution electron microscopy image clearly shows MOF crystal habit with visible scale bar.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3568,
+        752
+      ],
+      "id": "0afa9811-754b-49e1-a094-b902663fc109",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "characterization_measurements",
+          "mode": "list",
+          "cachedResultName": "characterization_measurements"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sample_code": "={{ $json.sample_code }}",
+            "researcher_email": "={{ $json.researcher_email }}",
+            "researcher_name": "={{ $json.researcher_name }}",
+            "technique": "={{ $json.technique }}",
+            "operator_name": "={{ $json.operator_name || $json.data_json.header_metadata.operator_name}}",
+            "measurement_tag": "={{ $json.measurement_tag }}",
+            "instrument_name": "={{ $json.instrument_name }}",
+            "file_name": "={{ $json.file_name }}",
+            "raw_file_path": "={{ $json.raw_file_path }}",
+            "data_json": "={{ $json.data_json.raw_data }}",
+            "file_hash": "={{ $json.file_hash }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "measurement_id",
+              "displayName": "measurement_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sample_code",
+              "displayName": "sample_code",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "researcher_name",
+              "displayName": "researcher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "researcher_email",
+              "displayName": "researcher_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "technique",
+              "displayName": "technique",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "operator_name",
+              "displayName": "operator_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "measurement_tag",
+              "displayName": "measurement_tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instrument_name",
+              "displayName": "instrument_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "file_name",
+              "displayName": "file_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_file_path",
+              "displayName": "raw_file_path",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_json",
+              "displayName": "data_json",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "file_hash",
+              "displayName": "file_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3776,
+        80
+      ],
+      "id": "ad8f0e67-1d3a-4275-bd52-3344f5b98cf3",
+      "name": "DB Update",
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7cc5e711-3625-4542-a0aa-083a9ea14c36",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4000,
+        80
+      ],
+      "id": "e03393f9-a166-4a89-8da2-73728b2e20db",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"message\": \"Unrecognized or missing analytical technique.\",\n  \"valid_techniques\": [\"PXRD\", \"VT-XRD\", \"TGA\", \"FTIR\", \"BET\", \"UV_VIS\", \"SEM\", \"ICP_OES\", \"EA\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        4224,
+        -16
+      ],
+      "id": "b661e683-0a83-415c-8493-c9a5458dcf0e",
+      "name": "Send Success"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4224,
+        176
+      ],
+      "id": "d171b594-ac8d-4f93-8457-a076f63185e7",
+      "name": "Send an Email",
+      "webhookId": "94178f5b-0e70-429e-a2b0-5b948e93d525",
+      "credentials": {
+        "smtp": {
+          "id": "AK2AHsrvkt9fSgu0",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO authorized_researchers (email, researcher_name, role, active)\nVALUES (\n  '{{ $json.researcher_email }}', \n  '{{ $json.operator_name || \"Guest Researcher\" }}', \n  'guest_demo', \n  true\n)\nON CONFLICT (email) \nDO UPDATE SET last_seen = CURRENT_TIMESTAMP\nRETURNING email, role, active;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        384,
+        832
+      ],
+      "id": "6931e7c6-2bfe-4899-be83-a7030123c514",
+      "name": "Auto-Enroll Whitelist",
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "59bf0ba0-e9ae-4306-8a79-585bb3ed86e9",
+              "leftValue": "=={{ $json.active }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        832
+      ],
+      "id": "1e2d171d-034f-4979-900e-7d17c809a3c0",
+      "name": "If - Is Email Active?"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  if (item.json.sample_code) {\n    item.json.sample_code = String(item.json.sample_code).trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');\n  }\n  if (item.json.researcher_email) {\n    item.json.researcher_email = String(item.json.researcher_email).trim().toLowerCase();\n  }\n  if (item.json.operator_name) {\n    item.json.operator_name = String(item.json.operator_name).trim();\n  }\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        928
+      ],
+      "id": "c4c71165-d2d3-4274-a407-93b4057df7e0",
+      "name": "Sanitize Input"
+    },
+    {
+      "parameters": {
+        "content": "TAGS\nmeasurement_id\nsample_code\nresearcher_name\nresearcher_email\n\ntechnique_name\noperator_name\nmeasurement_tag\ninstrument_name\n\nfile_name\nraw_file_path\ndata_json\nfile_hash\n\ncreated_at\n\n\n",
+        "height": 400,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        576,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "de2a1620-2f08-4881-b04e-7da4e7212817",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        1024
+      ],
+      "name": "Call Fallback - Data Ingestion",
+      "id": "df264634-ac0b-4340-a89b-ff7774a2746c"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"UNAUTHORIZED_RESEARCHER_EMAIL: Access denied for email '\" + ($json.researcher_email || $json.email || 'UNKNOWN') + \"'. Email is not active in authorized_researchers Whitelist.\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "SECURITY_DENIED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        1024
+      ],
+      "id": "6b199747-095c-429d-a3bf-9878715a753d",
+      "name": "Set Error - Whitelist"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        832
+      ],
+      "name": "Call Fallback - Data Ingestion1",
+      "id": "d75e2f9e-1fa9-4dc1-b98a-7e67a66e309d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"FILE_SIZE_EXCEEDED: File size exceeds the maximum 25MB limit.",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "PAYLOAD_TOO_LARGE",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1056,
+        832
+      ],
+      "id": "9fa551c4-eb56-4271-9952-ad00479c70e4",
+      "name": "Set Error - File Size"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2400,
+        1120
+      ],
+      "name": "Call Fallback - Data Ingestion2",
+      "id": "3dfdf305-1922-41a6-a34e-86f1af5ba480"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"DUPLICATE_MEASUREMENT_SKIPPED: Measurement hash already exists in PostgreSQL.\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "DUPLICATE_SKIPPED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2176,
+        1120
+      ],
+      "id": "470e5ab3-d9f5-4239-907c-76785619f438",
+      "name": "Set Error - Duplicated"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2688,
+        928
+      ],
+      "name": "Call Fallback - Data Ingestion3",
+      "id": "f91d3503-85d2-4541-8daa-93aeffa25851"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"UNRECOGNIZED_TECHNIQUE: Technique '\" + ($json.technique || 'NULL') + \"' is not supported.\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "UNKNOWN_TECHNIQUE",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        928
+      ],
+      "id": "755b617e-b15d-493f-b5dc-c8dd8cfda668",
+      "name": "Set Error - Invalid Extension"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3776,
+        272
+      ],
+      "name": "Call Fallback - Data Ingestion4",
+      "id": "d0c18120-8bda-4c67-9283-29e91b0acf49"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"INVALID_FILE_EXTENSION: File extension is not valid for technique '\" + ($json.technique || 'NULL') + \"'\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "INVALID_FORMAT",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3488,
+        -64
+      ],
+      "id": "298acec1-f21f-4126-ac4e-7c7cd871ddb0",
+      "name": "Set Error - Invalid Extension1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2976,
+        448
+      ],
+      "name": "Call Fallback - Data Ingestion5",
+      "id": "3d6dd479-06e8-47b1-905d-d3ec6aa62a25"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"INVALID_FILE_EXTENSION: File extension is not valid for technique '\" + ($json.technique || 'NULL') + \"'\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "INVALID_FORMAT",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        448
+      ],
+      "id": "67f61541-d264-4dc0-825e-102b43d4ed56",
+      "name": "Set Error - Invalid Extension2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        4000,
+        640
+      ],
+      "name": "Call Fallback - Data Ingestion6",
+      "id": "accd5d60-afdb-4452-9b48-1d1730d9e27c"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"REJECTED_BY_RESEARCHER: Researcher clicked Decline in L2 approval email.\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "HUMAN_REJECTED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3776,
+        640
+      ],
+      "id": "2e0bd6bb-6411-4da8-9821-702a854759e5",
+      "name": "Set Error - Invalid Extension3"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dugn8lmZnurSKAhT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dugn8lmZnurSKAhT",
+          "cachedResultName": "Fallback - Data Ingestion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "formMode": "={{ $json.formMode }}",
+            "headers": "={{ $json.headers }}"
+          },
+          "matchingColumns": [
+            "formMode",
+            "headers"
+          ],
+          "schema": [
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3776,
+        928
+      ],
+      "name": "Call Fallback - Data Ingestion7",
+      "id": "4ce41a53-0ee6-4064-8094-ed0bffda0ecb"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2691077b-3a01-4790-a4ab-e8deb70bdad6",
+              "name": "verdict",
+              "value": "DENIED",
+              "type": "string"
+            },
+            {
+              "id": "e650e22d-e876-4e40-8083-b1fd78536468",
+              "name": "cause",
+              "value": "=\"REJECTED_BY_RESEARCHER: Researcher clicked Decline in L2 approval email.\"",
+              "type": "string"
+            },
+            {
+              "id": "839ed4d5-fd91-499d-a006-83a79d0fe095",
+              "name": "result",
+              "value": "HUMAN_REJECTED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3488,
+        928
+      ],
+      "id": "29ce86b1-444c-4816-b505-f8f835874f6b",
+      "name": "Set Error - Invalid Extension4"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // 1. Buscar el item dinámico en los nodos de origen (Formulario, Disco o Webhook)\n  const sourceItem = $(\"Sanitize Input\").item || $(\"Extract Technique from Path\").item || item;\n  const binaryData = sourceItem.binary?.data_file || sourceItem.binary?.data;\n  \n  // 2. Extraer el nombre real dinámico del archivo recibido\n  const fileName = binaryData?.fileName || sourceItem.json?.fileName || sourceItem.json?.data_file?.[0]?.filename || sourceItem.json?.name || '';\n  const fileExt = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : '';\n  \n  // 3. Inyectar metadatos dinámicos\n  item.json.file_name = fileName;\n  item.json.file_ext = fileExt;\n  item.json.is_archive = (fileExt === 'zip' || fileExt === 'rar');\n}\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        640
+      ],
+      "id": "a9380809-ecdf-470a-a535-178b09662a2b",
+      "name": "Unzip File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node 2: Calculate MD5 File Hash (Generador de Huella Antiduplicado)\nconst crypto = require('crypto');\nfor (const item of $input.all()) {\n  const sourceItem = $(\"Sanitize Input\").item || $(\"Extract Technique from Path\").item || item;\n  const binaryData = sourceItem.binary?.data_file || sourceItem.binary?.data;\n  \n  if (binaryData && binaryData.data) {\n    const buffer = Buffer.from(binaryData.data, 'base64');\n    item.json.file_hash = crypto.createHash('md5').update(buffer).digest('hex');\n  } else {\n    item.json.file_hash = 'hash_' + Date.now();\n  }\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        640
+      ],
+      "id": "c618172a-650c-47a8-8e2b-5e2ed456b796",
+      "name": "Calculate MD5 File Hash"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5753b5de-874f-4a64-87c1-494263465c1d",
+              "name": "sample_code",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.sample_code }}",
+              "type": "string"
+            },
+            {
+              "id": "71520b6d-c3e7-4a79-879a-e9e5e4dec71c",
+              "name": "technique",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.technique }}",
+              "type": "string"
+            },
+            {
+              "id": "b3fba37c-c3d9-4104-a96b-36def71b0e69",
+              "name": "researcher_name",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.researcher_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000001",
+              "name": "researcher_email",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.researcher_email }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000002",
+              "name": "operator_name",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.operator_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000003",
+              "name": "instrument_name",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.instrument_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000004",
+              "name": "measurement_tag",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.measurement_tag }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000005",
+              "name": "file_name",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.file_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000006",
+              "name": "raw_file_path",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.raw_file_path }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6d0a1f-1234-4a1a-8b2b-000000000007",
+              "name": "file_hash",
+              "value": "={{ $('Calculate MD5 File Hash').item.json.file_hash }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        592
+      ],
+      "id": "53e9ae50-be6e-4e13-b6fb-fae08080a03e",
+      "name": "Restore Fields - After Duplicate Check"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Auto-Enroll Whitelist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Click": {
+      "main": [
+        [
+          {
+            "node": "Local Folder Watcher - Data Lake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Folder Watcher - Data Lake": {
+      "main": [
+        [
+          {
+            "node": "Extract Technique from Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lab Upload Portal": {
+      "main": [
+        [
+          {
+            "node": "Sanitize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Technique from Path": {
+      "main": [
+        [
+          {
+            "node": "Auto-Enroll Whitelist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technique Router": {
+      "main": [
+        [
+          {
+            "node": "If - Valid Deterministic Extension?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If - Valid PDF Extension?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If - Valid Image Extension?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Invalid Extension",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Valid Deterministic Extension?": {
+      "main": [
+        [
+          {
+            "node": "Data Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Invalid Extension1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Valid PDF Extension?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - PDF Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Invalid Extension2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Valid Image Extension?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Image Analizer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Invalid Extension4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - PDF Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check File Size": {
+      "main": [
+        [
+          {
+            "node": "Unzip File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - File Size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Parser": {
+      "main": [
+        [
+          {
+            "node": "DB Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confidence Evaluator": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Image Analizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If - Email Answer yes?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Restore Fields - After Duplicate Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Is New Measurement?": {
+      "main": [
+        [
+          {
+            "node": "Technique Router",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Duplicated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Email Answer yes?": {
+      "main": [
+        [
+          {
+            "node": "DB Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Invalid Extension3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent - PDF Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - PDF Parser": {
+      "main": [
+        [
+          {
+            "node": "Confidence Evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Image Analizer": {
+      "main": [
+        [
+          {
+            "node": "DB Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent - Image Analizer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Update": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-Enroll Whitelist": {
+      "main": [
+        [
+          {
+            "node": "If - Is Email Active?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Is Email Active?": {
+      "main": [
+        [
+          {
+            "node": "Check File Size",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Whitelist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitize Input": {
+      "main": [
+        [
+          {
+            "node": "Auto-Enroll Whitelist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Whitelist": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - File Size": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Duplicated": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Invalid Extension": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Invalid Extension1": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Invalid Extension2": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Invalid Extension3": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error - Invalid Extension4": {
+      "main": [
+        [
+          {
+            "node": "Call Fallback - Data Ingestion7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unzip File": {
+      "main": [
+        [
+          {
+            "node": "Calculate MD5 File Hash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate MD5 File Hash": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Fields - After Duplicate Check": {
+      "main": [
+        [
+          {
+            "node": "If - Is New Measurement?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "88aa02b1-287d-4750-a7a7-9723fc24c409",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0d073460602c6db9b70ebba9e3b659d24a7bee5566e27aadaafc92a0166ea367"
+  },
+  "nodeGroups": [],
+  "id": "6p4lEVEe8rwUgEkO",
+  "tags": [
+    {
+      "updatedAt": "2026-08-15T23:51:00.021Z",
+      "createdAt": "2026-08-15T23:51:00.021Z",
+      "id": "0pPiuAqmrtoUaQA7",
+      "name": "MaterialsScience"
+    },
+    {
+      "updatedAt": "2026-08-15T23:50:44.659Z",
+      "createdAt": "2026-08-15T23:50:44.659Z",
+      "id": "UjggOSPY2tQGWST9",
+      "name": "#DataScience"
+    },
+    {
+      "updatedAt": "2026-08-15T23:50:53.763Z",
+      "createdAt": "2026-08-15T23:50:53.763Z",
+      "id": "bp0KkdF6o0YmRYyf",
+      "name": "#ML/AI"
+    }
+  ]
+}

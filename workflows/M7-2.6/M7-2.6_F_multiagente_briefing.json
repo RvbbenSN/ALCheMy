@@ -1,0 +1,643 @@
+{
+  "name": "M7-2.6 · F · Sistema multi-agente del briefing (YayaFit)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "2a28c33c-2fcf-4493-8b0d-b5030717f85b",
+      "name": "Cada dia a las 8:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Prepara el briefing de hoy del centro Las Acacias: tiempo, correos y avisos a socias.",
+        "options": {
+          "systemMessage": "Eres la COORDINADORA del briefing diario de YayaFit, un gimnasio para personas mayores. No investigas tu misma: delegas.\n\nEQUIPO:\n- agente_entorno: consulta la prevision del tiempo y noticias externas.\n- agente_interno: conoce nuestros documentos (clases, socias, protocolos, instalaciones) y los correos.\n- agente_grafo: recorre el grafo de relaciones (que riesgo afecta a que clase y que socias asisten).\n\nCOMO TRABAJAR:\n1) Pide a agente_entorno la prevision y el contexto de hoy.\n2) Pide a agente_interno los correos del dia y lo que digan nuestros protocolos.\n3) Si hay que saber A QUIEN afecta en cadena, pregunta a agente_grafo.\n4) Redacta TU el briefing final juntando sus respuestas.\n\nREGLAS: no inventes; conserva las fuentes que te den. Tono cercano: son socias con nombre, edad y familia. Las acciones deben ser concretas (a quien llamar, antes de cuando).\n\nFORMATO: TITULAR / CONTEXTO EXTERNO / SITUACION INTERNA / IMPLICACIONES / ACCIONES / FUENTES.",
+          "maxIterations": 15
+        }
+      },
+      "id": "3924473b-b635-4900-8fbd-c67a48aca0eb",
+      "name": "COORDINADORA",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        520,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "8f7de49e-36d2-49bf-8e63-51f13a77a9b2",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "800c7dbb-c4bf-4d0a-a771-cba58b01cc7a",
+      "name": "Memoria",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        540,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista en el exterior: prevision del tiempo y noticias. Le pides un tema y te devuelve la prevision o los hallazgos con su URL.",
+        "text": "={{ $fromAI('encargo','que tiene que consultar del exterior','string') }}",
+        "options": {
+          "systemMessage": "Consulta la prevision con consultar_tiempo y, si hace falta, noticias con buscar_noticias. Devuelve datos concretos (temperaturas por dia) y, en noticias, titulo y URL. No inventes."
+        }
+      },
+      "id": "b2f50835-447d-4527-b2ea-1e094a8a0f2e",
+      "name": "agente_entorno",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 1,
+      "position": [
+        760,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "4bd42075-f480-4db8-8937-777f3d30d08d",
+      "name": "Chat Model (entorno)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Prevision de temperatura maxima de los proximos 3 dias en Madrid (centro Las Acacias).",
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "latitude",
+              "value": "40.4168"
+            },
+            {
+              "name": "longitude",
+              "value": "-3.7038"
+            },
+            {
+              "name": "daily",
+              "value": "temperature_2m_max"
+            },
+            {
+              "name": "timezone",
+              "value": "auto"
+            },
+            {
+              "name": "forecast_days",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "700f03c2-a823-428d-8f49-76c87cf50eac",
+      "name": "consultar_tiempo",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Busca noticias publicas sobre un tema. Devuelve titulo y URL.",
+        "url": "https://hn.algolia.com/api/v1/search",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "query",
+              "valueProvider": "modelRequired"
+            },
+            {
+              "name": "tags",
+              "value": "story"
+            },
+            {
+              "name": "hitsPerPage",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "66cd32c5-531d-4ba5-a80e-512e7f2b0a9b",
+      "name": "buscar_noticias",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista en lo nuestro: documentos (clases, socias, protocolos, instalaciones, incidencias) y correos recibidos. Responde citando el documento o el asunto del correo.",
+        "text": "={{ $fromAI('pregunta','que necesitas saber de la informacion interna','string') }}",
+        "options": {
+          "systemMessage": "Responde SOLO con lo que encuentres en consultar_documentos y consultar_correos. Cita el campo 'fuente' o el asunto del correo. Si no lo encuentras, dilo."
+        }
+      },
+      "id": "698940ee-abea-4509-9ac9-17ab9384608c",
+      "name": "agente_interno",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 1,
+      "position": [
+        980,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "90aba83c-e279-4576-bc31-78029391444e",
+      "name": "Chat Model (interno)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1180,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "consultar_documentos",
+        "toolDescription": "Base interna de YayaFit: clases (cuales son al aire libre), socias (edad, salud, familia), protocolos, instalaciones e incidencias. Devuelve el campo 'fuente': citalo.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "yayafit",
+          "cachedResultName": "yayafit"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "documentos"
+        }
+      },
+      "id": "b600bc08-4865-47fa-a28c-0b0ca1c768a3",
+      "name": "consultar_documentos",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "8990b38d-0b27-49cb-88e3-c5a0cf4e493d",
+      "name": "Embeddings (docs)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1340,
+        1160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "consultar_correos",
+        "toolDescription": "Correos de socias, familias, instalaciones y equipo. Cita el asunto.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "yayafit",
+          "cachedResultName": "yayafit"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "correos"
+        }
+      },
+      "id": "2557ad44-8438-41b7-af03-f83aab017033",
+      "name": "consultar_correos",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "0f859754-29b6-48d9-bfc6-de9fc6513471",
+      "name": "Embeddings (correos)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        1160
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista en relaciones. Responde a quien afecta algo en cadena (riesgo -> clase -> socias) recorriendo el grafo. Devuelve el camino.",
+        "text": "={{ $fromAI('pregunta','que relacion hay que averiguar','string') }}",
+        "options": {
+          "systemMessage": "Consultas un grafo Neo4j con nodos :Entidad {nombre,tipo} y relaciones :REL {tipo}. Escribe Cypher de solo lectura con consultar_grafo y explica el CAMINO recorrido. Ejemplo: MATCH (r:Entidad {nombre:'calor'})-[:REL]->(cl)<-[:REL]-(s) WHERE s.tipo='Socia' RETURN DISTINCT s.nombre, cl.nombre"
+        }
+      },
+      "id": "bca9abe9-952c-42d2-87b1-c13ce0409936",
+      "name": "agente_grafo",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "b66c2808-c4d5-4cb6-8ea1-f74518afac4b",
+      "name": "Chat Model (grafo)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1740,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Ejecuta Cypher de SOLO LECTURA sobre el grafo. Pasa la consulta en 'basicQuery'. Nunca CREATE/MERGE/DELETE.",
+        "method": "POST",
+        "url": "https://TU-INSTANCIA.databases.neo4j.io/db/neo4j/query/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"statement\": \"{basicQuery}\"\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "basicQuery",
+              "description": "consulta Cypher de solo lectura",
+              "type": "string"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3fd6f593-8c26-4ddf-917d-510b5b1562f3",
+      "name": "consultar_grafo",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "briefing@yayafit.example",
+        "toEmail": "tu-buzon@example.com",
+        "subject": "=Briefing YayaFit (multi-agente) · {{ $now.format('dd/MM/yyyy') }}",
+        "emailFormat": "text",
+        "text": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "08660d43-e9c6-4b51-871d-93b285c3dedf",
+      "name": "Enviar briefing (SMTP)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        860,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## F · SISTEMA MULTI-AGENTE (YayaFit)\nUna **COORDINADORA** que delega en tres especialistas:\n\n• `agente_entorno` → tiempo + noticias\n• `agente_interno` → RAG (documentos + correos)\n• `agente_grafo` → Neo4j\n\nCada uno es un AI Agent con SUS herramientas.",
+        "height": 300,
+        "width": 520,
+        "color": 5
+      },
+      "id": "ce521b4b-f540-4245-a754-b0774b50e835",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        120,
+        110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Por que multi-agente\nCada especialista tiene un prompt corto y 1-2 herramientas: elige mejor y se equivoca menos.\n\nLa coordinadora solo reparte y redacta el briefing.",
+        "height": 270,
+        "width": 480,
+        "color": 3
+      },
+      "id": "93d6ea56-1a6c-469a-932d-4006e75c884a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## El nodo clave\n**AI Agent Tool**: un agente completo enganchado como herramienta de otro agente.\n\n`$fromAI('encargo', ...)` es lo que la coordinadora le pide a cada especialista.",
+        "height": 270,
+        "width": 480,
+        "color": 6
+      },
+      "id": "d1f9bd73-c39c-4761-a12d-561150b2b90a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        110
+      ]
+    }
+  ],
+  "connections": {
+    "Cada dia a las 8:00": {
+      "main": [
+        [
+          {
+            "node": "COORDINADORA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "COORDINADORA": {
+      "main": [
+        [
+          {
+            "node": "Enviar briefing (SMTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "COORDINADORA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria": {
+      "ai_memory": [
+        [
+          {
+            "node": "COORDINADORA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agente_entorno": {
+      "ai_tool": [
+        [
+          {
+            "node": "COORDINADORA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agente_interno": {
+      "ai_tool": [
+        [
+          {
+            "node": "COORDINADORA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agente_grafo": {
+      "ai_tool": [
+        [
+          {
+            "node": "COORDINADORA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model (entorno)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "agente_entorno",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_tiempo": {
+      "ai_tool": [
+        [
+          {
+            "node": "agente_entorno",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_noticias": {
+      "ai_tool": [
+        [
+          {
+            "node": "agente_entorno",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model (interno)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "agente_interno",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_documentos": {
+      "ai_tool": [
+        [
+          {
+            "node": "agente_interno",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_correos": {
+      "ai_tool": [
+        [
+          {
+            "node": "agente_interno",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings (docs)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "consultar_documentos",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings (correos)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "consultar_correos",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model (grafo)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "agente_grafo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_grafo": {
+      "ai_tool": [
+        [
+          {
+            "node": "agente_grafo",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
