@@ -51,6 +51,22 @@ services:
     depends_on:
       - n8n
 
+  ollama:
+    # Motor de embeddings LOCAL. Existe por una razon de privacidad, no de coste:
+    # el corpus del RAG incluye cuadernos de laboratorio y protocolos internos, y
+    # CLAUDE.md prohibe enviar ese material a un servicio externo. Con Ollama el
+    # texto se convierte en vectores dentro de esta maquina y nunca sale de aqui.
+    # Modelo elegido: bge-m3 -> 1024 dimensiones, multilingue (ES + EN).
+    # OJO: la dimension queda grabada en la columna VECTOR(1024) de rag_chunks.
+    # Cambiar de modelo obliga a recrear la tabla y re-indexar TODO el corpus.
+    image: ollama/ollama:latest
+    container_name: alchemy_ollama
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: alchemy_postgres
@@ -88,3 +104,4 @@ volumes:
   n8n_data:
   postgres_data:
   pgadmin_data:
+  ollama_data:
