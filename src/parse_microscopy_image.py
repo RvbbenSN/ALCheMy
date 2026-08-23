@@ -44,8 +44,14 @@ def _read_lines(txt_path):
     # attempt, which can silently mis-decode a stray high byte (e.g. the JEOL sidecar's
     # micro sign, 0xB5) into a spurious multi-byte codepoint instead of raising an error.
     # These instrument text exports are Windows-locale, not UTF-8, so latin1 is correct.
-    with open(txt_path, 'r', encoding='latin1', errors='ignore') as f:
-        return [l.rstrip('\n').rstrip('\r') for l in f]
+    #
+    # Read as BYTES and decode by hand, never text-mode open(): n8n's Python sandbox
+    # breaks `open(path, 'r')` with "'NoneType' object is not callable" (constructing
+    # the internal TextIOWrapper is blocked) while binary mode works fine. Verified
+    # empirically against the live runner.
+    with open(txt_path, 'rb') as f:
+        text = f.read().decode('latin1', errors='ignore')
+    return [l.rstrip('\r') for l in text.split('\n')]
 
 
 def _parse_sidecar(txt_path):

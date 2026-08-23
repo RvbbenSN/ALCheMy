@@ -38,6 +38,19 @@ import io
 open = io.open
 
 
+def _read_text(file_path, encoding='latin1'):
+    """Read a text file WITHOUT ever using text-mode open().
+
+    n8n's Python sandbox breaks text-mode open() - `open(path, 'r')` raises
+    "'NoneType' object is not callable" because constructing the internal
+    TextIOWrapper is blocked, while binary mode ('rb') works fine. Verified
+    empirically against the live runner. Reading bytes and decoding by hand is
+    exactly equivalent and works both locally and inside the sandbox.
+    """
+    with open(file_path, 'rb') as f:
+        return f.read().decode(encoding, errors='ignore')
+
+
 def _to_float_comma(s):
     """PE ASCII numbers use ',' as the decimal point, e.g. '800,000000' -> 800.0."""
     try:
@@ -47,8 +60,7 @@ def _to_float_comma(s):
 
 
 def parse_uvvis_asc(file_path, sample_code=None, measurement_tag='as_synthesized'):
-    with open(file_path, 'r', encoding='latin1', errors='ignore') as f:
-        lines = [l.rstrip('\n').rstrip('\r') for l in f]
+    lines = [l.rstrip('\r') for l in _read_text(file_path).split('\n')]
 
     # Fixed-position header (PE "SUBTECH SPECTRUM ASCII" format): lines 2-14 (0-indexed)
     # are always present in this order regardless of instrument settings.

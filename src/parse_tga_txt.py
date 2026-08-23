@@ -19,6 +19,19 @@ import io
 open = io.open
 
 
+def _read_text(file_path, encoding='latin1'):
+    """Read a text file WITHOUT ever using text-mode open().
+
+    n8n's Python sandbox breaks text-mode open() - `open(path, 'r')` raises
+    "'NoneType' object is not callable" because constructing the internal
+    TextIOWrapper is blocked, while binary mode ('rb') works fine. Verified
+    empirically against the live runner. Reading bytes and decoding by hand is
+    exactly equivalent and works both locally and inside the sandbox.
+    """
+    with open(file_path, 'rb') as f:
+        return f.read().decode(encoding, errors='ignore')
+
+
 def _parse_header_line(line):
     """Header lines are tab-separated key\\tvalue pairs (not free comments)."""
     parts = line.split('\t', 1)
@@ -36,15 +49,13 @@ def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized')
     data_lines = []
     in_data = False
 
-    encoding = 'utf-16'
-    try:
-        with open(file_path, 'r', encoding='utf-16') as test_f:
-            test_f.readline()
-    except Exception:
-        encoding = 'latin1'
+    # TA Instruments exports UTF-16 with a BOM; a few older files are plain latin1.
+    # Detect from the first two bytes instead of try/except-ing a text-mode open.
+    with open(file_path, 'rb') as probe:
+        bom = probe.read(2)
+    encoding = 'utf-16' if bom in (b'\xff\xfe', b'\xfe\xff') else 'latin1'
 
-    with open(file_path, 'r', encoding=encoding, errors='ignore') as f:
-        for raw_line in f:
+    for raw_line in _read_text(file_path, encoding).splitlines():
             l = raw_line.rstrip('\n').lstrip('\x0c')
             if not in_data:
                 if not l.strip() or l.strip() == 'CLOSED':

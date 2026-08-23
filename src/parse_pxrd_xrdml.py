@@ -101,7 +101,7 @@ def parse_pxrd_xrdml(file_path, sample_code=None, measurement_tag='as_synthesize
     # Resolve sample_code if not passed explicitly
     if not sample_code:
         base_name = os.path.basename(file_path)
-        code_match = pd.Series([base_name, s_id, s_name]).str.extract(r'(RS\d+|LP\d+)', expand=False).dropna()
+        code_match = pd.Series([base_name, s_id, s_name]).str.extract(r'(RS\d+|LP\d+|RSMix\d+|IEF-\d+)', expand=False).dropna()
         sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'
 
     # Curve

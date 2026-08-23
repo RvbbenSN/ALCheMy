@@ -111,7 +111,7 @@ def parse_bruker_brml(file_path, sample_code=None, measurement_tag='as_synthesiz
 
         if not sample_code:
             base_name = os.path.basename(file_path)
-            code_match = pd.Series([base_name]).str.extract(r'(RS\d+|LP\d+|RSMix\d+)', expand=False).dropna()
+            code_match = pd.Series([base_name]).str.extract(r'(RS\d+|LP\d+|RSMix\d+|IEF-\d+)', expand=False).dropna()
             sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'
 
         if len(raw_files) > 2:

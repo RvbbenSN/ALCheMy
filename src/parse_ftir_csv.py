@@ -21,6 +21,19 @@ import io
 open = io.open
 
 
+def _read_text(file_path, encoding='latin1'):
+    """Read a text file WITHOUT ever using text-mode open().
+
+    n8n's Python sandbox breaks text-mode open() - `open(path, 'r')` raises
+    "'NoneType' object is not callable" because constructing the internal
+    TextIOWrapper is blocked, while binary mode ('rb') works fine. Verified
+    empirically against the live runner. Reading bytes and decoding by hand is
+    exactly equivalent and works both locally and inside the sandbox.
+    """
+    with open(file_path, 'rb') as f:
+        return f.read().decode(encoding, errors='ignore')
+
+
 def parse_ftir_csv(file_path, sample_code=None, measurement_tag='as_synthesized'):
     # Two real delimiter conventions exist in this data lake: most exports use ';' as
     # the column separator with ',' as the decimal point (European), but at least one
@@ -29,11 +42,13 @@ def parse_ftir_csv(file_path, sample_code=None, measurement_tag='as_synthesized'
     # number in half on the European files - e.g. "3,996747e+002" (399.6747) became two
     # garbage columns "3" and "996747e+002". Every FTIR spectrum parsed with the old
     # code was wrong. Detect which convention this file uses instead of guessing both.
-    with open(file_path, 'r', encoding='latin1', errors='ignore') as f:
-        first_line = f.readline()
+    text = _read_text(file_path)
+    first_line = text.split('\n', 1)[0]
     sep = ';' if ';' in first_line else ','
 
-    df = pd.read_csv(file_path, sep=sep, header=None, engine='python')
+    # Parse from the already-decoded string rather than handing pandas the path:
+    # pandas would open the file itself in text mode, which the n8n sandbox breaks.
+    df = pd.read_csv(io.StringIO(text), sep=sep, header=None, engine='python')
     df = df.dropna().iloc[:, :2]
     df.columns = ['wavenumber', 'transmittance']
 
