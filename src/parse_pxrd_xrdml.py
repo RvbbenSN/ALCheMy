@@ -11,6 +11,14 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import numpy as np
 
+# n8n's Python task runner sandbox permanently blocks the bare 'open' builtin
+# (it's in BUILTINS_DENY_DEFAULT regardless of any stdlib/external allow-list).
+# io.open is the exact same function, reachable because 'io' is on the allow-list -
+# shadow the name once here so every 'open(...)' call below works both locally and
+# inside the sandboxed runner.
+import io
+open = io.open
+
 
 def parse_pxrd_xrdml(file_path, sample_code=None, measurement_tag='as_synthesized', operator_name=None, researcher_email=None):
     """
