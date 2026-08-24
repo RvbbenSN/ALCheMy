@@ -104,10 +104,10 @@ HAPPY_CASES = [
     # confidence lands under the 85% threshold the run parks on an approval email and
     # never answers this request - that HITL pause is the design, not a failure, so a
     # timeout here is reported as a skip.
-    dict(name='ICP_OES', needs_ai=True, technique='ICP-OES', sample_code='IEF-18',
+    dict(name='ICP_OES', needs_ai=True, expect_hitl=True, technique='ICP-OES', sample_code='IEF-18',
          file=lake('ICP', '24AQ0245ICP%20Report_Fe,%20Ni,%20P_MOFs_Rubén%20Serrano.pdf'),
          expect_meta=['technique']),
-    dict(name='EA', needs_ai=True, technique='EA', sample_code='IEF-18',
+    dict(name='EA', needs_ai=True, expect_hitl=True, technique='EA', sample_code='IEF-18',
          file=lake('EA', 'CHNS-23047-Rubén.pdf'),
          expect_meta=['technique']),
 ]
@@ -237,6 +237,18 @@ def run_happy(case, keep_rows):
         return False, 'HTTP %s %s' % (resp.status_code, cause[:90])
 
     row = fetch_row(case['sample_code'], stored_technique)
+
+    if case.get('expect_hitl'):
+        # The autonomous branch is deliberately disabled for PDFs (the agent was caught
+        # inventing chemistry), so the correct outcome is that nothing was inserted and
+        # the run is parked on the approval email. A row appearing here means the L4
+        # path got re-enabled without the hallucination being fixed.
+        if row:
+            if not keep_rows:
+                clear_rows(case['sample_code'], stored_technique)
+            return False, 'se inserto sin aprobacion humana: la rama autonoma no debe estar activa'
+        return True, 'sin insertar, esperando aprobacion humana (correcto: L4 desactivado)'
+
     if not row:
         return False, 'HTTP 200 but no row in characterization_measurements'
 
@@ -312,7 +324,9 @@ def main():
             try:
                 ok, detail = run_happy(case, args.keep_rows)
             except requests.exceptions.ReadTimeout:
-                if case.get('needs_ai'):
+                if case.get('expect_hitl'):
+                    ok, detail = True, 'sin respuesta: parado en la aprobacion humana (correcto)'
+                elif case.get('needs_ai'):
                     ok, detail = 'WARN', 'sin respuesta: la ejecucion quedo esperando aprobacion humana (HITL)'
                 else:
                     ok, detail = False, 'timeout de lectura'
