@@ -54,6 +54,11 @@ BLOCKED_EMAIL = 'bloqueado.test@example.com'
 # Set by --tolerate-ai-quota; see run_happy().
 TOLERATE_AI_QUOTA = False
 
+# Seconds to wait before each Gemini-backed case, to stay under its rate limit.
+AI_PACING_SECONDS = int(os.environ.get('ALCHEMY_AI_PACING', '25'))
+# Extra wait before the single retry of a Gemini-backed case that hit a rate limit.
+AI_RETRY_WAIT = int(os.environ.get('ALCHEMY_AI_RETRY_WAIT', '75'))
+
 
 def db():
     return psycopg2.connect(**DB)
@@ -88,15 +93,15 @@ HAPPY_CASES = [
          expect_meta=['num_data_points', 'y_unit', 'instrument_serial', 'instrument_model']),
     # SEM covers the Hitachi INI sidecar format (FESEM covers JEOL, TEM covers the
     # filename-only fallback), so upload its companion .txt alongside the image.
-    dict(name='SEM', needs_ai=True, technique='SEM', sample_code='IEF-18',
+    dict(name='SEM', needs_ai=True, expect_ai_vision=True, technique='SEM', sample_code='IEF-18',
          file=lake('SEM', 'IEF-18(Co)0004(x1.0k).jpg'),
          sidecar=lake('SEM', 'IEF-18(Co)0004(x1.0k).txt'),
          expect_meta=['companion_metadata_format', 'magnification_x', 'instrument_serial']),
-    dict(name='FESEM', needs_ai=True, technique='FESEM', sample_code='IEF-31',
+    dict(name='FESEM', needs_ai=True, expect_ai_vision=True, technique='FESEM', sample_code='IEF-31',
          file=lake('FESEM', 'IEF-31 + PCL', 'IEF-31+PCL(1)', 'IEF-31+PCL(1)_1.bmp'),
          sidecar=lake('FESEM', 'IEF-31 + PCL', 'IEF-31+PCL(1)', 'IEF-31+PCL(1)_1.txt'),
          expect_meta=['companion_metadata_format', 'magnification_x', 'accelerating_voltage']),
-    dict(name='TEM', needs_ai=True, technique='TEM', sample_code='IEF-31',
+    dict(name='TEM', needs_ai=True, expect_ai_vision=True, technique='TEM', sample_code='IEF-31',
          file=lake('TEM', 'IEF-31-PCL-Lavado', 'IEF-31-PCL-Lavado_MAG_X3000_001.jpg'),
          expect_meta=['magnification_x', 'magnification_source']),
     # ICP/EA arrive as PDFs with no machine-readable structure, so they go through the
@@ -256,6 +261,17 @@ def run_happy(case, keep_rows):
     header = (data_json or {}).get('header_metadata', {})
     missing = [k for k in case['expect_meta'] if header.get(k) in (None, '', [])]
 
+    # A row landing in the table is NOT the same as the AI having done its job: the
+    # first version of this check only looked at header_metadata, so three microscopy
+    # techniques were reported as passing while ai_vision_analysis was an empty dict
+    # (the agent nests its answer under `output`, and nobody was reading it there).
+    if case.get('expect_ai_vision'):
+        vision = ((data_json or {}).get('raw_data') or {}).get('ai_vision_analysis') or {}
+        if not vision.get('morphology_description'):
+            if not keep_rows:
+                clear_rows(case['sample_code'], stored_technique)
+            return False, 'fila insertada pero ai_vision_analysis vacio: la IA no describio la imagen'
+
     if not keep_rows:
         clear_rows(case['sample_code'], stored_technique)
 
@@ -321,8 +337,21 @@ def main():
             if not os.path.exists(case['file']):
                 print('%-22s SKIP  file not found: %s' % (case['name'], case['file']))
                 continue
+            # Gemini rejects bursts (429 "receiving too many requests"), and five of
+            # these cases call it back to back. Space them out so a rate limit does not
+            # get mistaken for a broken pipeline - that confusion has cost real time.
+            if case.get('needs_ai'):
+                time.sleep(AI_PACING_SECONDS)
             try:
                 ok, detail = run_happy(case, args.keep_rows)
+                # Gemini's free tier rejects bursts, and a 429 is indistinguishable
+                # from a real bug once it reaches us as AI_AGENT_EXTRACTION_FAILED.
+                # Retrying once after a pause tells the two apart without guessing.
+                if ok is False and case.get('needs_ai') and 'agente de IA fallo' in detail:
+                    print('%-22s ...  reintentando en %ss (posible limite de ritmo)'
+                          % (case['name'], AI_RETRY_WAIT))
+                    time.sleep(AI_RETRY_WAIT)
+                    ok, detail = run_happy(case, args.keep_rows)
             except requests.exceptions.ReadTimeout:
                 if case.get('expect_hitl'):
                     ok, detail = True, 'sin respuesta: parado en la aprobacion humana (correcto)'
