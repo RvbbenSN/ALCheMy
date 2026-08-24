@@ -51,6 +51,9 @@ DB = dict(
 
 BLOCKED_EMAIL = 'bloqueado.test@example.com'
 
+# Set by --tolerate-ai-quota; see run_happy().
+TOLERATE_AI_QUOTA = False
+
 
 def db():
     return psycopg2.connect(**DB)
@@ -221,8 +224,16 @@ def run_happy(case, keep_rows):
         # dozen calls. That is an account limit, not a pipeline defect, so report it
         # separately instead of as a failure - otherwise a quota blip looks like a
         # regression and sends you hunting for a bug that is not there.
+        # AI_AGENT_EXTRACTION_FAILED is the workflow's single catch-all for "the agent
+        # threw": a Gemini quota blip and a genuine schema mismatch look identical from
+        # out here. Treating it as a skip once hid a real bug (the structured-output
+        # schema no longer matched what the model produced), so only downgrade to a
+        # skip when explicitly asked, and say to go read the execution otherwise.
         if case.get('needs_ai') and 'AI_AGENT_EXTRACTION_FAILED' in cause:
-            return 'WARN', 'agente de IA no disponible (cuota/limite de Gemini) - no es un fallo del pipeline'
+            if TOLERATE_AI_QUOTA:
+                return 'WARN', 'agente de IA fallo; ignorado por --tolerate-ai-quota'
+            return False, ('el agente de IA fallo - mira la ultima ejecucion en n8n para '
+                           'saber si es cuota (429) o un fallo real de esquema')
         return False, 'HTTP %s %s' % (resp.status_code, cause[:90])
 
     row = fetch_row(case['sample_code'], stored_technique)
@@ -273,7 +284,13 @@ def main():
     cli.add_argument('--happy', action='store_true', help='Happy paths only')
     cli.add_argument('--fallbacks', action='store_true', help='Fallbacks only')
     cli.add_argument('--keep-rows', action='store_true', help='Do not delete the rows created')
+    cli.add_argument('--tolerate-ai-quota', action='store_true',
+                     help="Report AI-agent failures as skips instead of failures (use when "
+                          "you know Gemini's free quota is exhausted, not to paper over bugs)")
     args = cli.parse_args()
+
+    global TOLERATE_AI_QUOTA
+    TOLERATE_AI_QUOTA = args.tolerate_ai_quota
 
     ensure_blocked_email()
 
