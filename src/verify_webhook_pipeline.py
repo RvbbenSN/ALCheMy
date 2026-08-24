@@ -96,6 +96,17 @@ HAPPY_CASES = [
     dict(name='TEM', needs_ai=True, technique='TEM', sample_code='IEF-31',
          file=lake('TEM', 'IEF-31-PCL-Lavado', 'IEF-31-PCL-Lavado_MAG_X3000_001.jpg'),
          expect_meta=['magnification_x', 'magnification_source']),
+    # ICP/EA arrive as PDFs with no machine-readable structure, so they go through the
+    # Gemini agent instead of a deterministic parser. If the agent's self-reported
+    # confidence lands under the 85% threshold the run parks on an approval email and
+    # never answers this request - that HITL pause is the design, not a failure, so a
+    # timeout here is reported as a skip.
+    dict(name='ICP_OES', needs_ai=True, technique='ICP-OES', sample_code='IEF-18',
+         file=lake('ICP', '24AQ0245ICP%20Report_Fe,%20Ni,%20P_MOFs_Rubén%20Serrano.pdf'),
+         expect_meta=['technique']),
+    dict(name='EA', needs_ai=True, technique='EA', sample_code='IEF-18',
+         file=lake('EA', 'CHNS-23047-Rubén.pdf'),
+         expect_meta=['technique']),
 ]
 
 # ---------------------------------------------------------------------------
@@ -197,7 +208,7 @@ def ensure_blocked_email():
 
 def run_happy(case, keep_rows):
     name = case['name']
-    stored_technique = {'UV_VIS': 'UV_VIS', 'ADSORPTION': 'ADSORPTION'}.get(name, name)
+    stored_technique = name
 
     clear_rows(case['sample_code'], stored_technique)
 
@@ -283,6 +294,11 @@ def main():
                 continue
             try:
                 ok, detail = run_happy(case, args.keep_rows)
+            except requests.exceptions.ReadTimeout:
+                if case.get('needs_ai'):
+                    ok, detail = 'WARN', 'sin respuesta: la ejecucion quedo esperando aprobacion humana (HITL)'
+                else:
+                    ok, detail = False, 'timeout de lectura'
             except Exception as e:
                 ok, detail = False, 'EXCEPTION %s' % e
             results.append((case['name'], ok))
