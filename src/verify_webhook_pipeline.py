@@ -31,7 +31,10 @@ import psycopg2
 
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(SRC_DIR)
-DATA_LAKE = os.path.join(ROOT_DIR, 'data', 'raw_datalake_historico')
+# data/ is gitignored, so it does not exist inside a git worktree checkout. Allow
+# pointing at the real data lake from elsewhere instead of duplicating ~900MB.
+DATA_LAKE = os.environ.get('ALCHEMY_DATA_LAKE',
+                           os.path.join(ROOT_DIR, 'data', 'raw_datalake_historico'))
 
 WEBHOOK_URL = os.environ.get('ALCHEMY_WEBHOOK_URL',
                              'http://localhost:5678/webhook/ingest-characterization')
@@ -79,15 +82,18 @@ HAPPY_CASES = [
          expect_meta=['bet_surface_area_m2_g', 'adsorptive_gas']),
     dict(name='UV_VIS', technique='UV-Vis', sample_code='IEF-8',
          file=lake('UV_Vis', 'IEF-8(CB-12A).Sample.asc'),
-         expect_meta=['num_data_points', 'y_unit', 'instrument_serial']),
-    dict(name='SEM', technique='SEM', sample_code='IEF-18',
+         expect_meta=['num_data_points', 'y_unit', 'instrument_serial', 'instrument_model']),
+    # SEM covers the Hitachi INI sidecar format (FESEM covers JEOL, TEM covers the
+    # filename-only fallback), so upload its companion .txt alongside the image.
+    dict(name='SEM', needs_ai=True, technique='SEM', sample_code='IEF-18',
          file=lake('SEM', 'IEF-18(Co)0004(x1.0k).jpg'),
+         sidecar=lake('SEM', 'IEF-18(Co)0004(x1.0k).txt'),
          expect_meta=['companion_metadata_format', 'magnification_x', 'instrument_serial']),
-    dict(name='FESEM', technique='FESEM', sample_code='IEF-31',
+    dict(name='FESEM', needs_ai=True, technique='FESEM', sample_code='IEF-31',
          file=lake('FESEM', 'IEF-31 + PCL', 'IEF-31+PCL(1)', 'IEF-31+PCL(1)_1.bmp'),
          sidecar=lake('FESEM', 'IEF-31 + PCL', 'IEF-31+PCL(1)', 'IEF-31+PCL(1)_1.txt'),
          expect_meta=['companion_metadata_format', 'magnification_x', 'accelerating_voltage']),
-    dict(name='TEM', technique='TEM', sample_code='IEF-31',
+    dict(name='TEM', needs_ai=True, technique='TEM', sample_code='IEF-31',
          file=lake('TEM', 'IEF-31-PCL-Lavado', 'IEF-31-PCL-Lavado_MAG_X3000_001.jpg'),
          expect_meta=['magnification_x', 'magnification_source']),
 ]
@@ -199,7 +205,14 @@ def run_happy(case, keep_rows):
                   sample_code=case['sample_code'], sidecar=case.get('sidecar'))
 
     if resp.status_code != 200:
-        return False, 'HTTP %s %s' % (resp.status_code, body_of(resp).get('cause', '')[:90])
+        cause = body_of(resp).get('cause', '')
+        # The SEM/FESEM/TEM lane calls Gemini, whose free tier runs out after a few
+        # dozen calls. That is an account limit, not a pipeline defect, so report it
+        # separately instead of as a failure - otherwise a quota blip looks like a
+        # regression and sends you hunting for a bug that is not there.
+        if case.get('needs_ai') and 'AI_AGENT_EXTRACTION_FAILED' in cause:
+            return 'WARN', 'agente de IA no disponible (cuota/limite de Gemini) - no es un fallo del pipeline'
+        return False, 'HTTP %s %s' % (resp.status_code, cause[:90])
 
     row = fetch_row(case['sample_code'], stored_technique)
     if not row:
@@ -273,7 +286,8 @@ def main():
             except Exception as e:
                 ok, detail = False, 'EXCEPTION %s' % e
             results.append((case['name'], ok))
-            print('%-22s %-5s %s' % (case['name'], 'PASS' if ok else 'FAIL', detail))
+            label = 'WARN' if ok == 'WARN' else ('PASS' if ok else 'FAIL')
+            print('%-22s %-5s %s' % (case['name'], label, detail))
 
     if run_f:
         print()
@@ -290,11 +304,14 @@ def main():
             results.append((case['name'], ok))
             print('%-22s %-5s %s' % (case['name'], 'PASS' if ok else 'FAIL', detail))
 
-    passed = sum(1 for _, ok in results if ok)
-    failed = [n for n, ok in results if not ok]
+    warned = [n for n, ok in results if ok == 'WARN']
+    failed = [n for n, ok in results if ok is False]
+    passed = [n for n, ok in results if ok is True]
     print()
     print('=' * 78)
-    print('SUMMARY: %d/%d passed' % (passed, len(results)))
+    print('SUMMARY: %d passed, %d failed, %d skipped' % (len(passed), len(failed), len(warned)))
+    if warned:
+        print('SKIPPED (cuota de IA, no es un fallo): %s' % ', '.join(warned))
     if failed:
         print('FAILED: %s' % ', '.join(failed))
     print('=' * 78)

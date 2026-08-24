@@ -178,6 +178,8 @@ def parse_uvvis_asc(file_path, sample_code=None, measurement_tag='as_synthesized
         'data_json': {
             'header_metadata': {
                 'sample_name_raw': header['declared_file_name'] or os.path.basename(file_path),
+                'instrument_model': header['instrument_model'],
+                'instrument_serial': header['instrument_serial'],
                 'software_version': header['software_version'],
                 'acquisition_date': header['date_created'],
                 'acquisition_time': header['time_created'],

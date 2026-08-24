@@ -118,8 +118,13 @@ def _extract_magnification_from_filename(file_name):
     return value, m.group(1).upper()
 
 
-def parse_microscopy_image(image_path, sample_code=None, technique=None, measurement_tag=None):
-    txt_path = os.path.splitext(image_path)[0] + '.txt'
+def parse_microscopy_image(image_path, sample_code=None, technique=None, measurement_tag=None,
+                           metadata_txt_path=None):
+    # By convention the sidecar sits next to the image with the same basename, which is
+    # how it arrives from the data lake. The webhook/form lane instead receives it as a
+    # separate upload that an earlier n8n node writes to its own path, so that lane
+    # passes the location explicitly.
+    txt_path = metadata_txt_path or (os.path.splitext(image_path)[0] + '.txt')
     metadata, format_detected = _parse_sidecar(txt_path)
 
     technique = (technique or 'SEM').upper()
