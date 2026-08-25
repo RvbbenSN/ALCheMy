@@ -161,7 +161,10 @@ itself. Problem solved: an LLM asked to process ~90 items in one request can
 silently skip or merge some of them; this script makes that failure loud
 (the whole file is rejected, moved to `rejected/`, and nothing is written)
 instead of quietly leaving gaps. Reuse: dry run by default, `--apply` to
-actually write and archive processed files into `imported/`.
+actually write and archive processed files into `imported/`; `--status`
+prints overall progress (how much of the whole corpus is done) plus what is
+currently sitting in each folder, so an interrupted Antigravity session
+never leaves you guessing where things stand.
 
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
