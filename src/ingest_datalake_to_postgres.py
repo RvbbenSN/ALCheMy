@@ -76,9 +76,17 @@ TECHNIQUE_FOLDERS = {
 # as an unhandled/skipped file either.
 MICROSCOPY_SIDECAR_EXT = {'.txt'}
 
+# A measurement cannot be stored without a parent row in synthesis_experiments (the
+# foreign key), so an orphan sample_code needs a placeholder. What that placeholder
+# must NOT do is invent chemistry: the previous version wrote Ni / Ni(NO3)2.6H2O /
+# Pyrene for every unknown sample, which would quietly answer "give me all the Ni
+# pyrene samples" with a pile of materials that were never either. The NOT NULL
+# columns are filled with explicit markers instead, so a placeholder is obviously a
+# placeholder and can be found and reconciled later:
+#     SELECT * FROM synthesis_experiments WHERE synthesis_type = 'PENDING_RECORD';
 PLACEHOLDER_SYNTHESIS_SQL = """
     INSERT INTO synthesis_experiments (sample_code, synthesis_date, synthesis_type, researcher_name, metal_center, metal_source, linker, total_volume_ml, temp_target_c, time_hours)
-    VALUES (%s, CURRENT_DATE, 'HTS', 'Rubén S.N.', 'Ni', 'Ni(NO3)2·6H2O', 'Pyrene', 2.5, 120.0, 24.0)
+    VALUES (%s, CURRENT_DATE, 'PENDING_RECORD', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 0, 0, 0)
     ON CONFLICT (sample_code) DO NOTHING;
 """
 
