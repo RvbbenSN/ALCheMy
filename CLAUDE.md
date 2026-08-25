@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Read `methodology/DIARIO_DE_PROYECTO.md` at the start of every session** — it is the living logbook of decisions, current state, and next steps. Append a new session entry when meaningful work lands.
 - **Record every new technical concept in `methodology/GUIA_DIDACTICA_PORTFOLIO.md`** (plain-language explanations of DDL/DML/DQL, MD5 hashing, UPSERT, RAG, HITL…). These entries are the source material for tooltips/popups in the future web app.
+- **Register every new script in `src/README.md`** — it works as a didactic library of the codebase. Each entry: what the script does, the problem it solves and why, and how it can be reused elsewhere (CLI flags, importable functions, notebooks that call it).
 - **Pedagogical tone**: the owner is a materials chemist, not a software engineer. Explain each line of code, SQL table, or n8n node step by step, in Spanish, without assuming prior programming knowledge. Build progressively ("a su ritmo").
 - Project docs are written in English; conversation and explanations in Spanish.
 
