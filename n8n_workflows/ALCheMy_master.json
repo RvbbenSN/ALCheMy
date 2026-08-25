@@ -1908,10 +1908,46 @@
               "name": "result",
               "type": "string",
               "value": "AI_AGENT_ERROR"
+            },
+            {
+              "id": "e5",
+              "name": "sample_code",
+              "type": "string",
+              "value": "={{ $('If - Valid PDF Extension?').item.json.sample_code }}"
+            },
+            {
+              "id": "e6",
+              "name": "technique",
+              "type": "string",
+              "value": "={{ $('If - Valid PDF Extension?').item.json.technique }}"
+            },
+            {
+              "id": "e7",
+              "name": "researcher_email",
+              "type": "string",
+              "value": "={{ $('If - Valid PDF Extension?').item.json.researcher_email }}"
+            },
+            {
+              "id": "e8",
+              "name": "researcher_name",
+              "type": "string",
+              "value": "={{ $('If - Valid PDF Extension?').item.json.researcher_name }}"
+            },
+            {
+              "id": "e9",
+              "name": "operator_name",
+              "type": "string",
+              "value": "={{ $('If - Valid PDF Extension?').item.json.operator_name }}"
+            },
+            {
+              "id": "e10",
+              "name": "headers",
+              "type": "object",
+              "value": "={{ $('If - Valid PDF Extension?').item.json.headers }}"
             }
           ]
         },
-        "includeOtherFields": true,
+        "includeOtherFields": false,
         "options": {}
       },
       "id": "d3730c36-3986-4a83-995a-2e77037996e2",
@@ -1921,7 +1957,8 @@
       "position": [
         6064,
         2256
-      ]
+      ],
+      "notes": "includeOtherFields desactivado a proposito: con el arrastraba el item completo del agente hasta el nodo de respuesta HTTP, que fallaba con 'Unknown error'. formMode NO se asigna aqui a proposito: 'If - Webhook Origin' exige que la clave este AUSENTE (=== undefined), y una asignacion explicita a null deja la clave presente, lo que rompe esa comprobacion."
     },
     {
       "parameters": {
@@ -2042,10 +2079,46 @@
               "name": "result",
               "type": "string",
               "value": "AI_AGENT_ERROR"
+            },
+            {
+              "id": "e5",
+              "name": "sample_code",
+              "type": "string",
+              "value": "={{ $('Parse Microscopy (.jpg)').item.json.sample_code }}"
+            },
+            {
+              "id": "e6",
+              "name": "technique",
+              "type": "string",
+              "value": "={{ $('Parse Microscopy (.jpg)').item.json.technique }}"
+            },
+            {
+              "id": "e7",
+              "name": "researcher_email",
+              "type": "string",
+              "value": "={{ $('Parse Microscopy (.jpg)').item.json.researcher_email }}"
+            },
+            {
+              "id": "e8",
+              "name": "researcher_name",
+              "type": "string",
+              "value": "={{ $('Parse Microscopy (.jpg)').item.json.researcher_name }}"
+            },
+            {
+              "id": "e9",
+              "name": "operator_name",
+              "type": "string",
+              "value": "={{ $('Parse Microscopy (.jpg)').item.json.operator_name }}"
+            },
+            {
+              "id": "e10",
+              "name": "headers",
+              "type": "object",
+              "value": "={{ $('Parse Microscopy (.jpg)').item.json.headers }}"
             }
           ]
         },
-        "includeOtherFields": true,
+        "includeOtherFields": false,
         "options": {}
       },
       "id": "2acebb9f-a96d-4648-84c8-24a3d3a3ad43",
@@ -2055,7 +2128,8 @@
       "position": [
         6064,
         1728
-      ]
+      ],
+      "notes": "Mismo motivo que 'Set Error - AI Agent Failure'. formMode NO se asigna a proposito, ver esa nota."
     },
     {
       "parameters": {
