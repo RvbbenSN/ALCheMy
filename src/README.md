@@ -200,3 +200,60 @@ pipeline works at all, without needing to reason about the real 87k-chunk
 corpus or leaving test data behind to confuse later queries. Reuse: run any
 time the embedding model, the hybrid-search SQL function, or the pgvector
 index changes, before trusting the real corpus.
+
+---
+
+## PXRD descriptors (diffractograms → interpretable numbers)
+
+### `pxrd_descriptors.py`
+The single implementation of the PXRD signal-processing pipeline specified in
+`methodology/ROADMAP_PXRD_CRISTALINIDAD_Y_ML.md`. Turns a curve of a few
+thousand points into one fixed row of numbers a chemist can read — how many
+reflections, how wide, how crystalline, how large the unit cell. Problem
+solved: a curve cannot be sorted, filtered, correlated or modelled, so
+"give me the syntheses with a large unit cell and low crystallinity" was not
+a question the database could answer at all.
+
+Four stages: `resample_to_grid` (one common 3–50° grid at 0.02°, with
+out-of-range points discarded rather than extrapolated), `decompose_profile`
+(splits the profile into instrumental background / amorphous halo / Bragg
+peaks), `detect_peaks_poisson` (peak threshold derived from photon-counting
+statistics instead of a magic number), and `extract_descriptors` (assembles
+the vector).
+
+Two design decisions carry most of the weight. **The profile is normalised
+by area before the baseline is fitted**, because arPLS's λ sets stiffness
+relative to the size of the numbers being fitted — applied to raw counts the
+same λ behaves differently on a 200-count scan and a 20,000-count one, and
+descriptors stop being comparable. **The amorphous halo is separated from the
+peaks by width (a running median), not by a second arPLS pass**, because arPLS
+is a baseline estimator: run on a profile whose floor is already zero it
+returns zero, silently reporting every sample as 100% crystalline.
+
+`DEFAULT_LAMBDA_RIGID = 1e6` is not copied from a paper — it is the value
+selected by the calibration in `notebooks/05` against this lab's real blank,
+a real amorphous sample and a real crystalline one. Reuse: import the
+functions directly; they are pure numpy/scipy over plain arrays, so they work
+identically in a notebook, a batch script, or an n8n Code node. Bump
+`PIPELINE_VERSION` whenever a formula changes, since that string is written
+into every `pxrd_descriptors` row and is what makes rows comparable.
+
+### `ingest_pxrd_reference_library.py`
+Ingests `data/reference_libraries/PXRD/` into `characterization_measurements`,
+tagging each file through `measurement_tag` as `reference_blank`,
+`reference_standard`, `reference_precursor` or `reference_simulated`. Problem
+solved: `ingest_datalake_to_postgres.py` only walks the historical data lake,
+so the empty holder, the instrument standard, the precursors and the patterns
+simulated from our own SCXRD structures stayed on disk. Those files are not
+samples, they are the *rulers*: the λ calibration is only defensible against a
+real blank and a real standard, and the novelty triage needs the simulated
+SCXRD patterns. Leaving them out would force every notebook to reach back into
+raw folders, which is exactly what the project is trying to stop doing.
+
+A reference belongs to no synthesis, so its parent row in
+`synthesis_experiments` is created with `synthesis_type = 'REFERENCE'` and the
+literal `'NOT_APPLICABLE'` in the NOT NULL chemistry columns — deliberately not
+dummy chemistry, because a plausible-looking metal centre on a blank holder
+would be a lie stored in the single source of truth. Reuse: `--dry-run` to
+preview; re-running is safe, files already present (matched by binary MD5) are
+skipped.
