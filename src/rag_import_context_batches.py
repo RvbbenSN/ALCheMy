@@ -112,13 +112,74 @@ ON CONFLICT (chunk_id) DO UPDATE SET
 """
 
 
+STATUS_QUERY = """
+SELECT
+    (SELECT count(*) FROM rag_documents WHERE sensitivity = 'PUBLIC' AND needs_ocr = FALSE) AS total_docs,
+    (SELECT count(DISTINCT d.document_id)
+       FROM rag_documents d JOIN rag_chunks c ON c.document_id = d.document_id
+       JOIN rag_chunk_context cc ON cc.chunk_id = c.id
+      WHERE d.sensitivity = 'PUBLIC') AS docs_with_at_least_one_sentence,
+    (SELECT count(*) FROM rag_chunks c JOIN rag_documents d ON d.document_id = c.document_id
+      WHERE d.sensitivity = 'PUBLIC' AND d.needs_ocr = FALSE) AS total_chunks_eligible,
+    (SELECT count(*) FROM rag_chunk_context) AS chunks_with_sentence;
+"""
+
+
+def print_status():
+    """Progress against the WHOLE corpus (DB), plus what's sitting in each
+    folder right now - the two numbers answer different questions: the DB
+    numbers say "how much of the corpus is done", the folder numbers say
+    "is there anything left over from an interrupted Antigravity session
+    that still needs draining"."""
+    for name in ("pending", "done", "imported", "rejected"):
+        (BATCH_ROOT / name).mkdir(parents=True, exist_ok=True)
+
+    connection = connect()
+    cursor = connection.cursor()
+    cursor.execute(STATUS_QUERY)
+    total_docs, docs_done, total_chunks, chunks_done = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    pending_n = len(list((BATCH_ROOT / "pending").glob("*.json")))
+    done_n = len(list((BATCH_ROOT / "done").glob("*.json")))
+    imported_n = len(list((BATCH_ROOT / "imported").glob("*.json")))
+    rejected_n = len(list((BATCH_ROOT / "rejected").glob("*.json")))
+
+    print("=== Progreso global (toda la base de datos) ===")
+    print("Documentos PUBLIC con al menos 1 frase : {} / {}".format(docs_done, total_docs))
+    print("Chunks con frase de contexto            : {} / {}".format(chunks_done, total_chunks))
+    if total_chunks:
+        print("Porcentaje del corpus                   : {:.1f}%".format(
+            100.0 * chunks_done / total_chunks))
+    print()
+    print("=== Carpeta data/rag_context_batches/ ahora mismo ===")
+    print("pending/  (esperando a Antigravity)     : {}".format(pending_n))
+    print("done/     (esperando a --apply)         : {}".format(done_n))
+    print("imported/ (ya en la base de datos)      : {}".format(imported_n))
+    print("rejected/ (fallaron la verificacion)    : {}".format(rejected_n))
+    if pending_n:
+        print("\n-> Hay {} lote(s) sin terminar en pending/: retoma esa carpeta en "
+              "Antigravity antes de exportar un lote nuevo.".format(pending_n))
+    elif done_n:
+        print("\n-> Hay {} lote(s) en done/ sin importar: ejecuta --apply.".format(done_n))
+    else:
+        print("\n-> Nada a medias. Puedes exportar el siguiente lote cuando quieras.")
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Verify and import context batches")
     parser.add_argument("--apply", action="store_true",
                         help="write to rag_chunk_context and archive files (default: dry run)")
     parser.add_argument("--model-name", default="gemini-3.7",
                         help="value stored in rag_chunk_context.source_model")
+    parser.add_argument("--status", action="store_true",
+                        help="print overall progress (DB + folders) and exit, without importing anything")
     args = parser.parse_args()
+
+    if args.status:
+        return print_status()
 
     if not DONE_DIR.is_dir():
         print("No existe {} - nada que importar todavia.".format(DONE_DIR))
