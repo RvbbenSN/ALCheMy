@@ -136,6 +136,33 @@ ordinary pair of files, readable without n8n, without Zotero, and without a
 database connection. Reuse: `--apply` writes, `--overwrite` regenerates
 sidecars that already exist (default: leave them alone).
 
+### `rag_export_context_batches.py`
+Exports one JSON "batch" file per document into
+`data/rag_context_batches/pending/`, containing the document's full original
+text plus every one of its chunks, for an external agentic assistant (Gemini
+in Antigravity) to read and answer sequentially. Problem solved: contextual
+retrieval (see `rag_ingest_chunks.py`) needs one context sentence per chunk,
+generated with the *whole document* as context, but that generation step was
+never implemented and shouldn't be — it needs an LLM budget this project
+doesn't want to spend through the same paid API that already hit its quota.
+Batching by document (not by chunk) also turns 87,765 chunk-level requests
+into ~950 document-level ones. Hard-filters to
+`rag_documents.sensitivity = 'PUBLIC'` — INTERNAL/RESTRICTED material must
+never reach an external LLM unmasked, so it is excluded by the query itself,
+not by a instruction the model could ignore. Reuse: `--limit N` for a small
+pilot batch, `--doc ID` for one specific document.
+
+### `rag_import_context_batches.py`
+Reads the JSON files written back into `data/rag_context_batches/done/`,
+verifies each one is complete (same chunk count, same exact set of
+`chunk_id`s, no empty sentences) before writing anything, and only then
+inserts into the `rag_chunk_context` sidecar table — never into `rag_chunks`
+itself. Problem solved: an LLM asked to process ~90 items in one request can
+silently skip or merge some of them; this script makes that failure loud
+(the whole file is rejected, moved to `rejected/`, and nothing is written)
+instead of quietly leaving gaps. Reuse: dry run by default, `--apply` to
+actually write and archive processed files into `imported/`.
+
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
 (`needs_ocr = FALSE`) with a recursive character splitter (1200 chars,
