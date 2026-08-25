@@ -257,3 +257,53 @@ dummy chemistry, because a plausible-looking metal centre on a blank holder
 would be a lie stored in the single source of truth. Reuse: `--dry-run` to
 preview; re-running is safe, files already present (matched by binary MD5) are
 skipped.
+
+---
+
+## Labelling app (human ground truth for PXRD)
+
+### `app/pxrd_labeler.py`
+Streamlit app for stage E2 of the PXRD roadmap: turning ~1,870 unlabelled
+diffractograms into the human ground truth supervised learning needs. Run it with
+`streamlit run app/pxrd_labeler.py`.
+
+Shows one pattern at a time with its sample code, metal, linker, file name and
+path, and five one-click categories (AMORFO / INCIPIENTE / CRISTALINO / MEZCLA /
+SIN MUESTRA). Clicking saves and advances immediately — no dropdown, no save
+button — because the whole point is labelling several hundred patterns in a
+sitting. A Back button re-opens the previous pattern with its label and comment
+restored, and re-clicking a category overwrites it.
+
+Problem solved beyond the obvious: **the labels have to survive.** They are
+written to `pxrd_labels` keyed on `file_hash`, not on `measurement_id`, because
+`characterization_measurements` gets wiped and re-ingested periodically, which
+regenerates every id (it happened on 2026-08-25 and took 300 descriptor rows with
+it). A hash does not change, so labels outlive any rebuild; `measurement_id` is
+kept only as a convenience link with `ON DELETE SET NULL`, re-attachable by the
+query at the bottom of `scripts/ddl_pxrd_labels_v2.sql`.
+
+Speed is the other design constraint. Streamlit re-runs the whole script on every
+interaction, so the connection is a cached resource, the ~1,870-row work queue is
+fetched once without its curves, and each curve is cached after first load with
+the next one pre-fetched — measured at 0.63 s per label with no degradation over
+25 consecutive labels. Loading all curves up front would take minutes and
+hundreds of megabytes, which is why the app never does it.
+
+Two details worth knowing. The comment box and the "doubtful" checkbox are keyed
+by the pattern's file hash rather than a fixed key: Streamlit forbids assigning
+to `session_state` for an already-instantiated widget, so resetting a fixed-key
+box on advance raises an exception that silently strands the app on the same
+pattern. And the optional "show automatic analysis" overlay is **off by default**
+on purpose — seeing the pipeline's estimated crystallinity while labelling makes
+the labels dependent on the algorithm they are supposed to validate.
+
+Reuse: `--server.port` to run several instances; the sidebar filters by metal and
+linker so the corpus can be labelled in themed batches; every click is an
+autocommitted UPSERT, so closing the browser mid-session loses nothing.
+
+### `scripts/ddl_pxrd_labels_v2.sql`
+Rebuilds `pxrd_labels` with the hash-keyed design described above, plus the
+`v_pxrd_labels_full` view (labels joined to their synthesis conditions, with a
+`needs_relink` flag) and `data_dictionary` rows for every column. Idempotent
+apart from the initial `DROP TABLE`, which was safe because the old table was
+empty. Ends with the re-linking query to run after any re-ingestion.
