@@ -18,6 +18,11 @@ never a partial import of one document):
     3. set(chunk_id in results) == set(chunk_id in chunks) - exactly the same
        fragments, no invented IDs, no duplicates.
     4. every context_sentence is a non-empty string.
+    5. the sentences are actually distinct from each other. A model that got
+       lazy will still produce a well-formed file (right count, right IDs)
+       but paste the same 3-10 generic sentences across every chunk instead
+       of writing one per chunk - rule 5 is the only thing that catches that,
+       since rules 1-4 are purely structural and pass either way.
 
 Usage
 -----
@@ -97,6 +102,16 @@ def verify(batch, file_name):
         missing = expected_ids - set(got_ids)
         extra = set(got_ids) - expected_ids
         return False, "IDs no coinciden. faltan={} sobran={}".format(missing, extra)
+
+    sentences = [item["context_sentence"].strip() for item in results]
+    unique_ratio = len(set(sentences)) / len(sentences)
+    if len(sentences) > 5 and unique_ratio < 0.5:
+        return False, (
+            "solo {} frases distintas para {} chunks ({:.0f}% de diversidad) - "
+            "el modelo parece haber reciclado un puñado de frases genericas en vez "
+            "de escribir una especifica por chunk".format(
+                len(set(sentences)), len(sentences), unique_ratio * 100)
+        )
 
     return True, "ok"
 
