@@ -170,7 +170,35 @@ Reuse: dry run by default, `--apply` to actually write and archive processed
 files into `imported/`; `--status` prints overall progress (how much of the
 whole corpus is done) plus what is currently sitting in each folder, so an
 interrupted Antigravity session never leaves you guessing where things
-stand.
+stand. `--batch-root DIR` points the whole pending/done/imported/rejected
+cycle at a different tree (default `data/rag_context_batches`) — used to
+import `rag_export_context_repairs.py`'s output from
+`data/rag_context_batches/repairs/` without mixing it into the normal
+first-pass flow.
+
+### `rag_export_context_repairs.py`
+A second failure mode showed up on 2026-08-26 that the diversity check above
+does not catch: for a minority of chunks per document, the model filled in
+a rigid template ("This X chunk (part N) evaluates `<garbled fragment>`
+regarding `<title>`") instead of a real sentence — each one is technically
+*distinct* (different part number, different fragment), so it passes the
+uniqueness check while carrying almost no real information. This script
+finds every `rag_chunk_context` row matching that signature (a regex, `--pattern`
+to override it), groups the affected `chunk_id`s by document, and exports
+one JSON batch per affected document into
+`data/rag_context_batches/repairs/pending/` — same shape as
+`rag_export_context_batches.py`'s output (full document text + instructions),
+except `"chunks"` only lists the specific chunk_ids that need redoing, not
+the whole document. Problem solved: redoing whole documents to fix a
+scattered minority of bad chunks would throw away thousands of good
+sentences (2026-08-26 incident: 502/783 documents had *some* broken chunks,
+but only 1 document had more than half of its chunks affected — median was
+under 10%). Import the results the normal way, just pointed at the repair
+tree: `python src/rag_import_context_batches.py --batch-root data/rag_context_batches/repairs --apply`
+— the existing `ON CONFLICT (chunk_id) DO UPDATE` silently overwrites only
+those rows. Reuse: `--limit N` for a pilot, `--doc ID` for one document,
+`--pattern` to hunt a different bad-sentence signature if a new failure mode
+shows up later.
 
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
