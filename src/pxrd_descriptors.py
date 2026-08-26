@@ -37,10 +37,22 @@ on top of each other:
       this much non-crystalline material here": keep it and quantify it.
 
 A single aggressive baseline pass removes both, destroying the very information
-about crystallisation yield the project needs. So two arPLS passes are run with
-different stiffness: a rigid one (large lambda) that can only follow (a), and a
-flexible one that follows (a)+(b) but is still too stiff to climb a sharp Bragg
-peak. Subtracting one from the other separates the three layers cleanly.
+about crystallisation yield the project needs. So (a) and (b) are separated by
+two different tools, each used for what it is actually built to do:
+
+  (a) is found with one rigid arPLS pass. arPLS is a FLOOR finder, and the
+      instrumental background genuinely is the floor of the pattern.
+  (b) is found by WIDTH, with a 3 deg running median. A second, softer arPLS
+      pass does not work here and fails silently: applied to a curve whose floor
+      is already zero it returns zero, so the amorphous area comes out as 0 and
+      every single sample is reported as 100% crystalline. What actually
+      distinguishes a halo (5-15 deg wide) from a Bragg peak (<0.35 deg) is
+      width, so the filter has to be width-selective.
+
+The profile is normalised by area BEFORE the baseline is fitted, because lambda
+sets stiffness relative to the magnitude of the numbers being fitted: on raw
+counts the same lambda behaves like a rigid baseline on a 200-count scan and a
+flexible one on a 20,000-count scan, and the descriptors stop being comparable.
 
 REUSE
 -----
@@ -62,19 +74,64 @@ from scipy.sparse.linalg import spsolve
 # Version tag written into pxrd_descriptors.pipeline_version. Bump it whenever a
 # formula below changes, otherwise rows computed months apart silently stop being
 # comparable and nothing in the database records why.
-PIPELINE_VERSION = 'v1.0'
+PIPELINE_VERSION = 'v2.0'
+
+# ---------------------------------------------------------------------------
+# Low-angle cutoff: where the instrument stops measuring the sample.
+#
+# Below ~4.5 deg 2-theta the detector sees the tail of the direct/air-scattered
+# beam, not diffraction from the specimen. This is not a modelling opinion, it
+# was measured on this laboratory's own data:
+#
+#   * Median profile of 200 random as-synthesized scans, normalised to their own
+#     20-45 deg level: 3.80x at 3.0 deg, 1.55x at 4.0 deg, 1.20x at 4.4 deg,
+#     flat from there on. A monotonic decay present in the MEDIAN of 200
+#     chemically different materials cannot be a reflection.
+#   * All 11 precursor references (metal salts and free ligands, none of which
+#     has a MOF-sized cell) show the same tail: 3.7x to 15.5x at 3.0-3.5 deg,
+#     back to ~1x by 4.5-5.0 deg.
+#   * The blank holder and the instrument standard were themselves recorded
+#     starting at 5.0066 deg, so nothing below 5 deg can ever be validated
+#     against a reference. Processing a region no reference covers is guesswork.
+#
+# 5.0 deg is therefore the first angle that is simultaneously (a) past the beam
+# tail with margin and (b) covered by the blank and the standard.
+#
+# Consequence to be aware of: Bragg caps the largest measurable spacing at
+# d = lambda / (2 sin(2.5 deg)) = 17.66 A. Cells larger than that are not
+# "absent", they are outside the instrument's window - see D_MAX_OBSERVABLE_A.
+# ---------------------------------------------------------------------------
+LOW_ANGLE_CUTOFF_DEG = 5.0
+HIGH_ANGLE_CUTOFF_DEG = 50.0
 
 # ---------------------------------------------------------------------------
 # Canonical angular grid.
-# 3 to 50 degrees covers everything structurally relevant in MOFs without
-# dragging in the noisy high-angle tail. A 0.02 degree step is finer than the
+# 5 to 50 degrees covers everything structurally relevant in MOFs that this
+# diffractometer can actually see, without dragging in either the direct-beam
+# tail or the noisy high-angle end. A 0.02 degree step is finer than the
 # narrowest peak the instrument resolves, so nothing is lost by resampling.
 # ---------------------------------------------------------------------------
-GRID_2THETA = np.arange(3.0, 50.0, 0.02)
+GRID_2THETA = np.arange(LOW_ANGLE_CUTOFF_DEG, HIGH_ANGLE_CUTOFF_DEG, 0.02)
 STEP_2THETA = 0.02
 
 # Cu K-alpha1 wavelength in angstroms, needed for the Bragg conversion.
 WAVELENGTH_CU_KA1 = 1.540598
+
+# Largest interplanar spacing the 5 deg cutoff still lets through. Any sample
+# whose d_max_angstrom lands within ~0.2 A of this value is saturated: its real
+# largest spacing may be bigger and simply unmeasurable here.
+D_MAX_OBSERVABLE_A = WAVELENGTH_CU_KA1 / (2.0 * np.sin(np.radians(LOW_ANGLE_CUTOFF_DEG / 2.0)))
+
+# ---------------------------------------------------------------------------
+# Low-angle window used by the "large cell" descriptors.
+#
+# 15 deg, not 10. These are phosphonate MOFs (P-MOFs): dense, weakly porous,
+# but with large unit cells because the linkers are built on large cores, and
+# with low-symmetry, large asymmetric units. Their most characteristic and most
+# intense reflections routinely fall between 10 and 15 deg, so a 10 deg window
+# cuts the diagnostic region in half. 15 deg 2-theta corresponds to d = 5.90 A.
+# ---------------------------------------------------------------------------
+LOW_ANGLE_WINDOW_DEG = 15.0
 
 # Default baseline stiffness. This is NOT a guess and NOT copied from a paper:
 # it is the value selected by the calibration in notebooks/05 (roadmap stage E1),
@@ -93,6 +150,17 @@ DEFAULT_K_SIGMA = 3.0
 # than the widest reflection (~0.35 deg) and comfortably narrower than the
 # halo (~5-15 deg); 3 degrees sits in the middle of that gap.
 BROAD_WIDTH_DEG = 3.0
+
+# Percentile of the running-median curve taken as the "no halo here" level.
+# 5% is low enough to land outside any real halo (halos span 5-15 deg inside a
+# 45 deg window) and high enough not to chase a single unlucky minimum.
+BROAD_PEDESTAL_PCT = 5.0
+
+# Integrated signal-to-noise below which crystalline_fraction stops meaning
+# anything: there is not enough diffracted intensity for the split between halo
+# and peaks to be a measurement rather than a coin flip. Anchored on the empty
+# holder, which scores 0.1 against 3-5 for a normal sample.
+MIN_SIGNAL_SNR_AREA = 1.0
 
 # Trapezoidal integrator, named once so NumPy 1.x and 2.x both work.
 _trapz = getattr(np, 'trapezoid', getattr(np, 'trapz', None))
@@ -236,13 +304,20 @@ def broad_component(net, step=STEP_2THETA, width_deg=BROAD_WIDTH_DEG):
     broad = median_filter(net, size=window_pts, mode='nearest')
     broad = gaussian_filter1d(broad, sigma=window_pts / 6.0, mode='nearest')
 
-    # The halo can never be higher than the signal it is part of, nor negative.
-    return np.clip(broad, 0.0, net)
+    # Only the physical floor is enforced. Clipping the halo pointwise to `net`
+    # (broad <= net at every point) looks reasonable but is wrong: the halo is a
+    # smooth underlying component, and counting noise makes the OBSERVED net dip
+    # below it constantly. Clipping there drags the estimate down onto the lower
+    # envelope of the noise, which understates the halo and hands the difference
+    # to the crystalline component. Measured on the empty holder, that single
+    # clip pushed the reported crystallinity from 0.81 up to 0.89.
+    return np.clip(broad, 0.0, None)
 
 
 def decompose_profile(y_raw, x,
                       lam_rigid=DEFAULT_LAMBDA_RIGID,
-                      broad_width_deg=BROAD_WIDTH_DEG):
+                      broad_width_deg=BROAD_WIDTH_DEG,
+                      k_sigma=DEFAULT_K_SIGMA):
     """
     Splits a raw profile into its three physical layers.
 
@@ -284,14 +359,39 @@ def decompose_profile(y_raw, x,
     instrumental = arpls_baseline(normalized, lam=lam_rigid)
     net = np.maximum(normalized - instrumental, 0.0)
 
-    amorphous = broad_component(net, step=step, width_deg=broad_width_deg)
-    crystalline = np.maximum(net - amorphous, 0.0)
+    broad = broad_component(net, step=step, width_deg=broad_width_deg)
+
+    # ---- two different noise corrections, because the two components are
+    # ---- estimated in two different ways ---------------------------------
+    sigma = poisson_noise_level(y_raw, x)
+
+    # (a) The halo sits on a PEDESTAL that is pure artefact. arPLS returns the
+    #     FLOOR of the data, not its mean, so even in a completely featureless
+    #     stretch `net` keeps a positive offset of roughly one to two sigma, and
+    #     the running median faithfully reports that offset as "halo". The
+    #     pedestal is estimated from the profile itself as the level the broad
+    #     component falls back to where there is no halo (a low percentile).
+    #     Self-calibrating, so it needs no assumption about the noise model.
+    pedestal = float(np.percentile(broad, BROAD_PEDESTAL_PCT))
+    amorphous = np.maximum(broad - pedestal, 0.0)
+
+    # (b) The crystalline component is a POINTWISE difference, so at every point
+    #     it competes with single-point counting noise. Noise is, by definition,
+    #     narrow: the width filter cannot tell it from a Bragg peak and dumps all
+    #     of it into `crystalline`. Requiring k*sigma is the same criterion used
+    #     to accept a peak, applied to the area instead of to a maximum.
+    #     Without it the empty holder is reported as 89% crystalline, because
+    #     89% of its (nonexistent) signal is narrow - it is noise.
+    crystalline = np.maximum(net - broad - k_sigma * sigma, 0.0)
 
     return {
         'normalized': normalized,
         'instrumental': instrumental,
         'amorphous': amorphous,
         'crystalline': crystalline,
+        'broad_raw': broad,
+        'pedestal': pedestal,
+        'sigma': sigma,
         'net': net,
     }
 
@@ -388,16 +488,21 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
     y_raw = np.asarray(y_raw, dtype=float)
 
     layers = decompose_profile(y_raw, x, lam_rigid=lam_rigid,
-                               broad_width_deg=broad_width_deg)
+                               broad_width_deg=broad_width_deg, k_sigma=k_sigma)
     normalized = layers['normalized']
     instrumental = layers['instrumental']
     amorphous = layers['amorphous']
     crystalline = layers['crystalline']
     net = layers['net']
+    noise = layers['sigma']
 
-    noise = poisson_noise_level(y_raw, x)
-    peaks, fwhm_deg = detect_peaks_poisson(x, crystalline, noise, k_sigma=k_sigma)
-    peaks_k5, _fwhm_k5 = detect_peaks_poisson(x, crystalline, noise, k_sigma=5.0)
+    # Peaks are searched on the UNGATED narrow component. detect_peaks_poisson
+    # applies its own k*sigma threshold, so feeding it the already-gated curve
+    # would subtract the same noise floor twice and quietly lose weak
+    # reflections - precisely the ones that decide a marginal sample.
+    narrow = np.maximum(net - layers['broad_raw'], 0.0)
+    peaks, fwhm_deg = detect_peaks_poisson(x, narrow, noise, k_sigma=k_sigma)
+    peaks_k5, _fwhm_k5 = detect_peaks_poisson(x, narrow, noise, k_sigma=5.0)
 
     # ---- peak-derived descriptors ----------------------------------------
     if peaks.size:
@@ -411,10 +516,12 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
         # converted from angstrom to nm so the result is in nm.
         beta_rad = np.radians(float(fwhm_deg[0]))
         scherrer_nm = float((0.9 * (WAVELENGTH_CU_KA1 * 0.1)) / (beta_rad * np.cos(theta_rad)))
-        n_below_10 = int(np.sum(x[peaks] < 10.0))
+        n_below_window = int(np.sum(x[peaks] < LOW_ANGLE_WINDOW_DEG))
+        d_max_saturated = bool(two_theta_first <= LOW_ANGLE_CUTOFF_DEG + 0.10)
     else:
         two_theta_first = d_max = fwhm_median = fwhm_min = scherrer_nm = float('nan')
-        n_below_10 = 0
+        n_below_window = 0
+        d_max_saturated = False
 
     # ---- area / phase descriptors ----------------------------------------
     area_crystalline = integrate(crystalline, x)
@@ -432,8 +539,16 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
         hump_center = float('nan')
     hump_fwhm = _hump_fwhm(x, amorphous)
 
-    below_10 = x < 10.0
-    frac_below_10 = float(integrate(normalized[below_10], x[below_10])) if below_10.any() else 0.0
+    below_window = x < LOW_ANGLE_WINDOW_DEG
+    frac_below_window = (float(integrate(normalized[below_window], x[below_window]))
+                         if below_window.any() else 0.0)
+
+    # Integrated diffracted signal expressed in units of integrated counting
+    # noise. This is the number that says whether crystalline_fraction is a
+    # measurement at all: the empty holder scores 0.1, a normal sample 3-5.
+    angular_span = float(x[-1] - x[0])
+    signal_snr_area = float(area_total / (noise * angular_span + 1e-15))
+    crystallinity_reliable = bool(signal_snr_area >= MIN_SIGNAL_SNR_AREA)
 
     background_level = float(np.median(instrumental))
     peak_to_background = float(np.max(crystalline) / (background_level + 1e-12))
@@ -444,15 +559,21 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
     # range, and needs no peak detection at all, which is why it still returns a
     # meaningful number on a completely amorphous sample.
     #
-    # Note the direction, which is the opposite of the textbook intuition: a
-    # purely amorphous sample concentrates all its net intensity into one halo
-    # and therefore scores LOW, while a well-crystallised sample spreads it over
-    # many reflections across the whole range and scores HIGH. Measured over 60
-    # real patterns from this corpus, entropy correlates +0.70 with the
-    # crystalline fraction. (Computing it on the full normalised pattern instead
-    # of the net one destroys this: the flat instrumental background dominates,
-    # every sample saturates near the maximum log2(N), and the correlation
-    # collapses to +0.04.)
+    # Direction, measured not assumed: a well-crystallised sample concentrates
+    # its net intensity into a few narrow reflections and therefore scores LOW,
+    # while an amorphous one spreads it across a broad halo and scores HIGH.
+    # Over 169 reliable patterns of this corpus the correlation with the
+    # crystalline fraction is -0.73.
+    #
+    # Under the v1.0 grid (starting at 3 deg) this correlation came out with the
+    # OPPOSITE sign, +0.70. That was the direct-beam tail: it added a large,
+    # narrow, low-angle spike to every pattern, which concentrated the
+    # distribution most in exactly the samples the pipeline was then calling
+    # amorphous. Removing the instrument restored the physical direction.
+    #
+    # It must be computed on the NET signal. On the full normalised pattern the
+    # flat instrumental background dominates, every sample saturates near the
+    # maximum log2(N), and the correlation collapses to about +0.04.
     net_prob = normalize_by_area(net, x) * float(x[1] - x[0])
     p = net_prob[net_prob > 0]
     spectral_entropy = float(-np.sum(p * np.log2(p))) if p.size else float('nan')
@@ -474,19 +595,26 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
 
         'n_peaks_k3': int(peaks.size),
         'n_peaks_k5': int(peaks_k5.size),
-        'n_peaks_below_10deg': n_below_10,
+        'n_peaks_below_15deg': n_below_window,
         'two_theta_first_peak': two_theta_first,
         'd_max_angstrom': d_max,
+        # True when the first reflection sits on the 5 deg cutoff, i.e. the real
+        # largest spacing may be bigger than d_max_angstrom and simply outside
+        # this diffractometer's window. Without this flag a saturated value looks
+        # like a measurement instead of a lower bound.
+        'd_max_saturated': d_max_saturated,
         'fwhm_median_deg': fwhm_median,
         'fwhm_min_deg': fwhm_min,
         'scherrer_size_nm': scherrer_nm,
 
         'crystalline_fraction': crystalline_fraction,
+        'signal_snr_area': signal_snr_area,
+        'crystallinity_reliable': crystallinity_reliable,
         'crystalline_area': area_crystalline,
         'amorphous_area': area_amorphous,
         'amorphous_hump_center': hump_center,
         'amorphous_hump_fwhm': hump_fwhm,
-        'frac_intensity_below_10deg': frac_below_10,
+        'frac_intensity_below_15deg': frac_below_window,
         'peak_to_background_ratio': peak_to_background,
 
         'spectral_entropy': spectral_entropy,
@@ -498,7 +626,8 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
         descriptors['_curves'] = {
             'x': x, 'y_raw': y_raw, 'normalized': normalized,
             'instrumental': instrumental, 'amorphous': amorphous,
-            'crystalline': crystalline, 'net': net,
+            'crystalline': crystalline, 'net': net, 'narrow': narrow,
+            'broad_raw': layers['broad_raw'], 'pedestal': layers['pedestal'],
             'peaks': peaks, 'fwhm_deg': fwhm_deg, 'noise_level': noise,
         }
 
@@ -508,9 +637,11 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
 DESCRIPTOR_COLUMNS = [
     'pipeline_version', 'baseline_method', 'baseline_lambda',
     'broad_width_deg', 'peak_sigma_k',
-    'n_peaks_k3', 'n_peaks_k5', 'n_peaks_below_10deg', 'two_theta_first_peak',
-    'd_max_angstrom', 'fwhm_median_deg', 'fwhm_min_deg', 'scherrer_size_nm',
-    'crystalline_fraction', 'crystalline_area', 'amorphous_area',
-    'amorphous_hump_center', 'amorphous_hump_fwhm', 'frac_intensity_below_10deg',
+    'n_peaks_k3', 'n_peaks_k5', 'n_peaks_below_15deg', 'two_theta_first_peak',
+    'd_max_angstrom', 'd_max_saturated', 'fwhm_median_deg', 'fwhm_min_deg',
+    'scherrer_size_nm',
+    'crystalline_fraction', 'signal_snr_area', 'crystallinity_reliable',
+    'crystalline_area', 'amorphous_area',
+    'amorphous_hump_center', 'amorphous_hump_fwhm', 'frac_intensity_below_15deg',
     'peak_to_background_ratio', 'spectral_entropy', 'snr_global', 'raw_counts_max',
 ]

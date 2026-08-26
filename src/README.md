@@ -232,7 +232,25 @@ returns zero, silently reporting every sample as 100% crystalline.
 
 `DEFAULT_LAMBDA_RIGID = 1e6` is not copied from a paper — it is the value
 selected by the calibration in `notebooks/05` against this lab's real blank,
-a real amorphous sample and a real crystalline one. Reuse: import the
+a real amorphous sample and a real crystalline one.
+
+**Pipeline v2.0 — three changes that move the numbers.** First, the grid starts
+at **5°, not 3°**: below ~4.5° the detector records the tail of the direct and
+air-scattered beam, which the width filter was reading as a huge amorphous halo.
+Measured on 149 re-processed patterns, the crystalline fraction rose in **100%**
+of them (median +0.26, up to +0.64) and `amorphous_hump_center` moved from a
+suspicious ~3.9° to a physically sensible 13–24°. Second, the narrow component is
+**gated at k·σ** — counting noise is narrow, so the width filter cannot tell it
+from a reflection and hands it all to the crystalline side; without the gate the
+empty sample holder came out 89% crystalline. Third, the halo has its **arPLS
+pedestal** removed, because arPLS returns the floor of the data rather than its
+mean and leaves a positive offset that the running median faithfully reports as a
+halo that does not exist.
+
+Two new columns exist to make silent failures visible rather than invisible:
+`d_max_saturated` (the first reflection sits on the cutoff, so `d_max_angstrom` is
+a lower bound and not a measurement) and `crystallinity_reliable` (driven by
+`signal_snr_area`: 0.07 on the empty holder, 3–5 on a normal sample).  Reuse: import the
 functions directly; they are pure numpy/scipy over plain arrays, so they work
 identically in a notebook, a batch script, or an n8n Code node. Bump
 `PIPELINE_VERSION` whenever a formula changes, since that string is written
