@@ -82,7 +82,20 @@ CATEGORY_COLORS = {
     'MEZCLA': '#7b5ea7', 'SIN_MUESTRA': '#8a8a8a',
 }
 
-st.set_page_config(page_title='ALCheMy - Etiquetado PXRD', page_icon='🔬', layout='wide')
+st.set_page_config(page_title='ALCheMy - Etiquetado PXRD', page_icon='🔬', layout='wide',
+                    initial_sidebar_state='collapsed')
+
+# Bigger touch targets for the classification buttons - this app is meant to
+# also be usable from a phone on the home WiFi (see src/README.md), where the
+# default Streamlit button height is too small to tap comfortably.
+st.markdown("""
+<style>
+div[data-testid="stButton"] > button {
+    min-height: 3em;
+    font-size: 1.05em;
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 # ==========================================================================
