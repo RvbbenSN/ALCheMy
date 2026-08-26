@@ -66,6 +66,18 @@ services:
       - "${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
+    # GPU passthrough (RTX 3060, 12GB VRAM). Requires Docker Desktop's WSL2 backend
+    # with GPU support enabled (on by default in recent Docker Desktop when the
+    # NVIDIA driver is installed on Windows) - no separate NVIDIA Container Toolkit
+    # install needed. Without this the container runs on CPU only (~2min/image
+    # instead of ~10-20s), confirmed empirically 2026-08-25.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   postgres:
     image: pgvector/pgvector:pg16

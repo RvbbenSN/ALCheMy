@@ -76,7 +76,7 @@ for (const item of $input.all()) {
     
     for (const p of candidatePaths) {
       if (p && fs.existsSync(p)) {
-        fileText = fs.readFileSync(p, 'utf-8');
+        fileText = fs.readFileSync(p, 'utf-8').replace(/^\uFEFF/, '');
         if (fileText) break;
       }
     }
@@ -112,7 +112,7 @@ for (const item of $input.all()) {
 
     if (binaryObj && binaryObj.data) {
       try {
-        fileText = Buffer.from(binaryObj.data, 'base64').toString('utf-8');
+        fileText = Buffer.from(binaryObj.data, 'base64').toString('utf-8').replace(/^\uFEFF/, '');
       } catch(e) {}
     }
   }

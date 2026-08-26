@@ -459,3 +459,1240 @@ ON CONFLICT (table_name, column_name) DO UPDATE SET
     data_type = EXCLUDED.data_type,
     valid_categories = EXCLUDED.valid_categories,
     description = EXCLUDED.description;
+
+-- =============================================================================
+-- 13. RAG - Fase A-bis : metadatos bibliograficos y escalera anti-duplicados
+-- =============================================================================
+-- Problema que resuelve: el MD5 del binario NO reconoce dos descargas del mismo
+-- paper si la editorial estampa una marca de agua (fecha, usuario). Se comprobo
+-- empiricamente: la marca es TEXTO dentro del PDF, asi que rompe tanto el hash
+-- binario como el hash del texto completo. Por eso la deteccion de duplicados
+-- pasa a ser una ESCALERA de tres niveles, y el DOI es el escalon fiable.
+-- Todo lo de abajo es idempotente: ADD COLUMN IF NOT EXISTS / OR REPLACE.
+
+-- 13.1 Columnas nuevas de rag_documents ---------------------------------------
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS text_hash          CHAR(32);
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS journal            TEXT;
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS n_pages            INTEGER;
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS n_images           INTEGER;
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS file_ext           TEXT;
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS csl_json           JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS parent_document_id BIGINT
+    REFERENCES rag_documents(document_id) ON DELETE SET NULL;
+
+COMMENT ON COLUMN rag_documents.text_hash          IS 'MD5 del titulo + los primeros 3000 caracteres normalizados. Escalon 3 anti-duplicados: sirve para documentos SIN DOI (page proofs, tesis, cuadernos).';
+COMMENT ON COLUMN rag_documents.journal            IS 'Revista o editorial. Se guarda en columna propia porque forma parte de la cita que el agente debe dar.';
+COMMENT ON COLUMN rag_documents.n_pages            IS 'Numero de paginas del documento fuente.';
+COMMENT ON COLUMN rag_documents.n_images           IS 'Numero de imagenes embebidas. Las imagenes NO se almacenan: sus pies de figura ya viajan como texto. Este contador deja la puerta abierta a describirlas con un VLM mas adelante.';
+COMMENT ON COLUMN rag_documents.file_ext           IS 'Extension normalizada en minusculas: pdf, docx, txt, md.';
+COMMENT ON COLUMN rag_documents.csl_json           IS 'Metadatos bibliograficos completos en formato CSL-JSON, el estandar que exportan Zotero y Mendeley. Lo que no se filtra ni se ordena vive aqui: volumen, paginas, ISSN, abstract, autores con afiliacion.';
+COMMENT ON COLUMN rag_documents.parent_document_id IS 'Auto-referencia. Un Supporting Information apunta al paper del que cuelga, de modo que sus trozos se citen con la referencia del articulo padre y no con el nombre del fichero.';
+
+-- 13.2 Indices: DOI y text_hash unicos, pero solo cuando existen ---------------
+-- Indice UNIQUE parcial (WHERE ... IS NOT NULL): impide dos filas con el mismo
+-- DOI pero permite muchas filas sin DOI, y de paso deja explicita la intencion.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rag_documents_doi
+    ON rag_documents (lower(doi)) WHERE doi IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rag_documents_text_hash
+    ON rag_documents (text_hash) WHERE text_hash IS NOT NULL;
+CREATE        INDEX IF NOT EXISTS idx_rag_documents_parent
+    ON rag_documents (parent_document_id);
+CREATE        INDEX IF NOT EXISTS idx_rag_documents_csl
+    ON rag_documents USING gin (csl_json);
+
+-- 13.3 La escalera anti-duplicados --------------------------------------------
+-- Devuelve como maximo UNA fila: el documento ya indexado que coincide, y por
+-- que motivo coincide. Si no devuelve nada, el documento es nuevo.
+-- Se consulta ANTES de vectorizar: el danio real de un duplicado no es el disco,
+-- es que ese pasaje repetido ocupe dos puestos del top-8 y expulse contexto util.
+CREATE OR REPLACE FUNCTION rag_documento_ya_indexado(
+    p_file_hash CHAR(32) DEFAULT NULL,
+    p_doi       TEXT     DEFAULT NULL,
+    p_text_hash CHAR(32) DEFAULT NULL
+)
+RETURNS TABLE (document_id BIGINT, file_name TEXT, motivo TEXT)
+LANGUAGE sql STABLE AS $func$
+    SELECT t.document_id, t.file_name, t.motivo
+    FROM (
+        SELECT d.document_id, d.file_name,
+               'nivel 1: MD5 binario identico'::TEXT AS motivo, 1 AS nivel
+        FROM   rag_documents d
+        WHERE  p_file_hash IS NOT NULL AND d.file_hash = p_file_hash
+        UNION ALL
+        SELECT d.document_id, d.file_name,
+               'nivel 2: mismo DOI (' || d.doi || ')', 2
+        FROM   rag_documents d
+        WHERE  p_doi IS NOT NULL AND lower(d.doi) = lower(p_doi)
+        UNION ALL
+        SELECT d.document_id, d.file_name,
+               'nivel 3: mismo texto de cabecera', 3
+        FROM   rag_documents d
+        WHERE  p_text_hash IS NOT NULL AND d.text_hash = p_text_hash
+    ) t
+    ORDER BY t.nivel
+    LIMIT 1;
+$func$;
+
+COMMENT ON FUNCTION rag_documento_ya_indexado IS 'Escalera anti-duplicados de tres niveles (MD5 binario -> DOI -> hash del texto de cabecera). Devuelve el documento ya indexado y el motivo, o ninguna fila si es nuevo.';
+
+-- 13.4 Vista de biblioteca: como debe CITAR el agente --------------------------
+-- Existe para que el modelo no invente referencias. Le damos la cita ya montada
+-- a partir de campos verificados, en vez de pedirle que la reconstruya de memoria.
+CREATE OR REPLACE VIEW v_rag_biblioteca AS
+SELECT d.document_id,
+       d.file_name,
+       d.doc_type,
+       d.sensitivity,
+       d.title,
+       d.authors,
+       d.year,
+       d.journal,
+       d.doi,
+       d.n_chunks,
+       d.n_pages,
+       d.n_images,
+       d.parent_document_id,
+       p.title AS parent_title,
+       p.doi   AS parent_doi,
+       COALESCE(
+           NULLIF(trim(concat_ws(' ',
+               NULLIF(d.authors, ''),
+               CASE WHEN d.year IS NOT NULL THEN '(' || d.year || ').' END,
+               NULLIF(d.title, ''),
+               NULLIF(d.journal, ''),
+               CASE WHEN d.doi IS NOT NULL THEN 'DOI: ' || d.doi END
+           )), ''),
+           d.file_name
+       ) AS cita
+FROM       rag_documents d
+LEFT JOIN  rag_documents p ON p.document_id = d.parent_document_id;
+
+COMMENT ON VIEW v_rag_biblioteca IS 'Catalogo del corpus con la cita bibliografica ya construida. Herramienta de solo lectura para el agente: evita que invente referencias.';
+
+-- 13.5 Documentos escaneados: el fallo silencioso mas peligroso del RAG -------
+-- Un PDF de imagenes (un cuaderno escaneado) se indexa sin dar ningun error y
+-- produce CERO trozos. La ficha aparece en rag_documents, todo parece correcto,
+-- y el agente simplemente nunca encuentra nada de ese documento. Marcarlo es la
+-- diferencia entre un problema visible y uno invisible.
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS n_chars   INTEGER;
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS needs_ocr BOOLEAN NOT NULL DEFAULT FALSE;
+
+COMMENT ON COLUMN rag_documents.n_chars   IS 'Caracteres de texto extraibles del documento. Cero = PDF de imagenes.';
+COMMENT ON COLUMN rag_documents.needs_ocr IS 'TRUE si el documento no tiene texto suficiente para vectorizar. La ingesta debe saltarselo: indexarlo generaria cero trozos sin dar error.';
+
+CREATE INDEX IF NOT EXISTS idx_rag_documents_needs_ocr
+    ON rag_documents (needs_ocr) WHERE needs_ocr;
+
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('rag_documents','n_chars','Extractable Characters','RAG - DOCUMENTS','count','INTEGER','>= 0','Characters of machine-readable text. Zero means an image-only PDF'),
+('rag_documents','needs_ocr','Needs OCR / VLM','RAG - DOCUMENTS','None','BOOLEAN','TRUE, FALSE','TRUE when the document has too little text to vectorise. Ingestion must skip it: indexing would silently produce zero chunks')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+-- 13.6 Procedencia del metadato: no todas las fuentes valen lo mismo ----------
+-- Motivo real: Elsevier escribe en los metadatos de sus PDF UN SOLO autor (el
+-- de correspondencia). Crossref devuelve los nueve. Sin jerarquia, una segunda
+-- pasada del catalogador pisaba los nueve autores buenos con el nombre suelto,
+-- porque un COALESCE solo mira si el dato entrante es NULL, no si es MEJOR.
+--
+-- La regla pasa a ser: un metadato solo se sobrescribe si la fuente que llega
+-- vale TANTO O MAS que la que ya estaba almacenada.
+ALTER TABLE rag_documents ADD COLUMN IF NOT EXISTS metadata_source TEXT
+    NOT NULL DEFAULT 'PDF_HEURISTIC';
+
+ALTER TABLE rag_documents DROP CONSTRAINT IF EXISTS rag_documents_metadata_source_check;
+ALTER TABLE rag_documents ADD  CONSTRAINT rag_documents_metadata_source_check
+    CHECK (metadata_source IN ('PDF_HEURISTIC','CROSSREF','REFERENCE_MANAGER','MANUAL'));
+
+COMMENT ON COLUMN rag_documents.metadata_source IS 'De donde salieron titulo/autores/anio/revista. Jerarquia: PDF_HEURISTIC < CROSSREF < REFERENCE_MANAGER < MANUAL. Una fuente inferior nunca sobrescribe a una superior.';
+
+CREATE OR REPLACE FUNCTION rag_rango_fuente(fuente TEXT)
+RETURNS INTEGER LANGUAGE sql IMMUTABLE AS $func$
+    SELECT CASE fuente
+        WHEN 'MANUAL'            THEN 4   -- corregido a mano: intocable
+        WHEN 'REFERENCE_MANAGER' THEN 3   -- Zotero/Mendeley: curado por una persona
+        WHEN 'CROSSREF'          THEN 2   -- registro oficial del editor
+        WHEN 'PDF_HEURISTIC'     THEN 1   -- adivinado del fichero: el mas fragil
+        ELSE 0
+    END;
+$func$;
+
+COMMENT ON FUNCTION rag_rango_fuente IS 'Convierte el nombre de la fuente de metadatos en un rango numerico comparable.';
+
+-- Reparacion puntual: los documentos cuyo csl_json de Crossref trae mas autores
+-- que la columna authors quedaron degradados por el bug descrito arriba. Se
+-- reconstruye la lista desde csl_json, que nunca se perdio.
+UPDATE rag_documents d
+SET    authors = sub.lista,
+       metadata_source = 'CROSSREF'
+FROM (
+    SELECT x.document_id,
+           string_agg(trim(coalesce(a->>'given','') || ' ' || coalesce(a->>'family','')),
+                      ', ' ORDER BY a.ord) AS lista,
+           count(*) AS n
+    FROM   rag_documents x,
+           jsonb_array_elements(x.csl_json->'author') WITH ORDINALITY AS a(a, ord)
+    GROUP  BY x.document_id
+) sub
+WHERE d.document_id = sub.document_id
+  AND sub.n > 1
+  AND (d.authors IS NULL
+       OR array_length(string_to_array(d.authors, ','), 1) < sub.n);
+
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('rag_documents','metadata_source','Metadata Provenance','RAG - DOCUMENTS','None','TEXT','PDF_HEURISTIC, CROSSREF, REFERENCE_MANAGER, MANUAL','Where title/authors/year/journal came from. Ranked: a lower-ranked source never overwrites a higher-ranked one')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+-- =============================================================================
+-- 14. Data Dictionary: las columnas nuevas de la Fase A-bis
+-- =============================================================================
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('rag_documents','text_hash','Header Text MD5','RAG - DOCUMENTS','None','CHAR(32)','32 hex chars','MD5 of title plus the first 3000 normalised characters. Level 3 of the anti-duplication ladder, for documents with no DOI'),
+('rag_documents','journal','Journal','RAG - DOCUMENTS','Text','TEXT','Free text','Journal or publisher, part of the citation the agent must produce'),
+('rag_documents','n_pages','Page Count','RAG - DOCUMENTS','count','INTEGER','>= 0','Number of pages in the source document'),
+('rag_documents','n_images','Embedded Image Count','RAG - DOCUMENTS','count','INTEGER','>= 0','Number of embedded images. Images are not stored: figure captions already travel as text'),
+('rag_documents','file_ext','File Extension','RAG - DOCUMENTS','None','TEXT','pdf, docx, txt, md','Normalised lowercase file extension'),
+('rag_documents','csl_json','Bibliographic Metadata','RAG - DOCUMENTS','None','JSONB','CSL-JSON object','Full bibliographic record in CSL-JSON, the format exported by Zotero and Mendeley'),
+('rag_documents','parent_document_id','Parent Document','RAG - DOCUMENTS','None','BIGINT','FK to rag_documents','Self-reference: a Supporting Information points at the paper it belongs to')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+-- =============================================================================
+-- 15. RAG - Fase B : la herramienta SQL del agente (catalogo gobernado)
+-- =============================================================================
+-- El roadmap lo dice sin rodeos: "no dar SQL libre al LLM". Un $fromAI que
+-- escribe la sentencia entera es comodo y es un agujero: nada impide que el
+-- modelo lea una columna que no deberia, se traiga 2160 filas de golpe, o
+-- construya una consulta que tumbe la base.
+--
+-- La alternativa es un CATALOGO: un puñado de funciones con parametros
+-- tipados. El modelo elige la funcion y rellena los huecos; no redacta SQL.
+--
+-- Tres capas de gobernanza, cada una independiente de las otras:
+--   1. El agente entra con un usuario que SOLO puede ejecutar estas funciones.
+--   2. Cada funcion tiene un tope de filas que el modelo no puede saltarse.
+--   3. Cada llamada queda escrita en audit_log, sin excepcion.
+
+-- 15.1 Tope global de filas -----------------------------------------------
+-- Una funcion del catalogo nunca devuelve mas de esto, pida lo que pida el
+-- modelo. Protege el contexto (200 filas de sintesis no caben en un prompt) y
+-- protege la base.
+CREATE OR REPLACE FUNCTION agente_limite(p_limite INTEGER)
+RETURNS INTEGER LANGUAGE sql IMMUTABLE AS $func$
+    SELECT LEAST(GREATEST(COALESCE(p_limite, 20), 1), 200);
+$func$;
+
+COMMENT ON FUNCTION agente_limite IS 'Recorta cualquier limite pedido al rango 1-200. El agente no puede vaciar la tabla en una sola llamada.';
+
+-- 15.2 Registro de cada llamada -------------------------------------------
+-- SECURITY DEFINER: la funcion se ejecuta con los permisos de su PROPIETARIO,
+-- no de quien la llama. Asi el usuario de solo lectura provoca una escritura
+-- en audit_log sin tener permiso de escritura en ninguna tabla. Es el cajero
+-- del banco: tu no puedes abrir la caja fuerte, pero puedes pedirle a quien si
+-- puede que haga una operacion concreta y acotada.
+-- El SET search_path es obligatorio en toda funcion SECURITY DEFINER: sin el,
+-- alguien podria crear una tabla falsa en otro esquema y secuestrar la funcion.
+CREATE OR REPLACE FUNCTION agente_auditar(p_accion TEXT, p_detalle TEXT, p_filas INTEGER)
+RETURNS VOID
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+BEGIN
+    INSERT INTO audit_log (agent, action, recipients, verdict, cause, result)
+    VALUES ('ALCheMy-RAG-Agent', p_accion, p_filas, 'ALLOWED', p_detalle,
+            format('%s filas devueltas', COALESCE(p_filas, 0)));
+END;
+$func$;
+
+COMMENT ON FUNCTION agente_auditar IS 'Escribe una llamada del agente en audit_log. SECURITY DEFINER para que el usuario de solo lectura pueda dejar rastro sin poder escribir en ninguna tabla.';
+
+-- 15.3 Buscar sintesis por sus condiciones ---------------------------------
+-- Todos los parametros son opcionales: NULL significa "no filtres por esto".
+-- El patron "p_x IS NULL OR columna = p_x" es lo que permite una sola funcion
+-- en lugar de una por combinacion de filtros.
+CREATE OR REPLACE FUNCTION agente_buscar_sintesis(
+    p_metal      TEXT    DEFAULT NULL,
+    p_linker     TEXT    DEFAULT NULL,
+    p_temp_min   NUMERIC DEFAULT NULL,
+    p_temp_max   NUMERIC DEFAULT NULL,
+    p_desde      DATE    DEFAULT NULL,
+    p_hasta      DATE    DEFAULT NULL,
+    p_limite     INTEGER DEFAULT 20
+)
+RETURNS TABLE (
+    sample_code     VARCHAR,
+    synthesis_date  DATE,
+    metal_center    VARCHAR,
+    linker          VARCHAR,
+    temp_target_c   NUMERIC,
+    time_hours      NUMERIC,
+    lm_ratio        NUMERIC,
+    n_tecnicas      BIGINT
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE
+    v_limite INTEGER := agente_limite(p_limite);
+    v_filas  INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT s.sample_code, s.synthesis_date, s.metal_center, s.linker,
+           s.temp_target_c, s.time_hours, s.lm_ratio,
+           (SELECT count(DISTINCT m.technique)
+              FROM characterization_measurements m
+             WHERE m.sample_code = s.sample_code)
+    FROM   synthesis_experiments s
+    WHERE  (p_metal    IS NULL OR s.metal_center ILIKE p_metal)
+      AND  (p_linker   IS NULL OR s.linker       ILIKE '%' || p_linker || '%')
+      AND  (p_temp_min IS NULL OR s.temp_target_c >= p_temp_min)
+      AND  (p_temp_max IS NULL OR s.temp_target_c <= p_temp_max)
+      AND  (p_desde    IS NULL OR s.synthesis_date >= p_desde)
+      AND  (p_hasta    IS NULL OR s.synthesis_date <= p_hasta)
+    ORDER  BY s.synthesis_date DESC NULLS LAST, s.sample_code
+    LIMIT  v_limite;
+
+    GET DIAGNOSTICS v_filas = ROW_COUNT;
+    PERFORM agente_auditar('buscar_sintesis',
+        format('metal=%s linker=%s temp=[%s,%s] fecha=[%s,%s] limite=%s',
+               p_metal, p_linker, p_temp_min, p_temp_max, p_desde, p_hasta, v_limite),
+        v_filas);
+END;
+$func$;
+
+COMMENT ON FUNCTION agente_buscar_sintesis IS 'Catalogo del agente: busca sintesis filtrando por metal, ligando, temperatura objetivo y fechas. Todos los filtros opcionales.';
+
+-- 15.4 Caracterizacion de una muestra --------------------------------------
+-- Devuelve las FICHAS de las medidas, nunca el data_json completo: una curva
+-- de PXRD son miles de puntos y ahogaria el contexto del modelo sin aportar
+-- nada que pueda razonar.
+CREATE OR REPLACE FUNCTION agente_obtener_caracterizacion(
+    p_sample_code TEXT,
+    p_tecnica     TEXT    DEFAULT NULL,
+    p_limite      INTEGER DEFAULT 20
+)
+RETURNS TABLE (
+    sample_code     VARCHAR,
+    technique       VARCHAR,
+    measurement_tag VARCHAR,
+    instrument_name VARCHAR,
+    operator_name   VARCHAR,
+    file_name       VARCHAR,
+    medido_el       TIMESTAMPTZ,
+    campos_datos    TEXT
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE
+    v_limite INTEGER := agente_limite(p_limite);
+    v_filas  INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT m.sample_code, m.technique, m.measurement_tag, m.instrument_name,
+           m.operator_name, m.file_name, m.created_at,
+           (SELECT string_agg(k, ', ' ORDER BY k)
+              FROM jsonb_object_keys(COALESCE(m.data_json->'header_metadata',
+                                              '{}'::jsonb)) AS k)
+    FROM   characterization_measurements m
+    WHERE  m.sample_code = p_sample_code
+      AND  (p_tecnica IS NULL OR m.technique ILIKE p_tecnica)
+    ORDER  BY m.technique, m.created_at DESC
+    LIMIT  v_limite;
+
+    GET DIAGNOSTICS v_filas = ROW_COUNT;
+    PERFORM agente_auditar('obtener_caracterizacion',
+        format('sample_code=%s tecnica=%s', p_sample_code, p_tecnica), v_filas);
+END;
+$func$;
+
+COMMENT ON FUNCTION agente_obtener_caracterizacion IS 'Catalogo del agente: fichas de las medidas de una muestra. No devuelve data_json: una curva completa ahogaria el contexto.';
+
+-- 15.5 Ficha completa de una muestra ---------------------------------------
+CREATE OR REPLACE FUNCTION agente_resumen_muestra(p_sample_code TEXT)
+RETURNS TABLE (
+    campo TEXT,
+    valor TEXT
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE
+    v_filas INTEGER;
+BEGIN
+    RETURN QUERY
+    -- to_jsonb + each convierte la fila ancha (46 columnas) en pares
+    -- campo/valor. Se descartan los nulos, que para el modelo son ruido puro:
+    -- una muestra tipica solo tiene rellenas 15 de las 46 columnas.
+    SELECT j.key, j.value #>> '{}'
+    FROM   synthesis_experiments s,
+           jsonb_each(to_jsonb(s)) AS j
+    WHERE  s.sample_code = p_sample_code
+      AND  j.value <> 'null'::jsonb
+      AND  j.key NOT IN ('file_hash_md5', 'created_at', 'updated_at')
+    ORDER  BY j.key;
+
+    GET DIAGNOSTICS v_filas = ROW_COUNT;
+    PERFORM agente_auditar('resumen_muestra',
+        format('sample_code=%s', p_sample_code), v_filas);
+END;
+$func$;
+
+COMMENT ON FUNCTION agente_resumen_muestra IS 'Catalogo del agente: ficha completa de una muestra en pares campo/valor, omitiendo los nulos.';
+
+-- 15.6 Estadisticas agregadas ----------------------------------------------
+-- La dimension llega como texto pero NUNCA se concatena en la consulta: se
+-- compara contra una lista blanca. Concatenar entrada del modelo dentro de SQL
+-- es inyeccion de manual, y da igual que el "atacante" sea un LLM despistado.
+CREATE OR REPLACE FUNCTION agente_estadisticas(
+    p_dimension TEXT,
+    p_limite    INTEGER DEFAULT 20
+)
+RETURNS TABLE (
+    categoria TEXT,
+    n_muestras BIGINT
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE
+    v_limite INTEGER := agente_limite(p_limite);
+    v_filas  INTEGER;
+BEGIN
+    IF p_dimension NOT IN ('metal_center', 'linker', 'researcher_name',
+                           'synthesis_type', 'research_unit', 'anio', 'tecnica') THEN
+        RAISE EXCEPTION 'Dimension no permitida: %. Validas: metal_center, linker, researcher_name, synthesis_type, research_unit, anio, tecnica', p_dimension;
+    END IF;
+
+    RETURN QUERY
+    SELECT t.categoria, t.n FROM (
+        SELECT s.metal_center::TEXT AS categoria, count(*) AS n, 'metal_center' AS dim
+        FROM synthesis_experiments s GROUP BY 1
+        UNION ALL
+        SELECT s.linker::TEXT, count(*), 'linker'
+        FROM synthesis_experiments s GROUP BY 1
+        UNION ALL
+        SELECT s.researcher_name::TEXT, count(*), 'researcher_name'
+        FROM synthesis_experiments s GROUP BY 1
+        UNION ALL
+        SELECT s.synthesis_type::TEXT, count(*), 'synthesis_type'
+        FROM synthesis_experiments s GROUP BY 1
+        UNION ALL
+        SELECT s.research_unit::TEXT, count(*), 'research_unit'
+        FROM synthesis_experiments s GROUP BY 1
+        UNION ALL
+        SELECT to_char(s.synthesis_date, 'YYYY'), count(*), 'anio'
+        FROM synthesis_experiments s GROUP BY 1
+        UNION ALL
+        SELECT m.technique::TEXT, count(*), 'tecnica'
+        FROM characterization_measurements m GROUP BY 1
+    ) t
+    WHERE t.dim = p_dimension
+    ORDER BY t.n DESC
+    LIMIT v_limite;
+
+    GET DIAGNOSTICS v_filas = ROW_COUNT;
+    PERFORM agente_auditar('estadisticas',
+        format('dimension=%s', p_dimension), v_filas);
+END;
+$func$;
+
+COMMENT ON FUNCTION agente_estadisticas IS 'Catalogo del agente: conteos agrupados por una dimension de una lista blanca. La dimension nunca se concatena en la consulta.';
+
+-- 15.7 Catalogo de la biblioteca documental --------------------------------
+CREATE OR REPLACE FUNCTION agente_buscar_biblioteca(
+    p_texto  TEXT    DEFAULT NULL,
+    p_anio   INTEGER DEFAULT NULL,
+    p_limite INTEGER DEFAULT 20
+)
+RETURNS TABLE (
+    document_id BIGINT,
+    cita        TEXT,
+    doi         TEXT,
+    n_chunks    INTEGER
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE
+    v_limite INTEGER := agente_limite(p_limite);
+    v_filas  INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT b.document_id, b.cita, b.doi, b.n_chunks
+    FROM   v_rag_biblioteca b
+    WHERE  (p_texto IS NULL
+            OR b.title ILIKE '%' || p_texto || '%'
+            OR b.authors ILIKE '%' || p_texto || '%'
+            OR b.journal ILIKE '%' || p_texto || '%')
+      AND  (p_anio IS NULL OR b.year = p_anio)
+      AND  b.sensitivity = 'PUBLIC'
+    ORDER  BY b.year DESC NULLS LAST
+    LIMIT  v_limite;
+
+    GET DIAGNOSTICS v_filas = ROW_COUNT;
+    PERFORM agente_auditar('buscar_biblioteca',
+        format('texto=%s anio=%s', p_texto, p_anio), v_filas);
+END;
+$func$;
+
+COMMENT ON FUNCTION agente_buscar_biblioteca IS 'Catalogo del agente: que documentos hay en el corpus y como se citan. Solo PUBLIC.';
+
+-- 15.8 El usuario de solo lectura del agente -------------------------------
+-- No se le da SELECT sobre ninguna tabla. Solo puede EJECUTAR el catalogo.
+-- Aunque el modelo intentase escribir SQL libre, no tendria sobre que.
+DO $bloque$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'alchemy_agente') THEN
+        CREATE ROLE alchemy_agente LOGIN PASSWORD 'cambiar_en_env';
+    END IF;
+END;
+$bloque$;
+
+REVOKE ALL ON SCHEMA public FROM alchemy_agente;
+GRANT  USAGE ON SCHEMA public TO alchemy_agente;
+
+-- Por defecto PostgreSQL concede EXECUTE a PUBLIC en cada funcion nueva.
+-- Se revoca para que la concesion sea explicita y auditable.
+REVOKE ALL ON FUNCTION agente_buscar_sintesis(TEXT,TEXT,NUMERIC,NUMERIC,DATE,DATE,INTEGER)      FROM PUBLIC;
+REVOKE ALL ON FUNCTION agente_obtener_caracterizacion(TEXT,TEXT,INTEGER)                        FROM PUBLIC;
+REVOKE ALL ON FUNCTION agente_resumen_muestra(TEXT)                                             FROM PUBLIC;
+REVOKE ALL ON FUNCTION agente_estadisticas(TEXT,INTEGER)                                        FROM PUBLIC;
+REVOKE ALL ON FUNCTION agente_buscar_biblioteca(TEXT,INTEGER,INTEGER)                           FROM PUBLIC;
+REVOKE ALL ON FUNCTION agente_auditar(TEXT,TEXT,INTEGER)                                        FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION agente_buscar_sintesis(TEXT,TEXT,NUMERIC,NUMERIC,DATE,DATE,INTEGER)   TO alchemy_agente;
+GRANT EXECUTE ON FUNCTION agente_obtener_caracterizacion(TEXT,TEXT,INTEGER)                     TO alchemy_agente;
+GRANT EXECUTE ON FUNCTION agente_resumen_muestra(TEXT)                                          TO alchemy_agente;
+GRANT EXECUTE ON FUNCTION agente_estadisticas(TEXT,INTEGER)                                     TO alchemy_agente;
+GRANT EXECUTE ON FUNCTION agente_buscar_biblioteca(TEXT,INTEGER,INTEGER)                        TO alchemy_agente;
+GRANT EXECUTE ON FUNCTION agente_limite(INTEGER)                                                TO alchemy_agente;
+
+-- El diccionario si se lee directamente: es la documentacion del esquema, y es
+-- justo lo que hace fiable a un agente que consulta datos.
+GRANT SELECT ON data_dictionary TO alchemy_agente;
+
+-- La busqueda documental la ejecuta el nodo de n8n contra rag_chunks.
+GRANT SELECT ON rag_chunks    TO alchemy_agente;
+GRANT SELECT ON rag_documents TO alchemy_agente;
+GRANT EXECUTE ON FUNCTION rag_hybrid_search(TEXT, VECTOR, INTEGER, INTEGER) TO alchemy_agente;
+
+-- =============================================================================
+-- 16. RAG - Phase B-bis : English naming, caller identity, full chat audit
+-- =============================================================================
+-- Three things at once, because they touch the same objects:
+--
+--   1. NAMING. The rest of the schema is English (synthesis_experiments,
+--      characterization_measurements). The RAG layer drifted into Spanish.
+--      Renamed for consistency. This is the cheapest moment to do it.
+--
+--   2. IDENTITY. Until now every chat user reached the database as the same
+--      role, so audit_log could say WHAT was asked but never BY WHOM.
+--
+--   3. CONVERSATION AUDIT. audit_log records tool calls. It never recorded the
+--      question the human asked nor the answer the model gave, which is the
+--      part a reviewer actually wants to read.
+--
+-- NOTE ON DROP: this section drops FUNCTIONS and VIEWS, never tables and never
+-- rows. A function is code, not data; dropping a superseded one loses nothing
+-- and keeps the script idempotent. No DROP TABLE / TRUNCATE / DELETE exists
+-- anywhere in this file.
+
+-- 16.1 Who is asking ---------------------------------------------------------
+ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS actor_email TEXT;
+ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS session_id  TEXT;
+
+COMMENT ON COLUMN audit_log.actor_email IS 'Email of the person on whose behalf the agent acted. Supplied by the workflow after whitelist validation, never by the language model.';
+COMMENT ON COLUMN audit_log.session_id  IS 'Chat session the action belongs to, so a whole conversation can be reconstructed.';
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_actor   ON audit_log (actor_email);
+CREATE INDEX IF NOT EXISTS idx_audit_log_session ON audit_log (session_id);
+
+-- 16.2 The conversation log --------------------------------------------------
+-- One row per exchange. Separate from audit_log on purpose: audit_log is a
+-- ledger of ACTIONS (one row per tool call), this is a transcript of the
+-- DIALOGUE. A single question can produce four tool calls; you want both views.
+CREATE TABLE IF NOT EXISTS agent_chat_log (
+    chat_id      BIGSERIAL PRIMARY KEY,
+    session_id   TEXT,
+    actor_email  TEXT,
+    question     TEXT,
+    answer       TEXT,
+    verdict      TEXT NOT NULL DEFAULT 'ALLOWED'
+                 CHECK (verdict IN ('ALLOWED', 'DENIED', 'ERROR')),
+    cause        TEXT,
+    created_at   TIMESTAMPTZ DEFAULT now()
+);
+
+COMMENT ON TABLE  agent_chat_log            IS 'Transcript of every exchange with the RAG agent: who asked, what they asked, what was answered. Complements audit_log, which logs tool calls rather than dialogue.';
+COMMENT ON COLUMN agent_chat_log.verdict    IS 'ALLOWED = answered; DENIED = caller not on the whitelist; ERROR = the run failed.';
+COMMENT ON COLUMN agent_chat_log.actor_email IS 'Claimed identity of the caller, validated against authorized_researchers. A typed email is accountability, not authentication.';
+
+CREATE INDEX IF NOT EXISTS idx_agent_chat_log_session ON agent_chat_log (session_id);
+CREATE INDEX IF NOT EXISTS idx_agent_chat_log_actor   ON agent_chat_log (actor_email);
+
+-- 16.3 Whitelist check -------------------------------------------------------
+-- Returns whether this email may use the agent, and leaves a trace either way.
+-- Deliberately honest about what it is: the email arrives as a CLAIM from the
+-- chat. It gives accountability (every action is attributed and reviewable),
+-- not authentication (nothing proves the person is who they say). Real proof
+-- needs a login layer in front of the chat; this is the hook it will plug into.
+CREATE OR REPLACE FUNCTION agent_authorise(p_email TEXT, p_session TEXT DEFAULT NULL)
+RETURNS TABLE (allowed BOOLEAN, researcher_name TEXT, role TEXT, reason TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE
+    v_row  authorized_researchers%ROWTYPE;
+    v_mail TEXT := lower(trim(COALESCE(p_email, '')));
+BEGIN
+    SELECT * INTO v_row FROM authorized_researchers a
+     WHERE lower(a.email) = v_mail;
+
+    IF v_mail = '' THEN
+        allowed := FALSE; researcher_name := NULL; role := NULL;
+        reason := 'No identity supplied';
+    ELSIF NOT FOUND THEN
+        allowed := FALSE; researcher_name := NULL; role := NULL;
+        reason := format('%s is not on the researcher whitelist', v_mail);
+    ELSIF NOT COALESCE(v_row.active, FALSE) THEN
+        allowed := FALSE; researcher_name := v_row.researcher_name; role := v_row.role;
+        reason := format('%s is on the whitelist but deactivated', v_mail);
+    ELSE
+        allowed := TRUE; researcher_name := v_row.researcher_name; role := v_row.role;
+        reason := 'Authorised';
+        UPDATE authorized_researchers a SET last_seen = now()
+         WHERE lower(a.email) = v_mail;
+    END IF;
+
+    INSERT INTO audit_log (agent, action, verdict, cause, result, actor_email, session_id)
+    VALUES ('ALCheMy-RAG-Agent', 'AUTHORISE',
+            CASE WHEN allowed THEN 'ALLOWED' ELSE 'DENIED' END,
+            reason, COALESCE(researcher_name, 'unknown'), v_mail, p_session);
+
+    RETURN NEXT;
+END;
+$func$;
+
+COMMENT ON FUNCTION agent_authorise IS 'Checks an email against authorized_researchers and records the attempt. Accountability, not authentication: the email is a claim made by the caller.';
+
+-- 16.4 Record one exchange ---------------------------------------------------
+CREATE OR REPLACE FUNCTION agent_log_exchange(
+    p_session TEXT, p_actor TEXT, p_question TEXT, p_answer TEXT,
+    p_verdict TEXT DEFAULT 'ALLOWED', p_cause TEXT DEFAULT NULL)
+RETURNS BIGINT
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_id BIGINT;
+BEGIN
+    INSERT INTO agent_chat_log (session_id, actor_email, question, answer, verdict, cause)
+    VALUES (p_session, lower(nullif(trim(coalesce(p_actor,'')),'')),
+            p_question, p_answer, COALESCE(p_verdict,'ALLOWED'), p_cause)
+    RETURNING chat_id INTO v_id;
+    RETURN v_id;
+END;
+$func$;
+
+COMMENT ON FUNCTION agent_log_exchange IS 'Writes one question/answer pair into agent_chat_log.';
+
+-- 16.5 Renamed helpers -------------------------------------------------------
+CREATE OR REPLACE FUNCTION rag_source_rank(source TEXT)
+RETURNS INTEGER LANGUAGE sql IMMUTABLE AS $func$
+    SELECT CASE source
+        WHEN 'MANUAL'            THEN 4   -- corrected by hand: untouchable
+        WHEN 'REFERENCE_MANAGER' THEN 3   -- Zotero/Mendeley: curated by a person
+        WHEN 'CROSSREF'          THEN 2   -- the publisher's official record
+        WHEN 'PDF_HEURISTIC'     THEN 1   -- guessed from the file: the weakest
+        ELSE 0
+    END;
+$func$;
+
+CREATE OR REPLACE FUNCTION rag_find_existing_document(
+    p_file_hash CHAR(32) DEFAULT NULL,
+    p_doi       TEXT     DEFAULT NULL,
+    p_text_hash CHAR(32) DEFAULT NULL
+)
+RETURNS TABLE (document_id BIGINT, file_name TEXT, motivo TEXT)
+LANGUAGE sql STABLE AS $func$
+    SELECT t.document_id, t.file_name, t.motivo
+    FROM (
+        SELECT d.document_id, d.file_name,
+               'nivel 1: MD5 binario identico'::TEXT AS motivo, 1 AS nivel
+        FROM   rag_documents d
+        WHERE  p_file_hash IS NOT NULL AND d.file_hash = p_file_hash
+        UNION ALL
+        SELECT d.document_id, d.file_name,
+               'nivel 2: mismo DOI (' || d.doi || ')', 2
+        FROM   rag_documents d
+        WHERE  p_doi IS NOT NULL AND lower(d.doi) = lower(p_doi)
+        UNION ALL
+        SELECT d.document_id, d.file_name,
+               'nivel 3: mismo texto de cabecera', 3
+        FROM   rag_documents d
+        WHERE  p_text_hash IS NOT NULL AND d.text_hash = p_text_hash
+    ) t
+    ORDER BY t.nivel
+    LIMIT 1;
+$func$;
+
+COMMENT ON FUNCTION rag_find_existing_document IS 'Three-level anti-duplication ladder (binary MD5 -> DOI -> header text hash). Returns the already indexed document and why it matched, or no row if it is new.';
+
+CREATE OR REPLACE VIEW v_rag_library AS SELECT * FROM v_rag_biblioteca;
+COMMENT ON VIEW v_rag_library IS 'Corpus catalogue with the citation already assembled. Read-only tool for the agent so it never invents a reference.';
+
+CREATE OR REPLACE VIEW v_agent_samples AS SELECT * FROM v_agente_muestras;
+COMMENT ON VIEW v_agent_samples IS 'One row per synthesised sample with its metal, linker, date and how many characterisation techniques it has.';
+
+-- 16.6 The query catalogue, in English, with a caller ------------------------
+-- Every function now takes p_actor as its FIRST parameter. It is filled by the
+-- workflow from the validated identity, NEVER by the language model: letting
+-- the model state who it is acting for would make the audit trail worthless.
+CREATE OR REPLACE FUNCTION agent_row_limit(p_limit INTEGER)
+RETURNS INTEGER LANGUAGE sql IMMUTABLE AS $func$
+    SELECT LEAST(GREATEST(COALESCE(p_limit, 20), 1), 200);
+$func$;
+
+CREATE OR REPLACE FUNCTION agent_audit(
+    p_actor TEXT, p_session TEXT, p_action TEXT, p_detail TEXT, p_rows INTEGER)
+RETURNS VOID
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+BEGIN
+    INSERT INTO audit_log (agent, action, recipients, verdict, cause, result,
+                           actor_email, session_id)
+    VALUES ('ALCheMy-RAG-Agent', p_action, p_rows, 'ALLOWED', p_detail,
+            format('%s rows returned', COALESCE(p_rows, 0)),
+            lower(nullif(trim(coalesce(p_actor,'')),'')), p_session);
+END;
+$func$;
+
+CREATE OR REPLACE FUNCTION agent_search_synthesis(
+    p_actor    TEXT    DEFAULT NULL,
+    p_session  TEXT    DEFAULT NULL,
+    p_metal    TEXT    DEFAULT NULL,
+    p_linker   TEXT    DEFAULT NULL,
+    p_temp_min NUMERIC DEFAULT NULL,
+    p_temp_max NUMERIC DEFAULT NULL,
+    p_from     DATE    DEFAULT NULL,
+    p_to       DATE    DEFAULT NULL,
+    p_limit    INTEGER DEFAULT 20
+)
+RETURNS TABLE (
+    sample_code    VARCHAR, synthesis_date DATE,   metal_center VARCHAR,
+    linker         VARCHAR, temp_target_c  NUMERIC, time_hours  NUMERIC,
+    lm_ratio       NUMERIC, n_techniques   BIGINT
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT s.sample_code, s.synthesis_date, s.metal_center, s.linker,
+           s.temp_target_c, s.time_hours, s.lm_ratio,
+           (SELECT count(DISTINCT m.technique) FROM characterization_measurements m
+             WHERE m.sample_code = s.sample_code)
+    FROM   synthesis_experiments s
+    WHERE  (p_metal    IS NULL OR s.metal_center ILIKE p_metal)
+      AND  (p_linker   IS NULL OR s.linker ILIKE '%' || p_linker || '%')
+      AND  (p_temp_min IS NULL OR s.temp_target_c >= p_temp_min)
+      AND  (p_temp_max IS NULL OR s.temp_target_c <= p_temp_max)
+      AND  (p_from     IS NULL OR s.synthesis_date >= p_from)
+      AND  (p_to       IS NULL OR s.synthesis_date <= p_to)
+    ORDER  BY s.synthesis_date DESC NULLS LAST, s.sample_code
+    LIMIT  v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'search_synthesis',
+        format('metal=%s linker=%s temp=[%s,%s] date=[%s,%s] limit=%s',
+               p_metal, p_linker, p_temp_min, p_temp_max, p_from, p_to, v_limit), v_rows);
+END;
+$func$;
+
+CREATE OR REPLACE FUNCTION agent_get_characterisation(
+    p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
+    p_sample_code TEXT DEFAULT NULL, p_technique TEXT DEFAULT NULL,
+    p_limit INTEGER DEFAULT 20
+)
+RETURNS TABLE (
+    sample_code VARCHAR, technique VARCHAR, measurement_tag VARCHAR,
+    instrument_name VARCHAR, operator_name VARCHAR, file_name VARCHAR,
+    measured_at TIMESTAMPTZ, data_fields TEXT
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT m.sample_code, m.technique, m.measurement_tag, m.instrument_name,
+           m.operator_name, m.file_name, m.created_at,
+           (SELECT string_agg(k, ', ' ORDER BY k)
+              FROM jsonb_object_keys(COALESCE(m.data_json->'header_metadata','{}'::jsonb)) AS k)
+    FROM   characterization_measurements m
+    WHERE  m.sample_code = p_sample_code
+      AND  (p_technique IS NULL OR m.technique ILIKE p_technique)
+    ORDER  BY m.technique, m.created_at DESC
+    LIMIT  v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'get_characterisation',
+        format('sample_code=%s technique=%s', p_sample_code, p_technique), v_rows);
+END;
+$func$;
+
+CREATE OR REPLACE FUNCTION agent_sample_summary(
+    p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
+    p_sample_code TEXT DEFAULT NULL
+)
+RETURNS TABLE (field TEXT, value TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_rows INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT j.key, j.value #>> '{}'
+    FROM   synthesis_experiments s, jsonb_each(to_jsonb(s)) AS j
+    WHERE  s.sample_code = p_sample_code
+      AND  j.value <> 'null'::jsonb
+      AND  j.key NOT IN ('file_hash_md5', 'created_at', 'updated_at')
+    ORDER  BY j.key;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'sample_summary',
+        format('sample_code=%s', p_sample_code), v_rows);
+END;
+$func$;
+
+CREATE OR REPLACE FUNCTION agent_statistics(
+    p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
+    p_dimension TEXT DEFAULT NULL, p_limit INTEGER DEFAULT 20
+)
+RETURNS TABLE (category TEXT, n_samples BIGINT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    IF p_dimension NOT IN ('metal_center','linker','researcher_name',
+                           'synthesis_type','research_unit','year','technique') THEN
+        RAISE EXCEPTION 'Dimension not allowed: %. Valid: metal_center, linker, researcher_name, synthesis_type, research_unit, year, technique', p_dimension;
+    END IF;
+
+    RETURN QUERY
+    SELECT t.category, t.n FROM (
+        SELECT s.metal_center::TEXT AS category, count(*) AS n, 'metal_center' AS dim
+          FROM synthesis_experiments s GROUP BY 1
+        UNION ALL SELECT s.linker::TEXT, count(*), 'linker'
+          FROM synthesis_experiments s GROUP BY 1
+        UNION ALL SELECT s.researcher_name::TEXT, count(*), 'researcher_name'
+          FROM synthesis_experiments s GROUP BY 1
+        UNION ALL SELECT s.synthesis_type::TEXT, count(*), 'synthesis_type'
+          FROM synthesis_experiments s GROUP BY 1
+        UNION ALL SELECT s.research_unit::TEXT, count(*), 'research_unit'
+          FROM synthesis_experiments s GROUP BY 1
+        UNION ALL SELECT to_char(s.synthesis_date,'YYYY'), count(*), 'year'
+          FROM synthesis_experiments s GROUP BY 1
+        UNION ALL SELECT m.technique::TEXT, count(*), 'technique'
+          FROM characterization_measurements m GROUP BY 1
+    ) t
+    WHERE t.dim = p_dimension
+    ORDER BY t.n DESC
+    LIMIT v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'statistics',
+        format('dimension=%s', p_dimension), v_rows);
+END;
+$func$;
+
+CREATE OR REPLACE FUNCTION agent_search_library(
+    p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
+    p_text TEXT DEFAULT NULL, p_year INTEGER DEFAULT NULL,
+    p_limit INTEGER DEFAULT 20
+)
+RETURNS TABLE (document_id BIGINT, citation TEXT, doi TEXT, n_chunks INTEGER)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT b.document_id, b.cita, b.doi, b.n_chunks
+    FROM   v_rag_library b
+    WHERE  (p_text IS NULL
+            OR b.title ILIKE '%' || p_text || '%'
+            OR b.authors ILIKE '%' || p_text || '%'
+            OR b.journal ILIKE '%' || p_text || '%')
+      AND  (p_year IS NULL OR b.year = p_year)
+      AND  b.sensitivity = 'PUBLIC'
+    ORDER  BY b.year DESC NULLS LAST
+    LIMIT  v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'search_library',
+        format('text=%s year=%s', p_text, p_year), v_rows);
+END;
+$func$;
+
+-- 16.7 Retire the Spanish-named versions -------------------------------------
+-- Functions and views only. No table, no row, is ever dropped in this file.
+DROP FUNCTION IF EXISTS agente_buscar_sintesis(TEXT,TEXT,NUMERIC,NUMERIC,DATE,DATE,INTEGER);
+DROP FUNCTION IF EXISTS agente_obtener_caracterizacion(TEXT,TEXT,INTEGER);
+DROP FUNCTION IF EXISTS agente_resumen_muestra(TEXT);
+DROP FUNCTION IF EXISTS agente_estadisticas(TEXT,INTEGER);
+DROP FUNCTION IF EXISTS agente_buscar_biblioteca(TEXT,INTEGER,INTEGER);
+DROP FUNCTION IF EXISTS agente_auditar(TEXT,TEXT,INTEGER);
+DROP FUNCTION IF EXISTS agente_limite(INTEGER);
+DROP FUNCTION IF EXISTS rag_documento_ya_indexado(CHAR,TEXT,CHAR);
+DROP FUNCTION IF EXISTS rag_rango_fuente(TEXT);
+
+-- 16.8 Permissions -----------------------------------------------------------
+DO $block$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'alchemy_agent') THEN
+        -- Reuse the existing role if the Spanish-named one is already there,
+        -- so the password stored in .env keeps working.
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'alchemy_agente') THEN
+            ALTER ROLE alchemy_agente RENAME TO alchemy_agent;
+        ELSE
+            CREATE ROLE alchemy_agent LOGIN PASSWORD 'set_me_in_env';
+        END IF;
+    END IF;
+END;
+$block$;
+
+GRANT USAGE ON SCHEMA public TO alchemy_agent;
+
+REVOKE ALL ON FUNCTION agent_search_synthesis(TEXT,TEXT,TEXT,TEXT,NUMERIC,NUMERIC,DATE,DATE,INTEGER) FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_get_characterisation(TEXT,TEXT,TEXT,TEXT,INTEGER)                       FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_sample_summary(TEXT,TEXT,TEXT)                                          FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_statistics(TEXT,TEXT,TEXT,INTEGER)                                      FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_search_library(TEXT,TEXT,TEXT,INTEGER,INTEGER)                          FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_audit(TEXT,TEXT,TEXT,TEXT,INTEGER)                                      FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_authorise(TEXT,TEXT)                                                    FROM PUBLIC;
+REVOKE ALL ON FUNCTION agent_log_exchange(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT)                             FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION agent_search_synthesis(TEXT,TEXT,TEXT,TEXT,NUMERIC,NUMERIC,DATE,DATE,INTEGER) TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_get_characterisation(TEXT,TEXT,TEXT,TEXT,INTEGER)                       TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_sample_summary(TEXT,TEXT,TEXT)                                          TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_statistics(TEXT,TEXT,TEXT,INTEGER)                                      TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_search_library(TEXT,TEXT,TEXT,INTEGER,INTEGER)                          TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_authorise(TEXT,TEXT)                                                    TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_log_exchange(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT)                             TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_row_limit(INTEGER)                                                      TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION rag_hybrid_search(TEXT, VECTOR, INTEGER, INTEGER)                             TO alchemy_agent;
+
+GRANT SELECT ON data_dictionary TO alchemy_agent;
+GRANT SELECT ON rag_chunks      TO alchemy_agent;
+GRANT SELECT ON rag_documents   TO alchemy_agent;
+
+-- =============================================================================
+-- 17. Data Dictionary: agent_chat_log and the new audit_log columns
+-- =============================================================================
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('audit_log','actor_email','Actor Email','GOVERNANCE','None','TEXT','Email or NULL','Person on whose behalf the agent acted. Set by the workflow after whitelist validation, never by the language model'),
+('audit_log','session_id','Chat Session','GOVERNANCE','None','TEXT','Free text','Chat session the action belongs to, so a whole conversation can be reconstructed'),
+('agent_chat_log','chat_id','Exchange ID','AGENT CHAT LOG','None','BIGSERIAL','> 0','Primary key of the exchange'),
+('agent_chat_log','session_id','Chat Session','AGENT CHAT LOG','None','TEXT','Free text','Groups the exchanges of one conversation'),
+('agent_chat_log','actor_email','Actor Email','AGENT CHAT LOG','None','TEXT','Email or NULL','Claimed identity of the caller, validated against authorized_researchers'),
+('agent_chat_log','question','Question','AGENT CHAT LOG','Text','TEXT','Free text','Exactly what the human asked'),
+('agent_chat_log','answer','Answer','AGENT CHAT LOG','Text','TEXT','Free text','Exactly what the agent replied'),
+('agent_chat_log','verdict','Verdict','AGENT CHAT LOG','None','TEXT','ALLOWED, DENIED, ERROR','ALLOWED = answered; DENIED = caller not on the whitelist; ERROR = the run failed'),
+('agent_chat_log','cause','Cause','AGENT CHAT LOG','Text','TEXT','Free text','Why the exchange was denied or failed'),
+('agent_chat_log','created_at','Logged At','AGENT CHAT LOG','None','TIMESTAMPTZ','ISO timestamp','When the exchange happened')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+
+-- =============================================================================
+-- 18. Data Dictionary: remaining undocumented columns (audit_log,
+--     authorized_researchers, characterization_measurements.researcher_name)
+-- =============================================================================
+--  Detected 2026-08-25 by a full audit comparing information_schema.columns
+--  against data_dictionary: 40 real columns had no row here. 26 of those
+--  belong to job_leads (scripts/ddl_job_search.sql), an unrelated personal
+--  project sharing this same Postgres instance - out of scope for ALCheMy's
+--  own dictionary. The remaining 14 are genuinely part of this schema and are
+--  documented below.
+-- -----------------------------------------------------------------------------
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('audit_log','log_id','Log Entry ID','GOVERNANCE','None','UUID','uuid v4','Primary key of the audit row'),
+('audit_log','created_at','Logged At','GOVERNANCE','Timestamp','TIMESTAMPTZ','ISO 8601','When the action happened'),
+('audit_log','agent','Acting Agent','GOVERNANCE','None','VARCHAR(100)','Free text, e.g. alchemy_ingestion_pipeline','Which automated process performed the action - not a human, a named pipeline/workflow'),
+('audit_log','action','Action','GOVERNANCE','None','VARCHAR(100)','Free text','What was attempted, e.g. an SQL catalogue call or an ingestion step'),
+('audit_log','recipients','Recipients','GOVERNANCE','None','INTEGER','>= 0','Rows returned or affected by the action, when applicable'),
+('audit_log','verdict','Verdict','GOVERNANCE','None','VARCHAR(50)','ALLOW, DENY, ERROR','Whether the action was permitted, blocked, or failed'),
+('audit_log','cause','Cause','GOVERNANCE','Text','TEXT','Free text','Why the verdict was reached - the reason a request was denied or a run failed'),
+('audit_log','result','Result','GOVERNANCE','None','VARCHAR(100)','Free text, e.g. EXECUTED','Final outcome of the action'),
+('authorized_researchers','email','Researcher Email','GOVERNANCE','None','VARCHAR(255)','Valid email, primary key','Identity used to authorise a caller of the RAG agent or the ingestion webhook'),
+('authorized_researchers','researcher_name','Researcher Name','GOVERNANCE','Text','VARCHAR(100)','Free text','Human-readable name shown alongside the email'),
+('authorized_researchers','role','Role','GOVERNANCE','None','VARCHAR(50)','Free text, e.g. lead_researcher, guest_demo','Coarse role label - not yet used to scope permissions, only to describe who the person is'),
+('authorized_researchers','active','Active Flag','GOVERNANCE','None','BOOLEAN','true / false','Whether this identity is currently allowed in. Set to false to revoke access without deleting history'),
+('authorized_researchers','last_seen','Last Seen','GOVERNANCE','Timestamp','TIMESTAMPTZ','ISO 8601','Updated every time this identity successfully authenticates - a simple presence/activity signal'),
+('characterization_measurements','researcher_name','Principal Researcher','CHARACTERIZATION','Text','VARCHAR(100)','Free text','Researcher responsible for the sample being characterised (distinct from operator_name, who ran the instrument)')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+-- =============================================================================
+-- 18b. Data Dictionary: the data_dictionary table documenting itself
+-- =============================================================================
+
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('data_dictionary','id','Row ID','GOVERNANCE','None','SERIAL','> 0','Primary key of the dictionary row itself'),
+('data_dictionary','table_name','Documented Table','GOVERNANCE','None','TEXT','Must match a real table name','Which table this row describes a column of'),
+('data_dictionary','column_name','Documented Column','GOVERNANCE','None','VARCHAR(100)','Must match a real column name','Which column of that table this row describes'),
+('data_dictionary','full_name','Human Name','GOVERNANCE','Text','VARCHAR(150)','Free text','Readable label for the column, meant for a UI tooltip'),
+('data_dictionary','section_name','Section','GOVERNANCE','None','VARCHAR(100)','Free text','Logical grouping the column belongs to (e.g. THEORETICAL DESIGN, GOVERNANCE, RAG_CORPUS)'),
+('data_dictionary','unit','Unit','GOVERNANCE','None','VARCHAR(50)','Free text or None','Physical unit of the value, when applicable'),
+('data_dictionary','data_type','SQL Type','GOVERNANCE','None','VARCHAR(50)','Free text','The column''s real SQL data type, kept in sync by hand with the CREATE TABLE statement'),
+('data_dictionary','valid_categories','Valid Values','GOVERNANCE','Text','TEXT','Free text','Allowed values, ranges, or format the column is expected to hold'),
+('data_dictionary','description','Description','GOVERNANCE','Text','TEXT','Free text','What the column means and why it exists'),
+('data_dictionary','created_at','Documented At','GOVERNANCE','Timestamp','TIMESTAMPTZ','ISO 8601','When this dictionary row was first written')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+-- =============================================================================
+-- 19. RAG - Contextual chunking staging table (Gemini sidecar, Fase C-bis)
+-- =============================================================================
+--  Sidecar table for the "one contextual sentence per chunk" upgrade
+--  (Anthropic's contextual retrieval technique). Deliberately NOT a column on
+--  rag_chunks: this table has no write access from anything that touches
+--  rag_chunks.embedding, so no external process can ever corrupt Ollama's
+--  already-computed vectors just by writing a context sentence. Merging (if
+--  it ever happens) is a separate, explicit, later step that re-embeds into
+--  a NEW column first (embedding_v2), never overwriting embedding in place.
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS rag_chunk_context (
+    chunk_id         BIGINT PRIMARY KEY REFERENCES rag_chunks(id) ON DELETE CASCADE,
+    context_sentence TEXT NOT NULL,
+    source_model     TEXT NOT NULL DEFAULT 'gemini',
+    batch_file       TEXT,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+COMMENT ON TABLE rag_chunk_context IS 'Sidecar for contextual-retrieval sentences generated externally (Gemini/Antigravity). Never written to by anything that also writes rag_chunks.embedding.';
+
+INSERT INTO data_dictionary
+    (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES
+('rag_chunk_context','chunk_id','Chunk (FK)','RAG - CONTEXT STAGING','None','BIGINT','Must exist in rag_chunks','Which chunk this sentence situates. ON DELETE CASCADE'),
+('rag_chunk_context','context_sentence','Context Sentence','RAG - CONTEXT STAGING','Text','TEXT','Free text, 1-2 sentences','LLM-generated sentence situating the chunk within its source document'),
+('rag_chunk_context','source_model','Source Model','RAG - CONTEXT STAGING','None','TEXT','Free text, e.g. gemini-3.7','Which model produced the sentence'),
+('rag_chunk_context','batch_file','Batch File','RAG - CONTEXT STAGING','None','TEXT','Free text','Which exported batch file this row came from, for traceability back to the raw Gemini response'),
+('rag_chunk_context','created_at','Generated At','RAG - CONTEXT STAGING','Timestamp','TIMESTAMPTZ','ISO 8601','When the sentence was imported')
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name        = EXCLUDED.full_name,
+    section_name     = EXCLUDED.section_name,
+    unit             = EXCLUDED.unit,
+    data_type        = EXCLUDED.data_type,
+    valid_categories = EXCLUDED.valid_categories,
+    description      = EXCLUDED.description;
+
+
+-- =============================================================================
+-- Section 20: rag_chunks.embedding_v2 (optional contextual-retrieval column)
+-- =============================================================================
+-- Added 2026-08-26 after generating one context_sentence per chunk into
+-- rag_chunk_context (Anthropic's "contextual retrieval" technique, see
+-- methodology/ROADMAP_RAG_Y_GRAFO.md). This column holds a SECOND embedding,
+-- of (context_sentence + chunk text) instead of the chunk alone. It is
+-- populated by src/rag_reembed_context.py and compared against the original
+-- `embedding` column with src/rag_query_compare.py BEFORE any decision to
+-- switch retrieval over to it - `embedding` itself is never modified.
+
+ALTER TABLE rag_chunks ADD COLUMN IF NOT EXISTS embedding_v2 vector(1024);
+
+COMMENT ON COLUMN rag_chunks.embedding_v2 IS
+'Optional second embedding of (context_sentence + chunk text), computed by src/rag_reembed_context.py once rag_chunk_context has a sentence for the chunk. NULL until that script runs. Kept separate from embedding (the original chunk-only vector) so the two can be A/B compared on real queries before deciding whether to switch retrieval over to it - never overwrites the original.';
+
+INSERT INTO data_dictionary (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description)
+VALUES (
+    'rag_chunks', 'embedding_v2', 'Contextual embedding (optional, A/B)', 'RAG retrieval', NULL,
+    'vector(1024)', NULL,
+    'Second embedding of (context_sentence + chunk text), computed by src/rag_reembed_context.py from the sentences in rag_chunk_context (Anthropic contextual-retrieval technique). NULL until that script runs on a chunk. Never overwrites embedding (the original chunk-only vector) - the two are compared on real queries via src/rag_query_compare.py before deciding whether to switch retrieval over to this column.'
+)
+ON CONFLICT (table_name, column_name) DO UPDATE SET
+    full_name = EXCLUDED.full_name, section_name = EXCLUDED.section_name,
+    data_type = EXCLUDED.data_type, description = EXCLUDED.description;
+
+-- =============================================================================
+-- Section 21: owner-only access to exact synthesis/characterisation values
+-- =============================================================================
+-- Added 2026-08-26. The RAG chat agent is meant to go public. By default every
+-- caller (including the whitelisted-researcher path, which only ever governs
+-- INGESTION, not chat reads) must get a "somera" (summary-only, no exact
+-- numbers) view of synthesis_experiments / characterization_measurements.
+-- Only the project owner, proven via a single high-entropy shared secret
+-- (never the researcher email whitelist, which is spoofable and for a
+-- different purpose entirely - see authorized_researchers), gets exact values.
+--
+-- The secret is stored ONLY as an md5 hash (a random 256-bit token needs no
+-- slow password hash - brute force is infeasible) and is verified once in
+-- the n8n workflow's "Authorise Caller" node; downstream tool functions only
+-- ever see the resulting boolean, never the token itself.
+
+CREATE TABLE IF NOT EXISTS agent_owner_secret (
+    token_hash TEXT PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+COMMENT ON TABLE agent_owner_secret IS
+'Holds the md5 hash of the single owner access token for the ALCheMy-RAG chat agent. Never the plaintext token. Verified by agent_verify_owner(); downstream agent_* functions only receive the resulting boolean (p_is_owner), never the token.';
+
+CREATE OR REPLACE FUNCTION public.agent_verify_owner(p_token text)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$
+    SELECT EXISTS (
+        SELECT 1 FROM agent_owner_secret
+        WHERE token_hash = md5(COALESCE(p_token, ''))
+    ) AND COALESCE(p_token, '') <> '';
+$function$;
+COMMENT ON FUNCTION public.agent_verify_owner(text) IS
+'Returns true only if p_token matches the stored owner secret. Called once in n8n''s Authorise Caller node; the boolean result (never the token) is what flows to agent_sample_summary/agent_get_characterisation/agent_search_synthesis to decide between exact and redacted output.';
+
+-- ---------------------------------------------------------------------------
+-- agent_sample_summary: numeric process/recipe columns hidden unless owner
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.agent_sample_summary(
+    p_actor text DEFAULT NULL::text,
+    p_session text DEFAULT NULL::text,
+    p_sample_code text DEFAULT NULL::text,
+    p_is_owner boolean DEFAULT false
+)
+RETURNS TABLE(field text, value text)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$
+DECLARE
+    v_rows INTEGER;
+    -- Exact recipe/process numbers: masses, concentrations, mmol, volumes,
+    -- ratios, temperatures, times. Never shown unless p_is_owner.
+    v_restricted TEXT[] := ARRAY[
+        'metal_conc_m','lm_ratio','metal_mass_mg','linker_mass_mg',
+        'secondary_linker_mg','reactor_volume_ml','h2o_pure_ml','h2o_total_ml',
+        'meoh_ml','etoh_ml','proh_1_ml','dmf_ml','def_ml','total_volume_ml',
+        'temp_initial_c','heating_time_hours','heating_rate_c_min',
+        'temp_target_c','time_hours','cooling_time_hours','cooling_rate_c_min',
+        'temp_final_c','hcl_active_mmol','hf_active_mmol','koh_active_mmol',
+        'formic_acid_mmol','acetic_acid_mmol','propionic_acid_mmol','tfa_mmol',
+        'cf3so3h_mmol','triethylamine_mmol','meo3s_mmol','researcher_name'
+    ];
+BEGIN
+    RETURN QUERY
+    SELECT j.key, j.value #>> '{}'
+    FROM   synthesis_experiments s, jsonb_each(to_jsonb(s)) AS j
+    WHERE  s.sample_code = p_sample_code
+      AND  j.value <> 'null'::jsonb
+      AND  j.key NOT IN ('file_hash_md5', 'created_at', 'updated_at')
+      AND  (p_is_owner OR NOT (j.key = ANY(v_restricted)))
+    ORDER  BY j.key;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'sample_summary',
+        format('sample_code=%s is_owner=%s', p_sample_code, p_is_owner), v_rows);
+END;
+$function$;
+
+-- ---------------------------------------------------------------------------
+-- agent_get_characterisation: internal operator name hidden unless owner
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.agent_get_characterisation(
+    p_actor text DEFAULT NULL::text,
+    p_session text DEFAULT NULL::text,
+    p_sample_code text DEFAULT NULL::text,
+    p_technique text DEFAULT NULL::text,
+    p_limit integer DEFAULT 20,
+    p_is_owner boolean DEFAULT false
+)
+RETURNS TABLE(sample_code character varying, technique character varying, measurement_tag character varying, instrument_name character varying, operator_name character varying, file_name character varying, measured_at timestamp with time zone, data_fields text)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT m.sample_code, m.technique, m.measurement_tag, m.instrument_name,
+           CASE WHEN p_is_owner THEN m.operator_name ELSE NULL END,
+           m.file_name, m.created_at,
+           (SELECT string_agg(k, ', ' ORDER BY k)
+              FROM jsonb_object_keys(COALESCE(m.data_json->'header_metadata','{}'::jsonb)) AS k)
+    FROM   characterization_measurements m
+    WHERE  m.sample_code = p_sample_code
+      AND  (p_technique IS NULL OR m.technique ILIKE p_technique)
+    ORDER  BY m.technique, m.created_at DESC
+    LIMIT  v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'get_characterisation',
+        format('sample_code=%s technique=%s is_owner=%s', p_sample_code, p_technique, p_is_owner), v_rows);
+END;
+$function$;
+
+-- ---------------------------------------------------------------------------
+-- agent_search_synthesis: exact temp/time/ratio blanked out unless owner
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.agent_search_synthesis(
+    p_actor text DEFAULT NULL::text,
+    p_session text DEFAULT NULL::text,
+    p_metal text DEFAULT NULL::text,
+    p_linker text DEFAULT NULL::text,
+    p_temp_min numeric DEFAULT NULL::numeric,
+    p_temp_max numeric DEFAULT NULL::numeric,
+    p_from date DEFAULT NULL::date,
+    p_to date DEFAULT NULL::date,
+    p_limit integer DEFAULT 20,
+    p_is_owner boolean DEFAULT false
+)
+RETURNS TABLE(sample_code character varying, synthesis_date date, metal_center character varying, linker character varying, temp_target_c numeric, time_hours numeric, lm_ratio numeric, n_techniques bigint)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    RETURN QUERY
+    SELECT s.sample_code, s.synthesis_date, s.metal_center, s.linker,
+           CASE WHEN p_is_owner THEN s.temp_target_c ELSE NULL END,
+           CASE WHEN p_is_owner THEN s.time_hours ELSE NULL END,
+           CASE WHEN p_is_owner THEN s.lm_ratio ELSE NULL END,
+           (SELECT count(DISTINCT m.technique) FROM characterization_measurements m
+             WHERE m.sample_code = s.sample_code)
+    FROM   synthesis_experiments s
+    WHERE  (p_metal    IS NULL OR s.metal_center ILIKE p_metal)
+      AND  (p_linker   IS NULL OR s.linker ILIKE '%' || p_linker || '%')
+      AND  (p_temp_min IS NULL OR s.temp_target_c >= p_temp_min)
+      AND  (p_temp_max IS NULL OR s.temp_target_c <= p_temp_max)
+      AND  (p_from     IS NULL OR s.synthesis_date >= p_from)
+      AND  (p_to       IS NULL OR s.synthesis_date <= p_to)
+    ORDER  BY s.synthesis_date DESC NULLS LAST, s.sample_code
+    LIMIT  v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'search_synthesis',
+        format('metal=%s linker=%s temp=[%s,%s] date=[%s,%s] limit=%s is_owner=%s',
+               p_metal, p_linker, p_temp_min, p_temp_max, p_from, p_to, v_limit, p_is_owner), v_rows);
+END;
+$function$;

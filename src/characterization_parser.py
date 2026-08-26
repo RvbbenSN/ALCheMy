@@ -18,16 +18,12 @@ import numpy as np
 # for backwards compatibility with the notebooks and src/ingest_datalake_to_postgres.py.
 from parse_pxrd_xrdml import parse_pxrd_xrdml
 from parse_vtxrd_brml import parse_bruker_brml
-
 from parse_tga_txt import parse_tga_txt
-
 from parse_ftir_csv import parse_ftir_csv
-
 from parse_adsorption_xls import parse_bet_xls
-
 from parse_uvvis_asc import parse_uvvis_asc
-
 from parse_microscopy_image import parse_microscopy_image
+from parse_cif_scxrd import parse_cif_file
 
 
 def _select_parser(technique, file_path):
@@ -35,6 +31,8 @@ def _select_parser(technique, file_path):
     technique = (technique or '').upper()
     file_ext = os.path.splitext(file_path)[1].lower().lstrip('.')
 
+    if file_ext == 'cif' or technique in ('SC-XRD', 'SCXRD', 'CIF'):
+        return parse_cif_file
     if file_ext == 'xrdml':
         return parse_pxrd_xrdml
     if file_ext == 'brml':
