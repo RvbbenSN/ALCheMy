@@ -155,16 +155,62 @@ pilot batch, `--doc ID` for one specific document.
 ### `rag_import_context_batches.py`
 Reads the JSON files written back into `data/rag_context_batches/done/`,
 verifies each one is complete (same chunk count, same exact set of
-`chunk_id`s, no empty sentences) before writing anything, and only then
-inserts into the `rag_chunk_context` sidecar table — never into `rag_chunks`
-itself. Problem solved: an LLM asked to process ~90 items in one request can
-silently skip or merge some of them; this script makes that failure loud
-(the whole file is rejected, moved to `rejected/`, and nothing is written)
-instead of quietly leaving gaps. Reuse: dry run by default, `--apply` to
-actually write and archive processed files into `imported/`; `--status`
-prints overall progress (how much of the whole corpus is done) plus what is
-currently sitting in each folder, so an interrupted Antigravity session
-never leaves you guessing where things stand.
+`chunk_id`s, no empty sentences, and the sentences are actually distinct from
+each other) before writing anything, and only then inserts into the
+`rag_chunk_context` sidecar table — never into `rag_chunks` itself. Problem
+solved: an LLM asked to process ~90 items in one request can silently skip or
+merge some of them, or — a failure mode observed in practice — get lazy and
+paste the same handful of generic sentences across dozens of chunks instead
+of writing one specific sentence per chunk. Both look identical to a
+purely-structural check (right count, right IDs), so the verifier also
+rejects a file where fewer than half the sentences are unique among more
+than 5 results. Either failure makes the whole file loud (rejected, moved to
+`rejected/`, nothing written) instead of quietly leaving gaps or garbage.
+Reuse: dry run by default, `--apply` to actually write and archive processed
+files into `imported/`; `--status` prints overall progress (how much of the
+whole corpus is done) plus what is currently sitting in each folder, so an
+interrupted Antigravity session never leaves you guessing where things
+stand. `--batch-root DIR` points the whole pending/done/imported/rejected
+cycle at a different tree (default `data/rag_context_batches`) — used to
+import `rag_export_context_repairs.py`'s output from
+`data/rag_context_batches/repairs/` without mixing it into the normal
+first-pass flow.
+
+### `rag_export_context_repairs.py`
+A second failure mode showed up on 2026-08-26 that the diversity check above
+does not catch: for a minority of chunks per document, the model filled in
+a rigid template ("This X chunk (part N) evaluates `<garbled fragment>`
+regarding `<title>`") instead of a real sentence — each one is technically
+*distinct* (different part number, different fragment), so it passes the
+uniqueness check while carrying almost no real information. This script
+finds every `rag_chunk_context` row matching that signature (a regex, `--pattern`
+to override it), groups the affected `chunk_id`s by document, and exports
+one JSON batch per affected document into
+`data/rag_context_batches/repairs/pending/` — same shape as
+`rag_export_context_batches.py`'s output (full document text + instructions),
+except `"chunks"` only lists the specific chunk_ids that need redoing, not
+the whole document. Problem solved: redoing whole documents to fix a
+scattered minority of bad chunks would throw away thousands of good
+sentences (2026-08-26 incident: 502/783 documents had *some* broken chunks,
+but only 1 document had more than half of its chunks affected — median was
+under 10%). Import the results the normal way, just pointed at the repair
+tree: `python src/rag_import_context_batches.py --batch-root data/rag_context_batches/repairs --apply`
+— the existing `ON CONFLICT (chunk_id) DO UPDATE` silently overwrites only
+those rows. Reuse: `--limit N` for a pilot, `--doc ID` for one document,
+`--pattern` to hunt a different bad-sentence signature if a new failure mode
+shows up later.
+
+`--mode recycled` handles a second, older failure: 37 documents were found
+with the *original* recycled-sentence problem (a handful of duplicated
+sentences across most of a document's chunks) that predates the diversity
+check in `rag_import_context_batches.py` — their `created_at` is all before
+that check was merged, so nothing ever rejected them. There is no reliable
+way to tell which duplicate was "the real one" for an affected chunk, so
+this mode re-exports the document's **entire** chunk list (not a subset)
+via `--diversity-threshold` (default 0.5, same threshold the import-side
+check uses). `--mode template` (the default) stays scoped to individual
+chunk_ids since that failure only ever hits a minority of a document's
+chunks.
 
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
@@ -187,7 +233,39 @@ each chunk's metadata. Deliberately has **no LLM attached** — problem
 solved: separates "is retrieval finding the right passages" from "is the
 model writing a good answer", which is otherwise impossible to tell apart
 when both live in the same chat. Reuse: `-n` (result count), `--publico`
-(restrict to PUBLIC-sensitivity documents only).
+(restrict to PUBLIC-sensitivity documents only). Searches `embedding` only
+— see `rag_query_compare.py` to also search `embedding_v2`.
+
+### `rag_reembed_context.py`
+The final step of contextual retrieval (Anthropic's technique, see
+`methodology/ROADMAP_RAG_Y_GRAFO.md`): computes `rag_chunks.embedding_v2 =
+embed(context_sentence + "\n\n" + text)` for every chunk that has a
+sentence in `rag_chunk_context`, using the same local Ollama `bge-m3`
+model, batching, and retry/backoff shape as `rag_ingest_chunks.py`. Problem
+solved: the technique only works if the context sentence is baked into
+what gets embedded — keeping it as a separate, un-vectorised column (safer,
+but pointless for search) throws away the entire retrieval-quality gain the
+roadmap cites (+35% fewer failures from contextual embeddings alone). This
+writes into a **second** column instead of overwriting `embedding`,
+specifically because the context sentences come from an external LLM whose
+failure modes (see `rag_export_context_repairs.py`) can't realistically be
+hand-checked across ~88k chunks — `embedding` stays untouched no matter
+what, so nothing about today's working retrieval can regress from running
+this. Reuse: resumable by default (`WHERE embedding_v2 IS NULL`), `--force`
+to recompute, `--limit N` for a pilot, `--doc ID` for one document.
+
+### `rag_query_compare.py`
+A/B tool: embeds one question and runs a plain cosine-similarity search
+against `embedding` and `embedding_v2` separately, printing both result
+sets side by side plus which chunk_ids only show up in one of them.
+Deliberately skips the BM25/RRF fusion `rag_hybrid_search()` does — the
+question this answers is narrowly "did adding context change what the
+vector search finds", not "what's the best retrieval pipeline". Problem
+solved: gives the project owner a way to judge, on real questions, whether
+`embedding_v2` is actually better before switching anything over — no
+manual review of the underlying context sentences required, just look at
+whether the passages that come back are more relevant. Reuse: `-n` (result
+count per column).
 
 ### `rag_smoke_test.py`
 Self-cleaning end-to-end health check: inserts one synthetic test document
