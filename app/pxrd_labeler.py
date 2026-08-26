@@ -128,15 +128,19 @@ INCIPIENT_SUBTYPES = [
 st.set_page_config(page_title='ALCheMy - Etiquetado PXRD', page_icon='🔬', layout='wide',
                     initial_sidebar_state='collapsed')
 
-# Bigger touch targets for the classification buttons - this app is meant to
-# also be usable from a phone on the home WiFi (see src/README.md), where the
-# default Streamlit button height is too small to tap comfortably.
+# Bigger touch targets for buttons, and a general tightening of vertical
+# whitespace - the whole point of this pass is to fit plot + every judgement
+# on one phone screen with no scrolling. See src/README.md.
 st.markdown("""
 <style>
 div[data-testid="stButton"] > button {
-    min-height: 3em;
-    font-size: 1.05em;
+    min-height: 2.6em;
+    font-size: 1.0em;
 }
+div[data-testid="stElementContainer"] { margin-bottom: 0.15rem !important; }
+div[data-testid="stVerticalBlock"] { gap: 0.35rem !important; }
+[data-testid="stExpander"] summary { padding: 0.35rem 0.6rem !important; min-height: 0 !important; }
+[data-testid="stCaptionContainer"] p { margin-bottom: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -371,10 +375,6 @@ def comment_key(record):
     return f"comment_{record['file_hash']}"
 
 
-def doubtful_key(record):
-    return f"doubtful_{record['file_hash']}"
-
-
 def main_key(record):
     return f"main_{record['file_hash']}"
 
@@ -383,12 +383,8 @@ def subtype_key(record):
     return f"subtype_{record['file_hash']}"
 
 
-def oxide_key(record):
-    return f"oxide_{record['file_hash']}"
-
-
-def mezcla_key(record):
-    return f"mezcla_{record['file_hash']}"
+def indicators_key(record):
+    return f"indicators_{record['file_hash']}"
 
 
 # ==========================================================================
@@ -396,12 +392,15 @@ def mezcla_key(record):
 # ==========================================================================
 
 def main():
-    st.title('🔬 Etiquetado de difractogramas PXRD')
+    # A short, single-line title - the point of this pass is to give the
+    # plot and the judgement controls as much of the screen as possible.
+    st.markdown('<h3 style="margin:0 0 0.15em 0;">🔬 Etiquetado PXRD</h3>',
+                unsafe_allow_html=True)
 
     # ---- session state ---------------------------------------------------
-    # Only `idx` and `just_saved` live in session_state. The comment box and the
-    # "doubtful" checkbox are per-pattern widgets keyed by file hash, so their
-    # state is managed by Streamlit and never assigned to directly.
+    # Only `idx` and `just_saved` live in session_state. Every judgement
+    # widget (pills, comment box) is a per-pattern widget keyed by file hash,
+    # so its state is managed by Streamlit and never assigned to directly.
     st.session_state.setdefault('idx', 0)
     st.session_state.setdefault('just_saved', None)
 
@@ -515,40 +514,41 @@ def main():
     # ---- main layout: plot on the left, the three judgement groups to its
     # right (principal | subtipo incipiente | oxido+mezcla) so nothing needs
     # a scroll - that was the whole point of the one-click design.
-    plot_col, main_col, subtype_col, flags_col = st.columns([2, 1, 1, 1])
+    plot_col, main_col, subtype_col, flags_col = st.columns([3, 1, 1, 1])
 
     with plot_col:
-        st.subheader(record['sample_code'])
-        st.markdown(
-            f"**Metal:** `{record['metal_center']}`  |  **Linker:** `{record['linker']}`"
-        )
+        # One condensed line instead of a subheader + markdown + 2 captions:
+        # the plot title already repeats the sample code, so it isn't
+        # duplicated here.
         extra = []
         if pd.notna(record.get('temp_target_c')):
-            extra.append(f"{record['temp_target_c']:.0f} °C")
+            extra.append(f"{record['temp_target_c']:.0f}°C")
         if pd.notna(record.get('time_hours')):
-            extra.append(f"{record['time_hours']:.0f} h")
-        if pd.notna(record.get('synthesis_date')):
-            extra.append(str(record['synthesis_date']))
-        if extra:
-            st.caption(' · '.join(extra))
-        st.caption(f"**Fichero:** `{record['file_name']}`")
-        st.caption(f"**Ruta:** `{record['raw_file_path']}`")
-        st.caption(f"**Posicion:** {st.session_state.idx + 1} de {len(view)}")
+            extra.append(f"{record['time_hours']:.0f}h")
+        extra_txt = (' · ' + ' · '.join(extra)) if extra else ''
+        st.caption(f"**{record['metal_center']}** | **{record['linker']}**{extra_txt} · "
+                  f"{st.session_state.idx + 1}/{len(view)}")
+
+        with st.expander('📄 Fichero', expanded=False):
+            st.caption(f"`{record['file_name']}`")
+            st.caption(f"`{record['raw_file_path']}`")
+            if pd.notna(record.get('synthesis_date')):
+                st.caption(f"Sintesis: {record['synthesis_date']}")
 
         if existing:
             parts = []
             if LABEL_TYPE_MAIN in existing:
                 e = existing[LABEL_TYPE_MAIN]
-                parts.append(f"Principal: **{e['label_value']}** ({e['confidence']})")
+                parts.append(f"{e['label_value']} ({e['confidence']})")
             if LABEL_TYPE_SUBTYPE in existing:
-                parts.append(f"Subtipo: **{existing[LABEL_TYPE_SUBTYPE]['label_value']}**")
-            if LABEL_TYPE_OXIDE in existing:
-                parts.append(f"Oxido: **{existing[LABEL_TYPE_OXIDE]['label_value']}**")
-            if LABEL_TYPE_MEZCLA in existing:
-                parts.append(f"Mezcla: **{existing[LABEL_TYPE_MEZCLA]['label_value']}**")
+                parts.append(existing[LABEL_TYPE_SUBTYPE]['label_value'])
+            if LABEL_TYPE_OXIDE in existing and existing[LABEL_TYPE_OXIDE]['label_value'] == 'SI':
+                parts.append('oxido')
+            if LABEL_TYPE_MEZCLA in existing and existing[LABEL_TYPE_MEZCLA]['label_value'] == 'SI':
+                parts.append('mezcla')
             note = existing_main.get('notes') if existing_main else None
-            st.info('Ya etiquetado. ' + ' · '.join(parts) + ' · Aceptar sobrescribe.'
-                    + (f"  \nNota: _{note}_" if note else ''))
+            st.caption('ℹ️ Ya etiquetado: ' + ' · '.join(parts)
+                      + (f' · nota: _{note}_' if note else ''))
 
         # ---- the diffractogram --------------------------------------------
         try:
@@ -568,74 +568,87 @@ def main():
     # Widget keys, all scoped to this pattern's file_hash - see the note
     # above `advance` for why fixed keys would break navigation.
     mkey, skey = main_key(record), subtype_key(record)
-    okey, xkey = oxide_key(record), mezcla_key(record)
-    ckey, dkey = comment_key(record), doubtful_key(record)
+    ikey, ckey = indicators_key(record), comment_key(record)
 
+    # Pills instead of radio/checkbox lists: a pill group lays its options
+    # out horizontally and wraps only if it must, so each judgement group
+    # collapses to one or two short rows instead of one row per option -
+    # that's what actually eliminates the scroll on a phone.
     main_values = [c[0] for c in CATEGORIES]
-    main_default = (main_values.index(existing_main['label_value'])
+    main_default = (existing_main['label_value']
                     if existing_main and existing_main['label_value'] in main_values else None)
 
     with main_col:
-        st.markdown('#### Principal')
-        st.caption('Obligatorio')
-        main_choice = st.radio(
+        st.caption('**PRINCIPAL** · obligatorio')
+        main_choice = st.pills(
             'Grado de orden cristalino', options=main_values,
             format_func=lambda v: dict((c[0], c[1]) for c in CATEGORIES)[v],
-            index=main_default, key=mkey, label_visibility='collapsed',
+            default=main_default, key=mkey, label_visibility='collapsed',
         )
 
     subtype_values = [s[0] for s in INCIPIENT_SUBTYPES]
     existing_subtype = existing.get(LABEL_TYPE_SUBTYPE)
-    subtype_default = (subtype_values.index(existing_subtype['label_value'])
+    subtype_default = (existing_subtype['label_value']
                        if existing_subtype and existing_subtype['label_value'] in subtype_values
                        else None)
 
     with subtype_col:
-        st.markdown('#### Subtipo incipiente')
-        st.caption('Opcional - solo si Principal = INCIPIENTE')
-        subtype_choice = st.radio(
+        st.caption('**SUBTIPO** · si es INCIPIENTE')
+        subtype_choice = st.pills(
             'Subtipo de incipiente', options=subtype_values,
             format_func=lambda v: dict((s[0], s[1]) for s in INCIPIENT_SUBTYPES)[v],
-            index=subtype_default, key=skey, label_visibility='collapsed',
+            default=subtype_default, key=skey, label_visibility='collapsed',
         )
 
     with flags_col:
-        st.markdown('#### Indicadores')
-        st.caption('Opcional, 0 si no se marcan')
+        st.caption('**INDICADORES**')
         existing_oxide = existing.get(LABEL_TYPE_OXIDE)
         existing_mezcla = existing.get(LABEL_TYPE_MEZCLA)
-        st.checkbox('Oxido', key=okey,
-                    value=bool(existing_oxide and existing_oxide['label_value'] == 'SI'),
-                    help='Se ve una fase de oxido (amorfa o cristalina) ademas de la principal.')
-        st.checkbox('Mezcla de fases', key=xkey,
-                    value=bool(existing_mezcla and existing_mezcla['label_value'] == 'SI'),
-                    help='Sospecha de mas de una fase cristalina, aunque no se sepa cual.')
+        indicator_defaults = []
+        if existing_oxide and existing_oxide['label_value'] == 'SI':
+            indicator_defaults.append('OXIDO')
+        if existing_mezcla and existing_mezcla['label_value'] == 'SI':
+            indicator_defaults.append('MEZCLA')
+        if existing_main and existing_main.get('confidence') == 'dudosa':
+            indicator_defaults.append('DUDOSA')
+        indicator_labels = {
+            'OXIDO': 'Oxido', 'MEZCLA': 'Mezcla',
+            'DUDOSA': 'Dudosa ⚠️',
+        }
+        indicators = st.pills(
+            'Indicadores', options=['OXIDO', 'MEZCLA', 'DUDOSA'],
+            format_func=lambda v: indicator_labels[v], selection_mode='multi',
+            default=indicator_defaults, key=ikey, label_visibility='collapsed',
+            help='Oxido: fase de oxido visible ademas de la principal. Mezcla: '
+                 'sospecha de mas de una fase, aunque no se sepa cual. Dudosa: '
+                 'marca este patron para revisarlo mas tarde (no bloquea el guardado).',
+        )
 
-        st.text_input('Comentario (opcional)', key=ckey,
+        st.text_input('Comentario', key=ckey,
                       value=(existing_main or {}).get('notes') or '',
-                      placeholder='p. ej. posible fase de oxido de niquel...')
-        st.checkbox('Dudosa', key=dkey,
-                    value=bool(existing_main and existing_main.get('confidence') == 'dudosa'),
-                    help='Se guarda como confidence = dudosa en todo lo marcado para este patron.')
+                      placeholder='comentario opcional...', label_visibility='collapsed')
 
-        if st.button('✅ Aceptar y siguiente', width='stretch', type='primary',
-                     key=f'accept_{record["file_hash"]}'):
+        nprev, naccept, nskip = st.columns([1, 1, 1])
+        with naccept:
+            accept_clicked = st.button('✅', width='stretch', type='primary',
+                                       help='Aceptar y siguiente',
+                                       key=f'accept_{record["file_hash"]}')
+        if accept_clicked:
             if st.session_state.get(mkey) is None:
                 st.error('Elige una categoria Principal antes de aceptar.')
             else:
                 value = st.session_state[mkey]
-                confidence = 'dudosa' if st.session_state.get(dkey) else 'alta'
+                flags = st.session_state.get(ikey) or []
+                confidence = 'dudosa' if 'DUDOSA' in flags else 'alta'
                 notes = st.session_state.get(ckey, '')
                 save_label(record, LABEL_TYPE_MAIN, value, confidence, notes, labeled_by)
                 if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
                     save_label(record, LABEL_TYPE_SUBTYPE, st.session_state[skey],
                               confidence, None, labeled_by)
                 save_label(record, LABEL_TYPE_OXIDE,
-                          'SI' if st.session_state.get(okey) else 'NO',
-                          confidence, None, labeled_by)
+                          'SI' if 'OXIDO' in flags else 'NO', confidence, None, labeled_by)
                 save_label(record, LABEL_TYPE_MEZCLA,
-                          'SI' if st.session_state.get(xkey) else 'NO',
-                          confidence, None, labeled_by)
+                          'SI' if 'MEZCLA' in flags else 'NO', confidence, None, labeled_by)
                 load_labels.clear()
                 st.session_state.just_saved = (value, record['sample_code'])
                 # With "only pending" on, the labelled row drops out of the view,
@@ -644,22 +657,15 @@ def main():
                 if not only_pending:
                     advance(len(view))
                 st.rerun()
-
-        st.divider()
-
-        # ---- navigation ------------------------------------------------------
-        nprev, nskip = st.columns(2)
         with nprev:
-            if st.button('← Anterior', width='stretch',
+            if st.button('←', width='stretch', help='Anterior',
                          disabled=st.session_state.idx == 0, key='btn_prev'):
                 go_back(len(view))
                 st.rerun()
         with nskip:
-            if st.button('Saltar →', width='stretch', key='btn_skip'):
+            if st.button('→', width='stretch', help='Saltar', key='btn_skip'):
                 advance(len(view))
                 st.rerun()
-        st.caption('"Aceptar" guarda todo lo marcado y pasa a la siguiente. '
-                   '"Anterior" sirve para revisar; volver a aceptar sobrescribe.')
 
     # ---- keep the scroll position pinned to the pattern, not the page ----
     # Every widget change reruns the whole script, and on a phone that made
@@ -684,17 +690,16 @@ def main():
         except Exception:
             pass
 
-    # ---- running tally ---------------------------------------------------
+    # ---- running tally, collapsed by default to save screen space --------
     if labels:
-        st.divider()
-        main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
-                    if LABEL_TYPE_MAIN in d]
-        tally = pd.Series(main_seen).value_counts()
-        st.markdown('#### Reparto de lo etiquetado hasta ahora')
-        tcols = st.columns(len(CATEGORIES) + 1)
-        for col, (value, caption, _h) in zip(tcols, CATEGORIES):
-            col.metric(caption, int(tally.get(value, 0)))
-        tcols[-1].metric('MEZCLA (antigua)', int(tally.get('MEZCLA', 0)))
+        with st.expander('📊 Reparto de lo etiquetado hasta ahora', expanded=False):
+            main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
+                        if LABEL_TYPE_MAIN in d]
+            tally = pd.Series(main_seen).value_counts()
+            tcols = st.columns(len(CATEGORIES) + 1)
+            for col, (value, caption, _h) in zip(tcols, CATEGORIES):
+                col.metric(caption, int(tally.get(value, 0)))
+            tcols[-1].metric('MEZCLA (antigua)', int(tally.get('MEZCLA', 0)))
 
 
 if __name__ == '__main__':

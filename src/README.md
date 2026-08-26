@@ -385,18 +385,32 @@ the next one pre-fetched — measured at 0.63 s per label with no degradation ov
 25 consecutive labels. Loading all curves up front would take minutes and
 hundreds of megabytes, which is why the app never does it.
 
-Two details worth knowing. Every widget — the crystallinity radio, the subtype
-radio, both checkboxes, the comment box, the "doubtful" checkbox — is keyed by
-the pattern's file hash rather than a fixed key: Streamlit forbids assigning to
-`session_state` for an already-instantiated widget, so resetting a fixed-key
-widget on advance raises an exception that silently strands the app on the same
-pattern. Per-hash keys also give each pattern's radio a clean `index=None`
+Two details worth knowing. Every widget — the crystallinity pills, the subtype
+pills, the indicators pills, the comment box — is keyed by the pattern's file
+hash rather than a fixed key: Streamlit forbids assigning to `session_state`
+for an already-instantiated widget, so resetting a fixed-key widget on advance
+raises an exception that silently strands the app on the same pattern.
+Per-hash keys also give each pattern's principal pill a clean `default=None`
 (nothing pre-selected) unless a real label already exists for it — which is
 what makes a retired MEZCLA value force a fresh choice on review, since it can
 never match the current option list. And the optional "show automatic analysis"
 overlay is **off by default** on purpose — seeing the pipeline's estimated
 crystallinity while labelling makes the labels dependent on the algorithm they
 are supposed to validate.
+
+The controls use `st.pills` rather than `st.radio`/`st.checkbox` specifically
+for phone use: a pills group lays its options out horizontally and only wraps
+if it must, so a 4-option judgement costs one short row instead of four full
+rows. Combined with collapsing the file path and the running tally into
+`st.expander`s, dropping the redundant sample-code heading (the plot title
+already shows it), and moving "Aceptar" to an icon-only button shared with
+Anterior/Saltar in one row, the whole plot-plus-judgement screen fits without
+scrolling on a phone — that was the point of this pass. "Dudosa" moved from
+its own checkbox into the indicators pills; it's a soft flag to revisit later,
+not a blocker, and in practice most uncertainty already shows up as a choice
+of INCIPIENTE rather than a separate doubt marker. A small `<script>` embedded
+via `st.iframe` re-anchors the scroll position to just above the plot on every
+rerun, since a phone browser otherwise jumps to whatever just changed.
 
 Reuse: `--server.port` to run several instances; the sidebar filters by metal and
 linker so the corpus can be labelled in themed batches; every click is an
