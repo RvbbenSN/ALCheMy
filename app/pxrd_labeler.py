@@ -401,7 +401,8 @@ def indicators_key(record):
 def main():
     # A short, single-line title - the point of this pass is to give the
     # plot and the judgement controls as much of the screen as possible.
-    st.markdown('<h3 style="margin:0 0 0.15em 0;">🔬 Etiquetado PXRD</h3>',
+    st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
+               'line-height:1.4;">🔬 Etiquetado PXRD</h3>',
                 unsafe_allow_html=True)
 
     # ---- session state ---------------------------------------------------
@@ -515,7 +516,6 @@ def main():
     existing = labels.get(record['file_hash'], {})
     existing_main = existing.get(LABEL_TYPE_MAIN)
 
-    st.divider()
     st.markdown('<div id="patron-anchor"></div>', unsafe_allow_html=True)
 
     # ---- main layout: plot on the left, the three judgement groups to its
@@ -631,10 +631,10 @@ def main():
                  'marca este patron para revisarlo mas tarde (no bloquea el guardado).',
         )
 
-        st.text_input('Comentario', key=ckey,
-                      value=(existing_main or {}).get('notes') or '',
-                      placeholder='comentario opcional...', label_visibility='collapsed')
-
+        # Anterior/Aceptar/Saltar come right after the pills, ahead of the
+        # comment box - the comment is the one thing you don't need to reach
+        # on every single pattern, so it's the one pushed lowest.
+        #
         # st.columns wraps to a vertical stack once each column's computed
         # width drops below its internal minimum - on a phone that happens
         # even for 3 narrow icon buttons nested inside an already-narrow
@@ -648,6 +648,10 @@ def main():
                                        help='Aceptar y siguiente',
                                        key=f'accept_{record["file_hash"]}')
             skip_clicked = st.button('→', help='Saltar', key='btn_skip')
+
+        st.text_input('Comentario', key=ckey,
+                      value=(existing_main or {}).get('notes') or '',
+                      placeholder='comentario opcional...', label_visibility='collapsed')
 
         if prev_clicked:
             go_back(len(view))
