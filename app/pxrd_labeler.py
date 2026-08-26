@@ -474,13 +474,23 @@ def main():
         view = view[view['file_hash'].isin(wanted_text)]
     view = view.reset_index(drop=True)
 
-    # ---- global progress -------------------------------------------------
+    # ---- global progress ---------------------------------------------------
+    # A single compact horizontal line instead of 4 stacked st.metric blocks:
+    # on a phone, 4 metrics stack to fill most of the screen before you even
+    # see the plot. This stays one line regardless of screen width.
     total, done = len(queue), len(labeled_hashes)
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric('Etiquetados', f'{done:,}')
-    c2.metric('Totales', f'{total:,}')
-    c3.metric('Progreso', f'{100*done/total:.1f} %')
-    c4.metric('En esta vista', f'{len(view):,}')
+    pct = 100 * done / total if total else 0.0
+    st.markdown(f"""
+    <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
+                font-size:0.82em; color:var(--text-color, inherit);
+                padding:0.35em 0; white-space:nowrap;">
+        <span><b>{done:,}</b>/{total:,} etiquetados</span>
+        <span>·</span>
+        <span><b>{pct:.1f}%</b> progreso</span>
+        <span>·</span>
+        <span><b>{len(view):,}</b> en esta vista</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.progress(done / total if total else 0.0)
 
     if st.session_state.just_saved:
@@ -500,6 +510,7 @@ def main():
     existing_main = existing.get(LABEL_TYPE_MAIN)
 
     st.divider()
+    st.markdown('<div id="patron-anchor"></div>', unsafe_allow_html=True)
 
     # ---- main layout: plot on the left, the three judgement groups to its
     # right (principal | subtipo incipiente | oxido+mezcla) so nothing needs
@@ -649,6 +660,22 @@ def main():
                 st.rerun()
         st.caption('"Aceptar" guarda todo lo marcado y pasa a la siguiente. '
                    '"Anterior" sirve para revisar; volver a aceptar sobrescribe.')
+
+    # ---- keep the scroll position pinned to the pattern, not the page ----
+    # Every widget change reruns the whole script, and on a phone that made
+    # the page jump to the bottom (chasing the just-tapped radio into view)
+    # or to the very top (after st.rerun()). This snaps back to the anchor
+    # placed just above the plot on every rerun, so the diffractogram stays
+    # in the same spot regardless of what triggered the rerun.
+    st.iframe("""
+    <script>
+        try {
+            const doc = window.parent.document;
+            const el = doc.getElementById('patron-anchor');
+            if (el) { el.scrollIntoView({behavior: 'instant', block: 'start'}); }
+        } catch (e) {}
+    </script>
+    """, height=1)
 
     # ---- pre-fetch the next curve so the next click feels instant --------
     if st.session_state.idx + 1 < len(view):
