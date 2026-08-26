@@ -155,16 +155,22 @@ pilot batch, `--doc ID` for one specific document.
 ### `rag_import_context_batches.py`
 Reads the JSON files written back into `data/rag_context_batches/done/`,
 verifies each one is complete (same chunk count, same exact set of
-`chunk_id`s, no empty sentences) before writing anything, and only then
-inserts into the `rag_chunk_context` sidecar table — never into `rag_chunks`
-itself. Problem solved: an LLM asked to process ~90 items in one request can
-silently skip or merge some of them; this script makes that failure loud
-(the whole file is rejected, moved to `rejected/`, and nothing is written)
-instead of quietly leaving gaps. Reuse: dry run by default, `--apply` to
-actually write and archive processed files into `imported/`; `--status`
-prints overall progress (how much of the whole corpus is done) plus what is
-currently sitting in each folder, so an interrupted Antigravity session
-never leaves you guessing where things stand.
+`chunk_id`s, no empty sentences, and the sentences are actually distinct from
+each other) before writing anything, and only then inserts into the
+`rag_chunk_context` sidecar table — never into `rag_chunks` itself. Problem
+solved: an LLM asked to process ~90 items in one request can silently skip or
+merge some of them, or — a failure mode observed in practice — get lazy and
+paste the same handful of generic sentences across dozens of chunks instead
+of writing one specific sentence per chunk. Both look identical to a
+purely-structural check (right count, right IDs), so the verifier also
+rejects a file where fewer than half the sentences are unique among more
+than 5 results. Either failure makes the whole file loud (rejected, moved to
+`rejected/`, nothing written) instead of quietly leaving gaps or garbage.
+Reuse: dry run by default, `--apply` to actually write and archive processed
+files into `imported/`; `--status` prints overall progress (how much of the
+whole corpus is done) plus what is currently sitting in each folder, so an
+interrupted Antigravity session never leaves you guessing where things
+stand.
 
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
