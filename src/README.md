@@ -233,7 +233,39 @@ each chunk's metadata. Deliberately has **no LLM attached** — problem
 solved: separates "is retrieval finding the right passages" from "is the
 model writing a good answer", which is otherwise impossible to tell apart
 when both live in the same chat. Reuse: `-n` (result count), `--publico`
-(restrict to PUBLIC-sensitivity documents only).
+(restrict to PUBLIC-sensitivity documents only). Searches `embedding` only
+— see `rag_query_compare.py` to also search `embedding_v2`.
+
+### `rag_reembed_context.py`
+The final step of contextual retrieval (Anthropic's technique, see
+`methodology/ROADMAP_RAG_Y_GRAFO.md`): computes `rag_chunks.embedding_v2 =
+embed(context_sentence + "\n\n" + text)` for every chunk that has a
+sentence in `rag_chunk_context`, using the same local Ollama `bge-m3`
+model, batching, and retry/backoff shape as `rag_ingest_chunks.py`. Problem
+solved: the technique only works if the context sentence is baked into
+what gets embedded — keeping it as a separate, un-vectorised column (safer,
+but pointless for search) throws away the entire retrieval-quality gain the
+roadmap cites (+35% fewer failures from contextual embeddings alone). This
+writes into a **second** column instead of overwriting `embedding`,
+specifically because the context sentences come from an external LLM whose
+failure modes (see `rag_export_context_repairs.py`) can't realistically be
+hand-checked across ~88k chunks — `embedding` stays untouched no matter
+what, so nothing about today's working retrieval can regress from running
+this. Reuse: resumable by default (`WHERE embedding_v2 IS NULL`), `--force`
+to recompute, `--limit N` for a pilot, `--doc ID` for one document.
+
+### `rag_query_compare.py`
+A/B tool: embeds one question and runs a plain cosine-similarity search
+against `embedding` and `embedding_v2` separately, printing both result
+sets side by side plus which chunk_ids only show up in one of them.
+Deliberately skips the BM25/RRF fusion `rag_hybrid_search()` does — the
+question this answers is narrowly "did adding context change what the
+vector search finds", not "what's the best retrieval pipeline". Problem
+solved: gives the project owner a way to judge, on real questions, whether
+`embedding_v2` is actually better before switching anything over — no
+manual review of the underlying context sentences required, just look at
+whether the passages that come back are more relevant. Reuse: `-n` (result
+count per column).
 
 ### `rag_smoke_test.py`
 Self-cleaning end-to-end health check: inserts one synthetic test document
