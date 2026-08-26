@@ -28,6 +28,10 @@ Usage
 -----
     python src/rag_import_context_batches.py                # dry run: report only
     python src/rag_import_context_batches.py --apply         # write + archive done files
+
+    # Point at a different pending/done/imported/rejected tree, e.g. the
+    # targeted-repair batches written by rag_export_context_repairs.py:
+    python src/rag_import_context_batches.py --batch-root data/rag_context_batches/repairs --apply
 """
 
 import argparse
@@ -41,9 +45,6 @@ import psycopg2
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BATCH_ROOT = REPO_ROOT / "data" / "rag_context_batches"
-DONE_DIR = BATCH_ROOT / "done"
-IMPORTED_DIR = BATCH_ROOT / "imported"
-REJECTED_DIR = BATCH_ROOT / "rejected"
 
 
 def connect():
@@ -140,14 +141,15 @@ SELECT
 """
 
 
-def print_status():
+def print_status(batch_root):
     """Progress against the WHOLE corpus (DB), plus what's sitting in each
     folder right now - the two numbers answer different questions: the DB
     numbers say "how much of the corpus is done", the folder numbers say
     "is there anything left over from an interrupted Antigravity session
-    that still needs draining"."""
+    that still needs draining". The DB numbers are always corpus-wide
+    regardless of --batch-root; only the folder counts change."""
     for name in ("pending", "done", "imported", "rejected"):
-        (BATCH_ROOT / name).mkdir(parents=True, exist_ok=True)
+        (batch_root / name).mkdir(parents=True, exist_ok=True)
 
     connection = connect()
     cursor = connection.cursor()
@@ -156,10 +158,10 @@ def print_status():
     cursor.close()
     connection.close()
 
-    pending_n = len(list((BATCH_ROOT / "pending").glob("*.json")))
-    done_n = len(list((BATCH_ROOT / "done").glob("*.json")))
-    imported_n = len(list((BATCH_ROOT / "imported").glob("*.json")))
-    rejected_n = len(list((BATCH_ROOT / "rejected").glob("*.json")))
+    pending_n = len(list((batch_root / "pending").glob("*.json")))
+    done_n = len(list((batch_root / "done").glob("*.json")))
+    imported_n = len(list((batch_root / "imported").glob("*.json")))
+    rejected_n = len(list((batch_root / "rejected").glob("*.json")))
 
     print("=== Progreso global (toda la base de datos) ===")
     print("Documentos PUBLIC con al menos 1 frase : {} / {}".format(docs_done, total_docs))
@@ -168,7 +170,7 @@ def print_status():
         print("Porcentaje del corpus                   : {:.1f}%".format(
             100.0 * chunks_done / total_chunks))
     print()
-    print("=== Carpeta data/rag_context_batches/ ahora mismo ===")
+    print("=== Carpeta {} ahora mismo ===".format(batch_root))
     print("pending/  (esperando a Antigravity)     : {}".format(pending_n))
     print("done/     (esperando a --apply)         : {}".format(done_n))
     print("imported/ (ya en la base de datos)      : {}".format(imported_n))
@@ -191,25 +193,34 @@ def main():
                         help="value stored in rag_chunk_context.source_model")
     parser.add_argument("--status", action="store_true",
                         help="print overall progress (DB + folders) and exit, without importing anything")
+    parser.add_argument("--batch-root", default=None,
+                        help="pending/done/imported/rejected tree to use "
+                             "(default: data/rag_context_batches). Point this at "
+                             "data/rag_context_batches/repairs for targeted-repair batches.")
     args = parser.parse_args()
 
-    if args.status:
-        return print_status()
+    batch_root = Path(args.batch_root) if args.batch_root else BATCH_ROOT
+    done_dir = batch_root / "done"
+    imported_dir = batch_root / "imported"
+    rejected_dir = batch_root / "rejected"
 
-    if not DONE_DIR.is_dir():
-        print("No existe {} - nada que importar todavia.".format(DONE_DIR))
+    if args.status:
+        return print_status(batch_root)
+
+    if not done_dir.is_dir():
+        print("No existe {} - nada que importar todavia.".format(done_dir))
         return 0
 
     if args.apply:
-        IMPORTED_DIR.mkdir(parents=True, exist_ok=True)
-        REJECTED_DIR.mkdir(parents=True, exist_ok=True)
+        imported_dir.mkdir(parents=True, exist_ok=True)
+        rejected_dir.mkdir(parents=True, exist_ok=True)
 
     connection = connect() if args.apply else None
     cursor = connection.cursor() if connection else None
 
     accepted, rejected, total_sentences = 0, 0, 0
 
-    for path in sorted(DONE_DIR.glob("*.json")):
+    for path in sorted(done_dir.glob("*.json")):
         try:
             with open(path, encoding="utf-8") as handle:
                 batch = json.load(handle)
@@ -217,7 +228,7 @@ def main():
             print("!! {} : JSON invalido ({})".format(path.name, error))
             rejected += 1
             if args.apply:
-                shutil.move(str(path), str(REJECTED_DIR / path.name))
+                shutil.move(str(path), str(rejected_dir / path.name))
             continue
 
         ok, reason = verify(batch, path.name)
@@ -227,7 +238,7 @@ def main():
         if not ok:
             rejected += 1
             if args.apply:
-                shutil.move(str(path), str(REJECTED_DIR / path.name))
+                shutil.move(str(path), str(rejected_dir / path.name))
             continue
 
         accepted += 1
@@ -237,7 +248,7 @@ def main():
                                         args.model_name, path.name))
                 total_sentences += 1
             connection.commit()
-            shutil.move(str(path), str(IMPORTED_DIR / path.name))
+            shutil.move(str(path), str(imported_dir / path.name))
         else:
             total_sentences += len(batch["results"])
 
