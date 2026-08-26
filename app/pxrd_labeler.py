@@ -131,16 +131,23 @@ st.set_page_config(page_title='ALCheMy - Etiquetado PXRD', page_icon='🔬', lay
 # Bigger touch targets for buttons, and a general tightening of vertical
 # whitespace - the whole point of this pass is to fit plot + every judgement
 # on one phone screen with no scrolling. See src/README.md.
+#
+# NOTE: a first version also forced margin-bottom on every stElementContainer
+# and gap on every stVerticalBlock. That's too broad a hammer - some
+# Streamlit elements (captions especially) already carry their own negative
+# offsets tuned for the *default* spacing, so stacking two independent
+# shrinks on top of each other made captions overlap the element above them.
+# Scoped only to the block-container top padding (Streamlit reserves a lot
+# of empty space there by default) and the expander header, which are safe
+# because nothing else depends on their exact size.
 st.markdown("""
 <style>
 div[data-testid="stButton"] > button {
     min-height: 2.6em;
     font-size: 1.0em;
 }
-div[data-testid="stElementContainer"] { margin-bottom: 0.15rem !important; }
-div[data-testid="stVerticalBlock"] { gap: 0.35rem !important; }
+div.block-container { padding-top: 1.2rem !important; }
 [data-testid="stExpander"] summary { padding: 0.35rem 0.6rem !important; min-height: 0 !important; }
-[data-testid="stCaptionContainer"] p { margin-bottom: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -628,11 +635,26 @@ def main():
                       value=(existing_main or {}).get('notes') or '',
                       placeholder='comentario opcional...', label_visibility='collapsed')
 
-        nprev, naccept, nskip = st.columns([1, 1, 1])
-        with naccept:
-            accept_clicked = st.button('✅', width='stretch', type='primary',
+        # st.columns wraps to a vertical stack once each column's computed
+        # width drops below its internal minimum - on a phone that happens
+        # even for 3 narrow icon buttons nested inside an already-narrow
+        # column. st.container(horizontal=True) is a plain flexbox row with
+        # no such breakpoint, so these three stay side by side regardless of
+        # screen width.
+        with st.container(horizontal=True, horizontal_alignment='distribute'):
+            prev_clicked = st.button('←', help='Anterior',
+                                     disabled=st.session_state.idx == 0, key='btn_prev')
+            accept_clicked = st.button('✅', type='primary',
                                        help='Aceptar y siguiente',
                                        key=f'accept_{record["file_hash"]}')
+            skip_clicked = st.button('→', help='Saltar', key='btn_skip')
+
+        if prev_clicked:
+            go_back(len(view))
+            st.rerun()
+        if skip_clicked:
+            advance(len(view))
+            st.rerun()
         if accept_clicked:
             if st.session_state.get(mkey) is None:
                 st.error('Elige una categoria Principal antes de aceptar.')
@@ -656,15 +678,6 @@ def main():
                 # move forward explicitly.
                 if not only_pending:
                     advance(len(view))
-                st.rerun()
-        with nprev:
-            if st.button('←', width='stretch', help='Anterior',
-                         disabled=st.session_state.idx == 0, key='btn_prev'):
-                go_back(len(view))
-                st.rerun()
-        with nskip:
-            if st.button('→', width='stretch', help='Saltar', key='btn_skip'):
-                advance(len(view))
                 st.rerun()
 
     # ---- keep the scroll position pinned to the pattern, not the page ----
