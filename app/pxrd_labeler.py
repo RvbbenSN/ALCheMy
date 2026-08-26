@@ -146,7 +146,12 @@ div[data-testid="stButton"] > button {
     min-height: 2.6em;
     font-size: 1.0em;
 }
-div.block-container { padding-top: 1.2rem !important; }
+/* Streamlit's own top header (sidebar-toggle + kebab menu) is a fixed
+   overlay - shrinking block-container's padding-top below its height made
+   the title render partly underneath it. Shrink the header itself instead
+   of just the padding, then match the padding to the new height. */
+header[data-testid="stHeader"] { height: 2.2rem; }
+div.block-container { padding-top: 2.6rem !important; }
 [data-testid="stExpander"] summary { padding: 0.35rem 0.6rem !important; min-height: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -502,7 +507,10 @@ def main():
 
     if st.session_state.just_saved:
         value, code = st.session_state.just_saved
-        st.success(f'Guardado: **{code} → {value}**', icon='✅')
+        # st.toast is a small floating notification that auto-dismisses and
+        # never occupies layout space - unlike st.success, which was an
+        # always-on banner pushing everything else down the screen.
+        st.toast(f'{code} → {value}', icon='✅')
         st.session_state.just_saved = None
 
     if view.empty:
@@ -526,15 +534,27 @@ def main():
     with plot_col:
         # One condensed line instead of a subheader + markdown + 2 captions:
         # the plot title already repeats the sample code, so it isn't
-        # duplicated here.
+        # duplicated here. The tally popover rides the same row, on the
+        # right, instead of its own section at the bottom of the page.
         extra = []
         if pd.notna(record.get('temp_target_c')):
             extra.append(f"{record['temp_target_c']:.0f}°C")
         if pd.notna(record.get('time_hours')):
             extra.append(f"{record['time_hours']:.0f}h")
         extra_txt = (' · ' + ' · '.join(extra)) if extra else ''
-        st.caption(f"**{record['metal_center']}** | **{record['linker']}**{extra_txt} · "
-                  f"{st.session_state.idx + 1}/{len(view)}")
+
+        with st.container(horizontal=True, horizontal_alignment='distribute'):
+            st.caption(f"**{record['metal_center']}** | **{record['linker']}**{extra_txt} · "
+                      f"{st.session_state.idx + 1}/{len(view)}")
+            if labels:
+                with st.popover('📊', help='Reparto de lo etiquetado hasta ahora'):
+                    main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
+                                if LABEL_TYPE_MAIN in d]
+                    tally = pd.Series(main_seen).value_counts()
+                    for value, caption, _h in CATEGORIES:
+                        st.caption(f"{caption}: **{int(tally.get(value, 0))}**")
+                    if tally.get('MEZCLA', 0):
+                        st.caption(f"MEZCLA (antigua): **{int(tally.get('MEZCLA', 0))}**")
 
         with st.expander('📄 Fichero', expanded=False):
             st.caption(f"`{record['file_name']}`")
@@ -599,12 +619,20 @@ def main():
                        if existing_subtype and existing_subtype['label_value'] in subtype_values
                        else None)
 
+    # Numbered pills (1/2/3) instead of the full caption text - the meaning
+    # lives in the tooltip instead of the pill itself, so the row stays as
+    # short as the Principal row instead of wrapping across two lines.
+    subtype_numbers = {s[0]: str(i + 1) for i, s in enumerate(INCIPIENT_SUBTYPES)}
+    subtype_help = '  \n'.join(f"**{i+1}**: {s[1]} - {s[2]}"
+                               for i, s in enumerate(INCIPIENT_SUBTYPES))
+
     with subtype_col:
         st.caption('**SUBTIPO** · si es INCIPIENTE')
         subtype_choice = st.pills(
             'Subtipo de incipiente', options=subtype_values,
-            format_func=lambda v: dict((s[0], s[1]) for s in INCIPIENT_SUBTYPES)[v],
+            format_func=lambda v: subtype_numbers[v],
             default=subtype_default, key=skey, label_visibility='collapsed',
+            help=subtype_help,
         )
 
     with flags_col:
@@ -686,19 +714,25 @@ def main():
 
     # ---- keep the scroll position pinned to the pattern, not the page ----
     # Every widget change reruns the whole script, and on a phone that made
-    # the page jump to the bottom (chasing the just-tapped radio into view)
-    # or to the very top (after st.rerun()). This snaps back to the anchor
-    # placed just above the plot on every rerun, so the diffractogram stays
-    # in the same spot regardless of what triggered the rerun.
-    st.iframe("""
+    # the page jump to the bottom (landing on the tally expander) or to the
+    # very top. This snaps back to the anchor placed just above the plot on
+    # every rerun, so the diffractogram stays in the same spot regardless of
+    # what triggered the rerun.
+    #
+    # st.iframe (and the deprecated components.html before it) sandboxes the
+    # script inside its own iframe, so window.parent.document access can be
+    # silently blocked by the browser's cross-origin policy - the script
+    # would just no-op with no visible error, which is exactly what seemed
+    # to happen here. st.html with unsafe_allow_javascript runs the script
+    # directly in the main document, so plain `document` is enough.
+    st.html("""
     <script>
         try {
-            const doc = window.parent.document;
-            const el = doc.getElementById('patron-anchor');
+            const el = document.getElementById('patron-anchor');
             if (el) { el.scrollIntoView({behavior: 'instant', block: 'start'}); }
         } catch (e) {}
     </script>
-    """, height=1)
+    """, unsafe_allow_javascript=True)
 
     # ---- pre-fetch the next curve so the next click feels instant --------
     if st.session_state.idx + 1 < len(view):
@@ -706,17 +740,6 @@ def main():
             load_curve(view.iloc[st.session_state.idx + 1]['measurement_id'])
         except Exception:
             pass
-
-    # ---- running tally, collapsed by default to save screen space --------
-    if labels:
-        with st.expander('📊 Reparto de lo etiquetado hasta ahora', expanded=False):
-            main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
-                        if LABEL_TYPE_MAIN in d]
-            tally = pd.Series(main_seen).value_counts()
-            tcols = st.columns(len(CATEGORIES) + 1)
-            for col, (value, caption, _h) in zip(tcols, CATEGORIES):
-                col.metric(caption, int(tally.get(value, 0)))
-            tcols[-1].metric('MEZCLA (antigua)', int(tally.get('MEZCLA', 0)))
 
 
 if __name__ == '__main__':

@@ -408,9 +408,22 @@ Anterior/Saltar in one row, the whole plot-plus-judgement screen fits without
 scrolling on a phone — that was the point of this pass. "Dudosa" moved from
 its own checkbox into the indicators pills; it's a soft flag to revisit later,
 not a blocker, and in practice most uncertainty already shows up as a choice
-of INCIPIENTE rather than a separate doubt marker. A small `<script>` embedded
-via `st.iframe` re-anchors the scroll position to just above the plot on every
-rerun, since a phone browser otherwise jumps to whatever just changed.
+of INCIPIENTE rather than a separate doubt marker. A small `<script>` inserted
+via `st.html(..., unsafe_allow_javascript=True)` re-anchors the scroll position
+to just above the plot on every rerun, since a phone browser otherwise jumps to
+whatever just changed - this needed `st.html`, not the deprecated
+`st.components.v1.html`/`st.iframe`, because those sandbox the script inside
+its own iframe, where `window.parent.document` access can be silently blocked
+by the browser and the whole trick becomes a silent no-op. `st.html` runs the
+script directly in the main document instead.
+
+Two more mobile-driven details: the running tally lives in an `st.popover`
+next to the metal/linker line rather than its own section, and the "saved"
+confirmation is an `st.toast` (auto-dismissing, no layout space) instead of an
+`st.success` banner that used to push the whole screen down after every click.
+Streamlit's own top header is a fixed overlay, not part of the normal document
+flow, so shrinking `block-container`'s top padding without also shrinking the
+header let the title render partly underneath it — both are sized together.
 
 Reuse: `--server.port` to run several instances; the sidebar filters by metal and
 linker so the corpus can be labelled in themed batches; every click is an
