@@ -393,9 +393,13 @@ def main():
 
     st.divider()
 
-    # ---- the sample under judgement -------------------------------------
-    info_l, info_r = st.columns([2, 3])
-    with info_l:
+    # ---- main layout: plot on the left, controls on the right ------------
+    # The classification buttons sit next to the diffractogram (not below it)
+    # so labelling never needs a scroll - that was the whole point of the
+    # one-click auto-advance design.
+    plot_col, control_col = st.columns([3, 1])
+
+    with plot_col:
         st.subheader(record['sample_code'])
         st.markdown(
             f"**Metal:** `{record['metal_center']}`  |  **Linker:** `{record['linker']}`"
@@ -409,52 +413,37 @@ def main():
             extra.append(str(record['synthesis_date']))
         if extra:
             st.caption(' · '.join(extra))
-    with info_r:
         st.caption(f"**Fichero:** `{record['file_name']}`")
         st.caption(f"**Ruta:** `{record['raw_file_path']}`")
         st.caption(f"**Posicion:** {st.session_state.idx + 1} de {len(view)}")
 
-    if existing:
-        st.info(f"Ya etiquetado como **{existing['label_value']}** "
-                f"({existing['confidence']}). Volver a pulsar lo sobrescribe."
-                + (f"  \nNota: _{existing['notes']}_" if existing['notes'] else ''))
+        if existing:
+            st.info(f"Ya etiquetado como **{existing['label_value']}** "
+                    f"({existing['confidence']}). Volver a pulsar lo sobrescribe."
+                    + (f"  \nNota: _{existing['notes']}_" if existing['notes'] else ''))
 
-    # ---- the diffractogram ----------------------------------------------
-    try:
-        x, y = load_curve(record['measurement_id'])
-    except Exception as exc:
-        st.error(f'No se pudo cargar la curva: {exc}')
-        x = y = None
+        # ---- the diffractogram --------------------------------------------
+        try:
+            x, y = load_curve(record['measurement_id'])
+        except Exception as exc:
+            st.error(f'No se pudo cargar la curva: {exc}')
+            x = y = None
 
-    if x is None or len(x) == 0:
-        st.warning('Esta medida no tiene curva utilizable. Puedes marcarla como SIN MUESTRA '
-                   'o saltarla.')
-    else:
-        fig = plot_pattern(x, y, record['sample_code'], show_analysis)
-        st.pyplot(fig, width='stretch')
-        plt.close(fig)      # matplotlib figures leak across re-runs if not closed
+        if x is None or len(x) == 0:
+            st.warning('Esta medida no tiene curva utilizable. Puedes marcarla como SIN MUESTRA '
+                       'o saltarla.')
+        else:
+            fig = plot_pattern(x, y, record['sample_code'], show_analysis)
+            st.pyplot(fig, width='stretch')
+            plt.close(fig)      # matplotlib figures leak across re-runs if not closed
 
-    # ---- comment + doubt -------------------------------------------------
-    # Keyed by file hash: each pattern owns its widgets, so they start empty and
-    # stepping back restores what was typed. See the note above `advance`.
-    ckey, dkey = comment_key(record), doubtful_key(record)
-    cc1, cc2 = st.columns([4, 1])
-    with cc1:
-        st.text_input('Comentario (opcional)', key=ckey,
-                      value=(existing or {}).get('notes') or '',
-                      placeholder='p. ej. posible fase de oxido, portamuestras sucio...')
-    with cc2:
-        st.checkbox('Dudosa', key=dkey,
-                    value=bool(existing and existing.get('confidence') == 'dudosa'),
-                    help='Se guarda como confidence = dudosa y podras excluirla del entrenamiento.')
-
-    # ---- the classification buttons -------------------------------------
-    st.markdown('#### Clasificacion')
-    cols = st.columns(len(CATEGORIES))
-    for col, (value, caption, help_text) in zip(cols, CATEGORIES):
-        with col:
+    with control_col:
+        # ---- the classification buttons, stacked so they stay beside the plot
+        st.markdown('#### Clasificacion')
+        for value, caption, help_text in CATEGORIES:
             if st.button(caption, width='stretch', type='primary',
                          help=help_text, key=f'btn_{value}'):
+                ckey, dkey = comment_key(record), doubtful_key(record)
                 save_label(record, value,
                            'dudosa' if st.session_state.get(dkey) else 'alta',
                            st.session_state.get(ckey, ''), labeled_by)
@@ -467,18 +456,29 @@ def main():
                     advance(len(view))
                 st.rerun()
 
-    # ---- navigation ------------------------------------------------------
-    n1, n2, n3 = st.columns([1, 1, 4])
-    with n1:
+        st.divider()
+
+        # ---- comment + doubt -----------------------------------------------
+        # Keyed by file hash: each pattern owns its widgets, so they start empty
+        # and stepping back restores what was typed. See the note above `advance`.
+        ckey, dkey = comment_key(record), doubtful_key(record)
+        st.text_input('Comentario (opcional)', key=ckey,
+                      value=(existing or {}).get('notes') or '',
+                      placeholder='p. ej. posible fase de oxido...')
+        st.checkbox('Dudosa', key=dkey,
+                    value=bool(existing and existing.get('confidence') == 'dudosa'),
+                    help='Se guarda como confidence = dudosa y podras excluirla del entrenamiento.')
+
+        st.divider()
+
+        # ---- navigation ------------------------------------------------------
         if st.button('← Anterior', width='stretch',
                      disabled=st.session_state.idx == 0, key='btn_prev'):
             go_back(len(view))
             st.rerun()
-    with n2:
         if st.button('Saltar →', width='stretch', key='btn_skip'):
             advance(len(view))
             st.rerun()
-    with n3:
         st.caption('Al clasificar se guarda y se pasa sola a la siguiente. '
                    '"Anterior" sirve para revisar; volver a clasificar sobrescribe.')
 
