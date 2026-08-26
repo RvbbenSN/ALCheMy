@@ -1,6 +1,41 @@
 """
 ALCheMy - PXRD labelling app
 
+IF YOU ARE AN AI PICKING THIS UP LATER, READ THIS FIRST
+---------------------------------------------------------
+This file went through many rounds of real-user iteration on a phone
+(2026-08-26) and the current shape works well - the owner (a materials
+chemist, not a programmer) explicitly asked for it to be preserved. Change it
+freely when asked, but understand *why* it looks like this before you do,
+because most of the layout looks over-engineered until you know the
+constraint it solves:
+
+  - It is used BOTH at a desk and, just as often, one-handed on a phone
+    while looking at real diffractograms. Every layout decision below
+    optimises for "no scrolling on a phone, one thing to tap per judgement."
+  - Streamlit reruns the ENTIRE script on every interaction. Anything that
+    looks like unnecessary caching, pre-fetching, or a scoped CSS rule
+    instead of a global one is there because the naive version was tried
+    first and broke on a phone (see the section-by-section comments below
+    and src/README.md's "Labelling app" entry for the specific failures:
+    captions overlapping after a global spacing rule, the title clipping
+    under Streamlit's own header, st.iframe silently failing to scroll
+    because of iframe sandboxing, columns refusing to stay in one row on
+    narrow screens).
+  - The four separate `label_type` rows per pattern (crystallinity_class /
+    incipient_subtype / oxide_flag / multiphase_suspected) are a deliberate
+    choice, not leftover complexity - see "FOUR INDEPENDENT JUDGEMENTS"
+    below for why they were split apart mid-labelling.
+  - The on-screen text is English; the values actually written to the
+    database are not, and must not be renamed without a migration - see
+    the CATEGORIES/INCIPIENT_SUBTYPES comments and src/README.md.
+  - ~1,880 patterns exist, the owner labels several hundred per sitting, and
+    over 1,300 were already labelled through this exact UI as of this
+    writing. Any change that would silently alter how already-saved labels
+    are interpreted (renaming a label_value, changing what a pill maps to)
+    is a correctness risk, not just a UI tweak - double-check against
+    src/README.md and scripts/ddl_pxrd_labels_v2.sql before doing it.
+
 WHAT IT IS FOR
 --------------
 Stage E2 of methodology/ROADMAP_PXRD_CRISTALINIDAD_Y_ML.md: producing the human
