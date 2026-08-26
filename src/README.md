@@ -200,6 +200,18 @@ those rows. Reuse: `--limit N` for a pilot, `--doc ID` for one document,
 `--pattern` to hunt a different bad-sentence signature if a new failure mode
 shows up later.
 
+`--mode recycled` handles a second, older failure: 37 documents were found
+with the *original* recycled-sentence problem (a handful of duplicated
+sentences across most of a document's chunks) that predates the diversity
+check in `rag_import_context_batches.py` — their `created_at` is all before
+that check was merged, so nothing ever rejected them. There is no reliable
+way to tell which duplicate was "the real one" for an affected chunk, so
+this mode re-exports the document's **entire** chunk list (not a subset)
+via `--diversity-threshold` (default 0.5, same threshold the import-side
+check uses). `--mode template` (the default) stays scoped to individual
+chunk_ids since that failure only ever hits a minority of a document's
+chunks.
+
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
 (`needs_ocr = FALSE`) with a recursive character splitter (1200 chars,

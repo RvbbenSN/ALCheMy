@@ -1,25 +1,42 @@
 """
 ALCheMy RAG - Targeted Context-Sentence Repair Exporter (Fase C-bis)
 
-Finds chunk_context rows that already look wrong - by default, the broken
-template signature discovered on 2026-08-26 ("This X chunk (part N)
-evaluates <garbled word> regarding <title>", where a nonsensical or
-truncated fragment stands in for real content) - and exports ONLY those
-chunk_ids for reprocessing, instead of redoing whole documents that are
-otherwise fine.
+Finds chunk_context rows that already look wrong and exports them for
+reprocessing, instead of blindly redoing the whole corpus. Two independent
+failure signatures have been observed so far, selected with --mode:
 
-Why targeted repair instead of redoing whole documents
-------------------------------------------------------
-The 2026-08-26 incident affected 502 of 783 imported documents, but within
-each affected document only a small fraction of chunks were actually bad
-(median ~10%, only one document over 50%). Re-exporting whole documents
-would throw away thousands of good sentences to fix a few hundred bad ones.
-This script asks Gemini to regenerate only the flagged chunk_ids, still
-giving it the full document text for context (contextual retrieval needs
-that), and the same rag_import_context_batches.py --apply step overwrites
-just those rows via the existing ON CONFLICT (chunk_id) upsert - nothing
-else in rag_chunk_context is touched, and rag_chunks.text/embedding are
-never touched by any script in this pipeline.
+  --mode template (default): the "(part N)" filler-template sentence
+  ("This X chunk (part N) evaluates <garbled word> regarding <title>")
+  found 2026-08-26. Each such sentence is technically distinct from its
+  neighbours (different part number, different fragment), so it passes
+  BOTH structural verification and the diversity check in
+  rag_import_context_batches.py - it can only be found by scanning already-
+  imported text for the pattern. Scoped per CHUNK: only the flagged
+  chunk_ids of an affected document are re-exported, because within a
+  document this defect only ever hit a minority of its chunks (median ~10%
+  in the first incident).
+
+  --mode recycled: whole documents where most chunks share a small handful
+  of duplicated sentences (diversity ratio < --diversity-threshold, default
+  50%). This is the SAME failure the diversity check in
+  rag_import_context_batches.py was built to catch - but 37 documents were
+  found to have it anyway, all imported (created_at 2026-08-25 17:35 to
+  2026-08-26 10:38) BEFORE that check existed, so nothing rejected them at
+  the time. There is no reliable way to tell which of a document's
+  duplicated sentences was "the real one" when a chunk had it, so this mode
+  re-exports the document's FULL chunk list for a clean redo, not just a
+  subset.
+
+Why targeted (chunk-level) repair for --mode template
+-------------------------------------------------------
+Re-exporting whole documents to fix a scattered few chunks would throw away
+thousands of good sentences. This script asks Gemini to regenerate only the
+flagged chunk_ids, still giving it the full document text for context
+(contextual retrieval needs that), and the same
+rag_import_context_batches.py --apply step overwrites just those rows via
+the existing ON CONFLICT (chunk_id) upsert - nothing else in
+rag_chunk_context is touched, and rag_chunks.text/embedding are never
+touched by any script in this pipeline.
 
 Output goes to data/rag_context_batches/repairs/pending/, a separate tree
 from the normal pending/done/imported/rejected/ used for first-time
@@ -29,10 +46,11 @@ Import it the same way, just pointing --batch-root at that tree:
 
 Usage
 -----
-    python src/rag_export_context_repairs.py                 # export every affected document
-    python src/rag_export_context_repairs.py --limit 20       # a small pilot batch first
-    python src/rag_export_context_repairs.py --doc 291        # one specific document
-    python src/rag_export_context_repairs.py --pattern '...'  # override the broken-sentence regex
+    python src/rag_export_context_repairs.py                       # template mode, every affected document
+    python src/rag_export_context_repairs.py --limit 20             # a small pilot batch first
+    python src/rag_export_context_repairs.py --doc 291              # one specific document
+    python src/rag_export_context_repairs.py --pattern '...'        # override the broken-sentence regex
+    python src/rag_export_context_repairs.py --mode recycled        # the older, whole-document failure
 """
 
 import argparse
@@ -86,12 +104,50 @@ REPAIR_INSTRUCTIONS = (
     "set of chunk_id values."
 )
 
+RECYCLED_INSTRUCTIONS = (
+    "This is a REPAIR batch, not a first pass. This document was previously "
+    "processed by a model that reused a small handful of generic sentences "
+    "across most of its chunks (e.g. 5 distinct sentences copy-pasted across "
+    "150+ chunk_ids) instead of writing one specific sentence per chunk. "
+    "Every chunk in this document is being redone from scratch.\n\n"
+    "For EVERY chunk in the list, write ONE short sentence (max ~25 words) "
+    "that situates that specific chunk within the document: what section it "
+    "is likely part of, and how it relates to the paper's overall subject. "
+    "Do not summarise or repeat the chunk's own content - only add context "
+    "that is NOT already obvious from reading the chunk in isolation. "
+    "CRITICAL: every context_sentence must be unique and specific to that "
+    "exact chunk. Do not reuse the same sentence, or a near-identical one "
+    "with only a word swapped, across multiple chunks - even when several "
+    "chunks come from a similar part of the document (e.g. a references "
+    "list or a data table), say what is actually different about each one.\n\n"
+    "You MUST process every chunk in the list, in the given order, with no "
+    "omissions, no additions, and no changes to any chunk_id. "
+    "Respond with ONLY a JSON array, one object per chunk, in this exact "
+    "shape, and nothing else (no markdown fences, no commentary):\n"
+    '[{"chunk_id": 123, "context_sentence": "..."}, ...]\n\n'
+    "Before answering, count: your output array MUST have exactly the same "
+    "number of elements as the input chunks array, with exactly the same "
+    "set of chunk_id values."
+)
+
 BROKEN_CHUNKS_QUERY = """
 SELECT c.document_id, c.id AS chunk_id, c.text
 FROM rag_chunk_context cc
 JOIN rag_chunks c ON c.id = cc.chunk_id
 WHERE cc.context_sentence ~ %s
 ORDER BY c.document_id, c.id;
+"""
+
+RECYCLED_DOCS_QUERY = """
+SELECT c.document_id, count(*) AS n, count(DISTINCT cc.context_sentence) AS uniq
+FROM rag_chunk_context cc
+JOIN rag_chunks c ON c.id = cc.chunk_id
+GROUP BY c.document_id
+HAVING count(*) > 5;
+"""
+
+ALL_CHUNKS_QUERY = """
+SELECT id AS chunk_id, text FROM rag_chunks WHERE document_id = %s ORDER BY id;
 """
 
 DOCS_QUERY = """
@@ -104,10 +160,18 @@ WHERE document_id = ANY(%s);
 def main():
     parser = argparse.ArgumentParser(
         description="Export targeted repair batches for chunks with a broken context sentence")
+    parser.add_argument("--mode", choices=["template", "recycled"], default="template",
+                        help="'template' (default): hunt the '(part N)' filler-template "
+                             "signature via --pattern, chunk by chunk. 'recycled': find whole "
+                             "documents with diversity below --diversity-threshold and redo "
+                             "ALL of that document's chunks (the pre-2026-08-26 diversity-check "
+                             "failure, found in already-imported data that predates the check).")
     parser.add_argument("--pattern", default=DEFAULT_BROKEN_PATTERN,
-                        help="POSIX regex (matched with ~) identifying a broken "
-                             "context_sentence (default: the '(part N)' filler-template "
-                             "signature from the 2026-08-26 incident)")
+                        help="template mode only: POSIX regex (matched with ~) identifying a "
+                             "broken context_sentence (default: the '(part N)' signature)")
+    parser.add_argument("--diversity-threshold", type=float, default=0.5,
+                        help="recycled mode only: flag a document if "
+                             "unique_sentences/total_sentences is below this (default 0.5)")
     parser.add_argument("--limit", type=int, default=None,
                         help="export at most N affected documents (for a pilot run)")
     parser.add_argument("--doc", type=int, default=None,
@@ -120,12 +184,28 @@ def main():
 
     connection = connect()
     cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute(BROKEN_CHUNKS_QUERY, (args.pattern,))
-    broken_rows = cursor.fetchall()
 
-    broken_by_doc = defaultdict(list)
-    for row in broken_rows:
-        broken_by_doc[row["document_id"]].append(row)
+    if args.mode == "template":
+        cursor.execute(BROKEN_CHUNKS_QUERY, (args.pattern,))
+        broken_rows = cursor.fetchall()
+        broken_by_doc = defaultdict(list)
+        for row in broken_rows:
+            broken_by_doc[row["document_id"]].append(
+                {"chunk_id": row["chunk_id"], "text": row["text"]})
+        scope_desc = "patron {!r}".format(args.pattern)
+        instructions = REPAIR_INSTRUCTIONS
+        extra_batch_fields = {"repair_of_pattern": args.pattern}
+    else:
+        cursor.execute(RECYCLED_DOCS_QUERY)
+        broken_by_doc = {}
+        for row in cursor.fetchall():
+            ratio = row["uniq"] / row["n"]
+            if ratio < args.diversity_threshold:
+                cursor.execute(ALL_CHUNKS_QUERY, (row["document_id"],))
+                broken_by_doc[row["document_id"]] = [dict(r) for r in cursor.fetchall()]
+        scope_desc = "diversidad < {:.0%}".format(args.diversity_threshold)
+        instructions = RECYCLED_INSTRUCTIONS
+        extra_batch_fields = {"repair_of_diversity_threshold": args.diversity_threshold}
 
     doc_ids = sorted(broken_by_doc)
     if args.doc is not None:
@@ -134,7 +214,7 @@ def main():
         doc_ids = doc_ids[:args.limit]
 
     if not doc_ids:
-        print("No se encontraron chunks con el patron {!r} - nada que reparar.".format(args.pattern))
+        print("No se encontraron documentos afectados ({}) - nada que reparar.".format(scope_desc))
         cursor.close()
         connection.close()
         return 0
@@ -164,8 +244,7 @@ def main():
             skipped_no_text += 1
             continue
 
-        chunks = [{"chunk_id": row["chunk_id"], "text": row["text"]}
-                  for row in broken_by_doc[doc_id]]
+        chunks = broken_by_doc[doc_id]
 
         batch = {
             "document_id": doc_id,
@@ -173,10 +252,10 @@ def main():
                 doc["authors"] or "?", doc["year"] or "s.f.",
                 doc["title"] or doc["file_name"], doc["journal"] or ""),
             "doi": doc["doi"],
-            "repair_of_pattern": args.pattern,
-            "instructions": REPAIR_INSTRUCTIONS,
+            "instructions": instructions,
             "full_document_text": full_text,
             "chunks": chunks,
+            **extra_batch_fields,
         }
 
         target = REPAIRS_PENDING_DIR / "{:05d}_{}.json".format(doc_id, slugify(doc["file_name"]))
@@ -188,11 +267,11 @@ def main():
     cursor.close()
     connection.close()
 
-    print("\nDocumentos exportados a {}: {}".format(REPAIRS_PENDING_DIR, written))
+    print("\nModo: {}".format(args.mode))
+    print("Documentos exportados a {}: {}".format(REPAIRS_PENDING_DIR, written))
     print("Chunks a reparar en este lote: {}".format(total_broken_chunks))
     print("Saltados (sin texto legible): {}".format(skipped_no_text))
-    print("Documentos afectados totales en la BD (patron {!r}): {}".format(
-        args.pattern, len(broken_by_doc)))
+    print("Documentos afectados totales en la BD ({}): {}".format(scope_desc, len(broken_by_doc)))
     return 0
 
 
