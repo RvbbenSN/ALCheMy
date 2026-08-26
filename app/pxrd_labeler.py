@@ -10,7 +10,7 @@ zero labels, and no amount of feature engineering compensates for that.
 The whole design is built around one requirement: labelling several hundred
 patterns in a sitting without the tool getting in the way. Crystallinity is
 mandatory per pattern; the incipient subtype, oxide flag and multi-phase flag
-are optional refinements. One "Aceptar y siguiente" click saves everything
+are optional refinements. One "Accept and next" click saves everything
 chosen for the current pattern and advances - no dropdown, no per-field save.
 
 FOUR INDEPENDENT JUDGEMENTS, NOT ONE CATEGORY
@@ -34,7 +34,7 @@ two-resolved-phases pattern is still CRISTALINO by degree of order, with
 multiphase_suspected = SI carrying the "more than one phase" information -
 that is what actually varies independently, not the crystallinity itself.
 Older rows still holding MEZCLA are left as-is and picked up by the
-"repasar" filters in the sidebar; the app deliberately cannot auto-select a
+"review" filters in the sidebar; the app deliberately cannot auto-select a
 retired value, so opening one of them forces a fresh, valid choice.
 
 The incipient subtype stays a label rather than being merged into
@@ -107,25 +107,29 @@ LABEL_TYPE_SUBTYPE = 'incipient_subtype'
 LABEL_TYPE_OXIDE   = 'oxide_flag'
 LABEL_TYPE_MEZCLA  = 'multiphase_suspected'
 
-# Mandatory: degree of crystalline order. (code, caption, help text)
+# Mandatory: degree of crystalline order. (DB code, on-screen caption, help
+# text). The DB code (first element) is never translated - ~1,150 rows
+# already use these Spanish codes, and the DB values are not what the user
+# asked to change; only the on-screen caption and help text are English now.
 CATEGORIES = [
-    ('AMORFO',      'AMORFO',      'Sin reflexiones. Solo halo ancho o ruido.'),
-    ('INCIPIENTE',  'INCIPIENTE',  'Reflexiones debiles asomando sobre un halo dominante.'),
-    ('CRISTALINO',  'CRISTALINO',  'Reflexiones claras y definidas.'),
-    ('SIN_MUESTRA', 'SIN MUESTRA', 'Portamuestras vacio o senal no atribuible a la muestra.'),
+    ('AMORFO',      'Amorphous',    'No reflections. Only a broad halo or noise.'),
+    ('INCIPIENTE',  'Incipient',    'Weak reflections peeking over a dominant halo.'),
+    ('CRISTALINO',  'Crystalline',  'Clear, well-defined reflections.'),
+    ('SIN_MUESTRA', 'No sample',    'Empty sample holder or signal not attributable to the sample.'),
 ]
 
-# Optional, only meaningful when the pattern above is INCIPIENTE.
+# Optional, only meaningful when the pattern above is INCIPIENTE. Same rule:
+# the DB code (first element) stays as-is, only caption/help are English.
 INCIPIENT_SUBTYPES = [
-    ('HALO_DOMINANTE',     'Timido sobre halo',
-     'Picos anchos y muy tenues asomando sobre un halo amorfo dominante.'),
-    ('PICOS_ANCHOS',       'Empieza a cristalizar',
-     'Picos ya anchos pero claramente presentes; el halo ya no domina.'),
-    ('CRISTALITO_PEQUENO', 'Cristalito pequeno',
-     'Picos no muy anchos pero de intensidad baja frente al halo; cristalitos muy pequenos.'),
+    ('HALO_DOMINANTE',     'Faint halo',
+     'Timid, very broad peaks showing over a dominant amorphous halo.'),
+    ('PICOS_ANCHOS',       'Broad peaks',
+     'Peaks already broad but clearly present; the halo no longer dominates.'),
+    ('CRISTALITO_PEQUENO', 'Small crystallite',
+     'Peaks not very broad but low intensity relative to the halo; very small crystallites.'),
 ]
 
-st.set_page_config(page_title='ALCheMy - Etiquetado PXRD', page_icon='🔬', layout='wide',
+st.set_page_config(page_title='ALCheMy - PXRD Labeling', page_icon='🔬', layout='wide',
                     initial_sidebar_state='collapsed')
 
 # Bigger touch targets for buttons, and a general tightening of vertical
@@ -151,8 +155,16 @@ div[data-testid="stButton"] > button {
    the title render partly underneath it. Shrink the header itself instead
    of just the padding, then match the padding to the new height. */
 header[data-testid="stHeader"] { height: 2.2rem; }
-div.block-container { padding-top: 2.6rem !important; }
+div.block-container {
+    padding-top: 2.6rem !important;
+    padding-bottom: 1rem !important;
+}
 [data-testid="stExpander"] summary { padding: 0.35rem 0.6rem !important; min-height: 0 !important; }
+/* Scoped to the header container's own key (st.container(key="header_block"))
+   instead of a blanket stVerticalBlock rule - narrow enough that it can't
+   repeat the earlier overlap bug, since nothing outside this one container
+   is affected. */
+.st-key-header_block div[data-testid="stVerticalBlock"] { gap: 0.15rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -206,7 +218,7 @@ def _run(sql, params=None, fetch='all'):
     return None
 
 
-@st.cache_data(ttl=300, show_spinner='Cargando la cola de difractogramas...')
+@st.cache_data(ttl=300, show_spinner='Loading the diffractogram queue...')
 def load_queue():
     """
     The work queue: one row per diffractogram, WITHOUT the curve.
@@ -343,7 +355,7 @@ def plot_pattern(x, y, sample_code, show_analysis):
             if peaks.size:
                 ax.legend(loc='upper left', fontsize=9, frameon=False)
         except Exception as exc:                      # never let the overlay break labelling
-            ax.text(0.5, 0.95, f'(analisis no disponible: {exc})', transform=ax.transAxes,
+            ax.text(0.5, 0.95, f'(analysis unavailable: {exc})', transform=ax.transAxes,
                     ha='center', va='top', fontsize=8, color='#999')
 
     ax.set_xlabel('Angulo 2θ (grados)')
@@ -404,12 +416,6 @@ def indicators_key(record):
 # ==========================================================================
 
 def main():
-    # A short, single-line title - the point of this pass is to give the
-    # plot and the judgement controls as much of the screen as possible.
-    st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
-               'line-height:1.4;">🔬 Etiquetado PXRD</h3>',
-                unsafe_allow_html=True)
-
     # ---- session state ---------------------------------------------------
     # Only `idx` and `just_saved` live in session_state. Every judgement
     # widget (pills, comment box) is a per-pattern widget keyed by file hash,
@@ -420,58 +426,57 @@ def main():
     try:
         queue = load_queue()
     except Exception as exc:
-        st.error(f'No se puede conectar a la base de datos: {exc}')
-        st.info('Comprueba que el contenedor esta arriba:  `docker ps`  y si hace falta '
+        st.error(f'Cannot connect to the database: {exc}')
+        st.info('Check that the container is up: `docker ps`, and if needed '
                 '`docker restart alchemy_postgres`.')
         st.stop()
 
     if queue.empty:
-        st.warning('No hay difractogramas PXRD en la base de datos.')
+        st.warning('No PXRD diffractograms in the database.')
         st.stop()
 
     labels = load_labels()
 
     # ---- sidebar ---------------------------------------------------------
     with st.sidebar:
-        st.header('Sesion')
-        labeled_by = st.text_input('Quien etiqueta', value=os.getenv('ALCHEMY_LABELER', 'Rubén S.N.'))
+        st.header('Session')
+        labeled_by = st.text_input('Labeled by', value=os.getenv('ALCHEMY_LABELER', 'Rubén S.N.'))
 
         st.divider()
-        st.header('Que mostrar')
-        only_pending = st.checkbox('Solo sin etiquetar', value=True,
-                                   help='Al desactivarlo puedes repasar lo ya etiquetado.')
-        metals = ['(todos)'] + sorted(queue['metal_center'].dropna().unique().tolist())
-        linkers = ['(todos)'] + sorted(queue['linker'].dropna().unique().tolist())
+        st.header('What to show')
+        only_pending = st.checkbox('Only unlabelled', value=True,
+                                   help='Turn off to review what is already labelled.')
+        metals = ['(all)'] + sorted(queue['metal_center'].dropna().unique().tolist())
+        linkers = ['(all)'] + sorted(queue['linker'].dropna().unique().tolist())
         metal_filter = st.selectbox('Metal', metals)
         linker_filter = st.selectbox('Linker', linkers)
 
         st.divider()
-        st.header('Repasar lo ya etiquetado')
-        st.caption('Util para completar oxido/mezcla en lo que ya clasificaste, o '
-                   'para revisar las MEZCLA antiguas (desactiva "Solo sin etiquetar").')
-        review_options = ['(todas)'] + [c[1] for c in CATEGORIES] + ['MEZCLA (antigua)']
-        review_category = st.selectbox('Solo con esta categoria principal', review_options)
-        review_text = st.text_input('Buscar texto en el comentario', placeholder='p. ej. oxido')
+        st.header('Review labelled patterns')
+        st.caption('Useful for filling in oxide/mixture on what you already classified, '
+                   'or for revisiting legacy MEZCLA rows (turn off "Only unlabelled").')
+        review_options = ['(all)'] + [c[1] for c in CATEGORIES] + ['MEZCLA (legacy)']
+        review_category = st.selectbox('Only this main category', review_options)
+        review_text = st.text_input('Search comment text', placeholder='e.g. oxide')
 
         st.divider()
-        show_analysis = st.checkbox('Mostrar analisis automatico', value=False)
-        st.caption('⚠️ Si ves la Xc calculada mientras etiquetas, tus etiquetas dejan de ser '
-                   'independientes del algoritmo y ya no sirven para validarlo. Uselo solo '
-                   'para casos dudosos.')
+        show_analysis = st.checkbox('Show automatic analysis', value=False)
+        st.caption('⚠️ Seeing the computed Xc while labelling makes your labels dependent on '
+                   'the algorithm they are meant to validate. Use only for doubtful cases.')
 
     # ---- build the working subset ---------------------------------------
     labeled_hashes = {h for h, d in labels.items() if LABEL_TYPE_MAIN in d}
     main_code_by_caption = {c[1]: c[0] for c in CATEGORIES}
 
     view = queue
-    if metal_filter != '(todos)':
+    if metal_filter != '(all)':
         view = view[view['metal_center'] == metal_filter]
-    if linker_filter != '(todos)':
+    if linker_filter != '(all)':
         view = view[view['linker'] == linker_filter]
     if only_pending:
         view = view[~view['file_hash'].isin(labeled_hashes)]
-    if review_category != '(todas)':
-        if review_category == 'MEZCLA (antigua)':
+    if review_category != '(all)':
+        if review_category == 'MEZCLA (legacy)':
             wanted = {h for h, d in labels.items()
                      if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == 'MEZCLA'}
         else:
@@ -486,56 +491,61 @@ def main():
         view = view[view['file_hash'].isin(wanted_text)]
     view = view.reset_index(drop=True)
 
-    # ---- global progress ---------------------------------------------------
-    # A single compact horizontal line instead of 4 stacked st.metric blocks:
-    # on a phone, 4 metrics stack to fill most of the screen before you even
-    # see the plot. This stays one line regardless of screen width.
-    total, done = len(queue), len(labeled_hashes)
-    pct = 100 * done / total if total else 0.0
-    st.markdown(f"""
-    <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
-                font-size:0.82em; color:var(--text-color, inherit);
-                padding:0.35em 0; white-space:nowrap;">
-        <span><b>{done:,}</b>/{total:,} etiquetados</span>
-        <span>·</span>
-        <span><b>{pct:.1f}%</b> progreso</span>
-        <span>·</span>
-        <span><b>{len(view):,}</b> en esta vista</span>
-    </div>
-    """, unsafe_allow_html=True)
-    st.progress(done / total if total else 0.0)
-
-    if st.session_state.just_saved:
-        value, code = st.session_state.just_saved
-        # st.toast is a small floating notification that auto-dismisses and
-        # never occupies layout space - unlike st.success, which was an
-        # always-on banner pushing everything else down the screen.
-        st.toast(f'{code} → {value}', icon='✅')
-        st.session_state.just_saved = None
-
     if view.empty:
         st.balloons()
-        st.success('No queda nada pendiente con estos filtros. '
-                   'Desactiva "Solo sin etiquetar" para repasar.')
+        st.success('Nothing pending with these filters. Turn off "Only unlabelled" to review.')
         st.stop()
 
+    # record is computed here, before the header, so the metal/linker/tally
+    # row can live in the same tight header block as the title and progress
+    # line instead of its own section further down.
     st.session_state.idx = clamp(st.session_state.idx, len(view))
     record = view.iloc[st.session_state.idx].to_dict()
     existing = labels.get(record['file_hash'], {})
     existing_main = existing.get(LABEL_TYPE_MAIN)
 
-    st.markdown('<div id="patron-anchor"></div>', unsafe_allow_html=True)
+    # ---- header: title, progress, metadata - grouped and kept tight ------
+    # Scoped via key= instead of a blanket stVerticalBlock rule: a global gap
+    # override caused captions to overlap the element above them earlier in
+    # this pass (see the CSS comment above), because some Streamlit elements
+    # already carry their own offset tuned to the *default* spacing. Scoping
+    # the tighter gap to just this container's own block sidesteps that.
+    with st.container(key='header_block'):
+        st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
+                   'line-height:1.4;">🔬 PXRD Labeling</h3>',
+                    unsafe_allow_html=True)
 
-    # ---- main layout: plot on the left, the three judgement groups to its
-    # right (principal | subtipo incipiente | oxido+mezcla) so nothing needs
-    # a scroll - that was the whole point of the one-click design.
-    plot_col, main_col, subtype_col, flags_col = st.columns([3, 1, 1, 1])
+        # A single compact horizontal line instead of 4 stacked st.metric
+        # blocks: on a phone, 4 metrics stack to fill most of the screen
+        # before you even see the plot. This stays one line regardless of
+        # screen width.
+        total, done = len(queue), len(labeled_hashes)
+        pct = 100 * done / total if total else 0.0
+        st.markdown(f"""
+        <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
+                    font-size:0.82em; color:var(--text-color, inherit);
+                    padding:0.35em 0; white-space:nowrap;">
+            <span><b>{done:,}</b>/{total:,} labelled</span>
+            <span>·</span>
+            <span><b>{pct:.1f}%</b> progress</span>
+            <span>·</span>
+            <span><b>{len(view):,}</b> in view</span>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(done / total if total else 0.0)
 
-    with plot_col:
-        # One condensed line instead of a subheader + markdown + 2 captions:
-        # the plot title already repeats the sample code, so it isn't
-        # duplicated here. The tally popover rides the same row, on the
-        # right, instead of its own section at the bottom of the page.
+        if st.session_state.just_saved:
+            value, code = st.session_state.just_saved
+            caption = dict((c[0], c[1]) for c in CATEGORIES).get(value, value)
+            # st.toast is a small floating notification that auto-dismisses
+            # and never occupies layout space - unlike st.success, which was
+            # an always-on banner pushing everything else down the screen.
+            st.toast(f'{code} → {caption}', icon='✅')
+            st.session_state.just_saved = None
+
+        # Metal/linker/conditions on one line, with the tally and file-info
+        # popovers riding the same row on the right - not their own section
+        # elsewhere, to actually use that horizontal space.
         extra = []
         if pd.notna(record.get('temp_target_c')):
             extra.append(f"{record['temp_target_c']:.0f}°C")
@@ -546,22 +556,30 @@ def main():
         with st.container(horizontal=True, horizontal_alignment='distribute'):
             st.caption(f"**{record['metal_center']}** | **{record['linker']}**{extra_txt} · "
                       f"{st.session_state.idx + 1}/{len(view)}")
-            if labels:
-                with st.popover('📊', help='Reparto de lo etiquetado hasta ahora'):
-                    main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
-                                if LABEL_TYPE_MAIN in d]
-                    tally = pd.Series(main_seen).value_counts()
-                    for value, caption, _h in CATEGORIES:
-                        st.caption(f"{caption}: **{int(tally.get(value, 0))}**")
-                    if tally.get('MEZCLA', 0):
-                        st.caption(f"MEZCLA (antigua): **{int(tally.get('MEZCLA', 0))}**")
+            with st.container(horizontal=True):
+                if labels:
+                    with st.popover('📊', help='Tally of what has been labelled so far'):
+                        main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
+                                    if LABEL_TYPE_MAIN in d]
+                        tally = pd.Series(main_seen).value_counts()
+                        for value, caption, _h in CATEGORIES:
+                            st.caption(f"{caption}: **{int(tally.get(value, 0))}**")
+                        if tally.get('MEZCLA', 0):
+                            st.caption(f"MEZCLA (legacy): **{int(tally.get('MEZCLA', 0))}**")
+                with st.popover('📄', help='File name and path'):
+                    st.caption(f"`{record['file_name']}`")
+                    st.caption(f"`{record['raw_file_path']}`")
+                    if pd.notna(record.get('synthesis_date')):
+                        st.caption(f"Synthesis: {record['synthesis_date']}")
 
-        with st.expander('📄 Fichero', expanded=False):
-            st.caption(f"`{record['file_name']}`")
-            st.caption(f"`{record['raw_file_path']}`")
-            if pd.notna(record.get('synthesis_date')):
-                st.caption(f"Sintesis: {record['synthesis_date']}")
+    st.markdown('<div id="patron-anchor"></div>', unsafe_allow_html=True)
 
+    # ---- main layout: plot on the left, the three judgement groups to its
+    # right (main | incipient subtype | oxide+mixture) so nothing needs a
+    # scroll - that was the whole point of the one-click design.
+    plot_col, main_col, subtype_col, flags_col = st.columns([3, 1, 1, 1])
+
+    with plot_col:
         if existing:
             parts = []
             if LABEL_TYPE_MAIN in existing:
@@ -570,23 +588,23 @@ def main():
             if LABEL_TYPE_SUBTYPE in existing:
                 parts.append(existing[LABEL_TYPE_SUBTYPE]['label_value'])
             if LABEL_TYPE_OXIDE in existing and existing[LABEL_TYPE_OXIDE]['label_value'] == 'SI':
-                parts.append('oxido')
+                parts.append('oxide')
             if LABEL_TYPE_MEZCLA in existing and existing[LABEL_TYPE_MEZCLA]['label_value'] == 'SI':
-                parts.append('mezcla')
+                parts.append('mixture')
             note = existing_main.get('notes') if existing_main else None
-            st.caption('ℹ️ Ya etiquetado: ' + ' · '.join(parts)
-                      + (f' · nota: _{note}_' if note else ''))
+            st.caption('ℹ️ Already labelled: ' + ' · '.join(parts)
+                      + (f' · note: _{note}_' if note else ''))
 
         # ---- the diffractogram --------------------------------------------
         try:
             x, y = load_curve(record['measurement_id'])
         except Exception as exc:
-            st.error(f'No se pudo cargar la curva: {exc}')
+            st.error(f'Could not load the curve: {exc}')
             x = y = None
 
         if x is None or len(x) == 0:
-            st.warning('Esta medida no tiene curva utilizable. Puedes marcarla como SIN MUESTRA '
-                       'o saltarla.')
+            st.warning('This measurement has no usable curve. You can mark it as '
+                       'No sample or skip it.')
         else:
             fig = plot_pattern(x, y, record['sample_code'], show_analysis)
             st.pyplot(fig, width='stretch')
@@ -606,9 +624,9 @@ def main():
                     if existing_main and existing_main['label_value'] in main_values else None)
 
     with main_col:
-        st.caption('**PRINCIPAL** · obligatorio')
+        st.caption('**MAIN** · required')
         main_choice = st.pills(
-            'Grado de orden cristalino', options=main_values,
+            'Degree of crystalline order', options=main_values,
             format_func=lambda v: dict((c[0], c[1]) for c in CATEGORIES)[v],
             default=main_default, key=mkey, label_visibility='collapsed',
         )
@@ -619,24 +637,23 @@ def main():
                        if existing_subtype and existing_subtype['label_value'] in subtype_values
                        else None)
 
-    # Numbered pills (1/2/3) instead of the full caption text - the meaning
-    # lives in the tooltip instead of the pill itself, so the row stays as
-    # short as the Principal row instead of wrapping across two lines.
-    subtype_numbers = {s[0]: str(i + 1) for i, s in enumerate(INCIPIENT_SUBTYPES)}
-    subtype_help = '  \n'.join(f"**{i+1}**: {s[1]} - {s[2]}"
-                               for i, s in enumerate(INCIPIENT_SUBTYPES))
+    # Short (1-2 word) captions instead of the full sentence - the full
+    # explanation lives in the tooltip, so the row stays compact without
+    # losing the detail.
+    subtype_captions = {s[0]: s[1] for s in INCIPIENT_SUBTYPES}
+    subtype_help = '  \n'.join(f"**{s[1]}**: {s[2]}" for s in INCIPIENT_SUBTYPES)
 
     with subtype_col:
-        st.caption('**SUBTIPO** · si es INCIPIENTE')
+        st.caption('**SUBTYPE** · if INCIPIENT')
         subtype_choice = st.pills(
-            'Subtipo de incipiente', options=subtype_values,
-            format_func=lambda v: subtype_numbers[v],
+            'Incipient subtype', options=subtype_values,
+            format_func=lambda v: subtype_captions[v],
             default=subtype_default, key=skey, label_visibility='collapsed',
             help=subtype_help,
         )
 
     with flags_col:
-        st.caption('**INDICADORES**')
+        st.caption('**FLAGS**')
         existing_oxide = existing.get(LABEL_TYPE_OXIDE)
         existing_mezcla = existing.get(LABEL_TYPE_MEZCLA)
         indicator_defaults = []
@@ -647,19 +664,19 @@ def main():
         if existing_main and existing_main.get('confidence') == 'dudosa':
             indicator_defaults.append('DUDOSA')
         indicator_labels = {
-            'OXIDO': 'Oxido', 'MEZCLA': 'Mezcla',
-            'DUDOSA': 'Dudosa ⚠️',
+            'OXIDO': 'Oxide', 'MEZCLA': 'Mixture',
+            'DUDOSA': 'Doubtful ⚠️',
         }
         indicators = st.pills(
-            'Indicadores', options=['OXIDO', 'MEZCLA', 'DUDOSA'],
+            'Flags', options=['OXIDO', 'MEZCLA', 'DUDOSA'],
             format_func=lambda v: indicator_labels[v], selection_mode='multi',
             default=indicator_defaults, key=ikey, label_visibility='collapsed',
-            help='Oxido: fase de oxido visible ademas de la principal. Mezcla: '
-                 'sospecha de mas de una fase, aunque no se sepa cual. Dudosa: '
-                 'marca este patron para revisarlo mas tarde (no bloquea el guardado).',
+            help='Oxide: an oxide phase is visible besides the main one. Mixture: '
+                 'suspicion of more than one phase, even if unidentified. Doubtful: '
+                 'flags this pattern to revisit later (does not block saving).',
         )
 
-        # Anterior/Aceptar/Saltar come right after the pills, ahead of the
+        # Previous/Accept/Skip come right after the pills, ahead of the
         # comment box - the comment is the one thing you don't need to reach
         # on every single pattern, so it's the one pushed lowest.
         #
@@ -670,16 +687,16 @@ def main():
         # no such breakpoint, so these three stay side by side regardless of
         # screen width.
         with st.container(horizontal=True, horizontal_alignment='distribute'):
-            prev_clicked = st.button('←', help='Anterior',
+            prev_clicked = st.button('←', help='Previous',
                                      disabled=st.session_state.idx == 0, key='btn_prev')
             accept_clicked = st.button('✅', type='primary',
-                                       help='Aceptar y siguiente',
+                                       help='Accept and next',
                                        key=f'accept_{record["file_hash"]}')
-            skip_clicked = st.button('→', help='Saltar', key='btn_skip')
+            skip_clicked = st.button('→', help='Skip', key='btn_skip')
 
-        st.text_input('Comentario', key=ckey,
+        st.text_input('Comment', key=ckey,
                       value=(existing_main or {}).get('notes') or '',
-                      placeholder='comentario opcional...', label_visibility='collapsed')
+                      placeholder='optional comment...', label_visibility='collapsed')
 
         if prev_clicked:
             go_back(len(view))
@@ -689,7 +706,7 @@ def main():
             st.rerun()
         if accept_clicked:
             if st.session_state.get(mkey) is None:
-                st.error('Elige una categoria Principal antes de aceptar.')
+                st.error('Choose a Main category before accepting.')
             else:
                 value = st.session_state[mkey]
                 flags = st.session_state.get(ikey) or []

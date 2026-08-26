@@ -425,6 +425,17 @@ Streamlit's own top header is a fixed overlay, not part of the normal document
 flow, so shrinking `block-container`'s top padding without also shrinking the
 header let the title render partly underneath it — both are sized together.
 
+The UI text is English; only the display captions changed. The `label_value`
+codes actually written to `pxrd_labels` (`AMORFO`, `INCIPIENTE`, `CRISTALINO`,
+`SIN_MUESTRA`, the incipient-subtype codes, `confidence = alta|dudosa`) stay
+exactly as they were, since ~1,150 rows already use them and renaming them
+would be a data migration, not a display change. The title, progress line and
+metal/linker/tally/file row are grouped in one `st.container(key="header_block")`
+with a gap rule scoped to `.st-key-header_block` — narrower than the earlier
+attempt at a blanket `stVerticalBlock` gap override, which caused captions to
+overlap the element above them because some Streamlit elements already carry
+their own offset tuned to the *default* spacing.
+
 Reuse: `--server.port` to run several instances; the sidebar filters by metal and
 linker so the corpus can be labelled in themed batches; every click is an
 autocommitted UPSERT, so closing the browser mid-session loses nothing.
