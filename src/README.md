@@ -346,11 +346,29 @@ diffractograms into the human ground truth supervised learning needs. Run it wit
 `streamlit run app/pxrd_labeler.py`.
 
 Shows one pattern at a time with its sample code, metal, linker, file name and
-path, and five one-click categories (AMORFO / INCIPIENTE / CRISTALINO / MEZCLA /
-SIN MUESTRA). Clicking saves and advances immediately — no dropdown, no save
-button — because the whole point is labelling several hundred patterns in a
-sitting. A Back button re-opens the previous pattern with its label and comment
-restored, and re-clicking a category overwrites it.
+path, and four judgements arranged next to the plot: a mandatory crystallinity
+class (AMORFO / INCIPIENTE / CRISTALINO / SIN_MUESTRA), an optional incipient
+sub-type, and two optional flags (oxide present, multi-phase suspected). One
+"Aceptar y siguiente" click saves everything marked and advances — no dropdown,
+no per-field save. A Back button re-opens the previous pattern with its choices
+restored, and accepting again overwrites it.
+
+These are four *independent* questions, not one category — see the module
+docstring for why (an oxide or a second phase can show up at any crystallinity
+level, so cramming them into one value was producing exactly the ambiguity you'd
+expect). Each is its own `label_type` row in `pxrd_labels`, keyed on
+`(file_hash, label_type)`, which is why they can be added without touching or
+re-doing any `crystallinity_class` label already saved. MEZCLA was retired as a
+crystallinity value for the same reason — a clearly two-phase pattern is still
+CRISTALINO by degree of order, with `multiphase_suspected = SI` carrying the
+"more than one phase" information; older rows still holding MEZCLA surface
+through the sidebar's "MEZCLA (antigua)" review filter so they can be revisited
+with the new, correct axes.
+
+The sidebar also has a "Repasar lo ya etiquetado" section: filter by an
+existing crystallinity value, or search the saved comments (e.g. `oxid`), to
+retrofit the oxide/mixture flags onto patterns labelled before those axes
+existed, without hunting through ~1,870 rows by hand.
 
 Problem solved beyond the obvious: **the labels have to survive.** They are
 written to `pxrd_labels` keyed on `file_hash`, not on `measurement_id`, because
@@ -367,13 +385,18 @@ the next one pre-fetched — measured at 0.63 s per label with no degradation ov
 25 consecutive labels. Loading all curves up front would take minutes and
 hundreds of megabytes, which is why the app never does it.
 
-Two details worth knowing. The comment box and the "doubtful" checkbox are keyed
-by the pattern's file hash rather than a fixed key: Streamlit forbids assigning
-to `session_state` for an already-instantiated widget, so resetting a fixed-key
-box on advance raises an exception that silently strands the app on the same
-pattern. And the optional "show automatic analysis" overlay is **off by default**
-on purpose — seeing the pipeline's estimated crystallinity while labelling makes
-the labels dependent on the algorithm they are supposed to validate.
+Two details worth knowing. Every widget — the crystallinity radio, the subtype
+radio, both checkboxes, the comment box, the "doubtful" checkbox — is keyed by
+the pattern's file hash rather than a fixed key: Streamlit forbids assigning to
+`session_state` for an already-instantiated widget, so resetting a fixed-key
+widget on advance raises an exception that silently strands the app on the same
+pattern. Per-hash keys also give each pattern's radio a clean `index=None`
+(nothing pre-selected) unless a real label already exists for it — which is
+what makes a retired MEZCLA value force a fresh choice on review, since it can
+never match the current option list. And the optional "show automatic analysis"
+overlay is **off by default** on purpose — seeing the pipeline's estimated
+crystallinity while labelling makes the labels dependent on the algorithm they
+are supposed to validate.
 
 Reuse: `--server.port` to run several instances; the sidebar filters by metal and
 linker so the corpus can be labelled in themed batches; every click is an

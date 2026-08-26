@@ -8,8 +8,42 @@ ground truth that supervised learning needs. There are ~1,870 diffractograms and
 zero labels, and no amount of feature engineering compensates for that.
 
 The whole design is built around one requirement: labelling several hundred
-patterns in a sitting without the tool getting in the way. That means one click
-per pattern and automatic advance - no dropdown, no save button, no confirmation.
+patterns in a sitting without the tool getting in the way. Crystallinity is
+mandatory per pattern; the incipient subtype, oxide flag and multi-phase flag
+are optional refinements. One "Aceptar y siguiente" click saves everything
+chosen for the current pattern and advances - no dropdown, no per-field save.
+
+FOUR INDEPENDENT JUDGEMENTS, NOT ONE CATEGORY
+----------------------------------------------
+Early labelling revealed that "how crystalline is it", "is there an oxide
+phase" and "might this be a mixture of phases" are three different questions
+that do not vary together - an oxide can show up in an amorphous OR a
+crystalline pattern, and a suspected second phase can appear at any
+crystallinity level. Cramming them into one categorical value produced
+exactly the ambiguity you would expect. So `pxrd_labels` carries one row per
+question, keyed on `(file_hash, label_type)`:
+
+  - crystallinity_class   (mandatory)  AMORFO | INCIPIENTE | CRISTALINO | SIN_MUESTRA
+  - incipient_subtype     (optional, only meaningful when crystallinity_class
+                            is INCIPIENTE) three sub-regimes of "how incipient"
+  - oxide_flag            (optional, defaults to NO)  SI | NO
+  - multiphase_suspected  (optional, defaults to NO)  SI | NO
+
+MEZCLA was retired as a crystallinity_class value: a genuinely obvious
+two-resolved-phases pattern is still CRISTALINO by degree of order, with
+multiphase_suspected = SI carrying the "more than one phase" information -
+that is what actually varies independently, not the crystallinity itself.
+Older rows still holding MEZCLA are left as-is and picked up by the
+"repasar" filters in the sidebar; the app deliberately cannot auto-select a
+retired value, so opening one of them forces a fresh, valid choice.
+
+The incipient subtype stays a label rather than being merged into
+crystallinity_class on purpose: it is a genuinely continuous property (peak
+width and intensity relative to the halo), and src/pxrd_descriptors.py
+already computes that numerically (fwhm, crystalline_fraction, snr_global).
+Splitting INCIPIENTE into three hard categories would only fragment an
+already-scarce class for training; the subtype is captured here as breadcrumb
+context for later analysis, not as the primary ML target.
 
 HOW IT STAYS FAST
 -----------------
@@ -66,21 +100,30 @@ REPO_ROOT = os.path.dirname(APP_DIR)
 sys.path.insert(0, os.path.join(REPO_ROOT, 'src'))
 load_dotenv(os.path.join(REPO_ROOT, '.env'))
 
-LABEL_TYPE = 'crystallinity_class'
+# The four independent label_type values written to pxrd_labels. See the
+# module docstring for why these are separate rows instead of one category.
+LABEL_TYPE_MAIN    = 'crystallinity_class'
+LABEL_TYPE_SUBTYPE = 'incipient_subtype'
+LABEL_TYPE_OXIDE   = 'oxide_flag'
+LABEL_TYPE_MEZCLA  = 'multiphase_suspected'
 
-# The categories. Order matters: it is the on-screen order and the keyboard order.
-# Each is (value stored in the DB, button caption, help text).
+# Mandatory: degree of crystalline order. (code, caption, help text)
 CATEGORIES = [
     ('AMORFO',      'AMORFO',      'Sin reflexiones. Solo halo ancho o ruido.'),
     ('INCIPIENTE',  'INCIPIENTE',  'Reflexiones debiles asomando sobre un halo dominante.'),
     ('CRISTALINO',  'CRISTALINO',  'Reflexiones claras y definidas.'),
-    ('MEZCLA',      'MEZCLA',      'Mas de una fase cristalina reconocible.'),
     ('SIN_MUESTRA', 'SIN MUESTRA', 'Portamuestras vacio o senal no atribuible a la muestra.'),
 ]
-CATEGORY_COLORS = {
-    'AMORFO': '#e8a33d', 'INCIPIENTE': '#b06a3c', 'CRISTALINO': '#1f7a8c',
-    'MEZCLA': '#7b5ea7', 'SIN_MUESTRA': '#8a8a8a',
-}
+
+# Optional, only meaningful when the pattern above is INCIPIENTE.
+INCIPIENT_SUBTYPES = [
+    ('HALO_DOMINANTE',     'Timido sobre halo',
+     'Picos anchos y muy tenues asomando sobre un halo amorfo dominante.'),
+    ('PICOS_ANCHOS',       'Empieza a cristalizar',
+     'Picos ya anchos pero claramente presentes; el halo ya no domina.'),
+    ('CRISTALITO_PEQUENO', 'Cristalito pequeno',
+     'Picos no muy anchos pero de intensidad baja frente al halo; cristalitos muy pequenos.'),
+]
 
 st.set_page_config(page_title='ALCheMy - Etiquetado PXRD', page_icon='🔬', layout='wide',
                     initial_sidebar_state='collapsed')
@@ -180,12 +223,22 @@ def load_queue():
 
 @st.cache_data(ttl=60)
 def load_labels():
-    """All existing labels, keyed by file_hash. Refreshed cheaply every minute."""
+    """
+    All existing labels for all four label_types, nested by file_hash then
+    label_type: labels[file_hash]['crystallinity_class'] -> row dict, etc.
+
+    A pattern only counts as "labelled" (for progress and the pending filter)
+    once it has a crystallinity_class row - the other three are optional
+    refinements, never the thing that marks a pattern done.
+    """
     rows = _run("""
-        SELECT file_hash, label_value, confidence, notes
-        FROM pxrd_labels WHERE label_type = %s;
-    """, (LABEL_TYPE,))
-    return {r['file_hash']: dict(r) for r in rows}
+        SELECT file_hash, label_type, label_value, confidence, notes
+        FROM pxrd_labels;
+    """)
+    labels = {}
+    for r in rows:
+        labels.setdefault(r['file_hash'], {})[r['label_type']] = dict(r)
+    return labels
 
 
 @st.cache_data(max_entries=64, show_spinner=False)
@@ -209,10 +262,10 @@ def load_curve(measurement_id):
             np.asarray(json.loads(row['y']), dtype=float))
 
 
-def save_label(record, value, confidence, notes, labeled_by):
+def save_label(record, label_type, value, confidence, notes, labeled_by):
     """
-    Writes one label. UPSERT, so re-labelling a pattern on review overwrites
-    cleanly instead of failing on the primary key.
+    Writes one (file_hash, label_type) row. UPSERT, so re-labelling on review
+    overwrites cleanly instead of failing on the primary key.
 
     labeled_at is preserved on update (when it was first judged) while
     updated_at moves - so a revision is visible without losing the original.
@@ -230,7 +283,7 @@ def save_label(record, value, confidence, notes, labeled_by):
             labeled_by     = EXCLUDED.labeled_by,
             updated_at     = now();
     """, (
-        record['file_hash'], LABEL_TYPE, record['sample_code'], record['file_name'],
+        record['file_hash'], label_type, record['sample_code'], record['file_name'],
         record['measurement_id'], value, confidence, (notes or None).strip() if notes else None,
         labeled_by,
     ), fetch=None)
@@ -322,6 +375,22 @@ def doubtful_key(record):
     return f"doubtful_{record['file_hash']}"
 
 
+def main_key(record):
+    return f"main_{record['file_hash']}"
+
+
+def subtype_key(record):
+    return f"subtype_{record['file_hash']}"
+
+
+def oxide_key(record):
+    return f"oxide_{record['file_hash']}"
+
+
+def mezcla_key(record):
+    return f"mezcla_{record['file_hash']}"
+
+
 # ==========================================================================
 # Application
 # ==========================================================================
@@ -365,23 +434,48 @@ def main():
         linker_filter = st.selectbox('Linker', linkers)
 
         st.divider()
+        st.header('Repasar lo ya etiquetado')
+        st.caption('Util para completar oxido/mezcla en lo que ya clasificaste, o '
+                   'para revisar las MEZCLA antiguas (desactiva "Solo sin etiquetar").')
+        review_options = ['(todas)'] + [c[1] for c in CATEGORIES] + ['MEZCLA (antigua)']
+        review_category = st.selectbox('Solo con esta categoria principal', review_options)
+        review_text = st.text_input('Buscar texto en el comentario', placeholder='p. ej. oxido')
+
+        st.divider()
         show_analysis = st.checkbox('Mostrar analisis automatico', value=False)
         st.caption('⚠️ Si ves la Xc calculada mientras etiquetas, tus etiquetas dejan de ser '
                    'independientes del algoritmo y ya no sirven para validarlo. Uselo solo '
                    'para casos dudosos.')
 
     # ---- build the working subset ---------------------------------------
+    labeled_hashes = {h for h, d in labels.items() if LABEL_TYPE_MAIN in d}
+    main_code_by_caption = {c[1]: c[0] for c in CATEGORIES}
+
     view = queue
     if metal_filter != '(todos)':
         view = view[view['metal_center'] == metal_filter]
     if linker_filter != '(todos)':
         view = view[view['linker'] == linker_filter]
     if only_pending:
-        view = view[~view['file_hash'].isin(labels.keys())]
+        view = view[~view['file_hash'].isin(labeled_hashes)]
+    if review_category != '(todas)':
+        if review_category == 'MEZCLA (antigua)':
+            wanted = {h for h, d in labels.items()
+                     if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == 'MEZCLA'}
+        else:
+            code = main_code_by_caption[review_category]
+            wanted = {h for h, d in labels.items()
+                     if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == code}
+        view = view[view['file_hash'].isin(wanted)]
+    if review_text:
+        needle = review_text.lower()
+        wanted_text = {h for h, d in labels.items()
+                      if needle in (d.get(LABEL_TYPE_MAIN, {}).get('notes') or '').lower()}
+        view = view[view['file_hash'].isin(wanted_text)]
     view = view.reset_index(drop=True)
 
     # ---- global progress -------------------------------------------------
-    total, done = len(queue), len(labels)
+    total, done = len(queue), len(labeled_hashes)
     c1, c2, c3, c4 = st.columns(4)
     c1.metric('Etiquetados', f'{done:,}')
     c2.metric('Totales', f'{total:,}')
@@ -402,15 +496,15 @@ def main():
 
     st.session_state.idx = clamp(st.session_state.idx, len(view))
     record = view.iloc[st.session_state.idx].to_dict()
-    existing = labels.get(record['file_hash'])
+    existing = labels.get(record['file_hash'], {})
+    existing_main = existing.get(LABEL_TYPE_MAIN)
 
     st.divider()
 
-    # ---- main layout: plot on the left, controls on the right ------------
-    # The classification buttons sit next to the diffractogram (not below it)
-    # so labelling never needs a scroll - that was the whole point of the
-    # one-click auto-advance design.
-    plot_col, control_col = st.columns([3, 1])
+    # ---- main layout: plot on the left, the three judgement groups to its
+    # right (principal | subtipo incipiente | oxido+mezcla) so nothing needs
+    # a scroll - that was the whole point of the one-click design.
+    plot_col, main_col, subtype_col, flags_col = st.columns([2, 1, 1, 1])
 
     with plot_col:
         st.subheader(record['sample_code'])
@@ -431,9 +525,19 @@ def main():
         st.caption(f"**Posicion:** {st.session_state.idx + 1} de {len(view)}")
 
         if existing:
-            st.info(f"Ya etiquetado como **{existing['label_value']}** "
-                    f"({existing['confidence']}). Volver a pulsar lo sobrescribe."
-                    + (f"  \nNota: _{existing['notes']}_" if existing['notes'] else ''))
+            parts = []
+            if LABEL_TYPE_MAIN in existing:
+                e = existing[LABEL_TYPE_MAIN]
+                parts.append(f"Principal: **{e['label_value']}** ({e['confidence']})")
+            if LABEL_TYPE_SUBTYPE in existing:
+                parts.append(f"Subtipo: **{existing[LABEL_TYPE_SUBTYPE]['label_value']}**")
+            if LABEL_TYPE_OXIDE in existing:
+                parts.append(f"Oxido: **{existing[LABEL_TYPE_OXIDE]['label_value']}**")
+            if LABEL_TYPE_MEZCLA in existing:
+                parts.append(f"Mezcla: **{existing[LABEL_TYPE_MEZCLA]['label_value']}**")
+            note = existing_main.get('notes') if existing_main else None
+            st.info('Ya etiquetado. ' + ' · '.join(parts) + ' · Aceptar sobrescribe.'
+                    + (f"  \nNota: _{note}_" if note else ''))
 
         # ---- the diffractogram --------------------------------------------
         try:
@@ -450,16 +554,77 @@ def main():
             st.pyplot(fig, width='stretch')
             plt.close(fig)      # matplotlib figures leak across re-runs if not closed
 
-    with control_col:
-        # ---- the classification buttons, stacked so they stay beside the plot
-        st.markdown('#### Clasificacion')
-        for value, caption, help_text in CATEGORIES:
-            if st.button(caption, width='stretch', type='primary',
-                         help=help_text, key=f'btn_{value}'):
-                ckey, dkey = comment_key(record), doubtful_key(record)
-                save_label(record, value,
-                           'dudosa' if st.session_state.get(dkey) else 'alta',
-                           st.session_state.get(ckey, ''), labeled_by)
+    # Widget keys, all scoped to this pattern's file_hash - see the note
+    # above `advance` for why fixed keys would break navigation.
+    mkey, skey = main_key(record), subtype_key(record)
+    okey, xkey = oxide_key(record), mezcla_key(record)
+    ckey, dkey = comment_key(record), doubtful_key(record)
+
+    main_values = [c[0] for c in CATEGORIES]
+    main_default = (main_values.index(existing_main['label_value'])
+                    if existing_main and existing_main['label_value'] in main_values else None)
+
+    with main_col:
+        st.markdown('#### Principal')
+        st.caption('Obligatorio')
+        main_choice = st.radio(
+            'Grado de orden cristalino', options=main_values,
+            format_func=lambda v: dict((c[0], c[1]) for c in CATEGORIES)[v],
+            index=main_default, key=mkey, label_visibility='collapsed',
+        )
+
+    subtype_values = [s[0] for s in INCIPIENT_SUBTYPES]
+    existing_subtype = existing.get(LABEL_TYPE_SUBTYPE)
+    subtype_default = (subtype_values.index(existing_subtype['label_value'])
+                       if existing_subtype and existing_subtype['label_value'] in subtype_values
+                       else None)
+
+    with subtype_col:
+        st.markdown('#### Subtipo incipiente')
+        st.caption('Opcional - solo si Principal = INCIPIENTE')
+        subtype_choice = st.radio(
+            'Subtipo de incipiente', options=subtype_values,
+            format_func=lambda v: dict((s[0], s[1]) for s in INCIPIENT_SUBTYPES)[v],
+            index=subtype_default, key=skey, label_visibility='collapsed',
+        )
+
+    with flags_col:
+        st.markdown('#### Indicadores')
+        st.caption('Opcional, 0 si no se marcan')
+        existing_oxide = existing.get(LABEL_TYPE_OXIDE)
+        existing_mezcla = existing.get(LABEL_TYPE_MEZCLA)
+        st.checkbox('Oxido', key=okey,
+                    value=bool(existing_oxide and existing_oxide['label_value'] == 'SI'),
+                    help='Se ve una fase de oxido (amorfa o cristalina) ademas de la principal.')
+        st.checkbox('Mezcla de fases', key=xkey,
+                    value=bool(existing_mezcla and existing_mezcla['label_value'] == 'SI'),
+                    help='Sospecha de mas de una fase cristalina, aunque no se sepa cual.')
+
+        st.text_input('Comentario (opcional)', key=ckey,
+                      value=(existing_main or {}).get('notes') or '',
+                      placeholder='p. ej. posible fase de oxido de niquel...')
+        st.checkbox('Dudosa', key=dkey,
+                    value=bool(existing_main and existing_main.get('confidence') == 'dudosa'),
+                    help='Se guarda como confidence = dudosa en todo lo marcado para este patron.')
+
+        if st.button('✅ Aceptar y siguiente', width='stretch', type='primary',
+                     key=f'accept_{record["file_hash"]}'):
+            if st.session_state.get(mkey) is None:
+                st.error('Elige una categoria Principal antes de aceptar.')
+            else:
+                value = st.session_state[mkey]
+                confidence = 'dudosa' if st.session_state.get(dkey) else 'alta'
+                notes = st.session_state.get(ckey, '')
+                save_label(record, LABEL_TYPE_MAIN, value, confidence, notes, labeled_by)
+                if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
+                    save_label(record, LABEL_TYPE_SUBTYPE, st.session_state[skey],
+                              confidence, None, labeled_by)
+                save_label(record, LABEL_TYPE_OXIDE,
+                          'SI' if st.session_state.get(okey) else 'NO',
+                          confidence, None, labeled_by)
+                save_label(record, LABEL_TYPE_MEZCLA,
+                          'SI' if st.session_state.get(xkey) else 'NO',
+                          confidence, None, labeled_by)
                 load_labels.clear()
                 st.session_state.just_saved = (value, record['sample_code'])
                 # With "only pending" on, the labelled row drops out of the view,
@@ -471,29 +636,19 @@ def main():
 
         st.divider()
 
-        # ---- comment + doubt -----------------------------------------------
-        # Keyed by file hash: each pattern owns its widgets, so they start empty
-        # and stepping back restores what was typed. See the note above `advance`.
-        ckey, dkey = comment_key(record), doubtful_key(record)
-        st.text_input('Comentario (opcional)', key=ckey,
-                      value=(existing or {}).get('notes') or '',
-                      placeholder='p. ej. posible fase de oxido...')
-        st.checkbox('Dudosa', key=dkey,
-                    value=bool(existing and existing.get('confidence') == 'dudosa'),
-                    help='Se guarda como confidence = dudosa y podras excluirla del entrenamiento.')
-
-        st.divider()
-
         # ---- navigation ------------------------------------------------------
-        if st.button('← Anterior', width='stretch',
-                     disabled=st.session_state.idx == 0, key='btn_prev'):
-            go_back(len(view))
-            st.rerun()
-        if st.button('Saltar →', width='stretch', key='btn_skip'):
-            advance(len(view))
-            st.rerun()
-        st.caption('Al clasificar se guarda y se pasa sola a la siguiente. '
-                   '"Anterior" sirve para revisar; volver a clasificar sobrescribe.')
+        nprev, nskip = st.columns(2)
+        with nprev:
+            if st.button('← Anterior', width='stretch',
+                         disabled=st.session_state.idx == 0, key='btn_prev'):
+                go_back(len(view))
+                st.rerun()
+        with nskip:
+            if st.button('Saltar →', width='stretch', key='btn_skip'):
+                advance(len(view))
+                st.rerun()
+        st.caption('"Aceptar" guarda todo lo marcado y pasa a la siguiente. '
+                   '"Anterior" sirve para revisar; volver a aceptar sobrescribe.')
 
     # ---- pre-fetch the next curve so the next click feels instant --------
     if st.session_state.idx + 1 < len(view):
@@ -505,11 +660,14 @@ def main():
     # ---- running tally ---------------------------------------------------
     if labels:
         st.divider()
-        tally = pd.Series([v['label_value'] for v in labels.values()]).value_counts()
+        main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
+                    if LABEL_TYPE_MAIN in d]
+        tally = pd.Series(main_seen).value_counts()
         st.markdown('#### Reparto de lo etiquetado hasta ahora')
-        tcols = st.columns(len(CATEGORIES))
+        tcols = st.columns(len(CATEGORIES) + 1)
         for col, (value, caption, _h) in zip(tcols, CATEGORIES):
             col.metric(caption, int(tally.get(value, 0)))
+        tcols[-1].metric('MEZCLA (antigua)', int(tally.get('MEZCLA', 0)))
 
 
 if __name__ == '__main__':
