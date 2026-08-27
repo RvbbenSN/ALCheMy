@@ -588,3 +588,38 @@ the scale factor, and is callable on its own for plotting. Pass `blank_grid=` to
 back to the superseded estimate. Schema delta in `scripts/ddl_pxrd_descriptors_v3.sql`
 (additive; the v2.0 columns are kept, with their COMMENT amended to say they are
 superseded and why).
+
+
+### Pipeline v3.1 - el blanco se suaviza antes de restarlo
+
+v3.0 restaba el barrido del portamuestras vacio usando sus **cuentas crudas**. El blanco
+es una medida de pocas cuentas (mediana ~80), asi que su ruido relativo es grande: al
+escalarlo al nivel de la muestra ese ruido se amplifica y entra entero en la estimacion
+del amorfo. En la figura se veia sin ambiguedad, el blanco escalado tapaba la senal de la
+propia muestra.
+
+Los dos lados de la resta tienen que describir el mismo tipo de objeto - un fondo suave -
+asi que el blanco aporta ahora **su propia linea base arPLS**, no sus cuentas. Medido
+sobre los tres patrones de referencia:
+
+| Clase | A (blanco crudo) | A (suavizado) | Caida de rugosidad |
+|---|---|---|---|
+| AMORFO | 0,3030 | 0,3033 | 73x |
+| INCIPIENTE | 0,0935 | 0,0889 | 100x |
+| CRISTALINO | 0,0119 | **0,0006** | 966x |
+
+El caso cristalino es el diagnostico: ese 0,0119 era ruido del blanco escalado, no
+difusion de la muestra. La separacion entre las clases AMORFO y CRISTALINO frente a las
+etiquetas humanas pasa de 21x a **344x**.
+
+**Sobre normalizar.** Trabajar con las cuentas sin normalizar da resultados identicos: el
+descriptor es un cociente, asi que cualquier factor de escala global se cancela.
+Comprobado sobre los tres patrones (0,3030 / 0,0935 / 0,0119 en ambos casos, a cuatro
+decimales). Normalizar nunca fue el problema; el ruido del blanco si.
+
+`amorphous_from_blank` acepta `smooth_blank=False` unicamente para que el cuaderno pueda
+ensenar la diferencia; el codigo de produccion no debe desactivarlo. La reserva para
+barridos que no llegan a la ventana de 45 grados vive **solo** en esa funcion: cuando el
+cuaderno reimplemento el escalado a mano se quedo sin ella y devolvia NaN en el ejemplo
+incipiente, que acaba en 35 grados. Todas las figuras del cuaderno llaman ahora a la
+funcion del modulo.

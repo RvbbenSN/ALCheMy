@@ -42,12 +42,28 @@ two different tools, each used for what it is actually built to do:
 
   (a) is found with one rigid arPLS pass. arPLS is a FLOOR finder, and the
       instrumental background genuinely is the floor of the pattern.
-  (b) is found by WIDTH, with a 3 deg running median. A second, softer arPLS
-      pass does not work here and fails silently: applied to a curve whose floor
-      is already zero it returns zero, so the amorphous area comes out as 0 and
-      every single sample is reported as 100% crystalline. What actually
-      distinguishes a halo (5-15 deg wide) from a Bragg peak (<0.35 deg) is
-      width, so the filter has to be width-selective.
+  (b) is found by SUBTRACTING THE EMPTY INSTRUMENT from what (a) removed. arPLS
+      takes away instrument + diffuse sample scattering together; the blank scan
+      is the instrument alone; the difference is what the sample scatters
+      diffusely. See amorphous_from_blank.
+
+  Two earlier attempts at (b) are kept documented because both fail silently,
+  which is the dangerous kind of failure:
+
+    * A second, softer arPLS pass. Applied to a curve whose floor is already
+      zero it returns zero, so the amorphous area comes out as 0 and every
+      sample is reported as 100% crystalline.
+    * A width-selective running median (halo 5-15 deg wide vs Bragg peak
+      <0.35 deg). The premise is right but its precondition is not checked: the
+      median only ignores peaks while they are a MINORITY of the window. With
+      40 reflections, peaks plus flanks cover 41-46% of the axis and the median
+      climbs onto the flanks, inventing a halo where the signal between peaks is
+      flat at 0.00-0.08% of the peak maximum. It reported ~50% amorphous on
+      patterns a chemist labelled fully crystalline.
+
+  The width-based quantities are still computed (crystalline_fraction and
+  friends) because they rank patterns in the right order and earlier rows used
+  them, but the number to trust is amorphous_fraction_blank.
 
 The profile is normalised by area BEFORE the baseline is fitted, because lambda
 sets stiffness relative to the magnitude of the numbers being fitted: on raw
@@ -74,7 +90,7 @@ from scipy.sparse.linalg import spsolve
 # Version tag written into pxrd_descriptors.pipeline_version. Bump it whenever a
 # formula below changes, otherwise rows computed months apart silently stop being
 # comparable and nothing in the database records why.
-PIPELINE_VERSION = 'v3.0'
+PIPELINE_VERSION = 'v3.1'
 
 # ---------------------------------------------------------------------------
 # Low-angle cutoff: where the instrument stops measuring the sample.
@@ -560,7 +576,7 @@ def load_instrument_blank(connection, grid=None, file_name=BLANK_FILE_NAME):
 
 def amorphous_from_blank(x, y_grid, blank_grid, baseline=None,
                          lam_rigid=DEFAULT_LAMBDA_RIGID,
-                         scale_from_deg=BLANK_SCALE_FROM_DEG):
+                         scale_from_deg=BLANK_SCALE_FROM_DEG, smooth_blank=True):
     """
     Diffuse (non-crystalline) content, measured as arPLS baseline minus the empty
     instrument. See the BLANK_SCALE_FROM_DEG block above for why this replaces the
@@ -603,6 +619,24 @@ def amorphous_from_blank(x, y_grid, blank_grid, baseline=None,
 
     if baseline is None:
         baseline = arpls_baseline(y_grid, lam=lam_rigid)
+
+    # THE BLANK MUST BE SMOOTHED BEFORE SUBTRACTING IT
+    # ------------------------------------------------
+    # The empty holder is a low-count scan (median ~80 counts), so its relative counting
+    # noise is large. Scaling it up to the sample's level multiplies that noise too, and
+    # subtracting it from a smooth arPLS baseline produced a visibly ragged "amorphous"
+    # curve - the figure showed the scaled blank drowning the sample.
+    #
+    # Both sides of the subtraction have to describe the same kind of object: a smooth
+    # background. So the blank contributes its own arPLS baseline, not its raw counts.
+    # Measured effect: point-to-point roughness of the amorphous curve drops by a factor
+    # of 70 to 800, and a crystalline sample goes from 0.0119 to 0.0006 - which is what a
+    # crystalline sample should read.
+    #
+    # smooth_blank=False exists only so notebooks/05 can show the difference; production
+    # code should never turn it off.
+    if smooth_blank:
+        blank_grid = arpls_baseline(blank_grid, lam=lam_rigid)
 
     window = x >= scale_from_deg
     # A scan that stops before the window leaves nothing to scale against; fall back
