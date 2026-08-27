@@ -1,3 +1,14 @@
+# pymatgen needs spglib (compiled C+Fortran, no musllinux wheel) built from source,
+# but the final n8nio/runners image is a hardened Alpine with no package manager (no
+# apk binary at all) - so it can't install a compiler itself. Build everything in a
+# throwaway full-Alpine stage with the same Python version, then copy only the
+# finished site-packages into the real runner image. numpy/scipy already vendor their
+# own shared libs (numpy.libs/, scipy.libs/) - only spglib links against the system
+# libstdc++/libgcc_s, so those two get copied too.
+FROM python:3.13-alpine AS pybuilder
+RUN apk add --no-cache gcc g++ gfortran musl-dev cmake make openblas-dev
+RUN pip install --no-cache-dir --target=/deps pandas numpy openpyxl xlrd pymatgen
+
 FROM n8nio/runners:latest
 
 # n8n's official task-runner sidecar image ships the Python runner with only its own
@@ -5,9 +16,8 @@ FROM n8nio/runners:latest
 # by default (see docker/n8n-task-runners.json), so plain Code nodes can't import
 # anything beyond what's explicitly whitelisted there.
 USER root
-RUN set -eux; \
-    /opt/runners/task-runner-python/.venv/bin/python -m ensurepip --upgrade; \
-    /opt/runners/task-runner-python/.venv/bin/python -m pip install --no-cache-dir pandas numpy openpyxl xlrd
+COPY --from=pybuilder /deps /opt/runners/task-runner-python/.venv/lib/python3.13/site-packages/
+COPY --from=pybuilder /usr/lib/libstdc++.so.6 /usr/lib/libgcc_s.so.1 /usr/lib/
 
 COPY docker/n8n-task-runners.json /etc/n8n-task-runners.json
 

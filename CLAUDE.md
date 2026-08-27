@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-**ALCheMy** is an end-to-end data platform for a MOF/POP materials-chemistry lab (APMU unit). It turns 20+ years of handwritten lab notebooks, one master Excel file, and ~5,700 raw instrument files into a governed PostgreSQL single source of truth, then layers ML prediction, an in-silico simulator, and a RAG assistant on top. `methodology/PLAN_DE_TRABAJO.md` holds the 6-phase roadmap (currently Phase 1–2).
+**ALCheMy** is an end-to-end data platform for a MOF/POP materials-chemistry lab (APMU unit). It turns 5 years of handwritten lab notebooks, one master Excel file, and ~5,700 raw instrument files into a governed PostgreSQL single source of truth, then layers ML prediction, an in-silico simulator, and a RAG assistant on top. `methodology/PLAN_DE_TRABAJO.md` holds the 6-phase roadmap (currently Phase 1–2).
 
 ## Running the stack
 

@@ -40,6 +40,30 @@ def _parse_header_line(line):
     return key, value
 
 
+def _build_raw_data(df, weight_pct):
+    """Only the signal columns this specific file actually declared (see the Nsig
+    note in parse_tga_txt) end up as keys here - a 4-column run has no DTA/purge
+    data to report, and inventing zeros for it would misrepresent the instrument
+    output as a real (empty) measurement."""
+    raw_data = {
+        'x_label': 'temperature_c',
+        'y_label': 'weight_percent',
+        'time_min': df['time_min'].round(2).tolist(),
+        'temperature_c': df['temp_c'].round(2).tolist(),
+        'weight_mg': df['weight_mg'].round(4).tolist(),
+        'weight_percent': weight_pct.round(2).tolist(),
+    }
+    if 'heat_flow_mw' in df.columns:
+        raw_data['heat_flow_mw'] = df['heat_flow_mw'].round(4).tolist()
+    if 'temp_diff_c' in df.columns:
+        raw_data['temp_difference_c'] = df['temp_diff_c'].round(4).tolist()
+    if 'temp_diff_uv' in df.columns:
+        raw_data['temp_difference_uv'] = df['temp_diff_uv'].round(4).tolist()
+    if 'purge_flow_ml_min' in df.columns:
+        raw_data['purge_flow_ml_min'] = df['purge_flow_ml_min'].round(2).tolist()
+    return raw_data
+
+
 def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized'):
     metadata = {}
     xcomments = []
@@ -60,12 +84,23 @@ def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized')
             if not in_data:
                 if not l.strip() or l.strip() == 'CLOSED':
                     continue
-                tokens = l.split()
-                if len(tokens) == 7:
+                # Two real variants confirmed in this data lake: (1) not every run
+                # records all 7 signals - 'Nsig' in the header (always seen before
+                # the data section) declares how many columns this file actually has,
+                # 4 (time/temp/weight/heat-flow) being common when DTA/purge channels
+                # weren't logged; (2) a handful of exports use ',' as the decimal
+                # point (European locale) instead of '.', e.g. '154,5876' - normalize
+                # before testing numeric-ness, since that string isn't a valid float
+                # literal as-is. Both would otherwise make every "is this the data
+                # section yet" check fail silently, leaving 0 data rows collected.
+                l_check = l.replace(',', '.') if ',' in l else l
+                tokens = l_check.split()
+                expected_cols = int(metadata.get('Nsig', 7))
+                if len(tokens) == expected_cols:
                     try:
                         [float(t) for t in tokens]
                         in_data = True
-                        data_lines.append(l)
+                        data_lines.append(l_check)
                         continue
                     except ValueError:
                         pass
@@ -82,7 +117,7 @@ def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized')
                     metadata[key] = value
             else:
                 if l.strip():
-                    data_lines.append(l)
+                    data_lines.append(l.replace(',', '.') if ',' in l else l)
 
     # Pan material + purge gas channels, e.g. "Pan: Alumina", "Gas2: Air 100.0 ml/min"
     pan_material = None
@@ -121,7 +156,7 @@ def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized')
     if 'Size' in metadata:
         size_parts = metadata['Size'].split('\t')
         try:
-            initial_mass = float(size_parts[0])
+            initial_mass = float(size_parts[0].replace(',', '.'))
             if len(size_parts) > 1:
                 mass_unit = size_parts[1].strip()
         except (ValueError, IndexError):
@@ -134,8 +169,12 @@ def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized')
 
     data_str = "\n".join(data_lines)
     df = pd.read_csv(io.StringIO(data_str), sep=r'\s+', header=None, engine='python', on_bad_lines='skip')
-    df = df.iloc[:, :7]
-    df.columns = ['time_min', 'temp_c', 'weight_mg', 'heat_flow_mw', 'temp_diff_c', 'temp_diff_uv', 'purge_flow_ml_min']
+    # Not every run records all 7 signals (see the Nsig note above) - name only as
+    # many columns as this file actually has, always starting from time_min.
+    full_columns = ['time_min', 'temp_c', 'weight_mg', 'heat_flow_mw', 'temp_diff_c', 'temp_diff_uv', 'purge_flow_ml_min']
+    n_cols = min(df.shape[1], len(full_columns))
+    df = df.iloc[:, :n_cols]
+    df.columns = full_columns[:n_cols]
     for c in df.columns:
         df[c] = pd.to_numeric(df[c], errors='coerce')
     df = df.dropna()
@@ -176,23 +215,12 @@ def parse_tga_txt(file_path, sample_code=None, measurement_tag='as_synthesized')
                 **gases,
                 'heating_rate_c_min': heating_rate_c_min,
                 'target_temperature_c': target_temperature_c,
-                'dsc_cell_constant': float(metadata['Kcell']) if metadata.get('Kcell') else None,
+                'dsc_cell_constant': float(metadata['Kcell'].replace(',', '.')) if metadata.get('Kcell') else None,
                 'calibrations': calibrations,
                 'acquisition_timestamp': acquisition_timestamp,
                 'signal_labels': signal_labels,
                 'num_data_points': len(df)
             },
-            'raw_data': {
-                'x_label': 'temperature_c',
-                'y_label': 'weight_percent',
-                'time_min': df['time_min'].round(2).tolist(),
-                'temperature_c': df['temp_c'].round(2).tolist(),
-                'weight_mg': df['weight_mg'].round(4).tolist(),
-                'weight_percent': weight_pct.round(2).tolist(),
-                'heat_flow_mw': df['heat_flow_mw'].round(4).tolist(),
-                'temp_difference_c': df['temp_diff_c'].round(4).tolist(),
-                'temp_difference_uv': df['temp_diff_uv'].round(4).tolist(),
-                'purge_flow_ml_min': df['purge_flow_ml_min'].round(2).tolist()
-            }
+            'raw_data': _build_raw_data(df, weight_pct)
         }
     }

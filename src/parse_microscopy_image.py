@@ -51,6 +51,13 @@ def _read_lines(txt_path):
     # empirically against the live runner.
     with open(txt_path, 'rb') as f:
         text = f.read().decode('latin1', errors='ignore')
+    # A couple of real sidecars in this data lake turned out to be non-text binary
+    # data under a misleading .txt extension - latin1 decodes it without raising
+    # (every byte maps 1:1), but a literal NUL byte can end up embedded in whatever
+    # garbage key/value the generic scan below picks up, and Postgres's jsonb type
+    # rejects a NUL byte in any string outright ('unsupported Unicode escape sequence').
+    # Strip it here so a bad sidecar degrades to no metadata instead of a DB error.
+    text = text.replace('\x00', '')
     return [l.rstrip('\r') for l in text.split('\n')]
 
 

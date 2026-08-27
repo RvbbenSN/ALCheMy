@@ -50,7 +50,7 @@
 			"env-overrides": {
 				"N8N_RUNNERS_HEALTH_CHECK_SERVER_HOST": "0.0.0.0",
 				"N8N_RUNNERS_STDLIB_ALLOW": "re,hashlib,base64,time,json,io,os,inspect,zipfile,xml,xml.etree,xml.etree.ElementTree",
-				"N8N_RUNNERS_EXTERNAL_ALLOW": "pandas,numpy,openpyxl,xlrd,pytz,dateutil,tzdata,six",
+				"N8N_RUNNERS_EXTERNAL_ALLOW": "pandas,numpy,openpyxl,xlrd,pytz,dateutil,tzdata,six,pymatgen",
 				"N8N_RUNNERS_ALLOW_TRANSITIVE_IMPORTS": "true"
 			}
 		}

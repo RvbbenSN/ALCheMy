@@ -155,16 +155,62 @@ pilot batch, `--doc ID` for one specific document.
 ### `rag_import_context_batches.py`
 Reads the JSON files written back into `data/rag_context_batches/done/`,
 verifies each one is complete (same chunk count, same exact set of
-`chunk_id`s, no empty sentences) before writing anything, and only then
-inserts into the `rag_chunk_context` sidecar table — never into `rag_chunks`
-itself. Problem solved: an LLM asked to process ~90 items in one request can
-silently skip or merge some of them; this script makes that failure loud
-(the whole file is rejected, moved to `rejected/`, and nothing is written)
-instead of quietly leaving gaps. Reuse: dry run by default, `--apply` to
-actually write and archive processed files into `imported/`; `--status`
-prints overall progress (how much of the whole corpus is done) plus what is
-currently sitting in each folder, so an interrupted Antigravity session
-never leaves you guessing where things stand.
+`chunk_id`s, no empty sentences, and the sentences are actually distinct from
+each other) before writing anything, and only then inserts into the
+`rag_chunk_context` sidecar table — never into `rag_chunks` itself. Problem
+solved: an LLM asked to process ~90 items in one request can silently skip or
+merge some of them, or — a failure mode observed in practice — get lazy and
+paste the same handful of generic sentences across dozens of chunks instead
+of writing one specific sentence per chunk. Both look identical to a
+purely-structural check (right count, right IDs), so the verifier also
+rejects a file where fewer than half the sentences are unique among more
+than 5 results. Either failure makes the whole file loud (rejected, moved to
+`rejected/`, nothing written) instead of quietly leaving gaps or garbage.
+Reuse: dry run by default, `--apply` to actually write and archive processed
+files into `imported/`; `--status` prints overall progress (how much of the
+whole corpus is done) plus what is currently sitting in each folder, so an
+interrupted Antigravity session never leaves you guessing where things
+stand. `--batch-root DIR` points the whole pending/done/imported/rejected
+cycle at a different tree (default `data/rag_context_batches`) — used to
+import `rag_export_context_repairs.py`'s output from
+`data/rag_context_batches/repairs/` without mixing it into the normal
+first-pass flow.
+
+### `rag_export_context_repairs.py`
+A second failure mode showed up on 2026-08-26 that the diversity check above
+does not catch: for a minority of chunks per document, the model filled in
+a rigid template ("This X chunk (part N) evaluates `<garbled fragment>`
+regarding `<title>`") instead of a real sentence — each one is technically
+*distinct* (different part number, different fragment), so it passes the
+uniqueness check while carrying almost no real information. This script
+finds every `rag_chunk_context` row matching that signature (a regex, `--pattern`
+to override it), groups the affected `chunk_id`s by document, and exports
+one JSON batch per affected document into
+`data/rag_context_batches/repairs/pending/` — same shape as
+`rag_export_context_batches.py`'s output (full document text + instructions),
+except `"chunks"` only lists the specific chunk_ids that need redoing, not
+the whole document. Problem solved: redoing whole documents to fix a
+scattered minority of bad chunks would throw away thousands of good
+sentences (2026-08-26 incident: 502/783 documents had *some* broken chunks,
+but only 1 document had more than half of its chunks affected — median was
+under 10%). Import the results the normal way, just pointed at the repair
+tree: `python src/rag_import_context_batches.py --batch-root data/rag_context_batches/repairs --apply`
+— the existing `ON CONFLICT (chunk_id) DO UPDATE` silently overwrites only
+those rows. Reuse: `--limit N` for a pilot, `--doc ID` for one document,
+`--pattern` to hunt a different bad-sentence signature if a new failure mode
+shows up later.
+
+`--mode recycled` handles a second, older failure: 37 documents were found
+with the *original* recycled-sentence problem (a handful of duplicated
+sentences across most of a document's chunks) that predates the diversity
+check in `rag_import_context_batches.py` — their `created_at` is all before
+that check was merged, so nothing ever rejected them. There is no reliable
+way to tell which duplicate was "the real one" for an affected chunk, so
+this mode re-exports the document's **entire** chunk list (not a subset)
+via `--diversity-threshold` (default 0.5, same threshold the import-side
+check uses). `--mode template` (the default) stays scoped to individual
+chunk_ids since that failure only ever hits a minority of a document's
+chunks.
 
 ### `rag_ingest_chunks.py`
 Batch chunking + embedding: splits every un-chunked `rag_documents` row
@@ -187,7 +233,39 @@ each chunk's metadata. Deliberately has **no LLM attached** — problem
 solved: separates "is retrieval finding the right passages" from "is the
 model writing a good answer", which is otherwise impossible to tell apart
 when both live in the same chat. Reuse: `-n` (result count), `--publico`
-(restrict to PUBLIC-sensitivity documents only).
+(restrict to PUBLIC-sensitivity documents only). Searches `embedding` only
+— see `rag_query_compare.py` to also search `embedding_v2`.
+
+### `rag_reembed_context.py`
+The final step of contextual retrieval (Anthropic's technique, see
+`methodology/ROADMAP_RAG_Y_GRAFO.md`): computes `rag_chunks.embedding_v2 =
+embed(context_sentence + "\n\n" + text)` for every chunk that has a
+sentence in `rag_chunk_context`, using the same local Ollama `bge-m3`
+model, batching, and retry/backoff shape as `rag_ingest_chunks.py`. Problem
+solved: the technique only works if the context sentence is baked into
+what gets embedded — keeping it as a separate, un-vectorised column (safer,
+but pointless for search) throws away the entire retrieval-quality gain the
+roadmap cites (+35% fewer failures from contextual embeddings alone). This
+writes into a **second** column instead of overwriting `embedding`,
+specifically because the context sentences come from an external LLM whose
+failure modes (see `rag_export_context_repairs.py`) can't realistically be
+hand-checked across ~88k chunks — `embedding` stays untouched no matter
+what, so nothing about today's working retrieval can regress from running
+this. Reuse: resumable by default (`WHERE embedding_v2 IS NULL`), `--force`
+to recompute, `--limit N` for a pilot, `--doc ID` for one document.
+
+### `rag_query_compare.py`
+A/B tool: embeds one question and runs a plain cosine-similarity search
+against `embedding` and `embedding_v2` separately, printing both result
+sets side by side plus which chunk_ids only show up in one of them.
+Deliberately skips the BM25/RRF fusion `rag_hybrid_search()` does — the
+question this answers is narrowly "did adding context change what the
+vector search finds", not "what's the best retrieval pipeline". Problem
+solved: gives the project owner a way to judge, on real questions, whether
+`embedding_v2` is actually better before switching anything over — no
+manual review of the underlying context sentences required, just look at
+whether the passages that come back are more relevant. Reuse: `-n` (result
+count per column).
 
 ### `rag_smoke_test.py`
 Self-cleaning end-to-end health check: inserts one synthetic test document
@@ -286,11 +364,29 @@ diffractograms into the human ground truth supervised learning needs. Run it wit
 `streamlit run app/pxrd_labeler.py`.
 
 Shows one pattern at a time with its sample code, metal, linker, file name and
-path, and five one-click categories (AMORFO / INCIPIENTE / CRISTALINO / MEZCLA /
-SIN MUESTRA). Clicking saves and advances immediately — no dropdown, no save
-button — because the whole point is labelling several hundred patterns in a
-sitting. A Back button re-opens the previous pattern with its label and comment
-restored, and re-clicking a category overwrites it.
+path, and four judgements arranged next to the plot: a mandatory crystallinity
+class (AMORFO / INCIPIENTE / CRISTALINO / SIN_MUESTRA), an optional incipient
+sub-type, and two optional flags (oxide present, multi-phase suspected). One
+"Aceptar y siguiente" click saves everything marked and advances — no dropdown,
+no per-field save. A Back button re-opens the previous pattern with its choices
+restored, and accepting again overwrites it.
+
+These are four *independent* questions, not one category — see the module
+docstring for why (an oxide or a second phase can show up at any crystallinity
+level, so cramming them into one value was producing exactly the ambiguity you'd
+expect). Each is its own `label_type` row in `pxrd_labels`, keyed on
+`(file_hash, label_type)`, which is why they can be added without touching or
+re-doing any `crystallinity_class` label already saved. MEZCLA was retired as a
+crystallinity value for the same reason — a clearly two-phase pattern is still
+CRISTALINO by degree of order, with `multiphase_suspected = SI` carrying the
+"more than one phase" information; older rows still holding MEZCLA surface
+through the sidebar's "MEZCLA (antigua)" review filter so they can be revisited
+with the new, correct axes.
+
+The sidebar also has a "Repasar lo ya etiquetado" section: filter by an
+existing crystallinity value, or search the saved comments (e.g. `oxid`), to
+retrofit the oxide/mixture flags onto patterns labelled before those axes
+existed, without hunting through ~1,870 rows by hand.
 
 Problem solved beyond the obvious: **the labels have to survive.** They are
 written to `pxrd_labels` keyed on `file_hash`, not on `measurement_id`, because
@@ -307,13 +403,56 @@ the next one pre-fetched — measured at 0.63 s per label with no degradation ov
 25 consecutive labels. Loading all curves up front would take minutes and
 hundreds of megabytes, which is why the app never does it.
 
-Two details worth knowing. The comment box and the "doubtful" checkbox are keyed
-by the pattern's file hash rather than a fixed key: Streamlit forbids assigning
-to `session_state` for an already-instantiated widget, so resetting a fixed-key
-box on advance raises an exception that silently strands the app on the same
-pattern. And the optional "show automatic analysis" overlay is **off by default**
-on purpose — seeing the pipeline's estimated crystallinity while labelling makes
-the labels dependent on the algorithm they are supposed to validate.
+Two details worth knowing. Every widget — the crystallinity pills, the subtype
+pills, the indicators pills, the comment box — is keyed by the pattern's file
+hash rather than a fixed key: Streamlit forbids assigning to `session_state`
+for an already-instantiated widget, so resetting a fixed-key widget on advance
+raises an exception that silently strands the app on the same pattern.
+Per-hash keys also give each pattern's principal pill a clean `default=None`
+(nothing pre-selected) unless a real label already exists for it — which is
+what makes a retired MEZCLA value force a fresh choice on review, since it can
+never match the current option list. And the optional "show automatic analysis"
+overlay is **off by default** on purpose — seeing the pipeline's estimated
+crystallinity while labelling makes the labels dependent on the algorithm they
+are supposed to validate.
+
+The controls use `st.pills` rather than `st.radio`/`st.checkbox` specifically
+for phone use: a pills group lays its options out horizontally and only wraps
+if it must, so a 4-option judgement costs one short row instead of four full
+rows. Combined with collapsing the file path and the running tally into
+`st.expander`s, dropping the redundant sample-code heading (the plot title
+already shows it), and moving "Aceptar" to an icon-only button shared with
+Anterior/Saltar in one row, the whole plot-plus-judgement screen fits without
+scrolling on a phone — that was the point of this pass. "Dudosa" moved from
+its own checkbox into the indicators pills; it's a soft flag to revisit later,
+not a blocker, and in practice most uncertainty already shows up as a choice
+of INCIPIENTE rather than a separate doubt marker. A small `<script>` inserted
+via `st.html(..., unsafe_allow_javascript=True)` re-anchors the scroll position
+to just above the plot on every rerun, since a phone browser otherwise jumps to
+whatever just changed - this needed `st.html`, not the deprecated
+`st.components.v1.html`/`st.iframe`, because those sandbox the script inside
+its own iframe, where `window.parent.document` access can be silently blocked
+by the browser and the whole trick becomes a silent no-op. `st.html` runs the
+script directly in the main document instead.
+
+Two more mobile-driven details: the running tally lives in an `st.popover`
+next to the metal/linker line rather than its own section, and the "saved"
+confirmation is an `st.toast` (auto-dismissing, no layout space) instead of an
+`st.success` banner that used to push the whole screen down after every click.
+Streamlit's own top header is a fixed overlay, not part of the normal document
+flow, so shrinking `block-container`'s top padding without also shrinking the
+header let the title render partly underneath it — both are sized together.
+
+The UI text is English; only the display captions changed. The `label_value`
+codes actually written to `pxrd_labels` (`AMORFO`, `INCIPIENTE`, `CRISTALINO`,
+`SIN_MUESTRA`, the incipient-subtype codes, `confidence = alta|dudosa`) stay
+exactly as they were, since ~1,150 rows already use them and renaming them
+would be a data migration, not a display change. The title, progress line and
+metal/linker/tally/file row are grouped in one `st.container(key="header_block")`
+with a gap rule scoped to `.st-key-header_block` — narrower than the earlier
+attempt at a blanket `stVerticalBlock` gap override, which caused captions to
+overlap the element above them because some Streamlit elements already carry
+their own offset tuned to the *default* spacing.
 
 Reuse: `--server.port` to run several instances; the sidebar filters by metal and
 linker so the corpus can be labelled in themed batches; every click is an
