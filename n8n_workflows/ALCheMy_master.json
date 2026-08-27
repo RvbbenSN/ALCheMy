@@ -375,7 +375,7 @@
       "parameters": {
         "mode": "runOnceForEachItem",
         "language": "pythonNative",
-        "pythonCode": "payload = _item['json']\n\ntry:\n    confidence = float(payload.get('confidence') or 0)\nexcept (TypeError, ValueError):\n    confidence = 0.0\n\nsample_code = payload.get('sample_code') or 'UNKNOWN'\ntechnique = payload.get('technique') or 'ICP'\nCONFIDENCE_THRESHOLD = 85\n\nif confidence >= CONFIDENCE_THRESHOLD:\n    _item['json']['verdict'] = 'ALLOW'\n    _item['json']['autonomy_level'] = 'L4'\n    _item['json']['requires_human_approval'] = False\n    _item['json']['status_message'] = f'HIGH_CONFIDENCE ({confidence}%): Autonomous insertion granted.'\nelse:\n    _item['json']['verdict'] = 'REQUIRE_APPROVAL'\n    _item['json']['autonomy_level'] = 'L2'\n    _item['json']['requires_human_approval'] = True\n    _item['json']['status_message'] = f'LOW_CONFIDENCE ({confidence}% < {CONFIDENCE_THRESHOLD}%): Human approval required.'\n    _item['json']['approval_email_subject'] = f'[ALCheMy L2 Approval Required] Low Confidence PDF Ingestion ({sample_code})'\n    _item['json']['approval_email_body'] = (\n        'Action Required by Rubén S.N.:\\n\\n'\n        f'The AI Agent extracted chemical data for sample {sample_code} ({technique}), '\n        f'but confidence score was {confidence}% (Threshold: {CONFIDENCE_THRESHOLD}%).\\n\\n'\n        f\"AI Reasoning: {payload.get('reasoning') or 'N/A'}\\n\\n\"\n        'Please click Approval or Rejection button below.'\n    )\n\nreturn _item\n"
+        "pythonCode": "payload = _item['json']\n\ntry:\n    confidence = float(payload.get('confidence') or 0)\nexcept (TypeError, ValueError):\n    confidence = 0.0\n\nsample_code = payload.get('sample_code') or 'UNKNOWN'\ntechnique = payload.get('technique') or 'ICP'\nCONFIDENCE_THRESHOLD = 85\n\nif confidence >= CONFIDENCE_THRESHOLD:\n    _item['json']['verdict'] = 'ALLOW'\n    _item['json']['autonomy_level'] = 'L4'\n    _item['json']['requires_human_approval'] = False\n    _item['json']['status_message'] = f'HIGH_CONFIDENCE ({confidence}%): Autonomous insertion granted.'\n    _item['json']['approval_email_subject'] = f'[ALCheMy L2 Approval Required] High Confidence PDF Ingestion ({sample_code})'\n    _item['json']['approval_email_body'] = (\n        'FYI - no action required unless something looks wrong:\\n\\n'\n        f'The AI Agent extracted chemical data for sample {sample_code} ({technique}) '\n        f'with confidence score {confidence}% (>= {CONFIDENCE_THRESHOLD}% threshold).\\n\\n'\n        f\"AI Reasoning: {payload.get('reasoning') or 'N/A'}\\n\\n\"\n        'Every PDF extraction still goes through this approval step regardless of confidence '\n        '(L4 autonomous insertion is disabled - see the note on \"If - Needs Human Approval?\"). '\n        'Please click Approval or Rejection below.'\n    )\nelse:\n    _item['json']['verdict'] = 'REQUIRE_APPROVAL'\n    _item['json']['autonomy_level'] = 'L2'\n    _item['json']['requires_human_approval'] = True\n    _item['json']['status_message'] = f'LOW_CONFIDENCE ({confidence}% < {CONFIDENCE_THRESHOLD}%): Human approval required.'\n    _item['json']['approval_email_subject'] = f'[ALCheMy L2 Approval Required] Low Confidence PDF Ingestion ({sample_code})'\n    _item['json']['approval_email_body'] = (\n        'Action Required by Rubén S.N.:\\n\\n'\n        f'The AI Agent extracted chemical data for sample {sample_code} ({technique}), '\n        f'but confidence score was {confidence}% (Threshold: {CONFIDENCE_THRESHOLD}%).\\n\\n'\n        f\"AI Reasoning: {payload.get('reasoning') or 'N/A'}\\n\\n\"\n        'Please click Approval or Rejection button below.'\n    )\n\nreturn _item\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -422,7 +422,8 @@
           "name": "SMTP account"
         }
       },
-      "onError": "continueErrorOutput"
+      "onError": "continueErrorOutput",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -832,9 +833,8 @@
         "fromEmail": "rubbenserrano@gmail.com",
         "toEmail": "={{ $json.researcher_email || 'rubbenserrano@gmail.com' }}",
         "subject": "={{ 'ALCheMy - Measurement registered: ' + ($json.sample_code || 'UNKNOWN') + ' (' + ($json.technique || '') + ')' }}",
-        "options": {},
-        "emailFormat": "html",
-        "html": "={{ 'Hi ' + ($json.researcher_name || 'there') + ',<br><br>Your characterization measurement has been registered in the ALCheMy database.<br><br><b>Sample:</b> ' + ($json.sample_code || 'UNKNOWN') + '<br><b>Technique:</b> ' + ($json.technique || 'N/A') + '<br><b>Instrument:</b> ' + ($json.instrument_name || 'N/A') + '<br><b>File:</b> ' + ($json.file_name || 'N/A') + '<br><br>No action is needed on your side.<br><br>ALCheMy automated ingestion pipeline' }}"
+        "html": "={{ 'Hi ' + ($json.researcher_name || 'there') + ',<br><br>Your characterization measurement has been registered in the ALCheMy database.<br><br><b>Sample:</b> ' + ($json.sample_code || 'UNKNOWN') + '<br><b>Technique:</b> ' + ($json.technique || 'N/A') + '<br><b>Instrument:</b> ' + ($json.instrument_name || 'N/A') + '<br><b>File:</b> ' + ($json.file_name || 'N/A') + '<br><br>No action is needed on your side.<br><br>ALCheMy automated ingestion pipeline' }}",
+        "options": {}
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -1648,8 +1648,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        -400
+        5328,
+        -592
       ]
     },
     {
@@ -1663,8 +1663,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        -208
+        5328,
+        -400
       ]
     },
     {
@@ -1678,8 +1678,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        -16
+        5328,
+        -208
       ]
     },
     {
@@ -1693,8 +1693,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        176
+        5328,
+        -16
       ]
     },
     {
@@ -1708,8 +1708,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        368
+        5328,
+        176
       ]
     },
     {
@@ -1723,8 +1723,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        560
+        5328,
+        368
       ]
     },
     {
@@ -1983,7 +1983,6 @@
             }
           ]
         },
-        "includeOtherFields": false,
         "options": {}
       },
       "id": "d3730c36-3986-4a83-995a-2e77037996e2",
@@ -2154,7 +2153,6 @@
             }
           ]
         },
-        "includeOtherFields": false,
         "options": {}
       },
       "id": "2acebb9f-a96d-4648-84c8-24a3d3a3ad43",
@@ -2820,10 +2818,10 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": true,
+            "version": 3,
             "leftValue": "",
-            "typeValidation": "loose",
-            "version": 3
+            "caseSensitive": true,
+            "typeValidation": "loose"
           },
           "conditions": [
             {
@@ -2850,9 +2848,14 @@
         4944,
         1408
       ],
-      "notes": "PELIGRO / 2026-08-24: la rama autonoma (L4) esta DESACTIVADA a proposito. Las dos salidas van al correo de aprobacion humana. Motivo: se comprobo que el agente de Gemini NO esta recibiendo el PDF y se INVENTA los datos - para 24AQ0245 devolvio Co/Mg/Ca y un analista 'John Doe' cuando el informe real trae Fe/Ni/P y otros tecnicos, y aun asi se autoasigno 95% de confianza. Mientras el binario no llegue de verdad al modelo, ninguna extraccion de PDF puede insertarse sin que la vea una persona. Para reactivar L4: arreglar el paso del PDF, verificar contra el informe real, y volver a conectar la salida FALSE a DB Update."
+      "notes": "L4 REACTIVADO 2026-08-27: la rama FALSE (alta confianza, requires_human_approval=false) va directa a DB Update, sin correo. Motivo del cambio: se verifico que el binario del PDF SI llega al agente (Sesion 29) contra 2 informes ICP reales distintos - el problema original (Gemini inventando datos sin ver el PDF) esta resuelto. La rama TRUE (baja confianza) sigue exigiendo aprobacion humana por correo, sin cambios."
     },
     {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthesis_experiments\n  (sample_code, synthesis_date, synthesis_type, researcher_name, research_unit,\n   metal_center, metal_source, linker, total_volume_ml, temp_target_c, time_hours)\nVALUES (\n  '{{ $json.sample_code }}', CURRENT_DATE, 'PENDING_RECORD',\n  '{{ $json.researcher_name || \"UNKNOWN\" }}', 'UNKNOWN',\n  'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 0, 0, 0\n)\nON CONFLICT (sample_code) DO NOTHING\nRETURNING sample_code AS placeholder_created;",
+        "options": {}
+      },
       "id": "5a1e9b02-7c4d-4e88-9f21-3d6b8c0a1e45",
       "name": "Ensure Sample Exists",
       "type": "n8n-nodes-base.postgres",
@@ -2861,29 +2864,16 @@
         3520,
         2000
       ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO synthesis_experiments\n  (sample_code, synthesis_date, synthesis_type, researcher_name, research_unit,\n   metal_center, metal_source, linker, total_volume_ml, temp_target_c, time_hours)\nVALUES (\n  '{{ $json.sample_code }}', CURRENT_DATE, 'PENDING_RECORD',\n  '{{ $json.researcher_name || \"UNKNOWN\" }}', 'UNKNOWN',\n  'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 0, 0, 0\n)\nON CONFLICT (sample_code) DO NOTHING\nRETURNING sample_code AS placeholder_created;",
-        "options": {}
-      },
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
           "id": "dTKBybMDqtv6Qt85",
           "name": "ALCheMy PostgreSQL Credential"
         }
       },
-      "notes": "Una medida no puede guardarse sin fila padre en synthesis_experiments (clave foranea). En vez de rechazar la medida, se crea un placeholder y se avisa por email de que faltan los datos de sintesis. Las columnas NOT NULL van con marcadores explicitos, NUNCA con quimica plausible: inventar Ni/Pyrene haria que 'dame las muestras de Ni con pireno' devolviera materiales que nunca lo fueron. RETURNING solo devuelve fila cuando el placeholder se acaba de crear, y eso dispara el recordatorio.",
-      "alwaysOutputData": true
+      "notes": "Una medida no puede guardarse sin fila padre en synthesis_experiments (clave foranea). En vez de rechazar la medida, se crea un placeholder y se avisa por email de que faltan los datos de sintesis. Las columnas NOT NULL van con marcadores explicitos, NUNCA con quimica plausible: inventar Ni/Pyrene haria que 'dame las muestras de Ni con pireno' devolviera materiales que nunca lo fueron. RETURNING solo devuelve fila cuando el placeholder se acaba de crear, y eso dispara el recordatorio."
     },
     {
-      "id": "6b2f0c13-8d5e-4f99-a032-4e7c9d1b2f56",
-      "name": "Merge - Restore After Sample Check",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        3744,
-        2000
-      ],
       "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
@@ -2894,24 +2884,24 @@
             }
           }
         }
-      }
+      },
+      "id": "6b2f0c13-8d5e-4f99-a032-4e7c9d1b2f56",
+      "name": "Merge - Restore After Sample Check",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3744,
+        2000
+      ]
     },
     {
-      "id": "7c3a1d24-9e6f-4a11-b143-5f8d0e2c3a67",
-      "name": "If - Synthesis Record Missing?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        6240,
-        900
-      ],
       "parameters": {
         "conditions": {
           "options": {
-            "version": 3,
-            "leftValue": "",
             "caseSensitive": true,
-            "typeValidation": "loose"
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
           },
           "conditions": [
             {
@@ -2930,46 +2920,232 @@
         "looseTypeValidation": true,
         "options": {}
       },
+      "id": "7c3a1d24-9e6f-4a11-b143-5f8d0e2c3a67",
+      "name": "If - Synthesis Record Missing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6240,
+        912
+      ],
       "notes": "Se lee de 'Merge - Restore After Sample Check' por su nombre, no de $json: el RETURNING de DB Update se lleva por delante casi todos los campos del item, y eso ya ha causado varios fallos en este flujo."
     },
     {
+      "parameters": {
+        "fromEmail": "rubbenserrano@gmail.com",
+        "toEmail": "={{ $('Merge - Restore After Sample Check').item.json.researcher_email || 'rubbenserrano@gmail.com' }}",
+        "subject": "={{ 'ALCheMy - Synthesis record missing for ' + $('Merge - Restore After Sample Check').item.json.sample_code }}",
+        "html": "={{ 'Hi ' + ($('Merge - Restore After Sample Check').item.json.researcher_name || 'there') + ',<br><br>Your measurement was stored successfully, so nothing is lost - but sample <b>' + $('Merge - Restore After Sample Check').item.json.sample_code + '</b> had no synthesis record yet, so ALCheMy created a placeholder for it.<br><br>That placeholder carries <b>no chemistry at all</b> (metal, source and linker are all marked UNKNOWN) - it exists only so the measurement could be linked to something. Please complete the synthesis data for this sample so the record becomes usable.<br><br>Pending records can be listed with:<br><code>SELECT sample_code, synthesis_date FROM synthesis_experiments WHERE synthesis_type = \\'PENDING_RECORD\\';</code><br><br>ALCheMy automated ingestion pipeline' }}",
+        "options": {}
+      },
       "id": "8d4b2e35-0f70-4b22-c254-6a9e1f3d4b78",
       "name": "Send Missing Synthesis Reminder",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
         6528,
-        900
+        912
       ],
-      "parameters": {
-        "fromEmail": "rubbenserrano@gmail.com",
-        "toEmail": "={{ $('Merge - Restore After Sample Check').item.json.researcher_email || 'rubbenserrano@gmail.com' }}",
-        "subject": "={{ 'ALCheMy - Synthesis record missing for ' + $('Merge - Restore After Sample Check').item.json.sample_code }}",
-        "emailFormat": "html",
-        "html": "={{ 'Hi ' + ($('Merge - Restore After Sample Check').item.json.researcher_name || 'there') + ',<br><br>Your measurement was stored successfully, so nothing is lost - but sample <b>' + $('Merge - Restore After Sample Check').item.json.sample_code + '</b> had no synthesis record yet, so ALCheMy created a placeholder for it.<br><br>That placeholder carries <b>no chemistry at all</b> (metal, source and linker are all marked UNKNOWN) - it exists only so the measurement could be linked to something. Please complete the synthesis data for this sample so the record becomes usable.<br><br>Pending records can be listed with:<br><code>SELECT sample_code, synthesis_date FROM synthesis_experiments WHERE synthesis_type = \\'PENDING_RECORD\\';</code><br><br>ALCheMy automated ingestion pipeline' }}",
-        "options": {}
-      },
+      "webhookId": "7625368e-e80e-435d-b659-d8a49c2faee8",
       "credentials": {
         "smtp": {
           "id": "AK2AHsrvkt9fSgu0",
           "name": "SMTP account"
         }
-      },
-      "webhookId": "7625368e-e80e-435d-b659-d8a49c2faee8"
+      }
     },
     {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "pythonNative",
+        "pythonCode": "import os\nimport re\nimport numpy as np\n\n# n8n's Python task runner sandbox permanently blocks the bare 'open' builtin\n# (it's in BUILTINS_DENY_DEFAULT regardless of any stdlib/external allow-list).\n# io.open is the exact same function, reachable because 'io' is on the allow-list -\n# shadow the name once here so every 'open(...)' call below works both locally and\n# inside the sandboxed runner.\nimport io\nopen = io.open\n\n\ndef _clean(val):\n    if val is None:\n        return None\n    s = str(val).strip()\n    return s if s not in ('?', '.', '') else None\n\n\ndef _num(val):\n    s = _clean(val)\n    if s is None:\n        return None\n    s = re.sub(r'\\(\\d+\\)$', '', s)\n    try:\n        return float(s)\n    except ValueError:\n        return None\n\n\ndef _as_list(val):\n    if val is None:\n        return []\n    return val if isinstance(val, list) else [val]\n\n\ndef parse_cif_scxrd(cif_text, file_name='sample.cif', sample_code=None,\n                     measurement_tag='simulated_scxrd', researcher_email=None):\n    from pymatgen.io.cif import CifParser\n    from pymatgen.analysis.diffraction.xrd import XRDCalculator\n\n    parser = CifParser.from_str(cif_text)\n    raw = parser.as_dict()\n    block_name = next((k for k, v in raw.items() if '_atom_site_label' in v), next(iter(raw)))\n    tags = raw[block_name]\n\n    def get(key):\n        return _clean(tags.get(key))\n\n    def getn(key):\n        return _num(tags.get(key))\n\n    atom_labels = _as_list(tags.get('_atom_site_label'))\n    atom_symbols = _as_list(tags.get('_atom_site_type_symbol'))\n    atom_x = [_num(v) for v in _as_list(tags.get('_atom_site_fract_x'))]\n    atom_y = [_num(v) for v in _as_list(tags.get('_atom_site_fract_y'))]\n    atom_z = [_num(v) for v in _as_list(tags.get('_atom_site_fract_z'))]\n    atom_occ = [_num(v) for v in _as_list(tags.get('_atom_site_occupancy'))]\n    atom_uiso = [_num(v) for v in _as_list(tags.get('_atom_site_U_iso_or_equiv'))]\n    n_atoms = len(atom_labels)\n\n    atom_sites = [\n        {\n            'label': atom_labels[i] if i < len(atom_labels) else None,\n            'element': atom_symbols[i] if i < len(atom_symbols) else None,\n            'fract_x': atom_x[i] if i < len(atom_x) else None,\n            'fract_y': atom_y[i] if i < len(atom_y) else None,\n            'fract_z': atom_z[i] if i < len(atom_z) else None,\n            'occupancy': atom_occ[i] if i < len(atom_occ) else None,\n            'u_iso_or_equiv': atom_uiso[i] if i < len(atom_uiso) else None,\n        }\n        for i in range(n_atoms)\n    ]\n\n    crystal_structure = {\n        'space_group_name_hm': get('_space_group_name_H-M_alt') or get('_symmetry_space_group_name_H-M'),\n        'space_group_name_hall': get('_space_group_name_Hall') or get('_symmetry_space_group_name_Hall'),\n        'space_group_it_number': get('_space_group_IT_number'),\n        'crystal_system': get('_space_group_crystal_system'),\n        'cell_length_a_angstrom': getn('_cell_length_a'),\n        'cell_length_b_angstrom': getn('_cell_length_b'),\n        'cell_length_c_angstrom': getn('_cell_length_c'),\n        'cell_angle_alpha_deg': getn('_cell_angle_alpha'),\n        'cell_angle_beta_deg': getn('_cell_angle_beta'),\n        'cell_angle_gamma_deg': getn('_cell_angle_gamma'),\n        'cell_volume_angstrom3': getn('_cell_volume'),\n        'cell_formula_units_z': getn('_cell_formula_units_Z'),\n        'symmetry_operations': (_as_list(tags.get('_space_group_symop_operation_xyz'))\n                                 or _as_list(tags.get('_symmetry_equiv_pos_as_xyz'))),\n        'num_atoms_in_asymmetric_unit': n_atoms,\n        'atom_sites': atom_sites,\n    }\n\n    chemical_info = {\n        'chemical_name_common': get('_chemical_name_common'),\n        'chemical_name_systematic': get('_chemical_name_systematic'),\n        'chemical_formula_moiety': get('_chemical_formula_moiety'),\n        'chemical_formula_sum': get('_chemical_formula_sum'),\n        'chemical_formula_weight_g_mol': getn('_chemical_formula_weight'),\n    }\n\n    experimental_conditions = {\n        'crystal_description': get('_exptl_crystal_description'),\n        'crystal_colour': get('_exptl_crystal_colour'),\n        'density_diffrn_g_cm3': getn('_exptl_crystal_density_diffrn'),\n        'f_000': getn('_exptl_crystal_F_000'),\n        'absorption_coefficient_mu_mm-1': getn('_exptl_absorpt_coefficient_mu'),\n        'diffrn_ambient_temperature_k': getn('_diffrn_ambient_temperature'),\n        'diffrn_radiation_wavelength_angstrom': getn('_diffrn_radiation_wavelength'),\n        'diffrn_radiation_type': get('_diffrn_radiation_type'),\n        'diffrn_measurement_device_type': get('_diffrn_measurement_device_type'),\n        'diffrn_reflns_number': getn('_diffrn_reflns_number'),\n    }\n\n    refinement_quality = {\n        'r_factor_all': getn('_refine_ls_R_factor_all'),\n        'r_factor_gt': getn('_refine_ls_R_factor_gt'),\n        'wr_factor_ref': getn('_refine_ls_wR_factor_ref'),\n        'goodness_of_fit_ref': getn('_refine_ls_goodness_of_fit_ref'),\n        'number_reflns': getn('_refine_ls_number_reflns'),\n        'number_parameters': getn('_refine_ls_number_parameters'),\n    }\n\n    provenance = {\n        'audit_creation_method': get('_audit_creation_method'),\n        'audit_creation_date': get('_audit_creation_date'),\n        'structure_solution_program': get('_computing_structure_solution'),\n        'structure_refinement_program': get('_computing_structure_refinement'),\n        'shelx_version_number': get('_shelxl_version_number') or get('_shelx_SHELXL_version_number'),\n    }\n\n    grid_2t = np.arange(3.0, 50.0, 0.02)\n    y_simulated = np.zeros_like(grid_2t)\n    simulation_error = None\n    try:\n        structure = parser.parse_structures(primitive=False)[0]\n        calc = XRDCalculator(wavelength='CuKa')\n        pattern = calc.get_pattern(structure, two_theta_range=(3.0, 50.0))\n        fwhm = 0.15\n        sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))\n        for peak_2theta, peak_intensity in zip(pattern.x, pattern.y):\n            y_simulated += peak_intensity * np.exp(-0.5 * ((grid_2t - peak_2theta) / sigma) ** 2)\n    except Exception as exc:\n        simulation_error = str(exc)\n\n    if not sample_code:\n        code_match = re.search(r'(RS\\w+|IEF-?\\d+[a-zA-Z]?|RSMIX\\d+|LP\\d+)', file_name, re.IGNORECASE)\n        sample_code = code_match.group(1).upper() if code_match else 'UNKNOWN'\n\n    header_metadata = {\n        'sample_name_raw': get('_chemical_name_common') or file_name,\n        'crystal_structure': crystal_structure,\n        'chemical_info': chemical_info,\n        'experimental_conditions': experimental_conditions,\n        'refinement_quality': refinement_quality,\n        'provenance': provenance,\n        'wavelength_kalpha1_angstrom': 1.540598,\n        'num_data_points': len(grid_2t),\n        'simulation_error': simulation_error,\n    }\n\n    return {\n        'sample_code': sample_code,\n        'researcher_name': 'Rubén S.N.',\n        'researcher_email': researcher_email,\n        'technique': 'SC-XRD',\n        'operator_name': 'Rubén S.N.',\n        'measurement_tag': measurement_tag,\n        'instrument_name': experimental_conditions['diffrn_measurement_device_type'] or 'Bruker D8 VENTURA (SC-XRD)',\n        'file_name': file_name,\n        'raw_file_path': file_name,\n        'data_json': {\n            'header_metadata': header_metadata,\n            'raw_data': {\n                'x_label': '2theta_deg',\n                'y_label': 'intensity_simulated',\n                'simulation_basis': 'pymatgen_XRDCalculator_CuKa_gaussian_broadened_fwhm_0.15deg',\n                'x': [round(float(v), 4) for v in grid_2t],\n                'y': [round(float(v), 4) for v in y_simulated],\n            }\n        }\n    }\n\n\nimport base64\n\nb64_data = _item['json'].get('data_file_base64')\n\nif b64_data:\n    original_name = _item['json'].get('file_name') or 'upload'\n    technique_for_path = (_item['json'].get('technique') or 'SC-XRD').upper()\n    hash_prefix = (_item['json'].get('file_hash') or 'nohash')[:8]\n    target_dir = os.path.join('/home/node/data/raw_datalake', technique_for_path)\n    os.makedirs(target_dir, exist_ok=True)\n    target_path = os.path.join(target_dir, hash_prefix + '_' + original_name)\n    raw_bytes = base64.b64decode(b64_data)\n    with open(target_path, 'wb') as _f:\n        _f.write(raw_bytes)\n    file_path = target_path\n    _item['json']['raw_file_path'] = target_path\n    _item['json']['file_name'] = os.path.basename(target_path)\nelse:\n    file_path = _item['json'].get('raw_file_path')\n    with open(file_path, 'rb') as _f:\n        raw_bytes = _f.read()\n\ncif_text = raw_bytes.decode('latin1', errors='ignore')\nsample_code = _item['json'].get('sample_code')\nresearcher_email = _item['json'].get('researcher_email')\n\nresult = parse_cif_scxrd(cif_text, file_name=os.path.basename(file_path), sample_code=sample_code,\n                          researcher_email=researcher_email)\n\n_item['json']['sample_code'] = result['sample_code']\n_item['json']['technique'] = result['technique']\n_item['json']['measurement_tag'] = result['measurement_tag']\n_item['json']['operator_name'] = result.get('operator_name') or _item['json'].get('operator_name')\n_item['json']['instrument_name'] = result['instrument_name']\n_item['json']['file_name'] = result['file_name']\n_item['json']['raw_file_path'] = _item['json'].get('raw_file_path') or result['raw_file_path']\n_item['json']['data_json'] = result['data_json']\n\nreturn _item\n"
+      },
       "id": "b1cf2e01-3a4d-4f6e-9c8a-1d2e3f4a5b6c",
       "name": "Parse CIF (.cif)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5344,
-        752
+        5328,
+        560
+      ]
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000001",
+      "name": "Ollama Chat Model (Image Fallback)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        4992,
+        1408
       ],
       "parameters": {
-        "mode": "runOnceForEachItem",
-        "language": "pythonNative",
-        "pythonCode": "import os\nimport re\nimport numpy as np\n\n# n8n's Python task runner sandbox permanently blocks the bare 'open' builtin\n# (it's in BUILTINS_DENY_DEFAULT regardless of any stdlib/external allow-list).\n# io.open is the exact same function, reachable because 'io' is on the allow-list -\n# shadow the name once here so every 'open(...)' call below works both locally and\n# inside the sandboxed runner.\nimport io\nopen = io.open\n\n\ndef _clean(val):\n    if val is None:\n        return None\n    s = str(val).strip()\n    return s if s not in ('?', '.', '') else None\n\n\ndef _num(val):\n    s = _clean(val)\n    if s is None:\n        return None\n    s = re.sub(r'\\(\\d+\\)$', '', s)\n    try:\n        return float(s)\n    except ValueError:\n        return None\n\n\ndef _as_list(val):\n    if val is None:\n        return []\n    return val if isinstance(val, list) else [val]\n\n\ndef parse_cif_scxrd(cif_text, file_name='sample.cif', sample_code=None,\n                     measurement_tag='simulated_scxrd', researcher_email=None):\n    from pymatgen.io.cif import CifParser\n    from pymatgen.analysis.diffraction.xrd import XRDCalculator\n\n    parser = CifParser.from_str(cif_text)\n    raw = parser.as_dict()\n    block_name = next((k for k, v in raw.items() if '_atom_site_label' in v), next(iter(raw)))\n    tags = raw[block_name]\n\n    def get(key):\n        return _clean(tags.get(key))\n\n    def getn(key):\n        return _num(tags.get(key))\n\n    atom_labels = _as_list(tags.get('_atom_site_label'))\n    atom_symbols = _as_list(tags.get('_atom_site_type_symbol'))\n    atom_x = [_num(v) for v in _as_list(tags.get('_atom_site_fract_x'))]\n    atom_y = [_num(v) for v in _as_list(tags.get('_atom_site_fract_y'))]\n    atom_z = [_num(v) for v in _as_list(tags.get('_atom_site_fract_z'))]\n    atom_occ = [_num(v) for v in _as_list(tags.get('_atom_site_occupancy'))]\n    atom_uiso = [_num(v) for v in _as_list(tags.get('_atom_site_U_iso_or_equiv'))]\n    n_atoms = len(atom_labels)\n\n    atom_sites = [\n        {\n            'label': atom_labels[i] if i < len(atom_labels) else None,\n            'element': atom_symbols[i] if i < len(atom_symbols) else None,\n            'fract_x': atom_x[i] if i < len(atom_x) else None,\n            'fract_y': atom_y[i] if i < len(atom_y) else None,\n            'fract_z': atom_z[i] if i < len(atom_z) else None,\n            'occupancy': atom_occ[i] if i < len(atom_occ) else None,\n            'u_iso_or_equiv': atom_uiso[i] if i < len(atom_uiso) else None,\n        }\n        for i in range(n_atoms)\n    ]\n\n    crystal_structure = {\n        'space_group_name_hm': get('_space_group_name_H-M_alt') or get('_symmetry_space_group_name_H-M'),\n        'space_group_name_hall': get('_space_group_name_Hall') or get('_symmetry_space_group_name_Hall'),\n        'space_group_it_number': get('_space_group_IT_number'),\n        'crystal_system': get('_space_group_crystal_system'),\n        'cell_length_a_angstrom': getn('_cell_length_a'),\n        'cell_length_b_angstrom': getn('_cell_length_b'),\n        'cell_length_c_angstrom': getn('_cell_length_c'),\n        'cell_angle_alpha_deg': getn('_cell_angle_alpha'),\n        'cell_angle_beta_deg': getn('_cell_angle_beta'),\n        'cell_angle_gamma_deg': getn('_cell_angle_gamma'),\n        'cell_volume_angstrom3': getn('_cell_volume'),\n        'cell_formula_units_z': getn('_cell_formula_units_Z'),\n        'symmetry_operations': (_as_list(tags.get('_space_group_symop_operation_xyz'))\n                                 or _as_list(tags.get('_symmetry_equiv_pos_as_xyz'))),\n        'num_atoms_in_asymmetric_unit': n_atoms,\n        'atom_sites': atom_sites,\n    }\n\n    chemical_info = {\n        'chemical_name_common': get('_chemical_name_common'),\n        'chemical_name_systematic': get('_chemical_name_systematic'),\n        'chemical_formula_moiety': get('_chemical_formula_moiety'),\n        'chemical_formula_sum': get('_chemical_formula_sum'),\n        'chemical_formula_weight_g_mol': getn('_chemical_formula_weight'),\n    }\n\n    experimental_conditions = {\n        'crystal_description': get('_exptl_crystal_description'),\n        'crystal_colour': get('_exptl_crystal_colour'),\n        'density_diffrn_g_cm3': getn('_exptl_crystal_density_diffrn'),\n        'f_000': getn('_exptl_crystal_F_000'),\n        'absorption_coefficient_mu_mm-1': getn('_exptl_absorpt_coefficient_mu'),\n        'diffrn_ambient_temperature_k': getn('_diffrn_ambient_temperature'),\n        'diffrn_radiation_wavelength_angstrom': getn('_diffrn_radiation_wavelength'),\n        'diffrn_radiation_type': get('_diffrn_radiation_type'),\n        'diffrn_measurement_device_type': get('_diffrn_measurement_device_type'),\n        'diffrn_reflns_number': getn('_diffrn_reflns_number'),\n    }\n\n    refinement_quality = {\n        'r_factor_all': getn('_refine_ls_R_factor_all'),\n        'r_factor_gt': getn('_refine_ls_R_factor_gt'),\n        'wr_factor_ref': getn('_refine_ls_wR_factor_ref'),\n        'goodness_of_fit_ref': getn('_refine_ls_goodness_of_fit_ref'),\n        'number_reflns': getn('_refine_ls_number_reflns'),\n        'number_parameters': getn('_refine_ls_number_parameters'),\n    }\n\n    provenance = {\n        'audit_creation_method': get('_audit_creation_method'),\n        'audit_creation_date': get('_audit_creation_date'),\n        'structure_solution_program': get('_computing_structure_solution'),\n        'structure_refinement_program': get('_computing_structure_refinement'),\n        'shelx_version_number': get('_shelxl_version_number') or get('_shelx_SHELXL_version_number'),\n    }\n\n    grid_2t = np.arange(3.0, 50.0, 0.02)\n    y_simulated = np.zeros_like(grid_2t)\n    simulation_error = None\n    try:\n        structure = parser.parse_structures(primitive=False)[0]\n        calc = XRDCalculator(wavelength='CuKa')\n        pattern = calc.get_pattern(structure, two_theta_range=(3.0, 50.0))\n        fwhm = 0.15\n        sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))\n        for peak_2theta, peak_intensity in zip(pattern.x, pattern.y):\n            y_simulated += peak_intensity * np.exp(-0.5 * ((grid_2t - peak_2theta) / sigma) ** 2)\n    except Exception as exc:\n        simulation_error = str(exc)\n\n    if not sample_code:\n        code_match = re.search(r'(RS\\w+|IEF-?\\d+[a-zA-Z]?|RSMIX\\d+|LP\\d+)', file_name, re.IGNORECASE)\n        sample_code = code_match.group(1).upper() if code_match else 'UNKNOWN'\n\n    header_metadata = {\n        'sample_name_raw': get('_chemical_name_common') or file_name,\n        'crystal_structure': crystal_structure,\n        'chemical_info': chemical_info,\n        'experimental_conditions': experimental_conditions,\n        'refinement_quality': refinement_quality,\n        'provenance': provenance,\n        'wavelength_kalpha1_angstrom': 1.540598,\n        'num_data_points': len(grid_2t),\n        'simulation_error': simulation_error,\n    }\n\n    return {\n        'sample_code': sample_code,\n        'researcher_name': 'Rubén S.N.',\n        'researcher_email': researcher_email,\n        'technique': 'SC-XRD',\n        'operator_name': 'Rubén S.N.',\n        'measurement_tag': measurement_tag,\n        'instrument_name': experimental_conditions['diffrn_measurement_device_type'] or 'Bruker D8 VENTURA (SC-XRD)',\n        'file_name': file_name,\n        'raw_file_path': file_name,\n        'data_json': {\n            'header_metadata': header_metadata,\n            'raw_data': {\n                'x_label': '2theta_deg',\n                'y_label': 'intensity_simulated',\n                'simulation_basis': 'pymatgen_XRDCalculator_CuKa_gaussian_broadened_fwhm_0.15deg',\n                'x': [round(float(v), 4) for v in grid_2t],\n                'y': [round(float(v), 4) for v in y_simulated],\n            }\n        }\n    }\n\n\nimport base64\n\nb64_data = _item['json'].get('data_file_base64')\n\nif b64_data:\n    original_name = _item['json'].get('file_name') or 'upload'\n    technique_for_path = (_item['json'].get('technique') or 'SC-XRD').upper()\n    hash_prefix = (_item['json'].get('file_hash') or 'nohash')[:8]\n    target_dir = os.path.join('/home/node/data/raw_datalake', technique_for_path)\n    os.makedirs(target_dir, exist_ok=True)\n    target_path = os.path.join(target_dir, hash_prefix + '_' + original_name)\n    raw_bytes = base64.b64decode(b64_data)\n    with open(target_path, 'wb') as _f:\n        _f.write(raw_bytes)\n    file_path = target_path\n    _item['json']['raw_file_path'] = target_path\n    _item['json']['file_name'] = os.path.basename(target_path)\nelse:\n    file_path = _item['json'].get('raw_file_path')\n    with open(file_path, 'rb') as _f:\n        raw_bytes = _f.read()\n\ncif_text = raw_bytes.decode('latin1', errors='ignore')\nsample_code = _item['json'].get('sample_code')\nresearcher_email = _item['json'].get('researcher_email')\n\nresult = parse_cif_scxrd(cif_text, file_name=os.path.basename(file_path), sample_code=sample_code,\n                          researcher_email=researcher_email)\n\n_item['json']['sample_code'] = result['sample_code']\n_item['json']['technique'] = result['technique']\n_item['json']['measurement_tag'] = result['measurement_tag']\n_item['json']['operator_name'] = result.get('operator_name') or _item['json'].get('operator_name')\n_item['json']['instrument_name'] = result['instrument_name']\n_item['json']['file_name'] = result['file_name']\n_item['json']['raw_file_path'] = _item['json'].get('raw_file_path') or result['raw_file_path']\n_item['json']['data_json'] = result['data_json']\n\nreturn _item\n"
+        "model": "qwen2.5vl:7b",
+        "options": {
+          "numCtx": 8192
+        }
+      },
+      "credentials": {
+        "ollamaApi": {
+          "id": "KtOCxPRFPXTgPjso",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000003",
+      "name": "Log AI Call - Image (Gemini OK)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5344,
+        1120
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO ai_agent_calls (execution_id, agent_node, sample_code, technique, model_provider, model_name, is_fallback, success, confidence) VALUES ('{{ $execution.id }}', 'AI Agent - Image Analizer', '{{ $('Parse Microscopy (.jpg)').item.json.sample_code }}', '{{ $('Parse Microscopy (.jpg)').item.json.technique }}', 'gemini', 'gemini-3.6-flash', false, true, {{ (() => { const c = Number($json.output?.confidence ?? $json.confidence); return Number.isFinite(c) ? c : 'NULL'; })() }});",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000004",
+      "name": "Log AI Call - Image (Gemini Failed)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5344,
+        1408
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO ai_agent_calls (execution_id, agent_node, sample_code, technique, model_provider, model_name, is_fallback, success, error_message) VALUES ('{{ $execution.id }}', 'AI Agent - Image Analizer', '{{ $('Parse Microscopy (.jpg)').item.json.sample_code }}', '{{ $('Parse Microscopy (.jpg)').item.json.technique }}', 'gemini', 'gemini-3.6-flash', false, false, '{{ ($json.error?.message || $json.error || 'unknown').toString().replace(/'/g, \"''\").slice(0,500) }}');",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000005",
+      "name": "Log AI Call - Image (Ollama OK)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5344,
+        1616
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO ai_agent_calls (execution_id, agent_node, sample_code, technique, model_provider, model_name, is_fallback, success, confidence) VALUES ('{{ $execution.id }}', 'AI Agent - Image Analizer', '{{ $('Parse Microscopy (.jpg)').item.json.sample_code }}', '{{ $('Parse Microscopy (.jpg)').item.json.technique }}', 'ollama', 'qwen2.5vl:7b', true, true, {{ (() => { const c = Number($json.output?.confidence ?? $json.confidence); return Number.isFinite(c) ? c : 'NULL'; })() }});",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000006",
+      "name": "Log AI Call - Image (Ollama Failed)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5344,
+        1824
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO ai_agent_calls (execution_id, agent_node, sample_code, technique, model_provider, model_name, is_fallback, success, error_message) VALUES ('{{ $execution.id }}', 'AI Agent - Image Analizer', '{{ $('Parse Microscopy (.jpg)').item.json.sample_code }}', '{{ $('Parse Microscopy (.jpg)').item.json.technique }}', 'ollama', 'qwen2.5vl:7b', true, false, '{{ ($json.error?.message || $json.error || 'unknown').toString().replace(/'/g, \"''\").slice(0,500) }}');",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000007",
+      "name": "Ollama Vision Chain (Fallback)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        4992,
+        1616
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \"Analyze the attached electron microscopy image '\" + ($json.file_name || '') + \"' for sample code \" + $json.sample_code + \" measured with technique \" + $json.technique + \". Describe what you see qualitatively; do not attempt to measure or calculate any size.\" }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "type": "SystemMessagePromptTemplate",
+              "message": "You are an expert Materials Chemistry Vision AI Agent specialized in describing Electron Microscopy micrographs (SEM, FESEM, TEM, HRTEM, and STEM).\n\nIMPORTANT CONTEXT: real instrument metadata (magnification, voltage, working distance, scale bar length, acquisition date) has already been extracted deterministically from the instrument's own companion metadata file BEFORE this step, whenever that file exists. Your job is narrow and purely qualitative - you are not the source of truth for any number.\n\nYOUR ONLY OBJECTIVES:\n1. Verify if the attached image is a genuine electron microscopy micrograph (is_microscopy_image: true/false). If it is a personal photo, a plot, a spectrum screenshot, text, or any other non-micrograph image, set is_microscopy_image: false and confidence: 0.\n2. Guess the likely microscopy modality from visual style alone (e.g. SEM, FESEM, TEM) - this is informational only, the declared technique field is always authoritative.\n3. Describe particle/crystal/domain morphology in qualitative, hedged language (e.g. 'appears to show faceted, roughly octahedral crystals', 'aggregated porous sheets') - describe shape and texture, never a numeric size.\n4. If a scale bar caption is printed directly on the image (e.g. '500 nm', '10 um', 'x200'), transcribe that text verbatim into scale_bar_text_on_image. Do NOT use the scale bar, or pixel counting, to calculate, estimate, or infer any size yourself - only report the text if it is actually printed on the image.\n5. Give an overall confidence score (integer 0-100) for your qualitative read.\n\nRULES & CONSTRAINTS:\n- NEVER output a numeric particle/crystal size in nm or um that you calculated or estimated yourself - you do not have the ability to measure images reliably, and a fabricated number is worse than no number.\n- Do not hallucinate morphology details that are not visible.\n- Return ONLY a valid JSON payload matching the required output schema."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary",
+              "binaryImageDataKey": "data_file"
+            }
+          ]
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000008",
+      "name": "Convert Base64 to Binary (Image)",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1.1,
+      "position": [
+        4880,
+        976
+      ],
+      "parameters": {
+        "mode": "jsonToBinary",
+        "convertAllData": false,
+        "sourceKey": "data_file_base64",
+        "destinationKey": "data_file",
+        "options": {
+          "dataIsBase64": true,
+          "mimeType": "={{ $json.file_ext === 'bmp' ? 'image/bmp' : 'image/jpeg' }}",
+          "fileName": "={{ $json.file_name }}",
+          "keepSource": true
+        }
+      }
+    },
+    {
+      "id": "a1b2c301-0000-0000-0000-000000000009",
+      "name": "Convert Base64 to Binary (Image Fallback)",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1.1,
+      "position": [
+        4880,
+        1616
+      ],
+      "parameters": {
+        "mode": "jsonToBinary",
+        "convertAllData": false,
+        "sourceKey": "data_file_base64",
+        "destinationKey": "data_file",
+        "options": {
+          "dataIsBase64": true,
+          "mimeType": "={{ $json.file_ext === 'bmp' ? 'image/bmp' : 'image/jpeg' }}",
+          "fileName": "={{ $json.file_name }}",
+          "keepSource": true
+        }
       }
     }
   ],
@@ -3165,6 +3341,11 @@
         [
           {
             "node": "AI Agent - Image Analizer",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Ollama Vision Chain (Fallback)",
             "type": "ai_outputParser",
             "index": 0
           }
@@ -3654,17 +3835,6 @@
         ]
       ]
     },
-    "Parse Microscopy (.jpg)": {
-      "main": [
-        [
-          {
-            "node": "AI Agent - Image Analizer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "AI Agent - Image Analizer": {
       "main": [
         [
@@ -3672,11 +3842,21 @@
             "node": "Merge AI Analysis - Microscopy",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Log AI Call - Image (Gemini OK)",
+            "type": "main",
+            "index": 0
           }
         ],
         [
           {
-            "node": "Set Error - Image AI Failure",
+            "node": "Log AI Call - Image (Gemini Failed)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert Base64 to Binary (Image Fallback)",
             "type": "main",
             "index": 0
           }
@@ -3866,24 +4046,6 @@
         ]
       ]
     },
-    "If - Needs Human Approval?": {
-      "main": [
-        [
-          {
-            "node": "Send message and wait for response",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send message and wait for response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Ensure Sample Exists": {
       "main": [
         [
@@ -3919,6 +4081,96 @@
     },
     "Parse CIF (.cif)": {
       "main": [
+        [
+          {
+            "node": "DB Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model (Image Fallback)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ollama Vision Chain (Fallback)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Vision Chain (Fallback)": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Analysis - Microscopy",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log AI Call - Image (Ollama OK)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error - Image AI Failure",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log AI Call - Image (Ollama Failed)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Microscopy (.jpg)": {
+      "main": [
+        [
+          {
+            "node": "Convert Base64 to Binary (Image)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Base64 to Binary (Image)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Image Analizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Base64 to Binary (Image Fallback)": {
+      "main": [
+        [
+          {
+            "node": "Ollama Vision Chain (Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Needs Human Approval?": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "DB Update",
