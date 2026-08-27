@@ -82,6 +82,25 @@ DEFAULT_KEEP = 7
 # that touches the RAG schema.
 EXCLUDE_DATA_BY_DEFAULT = ['rag_chunks']
 
+# ...but `rag_chunks` cannot simply be dropped, because two other things depend on it.
+#
+# Measured on the live table: text 81 MB + metadata 44 MB, against embedding 343 MB and
+# embedding_v2 343 MB. The vectors are 85% of it; the text and the ids are cheap.
+#
+# Keeping the ids matters more than the disk saving. `rag_chunk_context` holds one
+# LLM-written context sentence per chunk, keyed by `chunk_id` with a foreign key into
+# `rag_chunks(id)`. If a restore threw the chunk rows away and the RAG ingestion re-chunked
+# from scratch, the new rows would get NEW ids - and 87,765 context sentences would end up
+# silently attached to the wrong chunks, destroying the contextual-retrieval work that
+# `embedding_v2` is built on. Preserving id + text means a restore only has to re-embed
+# (deterministic, just an Ollama run), never re-chunk.
+#
+# pg_dump cannot exclude individual COLUMNS, so the script snapshots the non-vector columns
+# into this helper table just before dumping and drops it straight after. Because the table
+# exists at dump time, a single pg_dump call picks it up - one file, no sidecar.
+CHUNK_SNAPSHOT_TABLE = 'rag_chunks_text_backup'
+CHUNK_SNAPSHOT_COLUMNS = 'id, document_id, text, metadata, created_at'
+
 
 def read_env(path=ENV_PATH):
     """Parse the gitignored .env into a plain dict.
@@ -149,6 +168,53 @@ def collect_manifest(env):
     return counts
 
 
+def run_sql(env, sql):
+    """Run one statement against the live database inside the container."""
+    return subprocess.run(
+        ['docker', 'exec', '-e', f"PGPASSWORD={env.get('POSTGRES_PASSWORD')}",
+         CONTAINER_NAME, 'psql', '-U', env.get('POSTGRES_USER'),
+         '-d', env.get('POSTGRES_DB'), '-v', 'ON_ERROR_STOP=1', '-q', '-c', sql],
+        capture_output=True, text=True,
+    )
+
+
+def make_chunk_snapshot(env):
+    """Materialise rag_chunks minus its vector columns, so the light dump can carry the
+    chunk ids and text without the 686 MB of embeddings.
+
+    Returns the row count, or None if there is no rag_chunks table on this database (a
+    fresh install, or one where the RAG layer was never built).
+    """
+    exists = run_sql(env, "SELECT to_regclass('public.rag_chunks');")
+    if exists.returncode != 0 or 'rag_chunks' not in exists.stdout:
+        return None
+
+    drop = run_sql(env, f'DROP TABLE IF EXISTS {CHUNK_SNAPSHOT_TABLE};')
+    if drop.returncode != 0:
+        print(f"[WARN] could not clear the previous snapshot: {drop.stderr.strip()[:150]}")
+        return None
+
+    made = run_sql(env, f'CREATE TABLE {CHUNK_SNAPSHOT_TABLE} AS '
+                        f'SELECT {CHUNK_SNAPSHOT_COLUMNS} FROM rag_chunks;')
+    if made.returncode != 0:
+        print(f"[WARN] snapshot failed, the dump will not carry the chunk text: "
+              f"{made.stderr.strip()[:150]}")
+        return None
+
+    counted = run_sql(env, f'SELECT COUNT(*) FROM {CHUNK_SNAPSHOT_TABLE};')
+    try:
+        # -q suppresses the notices, so the count is the only number in the output.
+        return int([line for line in counted.stdout.split() if line.isdigit()][0])
+    except (IndexError, ValueError):
+        return None
+
+
+def drop_chunk_snapshot(env):
+    """Remove the helper table. Always called, including after a failure, so a crashed run
+    never leaves 125 MB of duplicated text sitting in the live database."""
+    run_sql(env, f'DROP TABLE IF EXISTS {CHUNK_SNAPSHOT_TABLE};')
+
+
 def create_backup(env, keep=DEFAULT_KEEP, full=False):
     """Dump the database, copy it out of the container, verify it and rotate old files.
 
@@ -194,14 +260,30 @@ def create_backup(env, keep=DEFAULT_KEEP, full=False):
     # -F c  = custom format: compressed, and pg_restore can pull single tables out of it.
     # PGPASSWORD is passed as a container env var so it never appears in the process list
     # on the host, and is never printed.
+    # In light mode, snapshot the chunk ids and text first. Without this the restored
+    # rag_chunks would be empty, re-chunking would renumber every row, and the 87,765
+    # context sentences would silently point at the wrong chunks.
+    snapshot_rows = None
+    if excluded:
+        snapshot_rows = make_chunk_snapshot(env)
+        if snapshot_rows is not None:
+            print(f" |-- chunk text: {snapshot_rows:,} rows kept (ids + text, no vectors)")
+
     print(" |-- running pg_dump...")
     exclude_flags = [f'--exclude-table-data={t}' for t in excluded]
-    dump = subprocess.run(
-        ['docker', 'exec', '-e', f'PGPASSWORD={password}', CONTAINER_NAME,
-         'pg_dump', '-U', user, '-d', database, '-F', 'c']
-        + exclude_flags + ['-f', container_path],
-        capture_output=True, text=True,
-    )
+    try:
+        dump = subprocess.run(
+            ['docker', 'exec', '-e', f'PGPASSWORD={password}', CONTAINER_NAME,
+             'pg_dump', '-U', user, '-d', database, '-F', 'c']
+            + exclude_flags + ['-f', container_path],
+            capture_output=True, text=True,
+        )
+    finally:
+        # Drop the helper table whether the dump worked or not: it duplicates 125 MB of
+        # text in the live database and must never outlive the run that created it.
+        if excluded:
+            drop_chunk_snapshot(env)
+
     if dump.returncode != 0:
         print(f"[ERROR] pg_dump failed:\n{dump.stderr.strip()}")
         return False
@@ -259,6 +341,9 @@ def create_backup(env, keep=DEFAULT_KEEP, full=False):
             # Recorded so a restore is never a surprise: these tables come back EMPTY and
             # have to be refilled by re-running their ingestion.
             'data_excluded': excluded,
+            # How many chunk rows travel as text-only. A restore repopulates rag_chunks
+            # from the snapshot table and then re-embeds; it must never re-chunk.
+            'chunk_text_rows': snapshot_rows,
             'size_bytes': os.path.getsize(host_path),
             'archive_objects': entries,
             'row_counts': manifest,
@@ -365,6 +450,37 @@ create. Using the same image handles that automatically.
 
 To restore a SINGLE table instead of everything (e.g. only the human labels):
        pg_restore -U <user> -d <db> --data-only --table=pxrd_labels /tmp/restore.dump
+
+-------------------------------------------------------------------------------------
+AFTER restoring a LIGHT dump - these steps are NOT optional
+-------------------------------------------------------------------------------------
+
+A light dump carries `rag_chunks` empty, with its ids and text parked in
+`{CHUNK_SNAPSHOT_TABLE}`. Two things are therefore left undone by pg_restore, and it
+reports the second one as an error you might be tempted to ignore:
+
+  4. Put the chunks back, ids and all:
+       INSERT INTO rag_chunks ({CHUNK_SNAPSHOT_COLUMNS})
+       SELECT {CHUNK_SNAPSHOT_COLUMNS} FROM {CHUNK_SNAPSHOT_TABLE};
+       SELECT setval('rag_chunks_id_seq', (SELECT MAX(id) FROM rag_chunks));
+       DROP TABLE {CHUNK_SNAPSHOT_TABLE};
+
+     The ids must be carried over verbatim. `rag_chunk_context` keys its LLM-written
+     context sentences on `chunk_id`; re-chunking from the source documents instead would
+     hand every chunk a new id and leave those sentences attached to the wrong text - a
+     failure that produces no error at all, just quietly worse retrieval.
+
+  5. Re-create the foreign key, which pg_restore could not add while rag_chunks was empty:
+       ALTER TABLE rag_chunk_context
+         ADD CONSTRAINT rag_chunk_context_chunk_id_fkey
+         FOREIGN KEY (chunk_id) REFERENCES rag_chunks(id) ON DELETE CASCADE;
+
+  6. Re-embed. Only now, and only the vectors: `embedding` and `embedding_v2` come back
+     NULL. That is an Ollama run over text that already exists - deterministic, no
+     re-chunking, no LLM context generation. The context sentences are already there.
+
+  7. Check: rag_chunks and rag_chunk_context must hold the SAME number of rows, and it
+     must match `chunk_text_rows` in the manifest.
 """)
 
 

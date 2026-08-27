@@ -493,17 +493,34 @@ a hope. **Rotation is by count, not by age** (`--keep`, default 7): "delete anyt
 older than 7 days" would quietly leave zero backups after a month away, whereas
 "keep the last 7" always leaves something.
 
-**Size is why the default is a "light" dump.** A full dump is ~941 MB, but 1,931 MB of
-the 2,100 MB database is `rag_chunks` — almost entirely pgvector embedding columns,
-which are a deterministic function of the chunk text and are rebuilt by re-running the
-RAG ingestion. Skipping that one table's data (its schema is still dumped) gives 54 MB
-instead of 941 MB, so seven copies cost ~375 MB rather than ~6.6 GB. Nothing a human
-produced by hand is ever excluded: `pxrd_labels`, `synthesis_experiments` and the
-LLM-written sentences in `rag_chunk_context` together are a couple of MB. `--full`
-includes everything, for use before a migration that touches the RAG schema. The
-manifest records which mode was used and which tables will come back empty, so a
-restore is never a surprise, and the script prints the running disk total after each
-run.
+**Size is why the default is a "light" dump.** A full dump is ~941 MB, and 1,931 MB of
+the 2,100 MB database is `rag_chunks`. Broken down by column on the live table: `text`
+81 MB and `metadata` 44 MB against `embedding` 343 MB and `embedding_v2` 343 MB. Only
+the vectors are skipped, because only they are cheap to rebuild — an Ollama run over
+text that already exists. That gives **82 MB per copy instead of 941 MB**; seven copies
+cost ~575 MB rather than ~6.6 GB. `--full` includes the vectors, for use before a
+migration that touches the RAG schema.
+
+**The chunk text is kept on purpose, and that is the subtle part.** pg_dump cannot
+exclude individual columns, so the script snapshots `id, document_id, text, metadata,
+created_at` into `rag_chunks_text_backup` immediately before dumping and drops it in a
+`finally` block, so a crashed run never leaves 125 MB of duplicated text in the live
+database. Because that table exists at dump time, one pg_dump call picks it up — one
+file, no sidecar. The reason to bother: `rag_chunk_context` keys one LLM-written context
+sentence per chunk on `chunk_id`. Re-chunking from the source documents after a restore
+would renumber every row and leave all 87,765 sentences attached to the wrong text —
+**no error, just quietly worse retrieval**, invalidating the `embedding_v2`
+contextual-retrieval work. Preserving the ids means a restore re-embeds and never
+re-chunks.
+
+Restoring a light dump therefore has mandatory follow-up steps, all printed by
+`--restore-help`: reinsert the chunks from the snapshot, `setval` the id sequence,
+re-create the `rag_chunk_context` foreign key (pg_restore fails to add it because
+`rag_chunks` arrives empty — an expected error, not a corrupt dump), then re-embed.
+Verified end to end against a scratch database: 87,765 chunks and 87,765 context
+sentences restored, with text and sentences MD5-identical to the originals matched by
+id. The manifest records the mode, the excluded tables and the chunk row count, and the
+script prints the running disk total after each run.
 
 This script is meant to be run at the checkpoints described under "Database safety" in
 the root `CLAUDE.md` — before a migration or mass delete, after a bulk ingestion or a
