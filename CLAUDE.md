@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Read `methodology/DIARIO_DE_PROYECTO.md` at the start of every session** — it is the living logbook of decisions, current state, and next steps. Append a new session entry when meaningful work lands.
 - **Record every new technical concept in `methodology/GUIA_DIDACTICA_PORTFOLIO.md`** (plain-language explanations of DDL/DML/DQL, MD5 hashing, UPSERT, RAG, HITL…). These entries are the source material for tooltips/popups in the future web app.
 - **Register every new script in `src/README.md`** — it works as a didactic library of the codebase. Each entry: what the script does, the problem it solves and why, and how it can be reused elsewhere (CLI flags, importable functions, notebooks that call it).
+- **Check and back up the database around bulk writes** — before applying a DDL migration or deleting rows, and after a mass ingestion or a labelling run. Report the row counts, then run `python scripts/backup_database.py`. Full rules in "Database safety" below. Never set this up as a scheduled job; it is deliberately event-driven.
 - **Pedagogical tone**: the owner is a materials chemist, not a software engineer. Explain each line of code, SQL table, or n8n node step by step, in Spanish, without assuming prior programming knowledge. Build progressively ("a su ritmo").
 - Project docs are written in English; conversation and explanations in Spanish.
 
@@ -43,9 +44,42 @@ python scripts/trigger_n8n_webhook.py -f data/raw_datalake_historico/PXRD/<file>
 
 # Regenerate the deterministic master ingestion workflow JSON
 python src/generate_n8n_master_workflow.py
+
+# Checkpoint the database before/after bulk writes (see "Database safety")
+python scripts/backup_database.py
 ```
 
 Notebooks are run in order from the repo root (they contain fallback path logic for running from `notebooks/` too).
+
+## Database safety (checkpoint before and after bulk writes)
+
+The database lives entirely inside the Docker named volume `postgres_data`. **That volume is the only copy.** `docker compose down -v` (note the `-v`), a Docker reinstall or a corrupted volume takes every row with it.
+
+Most content is reproducible — descriptors by re-running the pipeline over the `.xrdml` files, measurements by re-running the ingestion over `data/raw_datalake/`, embeddings by re-running the RAG ingestion. **The human labels in `pxrd_labels` are not.** Neither is any reconciliation done by hand in pgAdmin. Those are expert judgement, derivable from no file, and they are what this rule protects.
+
+**Backups are event-driven, not scheduled.** Do not add a cron job or a Windows Task Scheduler entry: a timer run against an idle database just burns disk, and the moments that actually matter are known in advance. The checkpoints are:
+
+| When | Why |
+|---|---|
+| **Before** a DDL migration, a `DELETE`, or an `UPDATE` over many rows | Gives a point to return to when a schema change goes wrong |
+| **After** a mass ingestion or a labelling session | The new rows are the ones not yet protected anywhere |
+| **Before** destroying or recreating the `postgres_data` volume | The only defence against the `-v` |
+
+Each checkpoint is two steps, and the first is not optional:
+
+1. **Review.** Report the row counts of `synthesis_experiments`, `characterization_measurements`, `pxrd_descriptors`, `pxrd_labels`, `data_dictionary` and `audit_log`, and say what changed against the previous backup's `.manifest.json`. A backup of a database that a migration already broke is not a rescue. **A row count that dropped unexpectedly means stop and ask — do not overwrite the good backups with the damaged state.**
+2. **Dump.** `python scripts/backup_database.py`.
+
+```bash
+python scripts/backup_database.py                # light dump (~54 MB), keeps 7 newest
+python scripts/backup_database.py --full         # include RAG embeddings too (~941 MB)
+python scripts/backup_database.py --list         # what exists, with row counts
+python scripts/backup_database.py --restore-help # restore commands (prints, never runs)
+```
+
+**On disk cost.** The default dump skips the data of `rag_chunks` — 1,931 MB of pgvector embeddings, 94% of the database, and a deterministic function of the chunk text, so re-running the RAG ingestion rebuilds them. That is 54 MB per copy instead of 941 MB: seven copies cost ~375 MB, not ~6.6 GB. Everything a human made by hand is small and always included. Use `--full` only when the embeddings themselves are the thing at risk, e.g. before a migration touching the RAG schema, and delete that copy once the change is confirmed good.
+
+Restoring is never automatic: `--restore-help` prints the commands rather than running them, because a restore overwrites live tables. It also documents the single-table form — recovering only `pxrd_labels` without touching anything else is the most likely real need.
 
 ## Architecture
 

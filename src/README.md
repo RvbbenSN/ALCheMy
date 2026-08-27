@@ -493,9 +493,21 @@ a hope. **Rotation is by count, not by age** (`--keep`, default 7): "delete anyt
 older than 7 days" would quietly leave zero backups after a month away, whereas
 "keep the last 7" always leaves something.
 
-Size matters here: one dump is ~940 MB because `characterization_measurements`
-stores full curves as JSONB, so the default retention costs ~6.6 GB. The script
-prints the running total after each run.
+**Size is why the default is a "light" dump.** A full dump is ~941 MB, but 1,931 MB of
+the 2,100 MB database is `rag_chunks` — almost entirely pgvector embedding columns,
+which are a deterministic function of the chunk text and are rebuilt by re-running the
+RAG ingestion. Skipping that one table's data (its schema is still dumped) gives 54 MB
+instead of 941 MB, so seven copies cost ~375 MB rather than ~6.6 GB. Nothing a human
+produced by hand is ever excluded: `pxrd_labels`, `synthesis_experiments` and the
+LLM-written sentences in `rag_chunk_context` together are a couple of MB. `--full`
+includes everything, for use before a migration that touches the RAG schema. The
+manifest records which mode was used and which tables will come back empty, so a
+restore is never a surprise, and the script prints the running disk total after each
+run.
+
+This script is meant to be run at the checkpoints described under "Database safety" in
+the root `CLAUDE.md` — before a migration or mass delete, after a bulk ingestion or a
+labelling run — and deliberately **not** on a schedule.
 
 Reuse: `--list` shows what exists with its row counts; `--restore-help` prints the
 restore commands (including the single-table form, e.g. recovering only

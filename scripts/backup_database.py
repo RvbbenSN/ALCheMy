@@ -18,9 +18,15 @@ The dump is written INSIDE the container (that is where `pg_dump` lives - it is 
 installed on the Windows host) and then copied out to `backups/`, because a backup
 that stays inside the container protects against nothing.
 
+By default the dump is "light": every table's schema plus every table's data EXCEPT the
+pgvector embeddings in `rag_chunks`, which are 94% of the disk and are rebuilt by
+re-running the RAG ingestion. That is 54 MB instead of 941 MB, so keeping seven of them
+costs ~375 MB rather than ~6.6 GB. Nothing a human made by hand is ever excluded.
+
 Usage:
-    python scripts/backup_database.py                 # create a backup, keep 7 newest
-    python scripts/backup_database.py --keep 30       # keep the 30 newest instead
+    python scripts/backup_database.py                 # light backup (~54 MB), keep 7 newest
+    python scripts/backup_database.py --full          # include embeddings too (~941 MB)
+    python scripts/backup_database.py --keep 3        # keep the 3 newest instead
     python scripts/backup_database.py --list          # show existing backups
     python scripts/backup_database.py --restore-help  # print restore instructions
 
@@ -60,6 +66,21 @@ MANIFEST_TABLES = [
 
 # How many backups to keep by default. Old ones are deleted newest-first beyond this.
 DEFAULT_KEEP = 7
+
+# Tables whose DATA is skipped by default. Their schema is still dumped, so a restore
+# recreates the empty tables and the ingestion pipeline refills them.
+#
+# `rag_chunks` is 1,931 MB of the 2,100 MB database - almost entirely pgvector embedding
+# columns. Excluding it takes a dump from 941 MB to 54 MB, a 17x reduction, and costs
+# nothing irreplaceable: embeddings are a deterministic function of the chunk text and
+# are rebuilt by re-running the RAG ingestion (an API bill and some minutes, not lost
+# knowledge). Everything a human produced by hand - the 4,843 labels in `pxrd_labels`,
+# `synthesis_experiments`, the LLM-written context sentences in `rag_chunk_context` -
+# is small and always included.
+#
+# Use --full when the embeddings themselves are worth the disk, e.g. before a migration
+# that touches the RAG schema.
+EXCLUDE_DATA_BY_DEFAULT = ['rag_chunks']
 
 
 def read_env(path=ENV_PATH):
@@ -128,8 +149,12 @@ def collect_manifest(env):
     return counts
 
 
-def create_backup(env, keep=DEFAULT_KEEP):
-    """Dump the database, copy it out of the container, verify it and rotate old files."""
+def create_backup(env, keep=DEFAULT_KEEP, full=False):
+    """Dump the database, copy it out of the container, verify it and rotate old files.
+
+    `full=False` (the default) skips the data of EXCLUDE_DATA_BY_DEFAULT, which is what
+    keeps a routine backup at ~54 MB instead of ~941 MB.
+    """
     user = env.get('POSTGRES_USER')
     database = env.get('POSTGRES_DB')
     password = env.get('POSTGRES_PASSWORD')
@@ -140,14 +165,23 @@ def create_backup(env, keep=DEFAULT_KEEP):
 
     os.makedirs(BACKUP_DIR, exist_ok=True)
 
+    # 'full' goes in the filename so the two kinds are never confused on disk, and so
+    # rotation can be told to treat them separately.
     stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'alchemy_{stamp}.dump'
+    suffix = '_full' if full else ''
+    filename = f'alchemy_{stamp}{suffix}.dump'
     container_path = f'/tmp/{filename}'
     host_path = os.path.join(BACKUP_DIR, filename)
+
+    excluded = [] if full else EXCLUDE_DATA_BY_DEFAULT
 
     print(f"\n[BACKUP] ALCheMy database -> {filename}")
     print(f" |-- container: {CONTAINER_NAME}")
     print(f" |-- database:  {database}")
+    if excluded:
+        print(f" |-- mode:      light (schema kept, data skipped for: {', '.join(excluded)})")
+    else:
+        print(" |-- mode:      full (every table's data included)")
 
     # --- 1. Row counts BEFORE the dump, so the manifest describes what went in -------
     manifest = collect_manifest(env)
@@ -161,9 +195,11 @@ def create_backup(env, keep=DEFAULT_KEEP):
     # PGPASSWORD is passed as a container env var so it never appears in the process list
     # on the host, and is never printed.
     print(" |-- running pg_dump...")
+    exclude_flags = [f'--exclude-table-data={t}' for t in excluded]
     dump = subprocess.run(
         ['docker', 'exec', '-e', f'PGPASSWORD={password}', CONTAINER_NAME,
-         'pg_dump', '-U', user, '-d', database, '-F', 'c', '-f', container_path],
+         'pg_dump', '-U', user, '-d', database, '-F', 'c']
+        + exclude_flags + ['-f', container_path],
         capture_output=True, text=True,
     )
     if dump.returncode != 0:
@@ -219,6 +255,10 @@ def create_backup(env, keep=DEFAULT_KEEP):
             'created_at': datetime.now().isoformat(timespec='seconds'),
             'database': database,
             'dump_file': filename,
+            'mode': 'full' if full else 'light',
+            # Recorded so a restore is never a surprise: these tables come back EMPTY and
+            # have to be refilled by re-running their ingestion.
+            'data_excluded': excluded,
             'size_bytes': os.path.getsize(host_path),
             'archive_objects': entries,
             'row_counts': manifest,
@@ -340,6 +380,8 @@ def main():
                         help='print restore instructions and exit')
     parser.add_argument('--env-file', default=ENV_PATH,
                         help='path to the .env holding the credentials (default: repo root)')
+    parser.add_argument('--full', action='store_true',
+                        help='include every table, embeddings and all (~941 MB instead of ~54 MB)')
     args = parser.parse_args()
 
     if args.list:
@@ -359,7 +401,7 @@ def main():
     if env is None:
         return 1
 
-    return 0 if create_backup(env, keep=args.keep) else 1
+    return 0 if create_backup(env, keep=args.keep, full=args.full) else 1
 
 
 if __name__ == '__main__':
