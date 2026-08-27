@@ -643,3 +643,44 @@ barridos que no llegan a la ventana de 45 grados vive **solo** en esa funcion: c
 cuaderno reimplemento el escalado a mano se quedo sin ella y devolvia NaN en el ejemplo
 incipiente, que acaba en 35 grados. Todas las figuras del cuaderno llaman ahora a la
 funcion del modulo.
+
+
+### Pipeline v3.2 - el denominador es lo que disperso la muestra
+
+v3.1 dividia el area difusa por el area TOTAL del barrido, que incluye el fondo
+instrumental. Dos consecuencias, las dos incorrectas: `crystalline_fraction_blank`, al
+definirse como 1 menos la fraccion, contaba ese fondo como cristalino - en LP69 el panel
+de fases de la figura de anatomia mostraba 9 % de area cristalina mientras la columna
+decia 0,757 - y el valor dependia de cuanto fondo instrumental hubiera debajo, que cambia
+con la exposicion y el montaje.
+
+v3.2 divide por todo lo que disperso **la muestra**, difuso mas Bragg:
+
+    amorphous_fraction_blank = integral(A) / [ integral(A) + integral(I - B) ]
+
+Ahora el numero responde a *de lo que disperso esta muestra, cuanto no fue Bragg*, y su
+complemento es genuinamente la fraccion cristalina.
+
+| Clase | v3.1 (A/total) | v3.2 (A/muestra) |
+|---|---|---|
+| AMORFO | 0,236 | 0,930 |
+| INCIPIENTE | 0,154 | 0,347 |
+| CRISTALINO | 0,001 | 0,011 |
+
+La separacion de v3.1 parecia mayor (344x frente a 84x) solo porque su valor cristalino
+estaba diluido por un denominador dominado por el fondo instrumental. Donde se nota la
+mejora real es en los subtipos, que bajo v3.1 se solapaban casi por completo:
+
+| Subtipo | v3.1 | v3.2 |
+|---|---|---|
+| HALO_DOMINANTE | 0,273 | 0,910 |
+| PICOS_ANCHOS | 0,245 | 0,748 |
+| CRISTALITO_PEQUENO | 0,242 | 0,608 |
+
+El cuaderno incluye ademas, en la seccion 10.0, una **figura de anatomia del vector**:
+los 29 descriptores senalados sobre un mismo difractograma incipiente (LP69, Ca+Et8ptp),
+en cinco paneles - patron completo con las ventanas angulares y las capas de fase, zoom
+sobre una reflexion aislada para la anchura y Scherrer, composicion de fases en barras,
+concentracion de la intensidad, y el vector completo con sus valores reales agrupado por
+familia. Va acompanada de una tabla que dice, para cada descriptor, en que panel se ve, y
+de un diagrama del recorrido de la curva al vector.

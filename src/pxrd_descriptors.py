@@ -90,7 +90,7 @@ from scipy.sparse.linalg import spsolve
 # Version tag written into pxrd_descriptors.pipeline_version. Bump it whenever a
 # formula below changes, otherwise rows computed months apart silently stop being
 # comparable and nothing in the database records why.
-PIPELINE_VERSION = 'v3.1'
+PIPELINE_VERSION = 'v3.2'
 
 # ---------------------------------------------------------------------------
 # Low-angle cutoff: where the instrument stops measuring the sample.
@@ -653,7 +653,26 @@ def amorphous_from_blank(x, y_grid, blank_grid, baseline=None,
 
     instrument = scale * blank_grid
     amorphous = np.maximum(baseline - instrument, MIN_AMORPHOUS_RELIABLE)
-    fraction = float(np.trapezoid(amorphous, x) / total_area)
+
+    # THE DENOMINATOR IS WHAT THE SAMPLE SCATTERED, NOT THE WHOLE SCAN
+    # ---------------------------------------------------------------
+    # Dividing by the total integrated area would include the instrument background in
+    # the denominator, and then 1 - fraction counts that background as "crystalline".
+    # On a real measurement the mismatch is glaring: the phase panel of the anatomy
+    # figure showed 9% crystalline area while crystalline_fraction_blank read 0.757.
+    #
+    # The physically meaningful denominator is everything the SPECIMEN scattered:
+    # the diffuse part plus the Bragg part. Then the number answers "of what this sample
+    # scattered, how much was not Bragg", its complement is genuinely the crystalline
+    # fraction, and neither depends on how much instrument background happened to be
+    # under the pattern - which varies with exposure and mount.
+    #
+    # Median by hand-assigned class: AMORFO 0.931, INCIPIENTE 0.649, CRISTALINO 0.011.
+    crystalline = np.maximum(y_grid - baseline, 0.0)
+    sample_area = float(np.trapezoid(amorphous, x) + np.trapezoid(crystalline, x))
+    if sample_area <= 0:
+        return None, None, None
+    fraction = float(np.trapezoid(amorphous, x) / sample_area)
 
     # WHAT THIS NUMBER CANNOT SEE
     # ---------------------------
