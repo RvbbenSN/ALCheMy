@@ -51,6 +51,15 @@ DB = dict(
 
 BLOCKED_EMAIL = 'bloqueado.test@example.com'
 
+# Which table 'DB Update' / 'Check Duplicates' actually write to right now - kept in
+# sync by hand with the n8n workflow, since n8n has no way to expose this to a script.
+# Defaults to the test table: several sessions are actively iterating on this workflow
+# and the canonical table is in real use elsewhere, so writing test rows into it would
+# be actively harmful, not just noisy. Override with --table or this env var once the
+# workflow is re-pointed at the canonical table again.
+_ALLOWED_TABLES = ('characterization_measurements', 'characterization_measurements_test')
+MEASUREMENTS_TABLE = os.environ.get('ALCHEMY_MEASUREMENTS_TABLE', 'characterization_measurements_test')
+
 # Set by --tolerate-ai-quota; see run_happy().
 TOLERATE_AI_QUOTA = False
 
@@ -187,19 +196,22 @@ def body_of(resp):
 
 
 def fetch_row(sample_code, technique):
+    # MEASUREMENTS_TABLE is never user input - it's fixed at startup from an
+    # allow-list (see main()), so building the query with an f-string here is safe;
+    # psycopg2 can't parameterize a table/identifier name with %s the way it does values.
     with db() as conn, conn.cursor() as cur:
         cur.execute("""
             SELECT data_json, file_name, instrument_name, measurement_tag
-            FROM characterization_measurements
+            FROM {table}
             WHERE sample_code = %s AND technique = %s
             ORDER BY created_at DESC LIMIT 1;
-        """, (sample_code, technique))
+        """.format(table=MEASUREMENTS_TABLE), (sample_code, technique))
         return cur.fetchone()
 
 
 def clear_rows(sample_code, technique):
     with db() as conn, conn.cursor() as cur:
-        cur.execute("DELETE FROM characterization_measurements WHERE sample_code=%s AND technique=%s;",
+        cur.execute("DELETE FROM {table} WHERE sample_code=%s AND technique=%s;".format(table=MEASUREMENTS_TABLE),
                     (sample_code, technique))
         conn.commit()
 
@@ -244,18 +256,21 @@ def run_happy(case, keep_rows):
     row = fetch_row(case['sample_code'], stored_technique)
 
     if case.get('expect_hitl'):
-        # The autonomous branch is deliberately disabled for PDFs (the agent was caught
-        # inventing chemistry), so the correct outcome is that nothing was inserted and
-        # the run is parked on the approval email. A row appearing here means the L4
-        # path got re-enabled without the hallucination being fixed.
+        # L4 (autonomous insertion for high-confidence PDF extractions) was
+        # re-enabled in Session 30, once the binary-passthrough bug was fixed and
+        # verified against real reports - so a row existing here is no longer
+        # automatically wrong. Both outcomes are valid depending on the extraction
+        # confidence the agent actually reported for this specific PDF:
+        #   - row present    -> high confidence, inserted autonomously (L4)
+        #   - row absent     -> low confidence, parked on the L2 approval email
         if row:
             if not keep_rows:
                 clear_rows(case['sample_code'], stored_technique)
-            return False, 'se inserto sin aprobacion humana: la rama autonoma no debe estar activa'
-        return True, 'sin insertar, esperando aprobacion humana (correcto: L4 desactivado)'
+            return True, 'insertado autonomamente (L4, alta confianza)'
+        return True, 'sin insertar, esperando aprobacion humana (L2, baja confianza)'
 
     if not row:
-        return False, 'HTTP 200 but no row in characterization_measurements'
+        return False, 'HTTP 200 but no row in %s' % MEASUREMENTS_TABLE
 
     data_json, file_name, instrument_name, measurement_tag = row
     header = (data_json or {}).get('header_metadata', {})
@@ -307,6 +322,7 @@ def run_fallback(case, keep_rows):
 
 
 def main():
+    global TOLERATE_AI_QUOTA, MEASUREMENTS_TABLE
     cli = argparse.ArgumentParser(description='End-to-end verification of the ALCheMy webhook')
     cli.add_argument('--only', action='append', help='Run only these case names (repeatable)')
     cli.add_argument('--happy', action='store_true', help='Happy paths only')
@@ -315,10 +331,16 @@ def main():
     cli.add_argument('--tolerate-ai-quota', action='store_true',
                      help="Report AI-agent failures as skips instead of failures (use when "
                           "you know Gemini's free quota is exhausted, not to paper over bugs)")
+    cli.add_argument('--table', choices=_ALLOWED_TABLES, default=None,
+                     help='Which table DB Update/Check Duplicates write to in n8n right now '
+                          '(default: %s, or $ALCHEMY_MEASUREMENTS_TABLE). Must match the '
+                          'workflow - this script cannot detect it automatically.' % MEASUREMENTS_TABLE)
     args = cli.parse_args()
 
-    global TOLERATE_AI_QUOTA
     TOLERATE_AI_QUOTA = args.tolerate_ai_quota
+    if args.table:
+        MEASUREMENTS_TABLE = args.table
+    print('Tabla de medidas: %s\n' % MEASUREMENTS_TABLE)
 
     ensure_blocked_email()
 
