@@ -267,6 +267,26 @@ manual review of the underlying context sentences required, just look at
 whether the passages that come back are more relevant. Reuse: `-n` (result
 count per column).
 
+### `build_knowledge_graph.py`
+Builds/refreshes Phase 1 (deterministic, no LLM) of the knowledge graph:
+`kg_nodes`/`kg_edges` in Postgres (`scripts/init_db.sql`, Section 22). Reads
+`synthesis_experiments` (metal, ligand, the 10 modulator-in-mmol columns) and
+`characterization_measurements` (grouped by sample+technique, not one node
+per file — thousands of file-level nodes would make the graph unreadable for
+no benefit `get_characterisation` doesn't already give), and UPSERTs the
+relations that already live in those columns but today can only be queried
+with a JOIN written for that specific question. Idempotent: safe to re-run
+any time after new syntheses or measurements land, never deletes anything.
+Problem solved: turns "what does RS1884 have in common with RS1902" from a
+bespoke SQL query into a generic graph walk (`kg_neighbors()` /
+`agent_explore_graph` tool in the chat agent) that works for any pair of
+nodes, not just the one you thought to ask about in advance. See
+`methodology/ROADMAP_RAG_Y_GRAFO_v2.md` section 5 for the full design,
+including why Phase 2 (ML model/prediction nodes) is blocked and Phase 3
+(LLM-inferred `PAPER --SUPPORTS--> DESCRIPTOR` edges) needs HITL review.
+Reuse: `--apply` (default is dry-run: counts what it would write and rolls
+back). `python src/build_knowledge_graph.py --apply`.
+
 ### `rag_smoke_test.py`
 Self-cleaning end-to-end health check: inserts one synthetic test document
 plus six hand-written chemistry sentences designed so three test queries
