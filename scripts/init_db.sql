@@ -1696,3 +1696,168 @@ BEGIN
                p_metal, p_linker, p_temp_min, p_temp_max, p_from, p_to, v_limit, p_is_owner), v_rows);
 END;
 $function$;
+
+-- =============================================================================
+-- Section 22: knowledge graph (kg_nodes / kg_edges) - Herramienta C, Fase 1
+-- =============================================================================
+-- Ver methodology/ROADMAP_RAG_Y_GRAFO_v2.md seccion 5 para el diseno completo.
+-- Dos tablas genericas en vez de una tabla por tipo de relacion: cualquier
+-- "cosa" (una muestra, un ligando, un paper, un modelo de ML, una prediccion)
+-- es una fila de kg_nodes, y cualquier relacion entre dos cosas es una fila de
+-- kg_edges. Esto permite recorrer el grafo con UNA sola funcion recursiva
+-- (kg_neighbors) en vez de escribir un JOIN especifico por cada tipo de
+-- pregunta relacional, que es justo lo que las tablas normales no permiten
+-- hacer de forma generica.
+--
+-- Fase 1 (esta seccion): nodos/aristas DETERMINISTAS, construidos sin ningun
+-- LLM por src/build_knowledge_graph.py a partir de synthesis_experiments y
+-- characterization_measurements tal como existen hoy. Reproducible: se puede
+-- re-ejecutar cuantas veces se quiera, siempre da el mismo resultado.
+--
+-- Fase 2 (pendiente, bloqueada): nodos ML_MODEL / ML_PREDICTION. No se puede
+-- construir todavia porque no existe ninguna tabla que registre las
+-- predicciones de un modelo de ML -- es trabajo de la fase de ML del roadmap
+-- general, sin disenar aun. El CHECK de node_type de abajo ya deja hueco para
+-- estos dos tipos para no tener que migrar el esquema cuando llegue el dia.
+--
+-- Fase 3 (pendiente, la mas delicada): aristas PAPER --RESPALDA--> DESCRIPTOR.
+-- A diferencia de todo lo anterior, esa relacion no esta escrita en ninguna
+-- columna: hay que inferirla comparando el texto de un paper con un resultado
+-- de laboratorio, lo cual solo puede hacerlo un LLM. Por eso kg_edges tiene
+-- las columnas `source` y `review_status`: una arista LLM_INFERRED nace en
+-- PENDING_REVIEW y no se trata como un hecho confirmado hasta que un humano
+-- la revise -- mismo patron HITL que ya usa la rama de ICP/EA en n8n.
+
+CREATE TABLE IF NOT EXISTS kg_nodes (
+    node_id      TEXT        PRIMARY KEY,
+    node_type    TEXT        NOT NULL CHECK (node_type IN (
+                     'SAMPLE', 'LIGAND', 'METAL', 'MODULATOR', 'MEASUREMENT',
+                     'DESCRIPTOR', 'PAPER', 'ML_MODEL', 'ML_PREDICTION')),
+    label        TEXT        NOT NULL,
+    source_table TEXT,
+    source_id    TEXT,
+    properties   JSONB       DEFAULT '{}'::jsonb,
+    created_at   TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_kg_nodes_type ON kg_nodes (node_type);
+
+COMMENT ON TABLE  kg_nodes             IS 'Una fila por "cosa que existe" en el grafo de conocimiento: muestra, ligando, metal, modulador, medida, descriptor/KPI, paper, modelo de ML o prediccion de ML.';
+COMMENT ON COLUMN kg_nodes.node_id     IS 'Clave legible con prefijo de tipo, p.ej. SAMPLE:RS1884, LIGAND:H2BDC, PAPER:123. No es un UUID a proposito: se puede escribir a mano al explorar el grafo.';
+COMMENT ON COLUMN kg_nodes.source_table IS 'Tabla de origen si el nodo viene de una fila real (p.ej. synthesis_experiments); NULL para nodos que solo existen como concepto (un ligando, un modulador).';
+COMMENT ON COLUMN kg_nodes.properties  IS 'Metadatos extra especificos del tipo de nodo (p.ej. n_files en un MEASUREMENT), para no tener que anadir columnas por cada tipo nuevo.';
+
+CREATE TABLE IF NOT EXISTS kg_edges (
+    edge_id       BIGSERIAL   PRIMARY KEY,
+    from_node     TEXT        NOT NULL REFERENCES kg_nodes(node_id) ON DELETE CASCADE,
+    to_node       TEXT        NOT NULL REFERENCES kg_nodes(node_id) ON DELETE CASCADE,
+    edge_type     TEXT        NOT NULL,
+    confidence    NUMERIC(4,3) NOT NULL DEFAULT 1.000 CHECK (confidence BETWEEN 0 AND 1),
+    source        TEXT        NOT NULL DEFAULT 'DETERMINISTIC' CHECK (source IN ('DETERMINISTIC', 'LLM_INFERRED')),
+    review_status TEXT        NOT NULL DEFAULT 'CONFIRMED' CHECK (review_status IN ('CONFIRMED', 'PENDING_REVIEW', 'REJECTED')),
+    properties    JSONB       DEFAULT '{}'::jsonb,
+    created_at    TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (from_node, to_node, edge_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_kg_edges_from ON kg_edges (from_node);
+CREATE INDEX IF NOT EXISTS idx_kg_edges_to   ON kg_edges (to_node);
+CREATE INDEX IF NOT EXISTS idx_kg_edges_type ON kg_edges (edge_type);
+
+COMMENT ON TABLE  kg_edges                IS 'Una fila por relacion entre dos nodos: SAMPLE-USES_LIGAND->LIGAND, SAMPLE-HAS_MEASUREMENT->MEASUREMENT, y en el futuro PAPER-SUPPORTS->DESCRIPTOR.';
+COMMENT ON COLUMN kg_edges.confidence     IS '1.0 para aristas deterministas (siempre). Para aristas LLM_INFERRED (Fase 3), la confianza que dio el modelo al proponer la relacion.';
+COMMENT ON COLUMN kg_edges.source         IS 'DETERMINISTIC = construida por build_knowledge_graph.py desde una columna real, sin ambiguedad posible. LLM_INFERRED = un modelo la propuso comparando texto libre, requiere revision.';
+COMMENT ON COLUMN kg_edges.review_status  IS 'Las aristas DETERMINISTIC nacen CONFIRMED. Las LLM_INFERRED nacen PENDING_REVIEW y no deben tratarse como hecho hasta que un humano las confirme (mismo patron HITL que la rama ICP/EA de n8n).';
+
+-- kg_neighbors(): recorrido generico del grafo por anchura, hasta N saltos,
+-- tratando las aristas como no dirigidas (para explorar da igual si la arista
+-- se guardo A->B o B->A; SELECT ... FROM kg_edges WHERE edge_type='SUPPORTS'
+-- sigue sirviendo para consultar solo en un sentido si hace falta).
+CREATE OR REPLACE FUNCTION kg_neighbors(p_node_id TEXT, p_max_hops INTEGER DEFAULT 2)
+RETURNS TABLE (hop INTEGER, node_id TEXT, node_type TEXT, label TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+BEGIN
+    RETURN QUERY
+    WITH RECURSIVE frontier(node_id, hop) AS (
+        SELECT p_node_id, 0
+        UNION ALL
+        SELECT CASE WHEN e.from_node = f.node_id THEN e.to_node ELSE e.from_node END,
+               f.hop + 1
+        FROM   frontier f
+        JOIN   kg_edges e ON e.from_node = f.node_id OR e.to_node = f.node_id
+        WHERE  f.hop < p_max_hops
+    ),
+    closest AS (
+        SELECT frontier.node_id, MIN(frontier.hop) AS hop
+        FROM   frontier
+        WHERE  frontier.node_id <> p_node_id
+        GROUP  BY frontier.node_id
+    )
+    SELECT c.hop, n.node_id, n.node_type, n.label
+    FROM   closest c
+    JOIN   kg_nodes n ON n.node_id = c.node_id
+    ORDER  BY c.hop, n.node_type, n.label;
+END;
+$func$;
+
+COMMENT ON FUNCTION kg_neighbors IS 'CTE recursiva: todo lo alcanzable desde un nodo en hasta p_max_hops saltos, sin distinguir direccion de la arista. Uso directo desde pgAdmin: SELECT * FROM kg_neighbors(''SAMPLE:RS1884'', 2);';
+
+CREATE OR REPLACE FUNCTION agent_find_graph_node(
+    p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
+    p_query TEXT DEFAULT NULL, p_limit INTEGER DEFAULT 20
+)
+RETURNS TABLE (node_id TEXT, node_type TEXT, label TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    IF p_query IS NULL OR trim(p_query) = '' THEN
+        RAISE EXCEPTION 'query is required (a sample code, ligand, metal or modulator name to search for)';
+    END IF;
+
+    RETURN QUERY
+    SELECT n.node_id, n.node_type, n.label
+    FROM   kg_nodes n
+    WHERE  n.label ILIKE '%' || p_query || '%'
+    ORDER  BY n.node_type, n.label
+    LIMIT  v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'find_graph_node', format('query=%s', p_query), v_rows);
+END;
+$func$;
+
+COMMENT ON FUNCTION agent_find_graph_node IS 'Primer paso obligatorio antes de explore_graph: busca el node_id exacto (p.ej. SAMPLE:RS1884) a partir de un texto libre.';
+
+CREATE OR REPLACE FUNCTION agent_explore_graph(
+    p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
+    p_node_id TEXT DEFAULT NULL, p_hops INTEGER DEFAULT 2, p_limit INTEGER DEFAULT 30
+)
+RETURNS TABLE (hop INTEGER, node_id TEXT, node_type TEXT, label TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $func$
+DECLARE v_hops INTEGER := LEAST(GREATEST(COALESCE(p_hops, 2), 1), 3);
+        v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
+BEGIN
+    IF p_node_id IS NULL OR NOT EXISTS (SELECT 1 FROM kg_nodes WHERE kg_nodes.node_id = p_node_id) THEN
+        RAISE EXCEPTION 'Unknown node_id: %. Call find_graph_node first to get a valid one (e.g. SAMPLE:RS1884).', p_node_id;
+    END IF;
+
+    -- Sin LIMIT aqui, un nodo con mucha "fanout" (p.ej. METAL:Ca, con 538
+    -- muestras) puede devolver miles de filas: exactamente el problema que el
+    -- resto del catalogo evita con agent_row_limit. Los mas cercanos (hop mas
+    -- bajo) van primero, asi que el corte pierde lo mas lejano, no lo mas
+    -- relevante.
+    RETURN QUERY SELECT * FROM kg_neighbors(p_node_id, v_hops) LIMIT v_limit;
+
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    PERFORM agent_audit(p_actor, p_session, 'explore_graph',
+        format('node_id=%s hops=%s limit=%s', p_node_id, v_hops, v_limit), v_rows);
+END;
+$func$;
+
+COMMENT ON FUNCTION agent_explore_graph IS 'Recorrido del grafo de conocimiento en hasta 3 saltos desde un node_id ya conocido. p_hops se acota a [1,3], p_limit a [1,200] (por defecto 30) porque un nodo muy conectado (un metal comun) puede tener cientos de vecinos.';
+
+REVOKE ALL ON kg_nodes, kg_edges FROM PUBLIC;
+GRANT SELECT ON kg_nodes, kg_edges TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION kg_neighbors(TEXT, INTEGER)            TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_find_graph_node(TEXT,TEXT,TEXT,INTEGER) TO alchemy_agent;
+GRANT EXECUTE ON FUNCTION agent_explore_graph(TEXT,TEXT,TEXT,INTEGER,INTEGER) TO alchemy_agent;
