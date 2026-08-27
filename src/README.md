@@ -464,3 +464,45 @@ Rebuilds `pxrd_labels` with the hash-keyed design described above, plus the
 `needs_relink` flag) and `data_dictionary` rows for every column. Idempotent
 apart from the initial `DROP TABLE`, which was safe because the old table was
 empty. Ends with the re-linking query to run after any re-ingestion.
+
+---
+
+## Operations (keeping the database alive)
+
+### `scripts/backup_database.py`
+Backs the whole PostgreSQL database up to `backups/` with `pg_dump`, verifies the
+result, and rotates old copies.
+
+The problem it solves: the database lives entirely inside the Docker named volume
+`postgres_data`, and that volume is the only copy. A `docker compose down -v`, a
+Docker reinstall or a corrupted volume takes every row with it. Most of the content
+could be rebuilt by re-running the ingestion over `data/raw_datalake/`, but two
+things could not — the human labels in `pxrd_labels` (expert judgement, derivable
+from no file) and any reconciliation done by hand in pgAdmin. `pg_dump` does not
+copy files off the disk; it regenerates the SQL needed to rebuild the database from
+nothing, taken against one consistent snapshot while the database keeps serving
+other clients, which is why the output survives a move to another machine, another
+PostgreSQL version or a cloud instance.
+
+Three details worth knowing. **It verifies.** After copying the dump out of the
+container it pushes it back in and runs `pg_restore --list` on it: a truncated or
+corrupt archive fails at backup time rather than on the day it is needed. **It
+records what went in.** A `.manifest.json` beside each dump holds the row counts of
+the six tables that matter, so a restore can be checked against a number instead of
+a hope. **Rotation is by count, not by age** (`--keep`, default 7): "delete anything
+older than 7 days" would quietly leave zero backups after a month away, whereas
+"keep the last 7" always leaves something.
+
+Size matters here: one dump is ~940 MB because `characterization_measurements`
+stores full curves as JSONB, so the default retention costs ~6.6 GB. The script
+prints the running total after each run.
+
+Reuse: `--list` shows what exists with its row counts; `--restore-help` prints the
+restore commands (including the single-table form, e.g. recovering only
+`pxrd_labels`) without running them, because a restore overwrites live tables and is
+a decision rather than a script step; `--env-file` points at a different `.env` so a
+second instance can be dumped with the same script. Requires the `alchemy_postgres`
+container to be running — `pg_dump` lives inside it, not on the Windows host.
+
+Privacy: a dump contains raw synthesis parameters and ligand names. `backups/` is
+gitignored; do not move a dump out of it and never upload one to an external service.
