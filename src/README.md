@@ -535,3 +535,56 @@ container to be running — `pg_dump` lives inside it, not on the Windows host.
 
 Privacy: a dump contains raw synthesis parameters and ligand names. `backups/` is
 gitignored; do not move a dump out of it and never upload one to an external service.
+
+
+### Pipeline v3.0 - amorphous content measured against the empty instrument
+
+`crystalline_fraction` (v2.0) separated halo from peaks by **width**, with a 3 degree
+running median. Checked against the 1,881 patterns the lab owner had classified by eye,
+that estimate is wrong at both ends:
+
+- On patterns labelled `CRISTALINO` it reported ~50% amorphous. Between the reflections
+  the corrected signal is flat at 0.00-0.08% of the peak maximum, so there is no halo
+  there. Peaks plus flanks cover 41-46% of the axis, so a 3 degree window centred on a
+  cluster holds a majority of raised points and the median climbs onto the flanks: 71%
+  of the reported halo area came from underneath the peaks.
+- On patterns labelled `AMORFO` the surviving halo measured 0.76 sigma - **below the
+  counting noise**. arPLS had already absorbed it: a 5-15 degree hump is smooth enough
+  for a baseline estimator to treat as baseline.
+
+The empty holder settles it. Its arPLS baseline is straight to 0.0 sigma while real
+samples curve by 3.8-23 sigma, so the instrument contributes no curvature and all of it
+belongs to the sample - which arPLS was discarding as background.
+
+**v3.0 therefore defines** `amorphous = (what arPLS removes) - (the empty instrument)`,
+exposed as `amorphous_fraction_blank` / `crystalline_fraction_blank`. Validated against
+the hand labels: CRISTALINO 0.012, INCIPIENTE 0.073, AMORFO 0.247, and the blank against
+itself 0.031 - a **21x** separation against 3.5x for the width-based estimate. The
+ordering also holds across the incipient subtypes, which the algorithm has never seen.
+
+**The scaling is the only delicate part.** Time-per-step is absent from every `.xrdml`
+header checked, so the blank and a sample are not directly comparable in raw counts. The
+factor is taken from the median ratio **above 45 degrees**, where a sample's own diffuse
+scattering has largely died away. The window is not critical - 40 to 47 degrees give the
+same ordering - and it fails conservatively: a sample still scattering at 45 degrees
+scales the blank up too far, so more is subtracted and the amorphous content comes out
+**under-estimated**, never invented.
+
+**What the number cannot see.** The subtraction assumes the specimen sat in the same
+holder as the blank. The lab's silicon standard (NIST 640, confirmed by its 28.44 /
+47.30 / 56.12 degree reflections) comes out at 0.322 despite being as crystalline as a
+specimen gets, because loose powder needs a support the empty holder does not have, and
+95% of its diffuse excess sits below 28 degrees where silicon has no reflections at all.
+So the descriptor measures **how much of this pattern is not Bragg scattering**, not how
+much amorphous material is in the vial: it also counts thermal and defect diffuse
+scattering, air scatter, and Fe fluorescing under Cu radiation. Within one corpus mounted
+the same way it compares samples honestly; outside that condition it does not.
+
+Reuse: `load_instrument_blank(connection)` accepts either a SQLAlchemy connection or a
+plain psycopg2 one and returns the blank on the standard grid;
+`amorphous_from_blank(x, y_grid, blank_grid)` returns the diffuse curve, the fraction and
+the scale factor, and is callable on its own for plotting. Pass `blank_grid=` to
+`extract_descriptors` or the v3.0 columns come back `None` rather than silently falling
+back to the superseded estimate. Schema delta in `scripts/ddl_pxrd_descriptors_v3.sql`
+(additive; the v2.0 columns are kept, with their COMMENT amended to say they are
+superseded and why).

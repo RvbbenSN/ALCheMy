@@ -74,7 +74,7 @@ from scipy.sparse.linalg import spsolve
 # Version tag written into pxrd_descriptors.pipeline_version. Bump it whenever a
 # formula below changes, otherwise rows computed months apart silently stop being
 # comparable and nothing in the database records why.
-PIPELINE_VERSION = 'v2.0'
+PIPELINE_VERSION = 'v3.0'
 
 # ---------------------------------------------------------------------------
 # Low-angle cutoff: where the instrument stops measuring the sample.
@@ -161,6 +161,44 @@ BROAD_PEDESTAL_PCT = 5.0
 # and peaks to be a measurement rather than a coin flip. Anchored on the empty
 # holder, which scores 0.1 against 3-5 for a normal sample.
 MIN_SIGNAL_SNR_AREA = 1.0
+
+# ---------------------------------------------------------------------------
+# Blank-referenced amorphous content (v3.0)
+# ---------------------------------------------------------------------------
+# The v2.0 route estimated the halo with a running median over the arPLS-corrected
+# profile, separating "broad" from "narrow" by width. Measured against 149 patterns
+# that the lab owner had labelled by eye, that route is wrong at BOTH ends:
+#
+#   * On patterns he labelled CRISTALINO it reported ~50% amorphous. Between the
+#     reflections the corrected signal is flat at 0.00-0.08% of the peak maximum -
+#     there is no halo there. The reflections plus their flanks cover 41-46% of the
+#     axis, so a 3 degree window centred on a cluster contains a majority of raised
+#     points and the median settles on the flanks instead of the valleys. 71% of the
+#     reported halo area came from underneath the peaks.
+#   * On patterns he labelled AMORFO the surviving halo measured 0.76 sigma - below
+#     the counting noise. arPLS had already removed it: it is a *baseline* estimator,
+#     and a 5-15 degree hump is smooth enough for it to swallow.
+#
+# The decisive evidence is the empty holder. Its arPLS baseline is flat to 0.0 sigma,
+# while real samples curve by 3.8-23 sigma. The instrument contributes no curvature,
+# so every bit of it belongs to the sample - and arPLS was discarding it as background.
+#
+# Hence the v3.0 definition, which is the lab owner's:
+#
+#       amorphous = (what arPLS removes) - (the empty instrument)
+#
+# arPLS removes instrument + diffuse sample scattering; the blank IS the instrument;
+# the difference is what the sample scatters diffusely. This deliberately does not care
+# whether that diffuse intensity comes from amorphous material, from thermal or defect
+# scattering, from Fe fluorescing under Cu radiation or from the holder - all of it is
+# "not crystalline", which is what the descriptor claims to measure.
+#
+# Validated against 1,881 hand-labelled patterns: CRISTALINO 0.012, INCIPIENTE 0.043,
+# AMORFO 0.287, and the blank against itself 0.031. Within the incipient subtypes the
+# ordering is also right: HALO_DOMINANTE 0.215 > PICOS_ANCHOS 0.153 >
+# CRISTALITO_PEQUENO 0.084.
+BLANK_SCALE_FROM_DEG = 45.0     # window used to put the blank on the sample's scale
+MIN_AMORPHOUS_RELIABLE = 0.0    # values below this are clipped, never negative
 
 # Trapezoidal integrator, named once so NumPy 1.x and 2.x both work.
 _trapz = getattr(np, 'trapezoid', getattr(np, 'trapz', None))
@@ -473,11 +511,138 @@ def _hump_fwhm(x, hump):
     return float(x[above[-1]] - x[above[0]])
 
 
+BLANK_FILE_NAME = 'DRX-26376(10)-Blanco.xrdml'
+
+
+def load_instrument_blank(connection, grid=None, file_name=BLANK_FILE_NAME):
+    """
+    Loads the empty-holder scan and puts it on the standard grid.
+
+    This is the instrument's own signature: same diffractometer (PIXcel3D, Cu anode,
+    45 kV / 40 mA), no specimen. Measured 5.0066-89.9989 degrees in 6,474 points, so it
+    covers the whole 5-50 working range with room to spare.
+
+    Kept here rather than in the notebook so the notebook, the bulk ingestion script and
+    any future re-processing all reference the same scan. Returns None if the file is
+    not in the database, and callers must cope with that: the blank-referenced
+    descriptors then come back None rather than silently falling back to a worse method.
+    """
+    grid = GRID_2THETA if grid is None else np.asarray(grid, dtype=float)
+
+    # Accepts either a SQLAlchemy connection or a plain DB-API one (psycopg2). The
+    # notebooks use psycopg2 and the bulk scripts use SQLAlchemy; making the caller
+    # convert would be a pointless dependency in whichever of the two lacks it.
+    if hasattr(connection, 'execute') and not hasattr(connection, 'cursor'):
+        from sqlalchemy import text as _text
+        row = connection.execute(_text(
+            "SELECT data_json->'raw_data'->>'x', data_json->'raw_data'->>'y' "
+            "FROM characterization_measurements "
+            "WHERE technique = 'PXRD' AND file_name = :fn LIMIT 1"),
+            {'fn': file_name}).fetchone()
+    else:
+        cur = connection.cursor()
+        cur.execute(
+            "SELECT data_json->'raw_data'->>'x', data_json->'raw_data'->>'y' "
+            "FROM characterization_measurements "
+            "WHERE technique = 'PXRD' AND file_name = %s LIMIT 1", (file_name,))
+        row = cur.fetchone()
+
+    if row is None or row[0] is None:
+        return None
+
+    import json as _json
+    xb = np.asarray(_json.loads(row[0]), dtype=float)
+    yb = np.asarray(_json.loads(row[1]), dtype=float)
+    if xb.size < 10:
+        return None
+    return np.interp(grid, xb, yb)
+
+
+def amorphous_from_blank(x, y_grid, blank_grid, baseline=None,
+                         lam_rigid=DEFAULT_LAMBDA_RIGID,
+                         scale_from_deg=BLANK_SCALE_FROM_DEG):
+    """
+    Diffuse (non-crystalline) content, measured as arPLS baseline minus the empty
+    instrument. See the BLANK_SCALE_FROM_DEG block above for why this replaces the
+    width-selective halo of v2.0.
+
+    WHY THE BLANK HAS TO BE RESCALED
+    --------------------------------
+    The blank and the sample were not counted for the same time per step, and the
+    header does not record it (`time_per_step_s` is absent on every file checked),
+    so their raw counts are not comparable and the blank cannot simply be subtracted.
+
+    The scale factor is taken from the high-angle end, by default above 45 degrees.
+    The assumption is that up there a sample's own diffuse scattering has largely
+    died away, so whatever background remains is the instrument, and matching the two
+    there fixes the scale. The assumption is not critical: sweeping the window from
+    40 to 47 degrees moves the amorphous/crystalline separation only between 18x and
+    28x, and never changes the ordering.
+
+    Where the assumption does bite, it bites conservatively. A sample that still
+    scatters diffusely at 45 degrees makes the blank scale up too far, so more gets
+    subtracted and the amorphous content is UNDER-estimated. The failure mode is a
+    number that is too small, not one invented out of nothing.
+
+    Returns (amorphous_curve, fraction_of_total_area, scale_factor). The curve is on
+    the same grid as `x`; the fraction is normalised by the sample's total area, so it
+    is comparable across measurements of different length and intensity.
+    """
+    x = np.asarray(x, dtype=float)
+    y_grid = np.asarray(y_grid, dtype=float)
+
+    if blank_grid is None:
+        return None, None, None
+    blank_grid = np.asarray(blank_grid, dtype=float)
+    if blank_grid.size != y_grid.size:
+        return None, None, None
+
+    total_area = float(np.trapezoid(y_grid, x))
+    if not np.isfinite(total_area) or total_area <= 0:
+        return None, None, None
+
+    if baseline is None:
+        baseline = arpls_baseline(y_grid, lam=lam_rigid)
+
+    window = x >= scale_from_deg
+    # A scan that stops before the window leaves nothing to scale against; fall back
+    # to the last fifth of whatever range was measured rather than refusing outright.
+    if window.sum() < 20:
+        window = x >= (x[0] + 0.8 * (x[-1] - x[0]))
+    if window.sum() < 5:
+        return None, None, None
+
+    blank_level = float(np.median(blank_grid[window]))
+    if blank_level <= 0:
+        return None, None, None
+    scale = float(np.median(baseline[window])) / blank_level
+
+    instrument = scale * blank_grid
+    amorphous = np.maximum(baseline - instrument, MIN_AMORPHOUS_RELIABLE)
+    fraction = float(np.trapezoid(amorphous, x) / total_area)
+
+    # WHAT THIS NUMBER CANNOT SEE
+    # ---------------------------
+    # The subtraction assumes the specimen sat in the same holder as the blank. It did
+    # not always. The lab's own silicon standard (NIST 640, confirmed by its 28.44 /
+    # 47.30 / 56.12 degree reflections) comes out at 0.322 despite being as crystalline
+    # as a specimen gets, because loose powder needs a support the empty holder does not
+    # have, and 95% of its "amorphous" excess sits below 30 degrees where silicon has no
+    # reflections at all. That is a real measurement of real diffuse scattering - from
+    # the mount rather than from the material.
+    #
+    # So the number answers "how much of this pattern is not Bragg scattering", not
+    # "how much amorphous material is in this vial". Within one corpus mounted the same
+    # way it compares samples honestly, which is what it is used for here.
+    return amorphous, fraction, scale
+
+
 def extract_descriptors(x, y_raw, sample_code='SAMPLE',
                         lam_rigid=DEFAULT_LAMBDA_RIGID,
                         broad_width_deg=BROAD_WIDTH_DEG,
                         k_sigma=DEFAULT_K_SIGMA,
-                        return_curves=False):
+                        return_curves=False,
+                        blank_grid=None):
     """
     Computes the full descriptor vector for one already-resampled profile.
 
@@ -585,9 +750,21 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
     # carrying no independent information about the pattern.)
     snr_global = float(np.max(net) / (noise + 1e-12))
 
+    # v3.0: diffuse content referenced to the empty instrument. This is the number to
+    # trust; `crystalline_fraction` below is kept because it still ranks patterns
+    # usefully, but its two ends are artefacts (see the module header).
+    amorphous_blank, amorphous_fraction_blank, blank_scale = amorphous_from_blank(
+        x, layers['normalized'], blank_grid,
+        baseline=layers['instrumental'], lam_rigid=lam_rigid)
+    crystalline_fraction_blank = (None if amorphous_fraction_blank is None
+                                  else float(1.0 - amorphous_fraction_blank))
+
     descriptors = {
         'sample_code': sample_code,
         'pipeline_version': PIPELINE_VERSION,
+        'amorphous_fraction_blank': amorphous_fraction_blank,
+        'crystalline_fraction_blank': crystalline_fraction_blank,
+        'blank_scale_factor': blank_scale,
         'baseline_method': 'arpls',
         'baseline_lambda': float(lam_rigid),
         'broad_width_deg': float(broad_width_deg),
@@ -635,6 +812,10 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
 
 
 DESCRIPTOR_COLUMNS = [
+    # v3.0 headline numbers: diffuse content measured against the empty instrument.
+    # These are the ones to use. `crystalline_fraction` further down is retained for
+    # continuity and ranking only - its two ends are artefacts of the v2.0 method.
+    'amorphous_fraction_blank', 'crystalline_fraction_blank', 'blank_scale_factor',
     'pipeline_version', 'baseline_method', 'baseline_lambda',
     'broad_width_deg', 'peak_sigma_k',
     'n_peaks_k3', 'n_peaks_k5', 'n_peaks_below_15deg', 'two_theta_first_peak',
