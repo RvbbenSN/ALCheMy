@@ -378,6 +378,12 @@ skipped.
 
 ## Labelling app (human ground truth for PXRD)
 
+> The interfaces now have their own didactic index in **`app/README.md`**: what
+> each app does, which one to reach for, and - importantly - which of them writes
+> to the database (only the labeller, and only to `pxrd_labels`). The entry below
+> stays because it documents the *reusable engineering* in this file's spirit;
+> `app/README.md` is the place to look when choosing which app to open.
+
 ### `app/pxrd_labeler.py`
 Streamlit app for stage E2 of the PXRD roadmap: turning ~1,870 unlabelled
 diffractograms into the human ground truth supervised learning needs. Run it with
@@ -768,6 +774,24 @@ python scripts/compute_pxrd_descriptors.py --dry-run      # calcula y no escribe
 
 Salta las filas que ya tengan la version actual, imprime los recuentos antes y despues, y
 recuerda el backup. Solo toca `pxrd_descriptors`; nunca `pxrd_labels`.
+
+### Parametros opcionales para exploracion interactiva (v3.3)
+
+`decompose_profile` y `extract_descriptors` aceptan ahora cuatro argumentos mas:
+`pedestal_pct`, `peak_k_override`, `blank_scale_from_deg` y `smooth_blank`. Existen para
+que `app/pxrd_explorer.py` pueda mover esos valores sin parchear el modulo por dentro,
+que es la alternativa fea y no segura entre hilos.
+
+**Todos tienen por defecto exactamente el valor que ya se aplicaba**, asi que ninguna
+fila calculada cambia. Comprobado y no supuesto: se recalcularon 60 medidas al azar con
+el modulo modificado y se compararon los 21 descriptores numericos y los 3 enteros contra
+lo guardado en la base -- cero discrepancias, y el peor error relativo (1,4e-8 en
+`amorphous_area`) sale **identico** con el modulo sin tocar, asi que es un artefacto
+preexistente y no consecuencia del cambio.
+
+`peak_k_override` merece una nota aparte: puesto a `None`, que es como lo llaman el
+cuaderno y el script de lote, se usa la k calibrada de v3.3. Solo el explorador lo pasa
+distinto, para poder ensenar que pasaba con el 3 sigma de antes.
 
 ---
 
