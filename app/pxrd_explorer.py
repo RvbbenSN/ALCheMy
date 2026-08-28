@@ -195,14 +195,30 @@ def load_catalogue():
                COALESCE(s.linker, '?')                     AS linker,
                lc.label_value                              AS crystallinity_class,
                ls.label_value                              AS incipient_subtype,
-               d.pipeline_version
+               lo.label_value                              AS oxide_flag,
+               d.pipeline_version,
+               COALESCE(dup.n_class_labels, 0)              AS n_class_labels_in_sample
           FROM characterization_measurements m
           LEFT JOIN synthesis_experiments s ON s.sample_code = m.sample_code
           LEFT JOIN pxrd_labels lc ON lc.measurement_id = m.measurement_id
                                   AND lc.label_type = 'crystallinity_class'
           LEFT JOIN pxrd_labels ls ON ls.measurement_id = m.measurement_id
                                   AND ls.label_type = 'incipient_subtype'
+          LEFT JOIN pxrd_labels lo ON lo.measurement_id = m.measurement_id
+                                  AND lo.label_type = 'oxide_flag'
           LEFT JOIN pxrd_descriptors d ON d.measurement_id = m.measurement_id
+          LEFT JOIN (
+              -- Cuantas mediciones (measurement_id distintos) de la MISMA muestra
+              -- tienen su propia etiqueta de crystallinity_class. >1 significa que
+              -- sample_code tiene varias mediciones PXRD etiquetadas por separado
+              -- -- util para la revision de "que medicion nos quedamos" antes de ML,
+              -- ver methodology/DIARIO_DE_PROYECTO.md Sesion 34.
+              SELECT cm.sample_code, count(*) AS n_class_labels
+                FROM pxrd_labels pl
+                JOIN characterization_measurements cm ON cm.measurement_id = pl.measurement_id
+               WHERE pl.label_type = 'crystallinity_class' AND pl.label_value <> 'SIN_MUESTRA'
+               GROUP BY cm.sample_code
+          ) dup ON dup.sample_code = m.sample_code
          WHERE m.technique IN ('PXRD', 'VT-XRD')
            AND jsonb_array_length(m.data_json->'raw_data'->'x') > 100
          ORDER BY m.sample_code, m.file_name;
@@ -430,6 +446,24 @@ catalogue = load_catalogue()
 st.sidebar.title('🎛️ PXRD Explorer')
 st.sidebar.caption('Read-only sandbox · pipeline %s' % PIPELINE_VERSION)
 
+# ---- ML review shortcut ---------------------------------------------------
+# Filtro puntual para las 3 revisiones que preceden al primer dataset de ML
+# (methodology/DIARIO_DE_PROYECTO.md Sesion 34). Por defecto en "(ninguno)":
+# no cambia nada del comportamiento habitual de la app hasta que se elige uno.
+REVIEW_GROUPS = {
+    '(ninguno)': None,
+    'Muestras con más de una etiqueta': lambda df: df['n_class_labels_in_sample'] > 1,
+    'MEZCLA (revisar si se funden con AMORFO)': lambda df: df['crystallinity_class'] == 'MEZCLA',
+    'AMORFO marcado como óxido': lambda df: (df['crystallinity_class'] == 'AMORFO')
+                                            & (df['oxide_flag'] == 'SI'),
+}
+st.sidebar.subheader('0 · Revisión puntual para ML')
+review_choice = st.sidebar.selectbox(
+    'Grupo a revisar', list(REVIEW_GROUPS.keys()), index=0,
+    help='Atajo temporal para las revisiones pendientes antes de construir el '
+         'dataset de entrenamiento. No afecta a nada más de la app; se combina '
+         'con el filtro de abajo.')
+
 # ---- filter --------------------------------------------------------------
 st.sidebar.subheader('1 · Qué patrones')
 label_filter = st.sidebar.multiselect(
@@ -439,6 +473,10 @@ subtype_filter = st.sidebar.multiselect('Subtipo de incipiente', SUBTYPES, defau
 text_filter = st.sidebar.text_input('Buscar por código o fichero', '').strip()
 
 view = catalogue
+review_mask_fn = REVIEW_GROUPS[review_choice]
+if review_mask_fn is not None:
+    view = view[review_mask_fn(view)]
+    st.sidebar.caption('Revisión activa: **%s** · %d difractogramas' % (review_choice, len(view)))
 if label_filter:
     wanted = [c for c in label_filter if c != '(sin etiqueta)']
     mask = view['crystallinity_class'].isin(wanted)
