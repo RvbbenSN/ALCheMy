@@ -20,12 +20,19 @@ TWO THINGS THIS SCRIPT CANNOT DO FOR YOU
    hand from Table 2 of the paper -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md,
    which lists exactly the 21 symbols needed and a ready UPDATE statement.
 
-2. Three groups of synthesis rows where metal_center and metal_source (the salt
-   formula) disagree -- Mg/Ni(NO3)2.6H2O (8 rows), Ti/HfCl4 (4 rows), and the
-   two blank '-' rows (RS94, RS95). These are flagged in
-   metal_source_oxidation_state.matches_metal_center = FALSE and left with
-   oxidation_state = NULL rather than guessed, because the formula and the
-   stated metal genuinely disagree -- see the same document.
+2. Two groups of synthesis rows where metal_center and metal_source (the salt
+   formula) still disagree, confirmed by Ruben on 2026-08-29 against his lab
+   notebook/presentations (see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md):
+   - Mg/Ni(NO3)2.6H2O (8 rows, RS352-355/377-380) and Ti/HfCl4 (4 rows,
+     RS1845-1848) were CORRECTED directly in synthesis_experiments (metal_source
+     -> Mg(NO3)2.6H2O for the first group, metal_center -> Hf for the second) --
+     no longer flagged, resolved for good.
+   - RS253 (metal_center=Bi, metal_source still says Mg(NO3)2.6H2O) remains
+     unresolved: Ruben confirmed the metal is Bi "con total seguridad" but did
+     not specify which Bi salt was actually weighed, so metal_source is left
+     untouched rather than guessed -- still flagged matches_metal_center=FALSE.
+   - RS94, RS95 ('-'/'-') are confirmed blanks (organic/control samples, no
+     metal), so oxidation_state stays NULL by design, not by omission.
 
 HOW OXIDATION STATE IS DERIVED
 -------------------------------
@@ -96,7 +103,9 @@ MANUAL_OXIDATION_STATES = {
     'HfOCl2·8H2O':        ('Hf', 4),                               # hafnyl chloride
     'HfCl4':              ('Hf', 4),                               # also seen mislabelled under metal_center=Ti, see below
     'In(NO3)3·xH2O':      ('In', 3),
-    'In(NO3)2·3H2O':      (None, None),                            # likely a typo for In(NO3)3; only 1 row, flagged not guessed
+    'In(NO3)2·3H2O':      ('In', 3),                               # RS1939: Ruben confirmed this precursor (2026-08-29);
+                                                                    # In is essentially always 3+ in solution, "2" read as a
+                                                                    # transcription slip rather than a real In(II) reagent
     "La(OOCCH3)3·1,5H2O": ('La', 3),
     'Mg(NO3)2·6H2O':      ('Mg', 2), 'MgCl2 · 6H2O':  ('Mg', 2),
     'Nd(NO3)3·6H2O':      ('Nd', 3),
