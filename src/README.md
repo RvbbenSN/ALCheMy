@@ -684,3 +684,87 @@ sobre una reflexion aislada para la anchura y Scherrer, composicion de fases en 
 concentracion de la intensidad, y el vector completo con sus valores reales agrupado por
 familia. Va acompanada de una tabla que dice, para cada descriptor, en que panel se ve, y
 de un diagrama del recorrido de la curva al vector.
+
+
+### Pipeline v3.3 - el umbral de picos, corregido por comparaciones multiples
+
+Un pico se aceptaba cuando su prominencia superaba 3 sigma del ruido de conteo de la
+propia medida. **3 sigma es el nivel del 99,73 % para UN contraste**, y detectar picos no
+es un contraste sino una busqueda sobre todo el patron: con ~2.250 puntos y separacion
+minima de 0,2 grados hay unas 225 oportunidades independientes de que el ruido fabrique
+un bulto.
+
+Medido por Monte Carlo -la parte suave de un barrido real, que por construccion no tiene
+ninguna reflexion, re-dibujada con ruido de Poisson-: **4,6 picos falsos por barrido a
+k = 3**, 0,1 a k = 4, 0 a k = 5. En RS1765, etiquetada AMORFO a mano, el detector
+declaraba 8 picos y ~5 eran ruido. Y de ese conjunto salian tambien `two_theta_first_peak`,
+`d_max_angstrom`, las anchuras y Scherrer: un espaciado interplanar calculado sobre una
+espiga de ruido.
+
+v3.3 fija el numero **esperado de picos falsos** por barrido (0,05) en vez de fijar k, y
+deriva k de la longitud del barrido:
+
+    k = sqrt(2) * Phi^-1(1 - alpha / (2 * n_eff)),   n_eff = n_puntos / puntos_separacion
+
+El sqrt(2) esta porque una prominencia es una DIFERENCIA entre dos cantidades ruidosas.
+Da k = 5,07-5,22 en los barridos de este laboratorio, justo donde la simulacion pone el
+recuento de falsos en cero; formula y simulacion se dedujeron por separado.
+
+Fijar la TASA de error en vez de k es lo que hace comparables las medidas: un barrido mas
+largo tiene mas oportunidades de fallar, asi que se le exige un liston mas alto para que
+corra el mismo riesgo. La k aplicada queda guardada en `peak_sigma_k`.
+
+| Clase | n | Mediana picos k=3 | k calibrada |
+|---|---|---|---|
+| AMORFO | 486 | 2,0 | **0,0** |
+| INCIPIENTE | 1.011 | 15,0 | 8,0 |
+| CRISTALINO | 355 | 22,0 | **19,0** |
+
+Proporcion con >= 3 reflexiones: AMORFO 0,47 -> **0,11**, CRISTALINO 0,99 -> 0,98. La
+correccion quita ruido, no senal.
+
+`n_peaks_k5` pasa a llamarse **`n_peaks`** (el recuento primario, del que se leen todos
+los descriptores de pico). `n_peaks_k3` se conserva como termino de comparacion: la
+distancia entre los dos es informativa - muchos picos a 3 sigma y ninguno al umbral
+calibrado es la firma de un patron amorfo ruidoso.
+
+---
+
+## `src/PXRD_PIPELINE_CHANGELOG.md`
+
+**Que hace.** Historial de versiones del pipeline de descriptores PXRD: v1.0 a v3.3, que
+cambio en cada una, por que, y el efecto medido sobre el corpus etiquetado.
+
+**Que problema resuelve.** Una fila de `pxrd_descriptors` solo significa algo junto con su
+`pipeline_version`: el mismo nombre de columna ha guardado cantidades distintas en
+versiones distintas. Mezclar filas de dos versiones en un analisis produce numeros que
+parecen validos y no lo son. El fichero dice que hay ahora en la tabla y por que.
+
+**Como se reutiliza.** Es el punto de entrada antes de usar `pxrd_descriptors` para
+entrenar nada. Recoge tambien los **problemas abiertos** que se arrastran (por ejemplo,
+que `crystallinity_reliable` rechaza el 100 % de las muestras amorfas).
+
+---
+
+## `scripts/compute_pxrd_descriptors.py`
+
+**Que hace.** Calcula el vector de descriptores para todas las medidas PXRD/VT-XRD del
+data lake y las escribe en `pxrd_descriptors` con UPSERT sobre `measurement_id`.
+
+**Que problema resuelve.** El cuaderno 05 explica y justifica el pipeline, y procesa un
+lote de muestra para poder ejecutarse en un tiempo razonable. Este script es la misma
+cuenta aplicada al corpus entero, para que la tabla sirva de **tabla de caracteristicas
+para machine learning**. Los dos importan de `src/pxrd_descriptors.py`, asi que no pueden
+divergir: el cuaderno es el argumento, el script es el lote.
+
+**Como se reutiliza.**
+
+```bash
+python scripts/compute_pxrd_descriptors.py                # solo lo pendiente
+python scripts/compute_pxrd_descriptors.py --all --yes    # recalcular todo
+python scripts/compute_pxrd_descriptors.py --limit 200    # una tajada, para probar
+python scripts/compute_pxrd_descriptors.py --dry-run      # calcula y no escribe
+```
+
+Salta las filas que ya tengan la version actual, imprime los recuentos antes y despues, y
+recuerda el backup. Solo toca `pxrd_descriptors`; nunca `pxrd_labels`.
