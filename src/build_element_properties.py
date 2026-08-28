@@ -12,27 +12,38 @@ that e.g. Zr and Hf are chemically almost the same element. This script replaces
 "metal_center = Ni" with electronegativity, hardness, ionic radius, etc, so a
 model can share statistical strength across chemically similar metals.
 
-TWO THINGS THIS SCRIPT CANNOT DO FOR YOU
------------------------------------------
-1. Kepp (2016) oxophilicity, DOI 10.1021/acs.inorgchem.6b01702. The paper is
-   paywalled and no free reproduction of the table was found (checked). Every
-   element_properties row is written with oxophilicity_kepp = NULL. Fill it by
-   hand from Table 2 of the paper -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md,
-   which lists exactly the 21 symbols needed and a ready UPDATE statement.
+ONE THING THIS SCRIPT STILL CANNOT DO FOR YOU
+-----------------------------------------------
+Ga's oxophilicity_kepp: Kepp (2016), DOI 10.1021/acs.inorgchem.6b01702, Table 1
+simply does not list gallium (only B, Al and In from group III were computed/
+measured) -- not paywalled, not overlooked, genuinely absent from the source.
+Left NULL for that one symbol; see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md.
 
-2. Two groups of synthesis rows where metal_center and metal_source (the salt
-   formula) still disagree, confirmed by Ruben on 2026-08-29 against his lab
-   notebook/presentations (see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md):
-   - Mg/Ni(NO3)2.6H2O (8 rows, RS352-355/377-380) and Ti/HfCl4 (4 rows,
-     RS1845-1848) were CORRECTED directly in synthesis_experiments (metal_source
-     -> Mg(NO3)2.6H2O for the first group, metal_center -> Hf for the second) --
-     no longer flagged, resolved for good.
-   - RS253 (metal_center=Bi, metal_source still says Mg(NO3)2.6H2O) remains
-     unresolved: Ruben confirmed the metal is Bi "con total seguridad" but did
-     not specify which Bi salt was actually weighed, so metal_source is left
-     untouched rather than guessed -- still flagged matches_metal_center=FALSE.
-   - RS94, RS95 ('-'/'-') are confirmed blanks (organic/control samples, no
-     metal), so oxidation_state stays NULL by design, not by omission.
+Kepp oxophilicity for the other 19 metals: Ruben supplied the PDF (2026-08-29)
+and the values below are transcribed by hand from Table 1 of that PDF (O
+column, "oxophilicities... according to eqs 2 and 3"; accurate to ~0.1 per the
+paper's own error estimate). See KEPP_OXOPHILICITY below.
+
+RESOLVED SYNTHESIS-DATA DISCREPANCIES (2026-08-29)
+----------------------------------------------------
+Three groups of synthesis rows where metal_center and metal_source (the salt
+formula) disagreed have all been corrected directly in synthesis_experiments,
+confirmed by Ruben against his lab notebook/presentations or by mass
+cross-check (see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md):
+   - Mg/Ni(NO3)2.6H2O (8 rows, RS352-355/377-380): metal_source ->
+     Mg(NO3)2.6H2O.
+   - Ti/HfCl4 (4 rows, RS1845-1848): metal_center -> Hf.
+   - RS253 (metal_center=Bi, metal_source read Mg(NO3)2.6H2O): Ruben confirmed
+     Bi "con total seguridad" but not the exact salt, so it was resolved by
+     mass, not by memory -- metal_mass_mg for RS253 (2.1828 mg at 0.0030 M,
+     1.5 mL) matches Bi(NO3)3.5H2O's molar mass (485.06 g/mol) to 4 sig figs
+     (0.0045 mmol x 485.06 = 2.183 mg), and does not match BiCl3 (315.34
+     g/mol) or BiClO (260.43 g/mol) at that same mmol. metal_source ->
+     Bi(NO3)3.5H2O.
+None of these three are flagged as mismatches any more (see main() below).
+RS94, RS95 ('-'/'-') are confirmed blanks (organic/control samples, no
+metal), so oxidation_state stays NULL by design, not by omission -- not a
+discrepancy to resolve.
 
 HOW OXIDATION STATE IS DERIVED
 -------------------------------
@@ -82,6 +93,20 @@ METALS = ['Ca', 'Fe', 'Cu', 'Bi', 'Mg', 'Ti', 'Ni', 'Co', 'Zr', 'Ce', 'Hf',
 # (CLAUDE.md: "the ingestion script auto-creates placeholder synthesis_experiments
 # rows for orphan codes ... those placeholders carry dummy chemistry Ni/Pyrene")
 # and are excluded here; Ni is already covered.
+
+# Kepp, K. P. Inorg. Chem. 2016, 55, 9461-9470, DOI 10.1021/acs.inorgchem.6b01702,
+# Table 1, column O ("Oxophilicities ... according to eqs 2 and 3"). Transcribed
+# by hand from the PDF Ruben supplied (2026-08-29); the paper states the scale
+# is accurate to ~0.1, matching the one-decimal precision printed in Table 1.
+# Ga is missing on purpose: Table 1's group III row only has B, Al and In --
+# gallium was not computed or measured in this paper, not omitted by us.
+KEPP_OXOPHILICITY = {
+    'Ca': 0.3, 'Sr': 0.5, 'Mg': 0.6, 'Bi': 0.2, 'In': 0.4,
+    'Cr': 0.6, 'Fe': 0.4, 'Co': 0.4, 'Ni': 0.2, 'Cu': 0.2, 'Zn': 0.2,
+    'Y': 0.8, 'Zr': 0.8, 'La': 1.0, 'Hf': 1.0,
+    'Ce': 0.9, 'Nd': 1.0, 'Dy': 0.9, 'Ti': 1.0,
+    # 'Ga': not in Table 1 -- left out on purpose, see docstring/comment above.
+}
 
 # Every distinct metal_source string in the database, mapped to (symbol, charge).
 # Derived by hand from the formula -- see docstring. `None` charge = genuinely
@@ -158,7 +183,7 @@ def build_element_row(symbol):
         covalent_radius_pm=md.covalent_radius,
         atomic_radius_pm=md.atomic_radius,
         polarizability_a3=(md.dipole_polarizability / 1000.0) if md.dipole_polarizability else None,
-        oxophilicity_kepp=None,   # human input, see docstring
+        oxophilicity_kepp=KEPP_OXOPHILICITY.get(symbol),   # NULL only for Ga, see docstring
         data_source='mendeleev+pymatgen',
     )
 
@@ -284,8 +309,8 @@ def main():
         ('shannon_radius_pm', 'Shannon, R. D. Acta Cryst. A 1976, 32, 751.',
          '10.1107/S0567739476001551', 'CN=6 pinned throughout this project, see roadmap SS3.4.'),
         ('oxophilicity_kepp', 'Kepp, K. P. Inorg. Chem. 2016, 55, 9461.',
-         '10.1021/acs.inorgchem.6b01702', 'Paywalled; entered manually. Correlates strongly with electronegativity (SS6.4).')
-        ON CONFLICT (property_name) DO NOTHING
+         '10.1021/acs.inorgchem.6b01702', 'Transcribed from Table 1 of the paper (19/20 metals; Ga not in the source table). Correlates strongly with electronegativity (SS6.4).')
+        ON CONFLICT (property_name) DO UPDATE SET scale_notes = EXCLUDED.scale_notes
     """)
 
     conn.commit()

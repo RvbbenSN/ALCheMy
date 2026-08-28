@@ -21,14 +21,22 @@ each maps to something that plausibly controls MOF assembly (denticity ->
 connectivity, max_donor_distance -> pore size / topology, n_rotatable_bonds ->
 rigidity).
 
-ONE THING THIS SCRIPT CANNOT VERIFY FOR YOU
----------------------------------------------
-The chemical identity of H6ttbmp (and therefore Et6ttbmp) was deduced by an AI,
-not confirmed against the actual reagent bottle/CAS number. See
-methodology/PENDIENTE_ML_INPUTS_HUMANOS.md -- if the SMILES below is wrong, every
-descriptor for the two most heavily-used linkers (1,304 + 86 = 1,390 syntheses)
-is wrong downstream too, so this is worth Ruben's five minutes before trusting
-the model.
+IDENTITY CONFIRMED 2026-08-29
+-------------------------------
+H6ttbmp/Et6ttbmp and H8ptp/Et8ptp were originally deduced by an AI from the
+lab's file naming, not from a CAS/vendor record. Ruben confirmed both against
+a downloaded article:
+- H6ttbmp: the article's own name, "2,4,6-tris[4-(phosphonomethyl)phenyl]-
+  1,3,5-triazine (H6ttbmp)", is character-for-character the same as the
+  iupac_name below -- exact match, same compound, same abbreviation.
+- H8ptp: the article calls the same molecule "H8tpt" (letters in a different
+  order) rather than "H8ptp", but the chemical description it gives --
+  "pyrene-1,3,6,8-tetrayltetrakis(phosphonic acid)" -- is exactly the
+  iupac_name and substitution pattern {1,3,6,8} already used below (see H8ptp
+  entry: built from RDKit symmetry analysis, formula-verified C16H14O12P4).
+  Same molecule; only the four-letter abbreviation differs between this lab's
+  convention and the article's, which does not change the SMILES or any
+  descriptor derived from it.
 
 USAGE
 -----
@@ -47,10 +55,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # -----------------------------------------------------------------------------
-# The 6 linkers. SMILES for H6ttbmp/Et6ttbmp are the one identification flagged
-# for human confirmation (see docstring + methodology/PENDIENTE_ML_INPUTS_HUMANOS.md).
-# The rest (pyrene phosphonates, tannic acid, bare pyrene) are unambiguous,
-# well-known molecules.
+# The 6 linkers. H6ttbmp/Et6ttbmp and H8ptp/Et8ptp identities confirmed by
+# Ruben 2026-08-29 against a downloaded article (see docstring above). The
+# rest (tannic acid, bare pyrene) are unambiguous, well-known molecules.
 # -----------------------------------------------------------------------------
 LINKERS = {
     'H6ttbmp': dict(
@@ -60,7 +67,7 @@ LINKERS = {
         common_name='H6ttbmp',
         scaffold='triazine_phosphonate', protection_state='free_acid',
         denticity=3, n_donor_atoms=6, n_acidic_protons=6, donor_group='phosphonate',
-        notes='Identification NOT independently confirmed against a CAS/vendor record -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md.',
+        notes='Identity confirmed by Ruben 2026-08-29 against a downloaded article -- exact name match.',
     ),
     'Et6ttbmp': dict(
         # hexaethyl ester of H6ttbmp
@@ -82,7 +89,7 @@ LINKERS = {
         common_name='H8ptp',
         scaffold='pyrene_phosphonate', protection_state='free_acid',
         denticity=4, n_donor_atoms=8, n_acidic_protons=8, donor_group='phosphonate',
-        notes=None,
+        notes='Identity confirmed by Ruben 2026-08-29 against a downloaded article, which calls it H8tpt -- same substitution pattern and iupac_name, different abbreviation letter order.',
     ),
     'Et8ptp': dict(
         # Same derivation as H8ptp, with ethoxy groups instead of hydroxyl. Formula checks out: C32H46O12P4.
