@@ -385,7 +385,8 @@ def broad_component(net, step=STEP_2THETA, width_deg=BROAD_WIDTH_DEG):
 def decompose_profile(y_raw, x,
                       lam_rigid=DEFAULT_LAMBDA_RIGID,
                       broad_width_deg=BROAD_WIDTH_DEG,
-                      k_sigma=DEFAULT_K_SIGMA):
+                      k_sigma=DEFAULT_K_SIGMA,
+                      pedestal_pct=BROAD_PEDESTAL_PCT):
     """
     Splits a raw profile into its three physical layers.
 
@@ -440,7 +441,7 @@ def decompose_profile(y_raw, x,
     #     pedestal is estimated from the profile itself as the level the broad
     #     component falls back to where there is no halo (a low percentile).
     #     Self-calibrating, so it needs no assumption about the noise model.
-    pedestal = float(np.percentile(broad, BROAD_PEDESTAL_PCT))
+    pedestal = float(np.percentile(broad, pedestal_pct))
     amorphous = np.maximum(broad - pedestal, 0.0)
 
     # (b) The crystalline component is a POINTWISE difference, so at every point
@@ -764,7 +765,11 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
                         broad_width_deg=BROAD_WIDTH_DEG,
                         k_sigma=DEFAULT_K_SIGMA,
                         return_curves=False,
-                        blank_grid=None):
+                        blank_grid=None,
+                        pedestal_pct=BROAD_PEDESTAL_PCT,
+                        peak_k_override=None,
+                        blank_scale_from_deg=BLANK_SCALE_FROM_DEG,
+                        smooth_blank=True):
     """
     Computes the full descriptor vector for one already-resampled profile.
 
@@ -775,7 +780,8 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
     y_raw = np.asarray(y_raw, dtype=float)
 
     layers = decompose_profile(y_raw, x, lam_rigid=lam_rigid,
-                               broad_width_deg=broad_width_deg, k_sigma=k_sigma)
+                               broad_width_deg=broad_width_deg, k_sigma=k_sigma,
+                               pedestal_pct=pedestal_pct)
     normalized = layers['normalized']
     instrumental = layers['instrumental']
     amorphous = layers['amorphous']
@@ -795,7 +801,11 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
     # k = 3 set, which on an amorphous pattern meant reading a d-spacing from a
     # noise spike.
     _step = float(x[1] - x[0])
-    k_peaks = peak_k_sigma(x.size, max(1, int(round(0.20 / _step))))
+    # peak_k_override exists so the interactive explorer (app/pxrd_explorer.py) can
+    # show what a different threshold would do. Left None - which is how every batch
+    # and every notebook calls it - the calibrated value of v3.3 is used.
+    k_peaks = (peak_k_sigma(x.size, max(1, int(round(0.20 / _step))))
+               if peak_k_override is None else float(peak_k_override))
     peaks, fwhm_deg = detect_peaks_poisson(x, narrow, noise, k_sigma=k_peaks)
 
     # The sensitive set is kept alongside it, on purpose: the gap between the two
@@ -889,7 +899,8 @@ def extract_descriptors(x, y_raw, sample_code='SAMPLE',
     # usefully, but its two ends are artefacts (see the module header).
     amorphous_blank, amorphous_fraction_blank, blank_scale = amorphous_from_blank(
         x, layers['normalized'], blank_grid,
-        baseline=layers['instrumental'], lam_rigid=lam_rigid)
+        baseline=layers['instrumental'], lam_rigid=lam_rigid,
+        scale_from_deg=blank_scale_from_deg, smooth_blank=smooth_blank)
     crystalline_fraction_blank = (None if amorphous_fraction_blank is None
                                   else float(1.0 - amorphous_fraction_blank))
 
