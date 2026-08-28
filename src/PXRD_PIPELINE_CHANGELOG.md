@@ -179,3 +179,31 @@ descriptors.
   biased towards crystalline material. Notebook §13 deliberately does not filter by it.
   Needs redefining in terms of integrated signal rather than peak height.
 - **NMF over the net-signal matrix** (`nmf_weights`) is still empty.
+- **`amorphous_fraction_blank` has a detection floor of about 0.02.** The arPLS baseline is
+  a floor finder, so at the foot of a reflection it cannot tell "a peak starts here" from
+  "the background rises here" and climbs slightly up the flank. Whatever it climbs is
+  counted as diffuse afterwards, which inflates the amorphous fraction.
+
+  Measured on a synthetic pattern - real instrument background plus Gaussians of *known*
+  area, so anything the baseline gains above the background is misattributed peak area:
+
+  | peak FWHM | peak area absorbed |
+  |---|---|
+  | 0.10 - 1.00 deg | **0.1 - 0.3 %** |
+  | 1.50 deg | 1.4 % |
+  | 2.50 deg | **25 %** |
+
+  On a synthetic pattern with **no amorphous content at all** the pipeline reports 0.006
+  to 0.018 instead of 0.
+
+  For the widths this corpus actually contains the effect is negligible: median FWHM is
+  0.16-0.24 deg by class, the 90th percentile does not exceed 0.57 deg, and **no
+  measurement exceeds 1 deg** (the detector discards anything wider than 1.2 deg by
+  design). The regime where arPLS genuinely struggles is never reached.
+
+  What matters is the consequence for interpretation: the measured CRISTALINO median is
+  **0.011**, essentially the floor. That does not mean those samples hold 1 % amorphous
+  material - it means they hold **no measurable amorphous material**. A model that treats
+  0.011 as a quantity is learning the artefact. Do not read this descriptor below ~0.02.
+
+  Observed by Ruben using `app/pxrd_explorer.py`, which is what the app is for.

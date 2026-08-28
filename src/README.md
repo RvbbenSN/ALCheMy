@@ -896,3 +896,23 @@ variable. `metal_center`, `linker`, `hts_number`, `synthesis_date` and
 `GroupKFold` by sample/plate/metal, never a random split) and must never be
 fed into a model as features themselves; that would reintroduce exactly the
 categorical-identifier problem this whole layer exists to avoid.
+
+
+### `scripts/fix_pxrd_labels_20260828.sql`
+One-off correction of four hand labels that were reviewed and found wrong
+(RS1164 / RS1567 / RS1568 -> INCIPIENTE / PICOS_ANCHOS, RS159 -> INCIPIENTE /
+HALO_DOMINANTE). Kept in the repository rather than run and forgotten, because
+`pxrd_labels` is the one table in this project that cannot be rebuilt from any
+file: every change to it needs an auditable record of what changed and why.
+
+Worth reading as a pattern even if the specific correction is never needed again.
+The primary key is `(file_hash, label_type)`, and **no identifier is typed by
+hand**: the new subtype rows are derived with `INSERT ... SELECT` from the
+`crystallinity_class` row that already exists for that sample, so the hash, the
+`measurement_id` and the file name come out of the database. Pasting an MD5
+copied from a query is the kind of mistake that raises no error - it would insert
+an orphan row keyed on a hash matching no file, and nothing would notice. The
+statement is idempotent (`ON CONFLICT DO UPDATE`), preserves `labeled_at` and
+moves `updated_at`, so the revision is visible without losing when the pattern
+was first judged. The header carries the descriptor evidence that justified the
+change.
