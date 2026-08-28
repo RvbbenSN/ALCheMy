@@ -377,13 +377,20 @@ def plot_pattern(x, y, sample_code, show_analysis):
             gx, gy = grid[valid], y_grid[valid]
             layers = decompose_profile(gy, gx)
             noise = poisson_noise_level(gy, gx)
+            # Sin k_sigma explicita, el detector deriva el umbral de la longitud del
+            # barrido (pipeline v3.3): fija la tasa de falsos positivos en 0,05 por
+            # barrido en vez de fijar k. Con el antiguo k=3 fijo esta superposicion
+            # marcaba varios picos de ruido en cada patron amorfo, justo donde mas
+            # confunden a quien etiqueta.
+            from pxrd_descriptors import peak_k_sigma
+            k_cal = peak_k_sigma(gx.size, max(1, int(round(0.20 / (gx[1] - gx[0])))))
             peaks, _fw = detect_peaks_poisson(gx, layers['crystalline'], noise)
             a_c = integrate(layers['crystalline'], gx)
             a_a = integrate(layers['amorphous'], gx)
             xc = a_c / (a_c + a_a) if (a_c + a_a) > 0 else float('nan')
             if peaks.size:
                 ax.plot(gx[peaks], np.interp(gx[peaks], x, y), 'v',
-                        color='#c0392b', ms=7, label=f'{peaks.size} picos (3σ)')
+                        color='#c0392b', ms=7, label=f'{peaks.size} picos ({k_cal:.1f}σ)')
             ax.text(0.995, 0.94, f'Xc estimada = {xc:.2f}', transform=ax.transAxes,
                     ha='right', va='top', fontsize=11, color='#c0392b',
                     bbox=dict(boxstyle='round,pad=0.4', fc='white', ec='#c0392b'))
