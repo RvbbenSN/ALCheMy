@@ -768,3 +768,107 @@ python scripts/compute_pxrd_descriptors.py --dry-run      # calcula y no escribe
 
 Salta las filas que ya tengan la version actual, imprime los recuentos antes y despues, y
 recuerda el backup. Solo toca `pxrd_descriptors`; nunca `pxrd_labels`.
+
+---
+
+## ML reference tables (metal/linker chemistry → model features)
+
+Implements F0 of `methodology/ROADMAP_ML_DESCRIPTORES_QUIMICOS.md`: with 21
+metals (9 of them under 15 samples) and 6 linker codes that are really 3
+molecules × 2 protection states, one-hot encoding either one throws away
+chemistry a physical descriptor recovers for free. See the roadmap's §2-4 for
+the full argument; the schema and every design decision are also documented
+inline as SQL `COMMENT`s and Python docstrings in the files below.
+
+### `scripts/ddl_ml_reference_tables.sql`
+
+**What it does.** Creates five objects: `element_properties` (one row per
+metal symbol), `ion_properties` (one row per (symbol, oxidation_state) — radius
+depends on charge, not just the element, Shannon 1976), `metal_source_oxidation_state`
+(bridges the free-text `metal_source` precursor string to a specific ion —
+also doubles as a human-auditable list of every salt formula ever used),
+`property_sources` (citation + DOI per property), `linker_properties` (6 rows,
+4-6 hand-picked descriptors, deliberately NOT RDKit's full 200+ descriptor
+set — with only 6 molecules that would be more columns than objects, a
+memorization trap, roadmap §4.4), and the view `v_ml_features` that joins all
+of it to `synthesis_experiments` at query time.
+
+**What problem it solves.** Turns `metal_center = 'Ni'` into electronegativity,
+hardness, ionic radius, etc, so a model shares statistical strength between
+chemically similar metals (Zr/Hf, or the four lanthanides with 2-5 samples
+each) instead of treating each one as an isolated, unrelated category.
+
+**How to reuse it.** Apply once with `docker exec -i alchemy_postgres psql -U
+alchemy_user -d alchemy_db < scripts/ddl_ml_reference_tables.sql` (checkpoint
+first with `python scripts/backup_database.py` — it's a DDL migration).
+Idempotent-ish: `CREATE TABLE IF NOT EXISTS` and `CREATE OR REPLACE VIEW`, so
+re-running it after a small tweak is safe, but it will not pick up column
+changes on an existing table — those need a manual `ALTER TABLE`.
+
+### `src/build_element_properties.py`, `src/build_linker_properties.py`
+
+**What they do.** Populate the tables above. The element script pulls
+electronegativity/hardness/etc from `mendeleev` + `pymatgen` for the 20 metals
+actually used in the data, and derives each precursor's oxidation state
+**deterministically from its formula** (`FeCl3` → Fe³⁺, `FeCl2` → Fe²⁺) rather
+than "most common oxidation state of the element" — the latter would get Fe,
+Ce and Ti wrong, since this project genuinely uses more than one oxidation
+state of some of them (e.g. Ce³⁺ from `CeCl3` vs Ce⁴⁺ from ceric ammonium
+nitrate). It also cross-checks every `metal_source` string against every
+`metal_center` it's ever paired with in the database and flags disagreements
+(`matches_metal_center = FALSE`) instead of guessing — this is how 6 real
+data-entry questions (e.g. `metal_center='Mg'` but `metal_source='Ni(NO3)2.6H2O'`
+for 8 rows) were *found*, not introduced. The linker script builds each
+`linker_properties` row from a hand-picked SMILES using RDKit for 2D
+descriptors and a UFF/MMFF-optimised 3D conformer for the one that needs
+geometry (`max_donor_distance_a`, the distance between donor atoms — probably
+the single most informative linker descriptor, roadmap §4.4). For H8ptp/Et8ptp
+the SMILES was built *programmatically* (substituting -P(=O)(O)O at the 4
+pyrene ring positions found by RDKit symmetry analysis of a verified pyrene
+SMILES) rather than typed by hand, specifically to avoid an invalid or
+subtly-wrong aromatic structure.
+
+**What problem they solve.** Turn the roadmap's design into actual rows,
+without silently inventing a number where the honest answer is "don't know
+yet" (oxophilicity, 3 ambiguous precursor formulas) or "you need to confirm
+this" (the H6ttbmp chemical identity, used in 64% of the corpus).
+
+**What they deliberately do NOT fill in**, and why:
+`methodology/PENDIENTE_ML_INPUTS_HUMANOS.md` lists exactly 3 things a script
+cannot responsibly decide on its own — the Kepp (2016) oxophilicity scale
+(paywalled, no free reproduction found), confirmation of the H6ttbmp structure,
+and 6 metal_source/metal_center mismatches that are lab data-entry questions,
+not modelling choices — with the exact SQL to apply once a human answers.
+
+**How to reuse them.**
+
+```bash
+python src/build_element_properties.py --dry-run   # print what would be written
+python src/build_element_properties.py              # populate element_properties, ion_properties, metal_source_oxidation_state
+python src/build_linker_properties.py --dry-run
+python src/build_linker_properties.py                # populate linker_properties
+```
+
+Both are safe to re-run any time (`DELETE` their own rows, then re-`INSERT`) —
+e.g. after fixing one of the mismatches in
+`methodology/PENDIENTE_ML_INPUTS_HUMANOS.md`, or after `oxophilicity_kepp` is
+filled in (that one's a direct `UPDATE`, not a re-run, since it's not derived
+from anything the scripts compute).
+
+### `v_ml_features` (SQL view, created by the DDL script above)
+
+**What it is.** The feature table for machine learning (roadmap §5), assembled
+by `LEFT JOIN`ing `synthesis_experiments` against every table above, plus
+solvent fractions and modulators aggregated by chemical role (carboxylic /
+strong acid / base, roadmap §7.1). Deliberately a view, not materialized
+columns: correcting one ionic radius later updates every downstream feature
+with no risk of two versions of the same number coexisting.
+
+**Reuse it** directly in a notebook or training script:
+`SELECT * FROM v_ml_features`, then join `pxrd_labels` (via
+`characterization_measurements.sample_code`/`file_hash`) for the target
+variable. `metal_center`, `linker`, `hts_number`, `synthesis_date` and
+`metal_source` are included **only** for grouping in validation (roadmap §8 —
+`GroupKFold` by sample/plate/metal, never a random split) and must never be
+fed into a model as features themselves; that would reintroduce exactly the
+categorical-identifier problem this whole layer exists to avoid.
