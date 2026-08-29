@@ -916,3 +916,45 @@ statement is idempotent (`ON CONFLICT DO UPDATE`), preserves `labeled_at` and
 moves `updated_at`, so the revision is visible without losing when the pattern
 was first judged. The header carries the descriptor evidence that justified the
 change.
+
+
+### `src/apply_ml_label_review_2026_08.py`
+
+Same pattern as `scripts/fix_pxrd_labels_20260828.sql` above, in Python because
+the plan (44 duplicate measurements, 70 AMORFO+oxide exclusions, 2 class
+overrides, 16 subtype assignments, 1 sample_code reassignment) is too big to
+type as one SQL statement without a transcription mistake somewhere. One-off,
+already run — kept for the audit trail, not meant to run twice.
+
+Resolves the three open items from notebook 06 §7, after Ruben reviewed each
+one by hand in `app/pxrd_explorer.py`'s "Revisión puntual para ML" filter
+(`Downloads/Revisión.txt`, 2026-08-30):
+
+- **43 sample_codes had more than one independently-labelled PXRD measurement**
+  (a 44th, RS1915, needed 3 exclusions instead of 1). Rather than delete the
+  losing measurement's label — real human judgement, on a real file — the
+  script writes a new `pxrd_labels` row with `label_type='ml_include'`,
+  `label_value='NO'`, in exactly the shape `app/pxrd_labeler.py` already
+  writes labels in (same PK, same UPSERT). Absence of an `ml_include` row
+  means "included"; nothing already judged gets destroyed, and the exclusion
+  is itself an auditable label with its own `labeled_by`/`notes`.
+- **70 AMORFO measurements independently flagged `oxide_flag='SI'`**: Ruben
+  confirmed these show intense oxide reflections and would contaminate the
+  AMORFO class if kept — same `ml_include='NO'` mechanism, ids pulled live
+  from the join, not hand-copied.
+- **One measurement filed under the wrong sample_code**: the file itself was
+  named `...RS1670-CaPy es RS1700..xrdml` — a note left at scan time. RS1700
+  had zero PXRD measurements of its own, so the fix is a real reassignment
+  (`characterization_measurements.sample_code`, `pxrd_descriptors.sample_code`
+  and `pxrd_labels.sample_code` all updated together — three denormalised
+  copies of the same fact, and moving only one of them would leave the row
+  inconsistent with itself), not an ML-only flag.
+
+**What it deliberately does not do**, both by Ruben's explicit choice (see the
+script's docstring for the exact reasoning): it does not overwrite MEZCLA to
+CRISTALINO in the table (that merge happens only in the training query, so the
+original judgement — "this really did look like a phase mixture" — survives);
+and it does not touch the MIX/UNKNOWN samples Ruben also asked to exclude,
+because they are `synthesis_type='PENDING_RECORD'` and every ML-facing query
+already filters those out — verified before writing anything, so as not to
+add a redundant flag for a case that was never going to be included anyway.
