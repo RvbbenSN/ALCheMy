@@ -958,3 +958,78 @@ and it does not touch the MIX/UNKNOWN samples Ruben also asked to exclude,
 because they are `synthesis_type='PENDING_RECORD'` and every ML-facing query
 already filters those out — verified before writing anything, so as not to
 add a redundant flag for a case that was never going to be included anyway.
+
+---
+
+### `src/fix_modulator_units_2026_08.py`
+
+One-off data correction, already run, kept for the audit trail. It divides seven
+`synthesis_experiments` columns by 1000.
+
+**The problem it solves.** `calc_pure_modulator_mmol()` in notebook 01 computed
+
+```python
+return (v_num * density * purity_pct * 10.0) / mw     # wrong
+```
+
+when the dimensional analysis gives `V * rho * P / (100 * MW)`. That is **a factor of
+1000 too large**: every "Type B" modulator (formic, acetic, propionic, TFA, triflic,
+triethylamine, methanesulfonic — the neat liquids dosed by microlitre) was stored in
+**micromoles labelled as millimoles**. The "Type A" modulators (HCl, HF, KOH, computed
+from molar aqueous solutions) were always correct.
+
+**Why that mattered far more than a scale factor.** A uniform change of scale does not
+bother a model. The damage was that `v_ml_features` *summed the two families together*
+into `mod_strong_acid_mmol`. Mixing mmol with umol means the HCl term (~0.004) vanished
+next to the TFA term (~600), so the effect of **the most-used modulator in the whole
+dataset — HCl, 393 syntheses — was invisible to the model**, silently.
+
+**How it was found.** Not by any metric: cross-validation never complained, because the
+column was still a number that ordered the rows plausibly. It was found by reading the
+magnitudes chemically — the median formic acid value was 1168 "mmol", i.e. **54 g of
+formic acid in a 2.5 mL reactor**.
+
+**Safety.** Refuses to run twice: it aborts if the median formic acid value is already
+below 100 mmol. Verifies afterwards that no modulator exceeds 100 mmol (chemically
+impossible at this scale) before committing, and writes an `audit_log` row. Notebook 01
+is fixed too, so a future re-ingestion writes correct values and this script stays a
+historical record.
+
+Reusable as the template for *"a derived column was computed wrong; correct the stored
+rows and the code that produced them, in the same commit"*.
+
+---
+
+### `scripts/ddl_ml_features_v2.sql`
+
+Rebuild of the `v_ml_features` view after the expert review of notebook 06. Applies with
+`docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/ddl_ml_features_v2.sql`
+(back up first — it is a migration). Note it uses `DROP VIEW` + `CREATE VIEW`, not
+`CREATE OR REPLACE`, because the latter cannot insert columns in the middle of the list.
+
+What it changes, and why each one is a real defect and not a preference:
+
+- **All six solvent columns, not four.** `proh_1_ml` (1-propanol, 208 syntheses) and
+  `def_ml` were missing, so the solvent fractions summed to 0.789 on average instead of 1.
+- **The liquid modulator counted as part of the medium** (`frac_modulator`), reconstructed
+  from the millimoles by inverting notebook 01's formula. In many syntheses the modulator
+  *is* the solvent — RS1188 uses 1.35 mL of propionic acid out of 1.5 mL total.
+- **Fractions are NULL, not 0, when the breakdown does not account for the volume**
+  (~18% of rows), with a `solvent_breakdown_complete` flag. Writing 0 asserts "there was
+  no methanol"; the truth is "how much methanol was not recorded". Those are different
+  statements and a model cannot tell them apart from a 0.
+- **HF split from HCl** (`mod_hf_mmol`): mineralising agent, qualitatively different
+  kinetics; 25 syntheses, enough for its own column.
+- **Chemical descriptors of the modulator** — amount-weighted mean pKa and mean logP — so
+  the model can tell formic from propionic instead of only counting millimoles. Aqueous
+  pKa values, a declared approximation.
+- **`meo3s_mmol` stops being dropped** (it belonged to no category before).
+- **`synthesis_type` exposed**, having been filter-only. It is the dataset's largest
+  confounder (MW 95.7% crystalline vs HTS 11.0%, by selection bias).
+- **Precursor matching normalised** against a non-breaking space (U+00A0) in strings like
+  `MgCl2 . 6H2O`, which cost 22 rows their oxidation state and ionic radius. Normalising
+  the join beats adding typographic variants by hand — that is a race you do not win.
+- **Rows with `metal_center = '-'` excluded** (RS94, RS95): syntheses with no metal.
+
+The `data_dictionary` rows for the new columns are inserted by the same file, so the view
+stays self-documenting from inside the database.
