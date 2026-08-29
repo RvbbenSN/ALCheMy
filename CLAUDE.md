@@ -34,7 +34,7 @@ docker compose up -d --build  # after editing Dockerfile.n8n
 - `Dockerfile.n8n` bakes Python 3 + pandas/numpy into the n8n image so `executeCommand` nodes can call the repo's Python parsers directly.
 - Host `./data`, `./src`, `./n8n_workflows` are bind-mounted into the container at `/home/node/data`, `/home/node/src`, `/home/node/workflows`. **Paths inside n8n must be the container paths** (`/home/node/data/raw_datalake/...`), which is deliberate so local and cloud deployments are identical.
 
-There is no `requirements.txt`, test suite, or linter in the repo. Python work runs against the host interpreter; dependencies in use are `pandas`, `numpy`, `sqlalchemy`, `psycopg2`, `openpyxl`, `requests`, `streamlit`, `Pillow`.
+There is no `requirements.txt`, test suite, or linter in the repo. Python work runs against the host interpreter; dependencies in use are `pandas`, `numpy`, `sqlalchemy`, `psycopg2`, `openpyxl`, `requests`, `streamlit`, `Pillow`, plus the science stack: `scipy`, `matplotlib`, `seaborn`, `scikit-learn`, `mendeleev` + `pymatgen` (atomic/ionic properties, `src/build_element_properties.py`), `rdkit` (molecular descriptors, `src/build_linker_properties.py`), and `lightgbm`, `xgboost`, `shap`, `imbalanced-learn` (modelling and interpretation, notebook 06).
 
 ## Common commands
 
