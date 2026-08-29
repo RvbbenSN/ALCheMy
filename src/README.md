@@ -1033,3 +1033,85 @@ What it changes, and why each one is a real defect and not a preference:
 
 The `data_dictionary` rows for the new columns are inserted by the same file, so the view
 stays self-documenting from inside the database.
+
+
+---
+
+### `src/ml_model_registry.py` + `scripts/ddl_ml_model_registry.sql`
+
+The model registry: save, query and retrieve trained models. Five tables plus a helper
+module and a small CLI.
+
+**The problem it solves.** "Just save the `.pkl`" is not enough, and this project has the
+proof. The notebook 06 v2 model reported F1 macro 0.62 and **cannot be rebuilt today** —
+not because a file was lost, but because the data it was trained on was corrected
+afterwards (the 1000x modulator unit bug). Had that pickle been saved, it would still load
+without error today and happily produce predictions, computed over a definition of
+`mod_strong_acid_mmol` that is no longer the live one. Silently wrong, which is the worst
+kind of wrong because nothing warns you.
+
+**A reproducible model is six things, and the binary is the least important:** the data
+(which query, how many rows, what class distribution), the code (which notebook, at which
+git commit), the parameters, the random seed, the library versions, and only then the
+serialised object. The first five live in `ml_models` / `ml_datasets`; the sixth in
+`ml_model_artifacts`.
+
+**The tables**
+
+| Table | Holds | Why separate |
+|---|---|---|
+| `ml_datasets` | Literal query + its SHA-256, row/group counts, class distribution, known caveats | Detects that the data changed even when the SQL is identical |
+| `ml_models` | Algorithm, hyperparameters, preprocessing, validation scheme, seed, git commit, library versions, lifecycle status | The recipe |
+| `ml_model_metrics` | **Long** format: one row per (model, metric, split) | Adding a metric needs no `ALTER TABLE` |
+| `ml_model_features` | Which columns went in, in what role, **and the excluded ones with their reason** | Enables *"which models used this feature before the fix?"* |
+| `ml_model_artifacts` | The binary, its size and SHA-256 | Heavy and regenerable — split off exactly like the `rag_chunks` embedding vectors |
+
+**Two design decisions worth defending.** The artefact lives *in the database*, not on
+disk, so it is covered by the project's backup discipline — the only real protection there
+is; in its own table so a light dump could exclude it if it ever grows. And
+`is_reproducible = FALSE` **cannot be set without a reason**: a `CHECK` constraint enforces
+it, because otherwise that field stays empty exactly in the cases where it matters most.
+
+**On serialisation formats** (the "what extension is a model?" question). `joblib`/pickle
+(`.joblib`, `.pkl`) is the scikit-learn standard and saves the *whole pipeline* — imputer,
+scaler, encoder and estimator — which is what you actually need, since an estimator without
+its preprocessing cannot predict on raw data. Its three drawbacks: Python-only, brittle
+across library versions, and **it executes code on load** (never open a pickle you did not
+produce). ONNX (`.onnx`) is language-independent, version-stable and safe to load, but not
+everything converts and you lose introspection. Native formats (LightGBM `.txt`, XGBoost
+`.json`) are stable but store only the estimator. Deep learning uses `.pt`/`.safetensors`.
+All model types can be saved — with different guarantees. This project uses joblib and
+mitigates its version brittleness by recording `library_versions` and warning on load when
+they differ.
+
+```bash
+python src/ml_model_registry.py --list
+python src/ml_model_registry.py --show crystallinity_v3_hts_full
+python src/ml_model_registry.py --export crystallinity_v3_hts_full ./out
+```
+
+```python
+from src.ml_model_registry import cargar_modelo
+modelo = cargar_modelo(conn, 'crystallinity_v3_hts_full')   # verifies SHA-256, warns on
+modelo.predict_proba(X)                                     # version or status mismatch
+```
+
+---
+
+### `src/register_crystallinity_models.py`
+
+Populates the registry: trains and registers the two live notebook 06 models, and records
+the v2 model as `status='invalid'`, `is_reproducible=FALSE`, **with no artefact** — because
+none can be produced. Idempotent (upsert by slug), so re-running updates rather than
+duplicates.
+
+That third row is the point of the whole exercise. Without it, six months from now someone
+finds "F1 0.625" in an old document and takes it for the project's best result. With it,
+the registry says — and `cargar_modelo` prints to stderr — that the number came from
+selection bias plus a broken acidity feature.
+
+Note what gets stored: the **metrics are the cross-validated ones** (the honest estimate of
+the procedure), while the **artefact is refit on the full dataset**. That is not a
+contradiction — cross-validation estimates how good a procedure is, it does not produce the
+final model, and throwing away 20% of the data in the model you actually deploy would make
+no sense.
