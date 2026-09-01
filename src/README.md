@@ -1115,3 +1115,50 @@ the procedure), while the **artefact is refit on the full dataset**. That is not
 contradiction — cross-validation estimates how good a procedure is, it does not produce the
 final model, and throwing away 20% of the data in the model you actually deploy would make
 no sense.
+
+
+---
+
+### `src/sync_data_dictionary.py` + `scripts/ddl_data_dictionary_completion.sql`
+
+Bring `data_dictionary` to **100% coverage** of every column of every table and view, and
+keep it there.
+
+**Why it mattered.** `data_dictionary` exists so the future web app and the AI agents can
+read the schema documentation *from the database* instead of carrying it hard-coded. That
+only works at full coverage. An audit on 2026-08-29 found **42.4%** (200 of 472 columns),
+**14 objects at 0%**, 8 orphan rows describing columns the DDL never created, and 4 objects
+with no `COMMENT`. A half-filled dictionary is worse than none: an agent that queries it
+cannot tell *"this column is undocumented"* from *"this column does not exist"*.
+
+Worth noting where the gap came from — it was not neglect of old tables. The **newest**
+tables were the worst offenders (the `ml_*` registry sat at 15-25%), because each migration
+documented the interesting columns and skipped the obvious ones. Coverage decays by
+default; that is exactly why the check below exists.
+
+**The script** turns the audit into a one-second command:
+
+```bash
+python src/sync_data_dictionary.py --audit     # coverage per object, orphans, missing COMMENTs
+python src/sync_data_dictionary.py --missing   # exactly which columns are undocumented
+python src/sync_data_dictionary.py --sync      # pull in native COMMENTs that never reached the dictionary
+python src/sync_data_dictionary.py --check     # exit code 1 if not at 100% -- suitable for CI or a hook
+```
+
+`--check` is the one that matters long-term: it makes "the dictionary is complete" a fact
+you can assert rather than assume, and it is the natural thing to wire into a pre-commit
+hook once a migration adds a table.
+
+Note what `--sync` deliberately does *not* do: it never invents a description. It only
+rescues comments already written as native `COMMENT ON COLUMN` that never made it into the
+dictionary, and marks them `section_name = 'UNCLASSIFIED'` so they are visibly pending a
+human pass rather than silently blessed.
+
+**The DDL** does the one-off repair: deletes the orphans (they documented a more ambitious
+`synthesis_experiments` than `init_db.sql` actually creates — the "Section 6: Experimental
+Weighings & Yield" rough edge listed in CLAUDE.md), writes the 272 missing rows, and adds
+the four missing table comments. Idempotent, so it can be reapplied safely.
+
+**Two layers, on purpose.** Native `COMMENT ON` makes pgAdmin self-documenting for a human
+browsing the schema; `data_dictionary` is queryable by agents and by the web app. Both
+should exist, and `--audit` reports on both so they cannot drift apart unnoticed.
