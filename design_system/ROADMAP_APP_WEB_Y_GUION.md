@@ -81,27 +81,101 @@ que no le interesa para llegar a lo que sí.
 Al cruzar los documentos aparecen siete contradicciones. Ninguna es grave, pero todas se propagarían
 al frontend si no se cierran ahora.
 
-### 3.1 Los KPIs de la portada están desactualizados 🔴
+### 3.1 Los KPIs de la portada están mal contados ✅ resuelto (auditoría 2026-09-01)
 
-Los documentos de diseño repiten `4.843 difractogramas` y `1.870 síntesis`. La base de datos,
-consultada el **2026-09-01**, dice otra cosa:
+Los documentos de diseño repiten `4.843 difractogramas` y `1.870 síntesis`. Un recuento crudo de
+filas da números distintos y **más altos**, lo que hizo saltar la alarma. Se auditó la base de datos
+entera. **Conclusión: los datos están sanos; lo que estaba mal era la forma de contarlos.**
 
-| Tabla | Filas reales (2026-09-01) | Cifra que aparecía en los documentos |
-|---|---|---|
-| `pxrd_labels` | **4.964** | 4.843 |
-| `pxrd_descriptors` | **1.874** | 1.870 (etiquetado como "síntesis") |
-| `synthesis_experiments` | **3.204** | 1.870 |
-| `characterization_measurements` | **3.926** | — |
-| `rag_chunks` | **87.765** | — (solo se citaban 956 documentos) |
-| `ml_models` | **3** | 2 en producción + 1 inválido |
+#### El malentendido nº 1 — `pxrd_labels` no es "un difractograma por fila"
 
-**Decisión:** los KPIs **no se escriben a mano nunca más**. Se sirven desde la API leyendo la base de
-datos, y la portada muestra la fecha del último recuento. Ver decisión abierta **D1** sobre qué
-significa exactamente cada número.
+La clave primaria es `(file_hash, label_type)`: **una fila por juicio**, no por patrón.
 
-> ⚠️ Ojo con `synthesis_experiments = 3.204`: incluye las filas *placeholder* que crea la ingesta
-> para códigos huérfanos (química ficticia Ni/Pireno). Publicar 3.204 como "síntesis realizadas"
-> sería **falso**. Hay que contar solo las filas reconciliadas.
+| `label_type` | Filas |
+|---|---|
+| `crystallinity_class` | 1.877 |
+| `multiphase_suspected` | 1.164 |
+| `oxide_flag` | 1.164 |
+| `incipient_subtype` | 645 |
+| `ml_include` | 114 |
+| **Total** | **4.964** |
+
+→ **1.877 difractogramas etiquetados**, con 4.964 juicios sobre ellos.
+No hay ni un duplicado: `count(DISTINCT file_hash) = 1.877`.
+
+#### El malentendido nº 2 — `synthesis_experiments` incluye filas-muleta
+
+| Categoría | Filas |
+|---|---|
+| Síntesis reales | **2.167** |
+| Placeholders (`synthesis_type = 'PENDING_RECORD'`, `metal_center = 'UNKNOWN'`) | 1.037 |
+| **Total** | **3.204** |
+
+Los 1.037 se crearon **todos el 2026-08-25**, en la ingesta masiva, para códigos de muestra que
+aparecían en un fichero de caracterización pero no existían aún en la tabla de síntesis: sin ellos
+la FK habría bloqueado la carga. Llevan `researcher_name = 'UNKNOWN'` y la fecha de ingesta como
+`synthesis_date`. **2.167 es el número real de síntesis**, y coincide con la estimación de Rubén
+(~2.175).
+
+> 📌 `CLAUDE.md` dice que los placeholders llevan "química ficticia Ni/Pireno". **Ya no es cierto:**
+> hoy llevan `UNKNOWN`/`UNKNOWN` y `synthesis_type = 'PENDING_RECORD'`. Corregir esa frase.
+
+#### El embudo real, verificado extremo a extremo
+
+```mermaid
+flowchart TD
+    A["2.167 síntesis reales<br/>(+1.037 placeholders)"]:::a
+    B["1.879 PXRD medidos<br/>en characterization_measurements"]:::b
+    C["1.877 difractogramas etiquetados<br/>crystallinity_class"]:::c
+    D["1.874 con vector de 29 descriptores"]:::c
+    E["1.611 HTS con etiqueta<br/>tras excluir ST / MW"]:::e
+    F["1.516 filas en el dataset v3<br/>68 grupos"]:::f
+    A -->|"no toda síntesis<br/>llegó a medirse"| B
+    B -->|"2 sin etiquetar"| C
+    C --> D
+    D -->|"solo combinatoria"| E
+    E -->|"sin ácido tánico,<br/>sin ml_include=NO"| F
+
+    classDef a fill:#F7EAD7,stroke:#85253C,stroke-width:2px,color:#3B0B15
+    classDef b fill:#FFFFFF,stroke:#00606B,stroke-width:2px,color:#3B0B15
+    classDef c fill:#FFFFFF,stroke:#B8933A,stroke-width:2px,color:#3B0B15
+    classDef e fill:#FFFFFF,stroke:#85253C,stroke-width:2px,color:#3B0B15
+    classDef f fill:#E5D694,stroke:#85253C,stroke-width:2.5px,color:#3B0B15
+```
+
+**Cada escalón baja, como tiene que ser.** Que haya menos PXRD (1.879) que síntesis (2.167) es
+exactamente lo que Rubén esperaba: no toda síntesis llegó al difractómetro.
+
+#### ¿Afectó esto al Machine Learning? **No.**
+
+Verificado por consulta directa: `v_ml_features` tiene **2.152 filas y CERO placeholders**. La vista
+los excluye en su propia cláusula `WHERE`
+(`synthesis_type NOT IN ('REFERENCE','PENDING_RECORD') AND metal_center <> '-'`).
+
+Y los datasets registrados en `ml_datasets` declaran sus filtros:
+
+| Dataset | Filas | Grupos | Distribución | Filtros declarados |
+|---|---|---|---|---|
+| `crystallinity_v2_mixed_2026_08_28` | 1.724 | — | AMORFO 404 / CRISTALINO 330 / INCIPIENTE 990 | **Sin filtro de tipo de síntesis: mezclaba HTS, ST y MW** ← por esto está invalidado |
+| `crystallinity_v3_hts_2026_08_29` | 1.516 | 68 | AMORFO 382 / CRISTALINO 167 / INCIPIENTE 967 | Solo HTS; sin ácido tánico; sin `ml_include=NO`; MEZCLA contada como CRISTALINO |
+
+**El gobierno de datos funcionó tal como se diseñó:** las filas-muleta existen para que la FK no
+bloquee la ingesta, están tipadas para poder distinguirlas, y la capa de ML las descarta sola. Esto
+no es un problema que arreglar — **es una historia que contar en la pantalla 04**, porque demuestra
+por qué un recuento crudo de filas nunca es una métrica.
+
+#### Los KPIs correctos para la portada
+
+| KPI | Valor verificado (2026-09-01) |
+|---|---|
+| Síntesis realizadas | **2.167** |
+| Difractogramas etiquetados a mano | **1.877** (con 4.964 juicios expertos) |
+| Medidas de caracterización ingestadas | **3.926** |
+| Descriptores por patrón | **29** |
+| Chunks de literatura vectorizados | **87.765** (de 956 documentos) |
+
+**Decisión:** los KPIs **no se escriben a mano nunca más**. Se sirven desde `GET /api/v1/kpis` con
+las consultas de esta sección congeladas, y la portada muestra la fecha del recuento.
 
 ### 3.2 Dos paletas de color en conflicto ✅ resuelto
 
@@ -244,17 +318,23 @@ Texto de apertura ✅ (ya redactado en el `.docx`, sirve tal cual):
 
 **CTA:** `⚡ Try the In-Silico Simulator` (salta a 06) · `📖 See the end-to-end flow` (salta a 02).
 
-#### Bloque 0.2 — Contadores KPI ⚠️ (bloqueado por D1)
+#### Bloque 0.2 — Contadores KPI ✅ (D1 resuelta, ver 3.1)
 
-Cuatro tarjetas neo-brutalistas. Los números **se leen de la API**, no se escriben a mano.
-Candidatos, con las cifras reales de 2026-09-01:
+Cuatro tarjetas neo-brutalistas. Los números **se leen de `GET /api/v1/kpis`**, nunca a mano.
 
-| KPI propuesto | Valor real hoy | Nota |
+| KPI | Valor verificado (2026-09-01) | Consulta congelada |
 |---|---|---|
-| Difractogramas etiquetados a mano | 4.964 filas en `pxrd_labels` | ⚠️ Definir si son filas o difractogramas distintos (D1) |
-| Medidas de caracterización ingestadas | 3.926 | Cifra limpia y defendible |
-| Descriptores físico-químicos por patrón | 29 | Constante |
-| Chunks de literatura vectorizados | 87.765 (de 956 documentos) | Impresiona más que "956 papers" |
+| Síntesis realizadas | **2.167** | `synthesis_experiments WHERE synthesis_type <> 'PENDING_RECORD'` |
+| Difractogramas etiquetados a mano | **1.877** | `pxrd_labels WHERE label_type = 'crystallinity_class'` |
+| Descriptores físico-químicos por patrón | **29** | Constante |
+| Chunks de literatura vectorizados | **87.765** | `rag_chunks` (de 956 documentos) |
+
+📌 El subtítulo de la segunda tarjeta debe decir **"1.877 patrones · 4.964 juicios expertos"**.
+Es más honesto que el 4.964 pelado *y suena mejor*, porque explica que cada patrón recibió varios
+juicios independientes en vez de una etiqueta de un vistazo.
+
+⚠️ **Nunca publicar 3.204 como "síntesis"** ni **4.964 como "difractogramas"**: son recuentos crudos
+de filas que incluyen filas-muleta y juicios múltiples. Ver la auditoría completa en 3.1.
 
 #### Bloque 0.3 — Los tres pilares ✅
 
@@ -531,6 +611,14 @@ Contenido a extraer del notebook 06:
 📌 El error de unidades **×1000 en moduladores líquidos** pertenece a esta pantalla: se encontró
 mirando el dato, no modelando. Es una historia de EDA, no de ML.
 
+📌 **Bloque nuevo propuesto: "El embudo, y por qué contar filas no es una métrica".** Usar el
+diagrama de la sección 3.1: 2.167 síntesis → 1.879 PXRD → 1.877 etiquetados → 1.611 HTS → 1.516 en
+el dataset. Cada escalón con su motivo. Y el caso real del **2026-09-01**: un recuento crudo daba
+3.204 síntesis y 4.964 difractogramas, cifras infladas por 1.037 filas-muleta `PENDING_RECORD` y por
+tener varios juicios por patrón. **Ni una sola de esas filas llegó al modelo**, porque
+`v_ml_features` las excluye por diseño. Es el mejor argumento del portfolio a favor de tener una
+capa de vistas gobernada en vez de consultar las tablas a pelo.
+
 ---
 
 ### 🖥️ 05 · Modeling — *Entrenamiento y evaluación*
@@ -805,7 +893,7 @@ flowchart TD
 
 - **React/Tailwind** para la app pública. Streamlit no da el nivel visual necesario para una landing.
 - **Streamlit** se queda como herramienta interna (labeler y explorer), detrás de Zero Trust.
-  No desaparece: es lo que produjo las ~4.964 etiquetas.
+  No desaparece: es lo que produjo los 4.964 juicios sobre 1.877 difractogramas.
 - **FastAPI** como única puerta a la base de datos y a los modelos. El frontend nunca habla con
   PostgreSQL directamente.
 
@@ -833,7 +921,7 @@ Estas nueve decisiones bloquean contenido concreto. Ordenadas por lo que más fr
 
 | ID | Decisión | Bloquea | Recomendación |
 |---|---|---|---|
-| **D1** | ¿Qué significan exactamente los 4 KPIs? `pxrd_labels` tiene 4.964 filas, pero ¿son 4.964 difractogramas o hay varios juicios por fichero? Y `synthesis_experiments` incluye placeholders | Bloque 0.2 | Publicar **difractogramas distintos etiquetados** y **síntesis reconciliadas**, no filas brutas. Definirlo como consulta SQL fija |
+| ~~**D1**~~ | ~~¿Qué significan exactamente los 4 KPIs?~~ | — | ✅ **CERRADA 2026-09-01.** Auditada la BD: 2.167 síntesis reales, 1.877 difractogramas etiquetados con 4.964 juicios, 0 placeholders en el ML. Consultas congeladas en 3.1 y en el bloque 0.2 |
 | **D2** | ¿Cómo se enseñan los notebooks? Descarga / visor Jupyter / PDF embebido | Bloque 3.5 | **HTML estático pre-renderizado** (`nbconvert --to html`) embebido: se ve el código y las figuras, no se descarga nada, y permite auditar celda por celda antes de publicar |
 | **D3** | ¿Se abre el webhook n8n al público? ¿Con generador de ficheros sintéticos? | Bloque 2.4 | Sí, pero **solo generador sintético** — nada de subida de ficheros del visitante. Sandbox aparte, purga cada 24 h, rate limit |
 | **D4** | ¿Se degrada el modelo público para proteger la IP? | Pantalla 06 entera | Servir el modelo `actionable` (LightGBM, F1 0.413) con el espacio de ligandos reducido a familias genéricas. **Requiere una sesión dedicada** |
@@ -841,7 +929,7 @@ Estas nueve decisiones bloquean contenido concreto. Ordenadas por lo que más fr
 | **D6** | ¿Qué parte de `design_system/` se publica en GitHub? | Próximo commit | Publicar `style_guide.yaml`, `README.md` y assets del logo. Mover `.docx`, moodboards y audio a `methodology/` o añadirlos a `.gitignore` |
 | **D7** | ¿Audio ambiental sí o no? | Widget global | Sí, pero apagado por defecto y con estado persistente. Ya hay 3 pistas en `assets/audio/` |
 | **D8** | ¿Se traduce la app o se queda en inglés? | Todo el contenido | **Solo inglés.** Los textos ya escritos están en inglés y el público objetivo es internacional. Traducir duplica el mantenimiento |
-| **D9** | ¿Qué se hace con el `XX` sin rellenar del pilar 2, y con `phpAdmin`? | Bloque 0.3 y 0.6 | Correcciones directas: el número real de D1, y `pgAdmin` |
+| **D9** | ¿Qué se hace con el `XX` sin rellenar del pilar 2, y con `phpAdmin`? | Bloque 0.3 y 0.6 | Correcciones directas: `XX` → **1.877**, y `phpAdmin` → **pgAdmin** |
 
 ---
 
@@ -925,3 +1013,4 @@ flowchart LR
 | Fecha | Cambio |
 |---|---|
 | 2026-09-01 | Documento creado. Unifica `Guion_web.docx`, `GUIÓN_PANTALLAS_WEB.md`, `ROADMAP_IDENTIDAD_VISUAL_Y_APP.md` y `style_guide.yaml`. Se detectan y resuelven 7 incoherencias (sección 3) y se abren 9 decisiones (sección 9) |
+| 2026-09-01 | **Auditoría de recuentos y cierre de D1.** Verificado que los números altos eran error de recuento, no corrupción: 2.167 síntesis reales + 1.037 filas-muleta `PENDING_RECORD`; 1.877 difractogramas con 4.964 juicios. Confirmado que **0 placeholders llegan a `v_ml_features`** — el ML está limpio. Sección 3.1 reescrita con el embudo verificado y KPIs con consulta congelada |
