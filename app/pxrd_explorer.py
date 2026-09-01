@@ -94,7 +94,7 @@ C_PEAK = '#c0392b'
 C_INST = '#b0bec5'
 C_REF = '#9e9e9e'          # the defaults, drawn underneath as the term of comparison
 
-XLAB = r'$2\theta$ (degrees, Cu K$\alpha_1$)'
+XLAB = r'2$\theta$ (degrees, Cu K$\alpha_1$)'
 
 CLASSES = ['AMORFO', 'INCIPIENTE', 'CRISTALINO', 'MEZCLA', 'SIN_MUESTRA']
 SUBTYPES = ['HALO_DOMINANTE', 'PICOS_ANCHOS', 'CRISTALITO_PEQUENO']
@@ -387,7 +387,7 @@ def plot_pattern(x, y, params, d, show_reference, d_ref):
 
     if peaks is not None and len(peaks):
         ax.plot(x[peaks], normalized[peaks], 'v', ms=6, color=C_PEAK, zorder=5,
-                label='%d reflections (k=%.2f$\\sigma$)' % (len(peaks), d['peak_sigma_k']))
+                label=r'%d reflections (k=%.2f$\sigma$)' % (len(peaks), d['peak_sigma_k']))
 
     ax.set_xlim(x[0], x[-1])
     ax.set_ylim(0, float(np.max(normalized)) * 1.10)
@@ -421,10 +421,10 @@ def plot_threshold(x, y, params, d):
     ax.plot(x, narrow, lw=0.75, color=C_RAW)
     ax.axhline(3 * noise, color=C_CRYS, ls='--', lw=1.3, label=r'3$\sigma$ (single test)')
     ax.axhline(k_auto * noise, color='#7e57c2', ls='-.', lw=1.3,
-               label='%.2f$\\sigma$ (calibrated)' % k_auto)
+               label=r'%.2f$\sigma$ (calibrated)' % k_auto)
     if abs(k_used - k_auto) > 1e-6:
         ax.axhline(k_used * noise, color=C_PEAK, ls=':', lw=1.6,
-                   label='%.2f$\\sigma$ (in use)' % k_used)
+                   label=r'%.2f$\sigma$ (in use)' % k_used)
     peaks, _fw = detect_peaks_poisson(x, narrow, noise, k_sigma=k_used)
     if peaks.size:
         ax.plot(x[peaks], narrow[peaks], 'v', ms=6, color=C_PEAK)
