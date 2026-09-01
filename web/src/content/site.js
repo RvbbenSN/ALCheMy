@@ -11,9 +11,12 @@
 export const SITE = {
   name: 'ALCheMy',
   tagline: 'Autonomous Lab for Chemistry, Materials & In-Silico Synthesis',
-  github: 'https://github.com/RvbbenSN/ALCheMy',
-  linkedin: 'https://www.linkedin.com/',
-  cv: '/cv/ruben-serrano-cv.pdf',
+  repo: 'https://github.com/RvbbenSN/ALCheMy',
+  github: 'https://github.com/RvbbenSN',
+  linkedin: 'https://www.linkedin.com/in/rubén-serrano-nieto',
+  orcid: 'https://orcid.org/0000-0002-7785-0615',
+  email: 'rubbenserrano@gmail.com',
+  cv: '/ruben-serrano-nieto-resume.pdf',
 }
 
 /* Las 9 pestanas. El orden es la narrativa CRISP-DM y no debe reordenarse
@@ -33,13 +36,18 @@ export const SCREENS = [
 /* KPIs: valores auditados el 2026-09-01 contra la base de datos.
    En produccion los sirve GET /api/v1/kpis; estos son el fallback. */
 export const KPIS = [
-  { value: '2,167', label: 'Syntheses performed', note: 'Excludes placeholder rows' },
-  { value: '1,877', label: 'Hand-labeled diffractograms', note: '4,964 expert judgements' },
-  { value: '29', label: 'Descriptors per pattern', note: 'Extracted from raw signal' },
-  { value: '87,765', label: 'Literature chunks vectorized', note: 'From 956 documents' },
+  { value: '2,167', label: 'Syntheses performed', note: 'Five years at the bench' },
+  { value: '1,877', label: 'Diffractograms labelled by hand', note: 'The ground truth the model learns from' },
+  { value: '2×', label: 'Better than chance at predicting crystallinity', note: 'Macro F1 0.52 against a 0.26 baseline' },
+  { value: '87,765', label: 'Literature passages vectorised', note: '956 papers, powering the RAG assistant' },
 ]
 
 /* FINAL — texto ya redactado por Ruben. */
+/* Intro a los tres pilares. Faltaba: se soltaban de golpe sin decir por que son
+   tres ni que relacion tienen entre si. */
+export const PILLARS_INTRO =
+  'The platform is built in three layers, and they are meant to be read in order. The first gets the data in and keeps it trustworthy. The second learns from it. The third puts what the field already knows next to what the laboratory has measured. Each one only makes sense because the one before it exists.'
+
 export const PILLARS = [
   {
     key: 'ingestion',
@@ -54,7 +62,7 @@ export const PILLARS = [
   },
   {
     key: 'ml',
-    title: 'Predictive Digital Twin & Governed Machine Learning',
+    title: 'Digital Twin & Machine Learning',
     subtitle: 'From raw diffraction to a synthesis recommendation',
     points: [
       'Raw powder diffraction patterns are treated with arPLS to isolate baseline drift while preserving genuine amorphous halos. A 3-sigma Poisson noise model extracts a vector of 29 descriptors.',
@@ -65,7 +73,7 @@ export const PILLARS = [
   },
   {
     key: 'rag',
-    title: 'IP-Shielded Graph-Augmented Hybrid RAG',
+    title: 'Graph-Augmented Hybrid RAG',
     subtitle: 'A co-pilot that cites three sources of truth',
     points: [
       'A vectorized corpus powered by pgvector indexes 956 peer-reviewed papers and patents.',
@@ -82,11 +90,12 @@ export const STACK = [
   ['VS Code', 'Antigravity', 'Claude Code', 'Gemini', 'Ollama', 'Cloudflare', 'Slack'],
 ]
 
-/* FINAL — bio corta del guion. */
+/* Bio corta. Reescrita a partir del resumen de LinkedIn y del CV, para que
+   suene a como Ruben se presenta y no a eslogan. */
 export const BIO_SHORT = [
-  "Hi! I'm Rubén, a PhD in Advanced Chemistry turned Data Science and AI enthusiast.",
-  'For over five years I worked in the laboratory synthesizing new functional materials for sustainability challenges. During thousands of hours at the bench I realized something essential: experiments generate massive amounts of rich data, yet too often it remains trapped in lab notebooks or local disks.',
-  'That sparked a genuine idea: bridging the gap between hands-on experimental chemistry and the data lifecycle. I specialize in turning laboratory observations into automated pipelines and machine learning models that drive smarter, faster scientific decisions.',
+  'My professional focus lies at the intersection of experimental chemistry, data science and artificial intelligence: turning complex scientific data into reproducible pipelines, predictive models and decision-support tools.',
+  'As a PhD in Advanced Chemistry I drove the end-to-end development of metal-organic frameworks for sustainability challenges — green hydrogen production, CO₂ valorisation, water treatment, biopolymers. That work meant generating, processing and analysing large datasets from a dozen characterisation techniques, and it is where the problem this platform solves first became obvious.',
+  'ALCheMy is that analytical mindset moved into the digital domain: Python, SQL, machine learning and generative AI applied to the same chemistry, with the aim of accelerating materials design and extracting decisions from data that used to sit in a folder.',
 ]
 
 export const BIO_PULLQUOTE =

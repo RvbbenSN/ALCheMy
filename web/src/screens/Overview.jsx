@@ -1,7 +1,33 @@
 import { Link } from 'react-router-dom'
-import { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, SCREENS } from '../content/site.js'
+import {
+  Atom,
+  BarChart3,
+  Bot,
+  Compass,
+  Database,
+  FlaskConical,
+  LineChart,
+  Microscope,
+  UserRound,
+} from 'lucide-react'
+import { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, PILLARS_INTRO, SCREENS } from '../content/site.js'
 import { Button, Card, KpiCard, SectionTitle, Term } from '../components/ui.jsx'
 import StackGrid from '../components/StackGrid.jsx'
+
+/* Un icono por pestana. Representan la fase, no la decoran: una brujula para
+   el planteamiento, una base de datos para la recoleccion, un matraz para la
+   preparacion, y asi. */
+const SCREEN_ICON = {
+  '00': Compass,
+  '01': Atom,
+  '02': Database,
+  '03': FlaskConical,
+  '04': BarChart3,
+  '05': LineChart,
+  '06': Microscope,
+  '07': Bot,
+  '08': UserRound,
+}
 
 export default function Overview() {
   return (
@@ -28,9 +54,8 @@ export default function Overview() {
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and
-          governed <Term k="MLOps" />. It accelerates the discovery of advanced hybrid coordination
-          polymers — <Term k="MOF">metal-organic frameworks</Term> — replacing trial-and-error
-          chemistry with guided in-silico screening.
+          governed <Term k="MLOps" />. It accelerates the discovery of advanced porous materials,
+          replacing trial-and-error chemistry with guided in-silico screening.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button href="/the-model">Try the in-silico simulator</Button>
@@ -55,6 +80,9 @@ export default function Overview() {
       {/* --- Tres pilares --- */}
       <section>
         <SectionTitle eyebrow="What holds it up">Three synchronized pillars</SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          {PILLARS_INTRO}
+        </p>
         <div className="grid gap-6 lg:grid-cols-3">
           {PILLARS.map((p) => (
             <Card key={p.key} accent>
@@ -85,20 +113,31 @@ export default function Overview() {
           to say, and only then what a model could learn from it.
         </p>
         <ol className="grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {SCREENS.map((s) => (
-            <li key={s.id}>
-              <Link to={`/${s.slug}`} className="block no-underline">
-                <Card className="h-full transition-transform hover:-translate-y-1">
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {s.id} · {s.crisp}
-                  </div>
-                  <div className="mt-1 text-base" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                    {s.title}
-                  </div>
-                </Card>
-              </Link>
-            </li>
-          ))}
+          {SCREENS.map((s) => {
+            const Icon = SCREEN_ICON[s.id]
+            return (
+              <li key={s.id}>
+                <Link to={`/${s.slug}`} className="block no-underline">
+                  <Card className="h-full transition-transform hover:-translate-y-1">
+                    <div className="flex items-start gap-3">
+                      <Icon size={22} aria-hidden style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: 2 }} />
+                      <div>
+                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {s.id} · {s.crisp}
+                        </div>
+                        <div
+                          className="mt-1 text-base"
+                          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+                        >
+                          {s.title}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              </li>
+            )
+          })}
         </ol>
       </section>
 

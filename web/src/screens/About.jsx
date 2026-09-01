@@ -1,71 +1,111 @@
-import { SITE } from '../content/site.js'
-import { Badge, Button, Card, Placeholder, SectionTitle } from '../components/ui.jsx'
+import { Contact, Download, ExternalLink, Mail } from 'lucide-react'
+import SOCIAL from '../data/social_icons.json'
+import { BIO_SHORT, SITE } from '../content/site.js'
+import {
+  EDUCATION,
+  EXPERIENCE,
+  HEADLINE,
+  METRICS,
+  OUTREACH,
+  PROJECTS,
+  PUBLICATIONS,
+  SKILLS,
+} from '../content/about.js'
+import { Badge, Card, SectionTitle } from '../components/ui.jsx'
 
-const TIMELINE = [
-  { when: '2015 – 2020', what: 'BSc in Chemistry', where: 'Spain', note: "Thesis 9.3/10" },
-  { when: '2020 – 2021', what: 'MSc in Chemical Science & Technology', where: 'Spain', note: 'Thesis 9.4/10 · overall 8.61/10' },
-  {
-    when: '2021 – 2025',
-    what: 'PhD in Advanced Chemistry — outstanding cum laude, International Mention',
-    where: 'Universidad Complutense de Madrid · IMDEA Energy (APMU)',
-    note: 'Supervised by Dr. Patricia Horcajada. Rational design of photo/electroactive, hydrolytically stable phosphonate MOFs.',
-  },
-  {
-    when: '2023',
-    what: '14-week research secondment',
-    where: 'University of Glasgow, UK',
-    note: 'With Prof. Pablo Docampo. Bismuth perovskitoids as interlayers in lead-based solar cells; uncovered unexpected memristive behaviour.',
-  },
-]
+function Tag({ children, tone = 'line' }) {
+  return (
+    <span
+      className="rounded-[var(--radius-badge)] px-2 py-1 text-xs"
+      style={{
+        border: `1.5px solid ${tone === 'accent' ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+        color: tone === 'accent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+      }}
+    >
+      {children}
+    </span>
+  )
+}
 
-const METRICS = [
-  { v: '>2,000', l: 'Experiments performed' },
-  { v: '12', l: 'New crystal structures solved' },
-  { v: '6', l: 'Publications (+1 draft)' },
-  { v: '11', l: 'Conference communications' },
-]
+/* Marca real donde simple-icons la tiene. LinkedIn no esta ahi —la retiraron a
+   peticion de la propia empresa— asi que ese boton usa un icono neutro en vez
+   de reproducir su logotipo. */
+function BrandIcon({ name, size = 16 }) {
+  const d = SOCIAL[name]
+  if (!d) return null
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden style={{ width: size, height: size, fill: 'currentColor' }}>
+      <path d={d} />
+    </svg>
+  )
+}
 
-const PAPERS = [
-  {
-    title: 'IEF-8: a Cu-based phosphonate framework outperforming MIL-125(Ti)-NH₂ in green hydrogen production',
-    where: 'Chemistry of Materials, 2023, 35, 11, 4211–4219',
-    tag: 'IF 7.2 · Q1',
-  },
-  {
-    title: 'Bismuth-based perovskitoid interlayers in lead perovskite solar cells',
-    where: 'ACS Omega, 2025, 10, 43, 52067–52075',
-    tag: 'IF 4.3 · Q1',
-  },
-]
+function LinkButton({ href, icon: Icon, brand, children, primary = false, download = false }) {
+  return (
+    <a
+      href={href}
+      target={download ? undefined : '_blank'}
+      rel="noopener noreferrer"
+      download={download || undefined}
+      className="inline-flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm no-underline"
+      style={{
+        border: `2.5px solid ${primary ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+        background: primary ? 'var(--accent-primary)' : 'transparent',
+        color: primary ? 'var(--surface)' : 'var(--text-primary)',
+        boxShadow: primary ? 'var(--shadow-button)' : 'none',
+        fontFamily: 'var(--font-heading)',
+      }}
+    >
+      {brand ? <BrandIcon name={brand} /> : <Icon size={16} aria-hidden />}
+      {children}
+    </a>
+  )
+}
 
 export default function About() {
   return (
     <div className="flex flex-col gap-16">
+      {/* --- cabecera --- */}
       <section>
         <Badge tone="accent">08 · About</Badge>
         <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          Rubén Serrano
+          Rubén Serrano Nieto
         </h1>
-        <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          Materials chemist turned data scientist. Five years at the bench, and a conviction that the data
-          those years produced deserved better than a folder on a local disk.
+        <p className="mt-3 text-lg" style={{ color: 'var(--accent-secondary-text)', fontFamily: 'var(--font-heading)' }}>
+          {HEADLINE}
         </p>
+        <div className="mt-6 max-w-3xl">
+          {BIO_SHORT.map((p, i) => (
+            <p key={i} className={i ? 'mt-4' : ''} style={{ color: 'var(--text-secondary)' }}>
+              {p}
+            </p>
+          ))}
+        </div>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button href={SITE.cv}>Download CV</Button>
-          <Button href={SITE.github} variant="secondary">
-            GitHub
-          </Button>
-          <Button href={SITE.linkedin} variant="secondary">
+          <LinkButton href={SITE.cv} icon={Download} primary download>
+            Download CV
+          </LinkButton>
+          <LinkButton href={SITE.linkedin} icon={Contact}>
             LinkedIn
-          </Button>
+          </LinkButton>
+          <LinkButton href={SITE.github} brand="github">
+            GitHub
+          </LinkButton>
+          <LinkButton href={SITE.orcid} brand="orcid">
+            ORCiD
+          </LinkButton>
+          <LinkButton href={`mailto:${SITE.email}`} icon={Mail}>
+            Email
+          </LinkButton>
         </div>
       </section>
 
+      {/* --- cifras --- */}
       <section>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
           {METRICS.map((m) => (
             <Card key={m.l} accent className="text-center">
-              <div className="text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}>
+              <div className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}>
                 {m.v}
               </div>
               <div className="mt-2 text-xs uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
@@ -76,23 +116,58 @@ export default function About() {
         </div>
       </section>
 
+      {/* --- experiencia --- */}
       <section>
-        <SectionTitle eyebrow="Trajectory">Education &amp; research</SectionTitle>
+        <SectionTitle eyebrow="Experience">Where the chemistry happened</SectionTitle>
         <ol className="flex list-none flex-col gap-4 p-0">
-          {TIMELINE.map((t) => (
-            <li key={t.when}>
+          {EXPERIENCE.map((e) => (
+            <li key={e.when}>
               <Card>
                 <div className="mono text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  {t.when}
+                  {e.when}
                 </div>
-                <h3 className="mt-1 text-lg">{t.what}</h3>
+                <h3 className="mt-1 text-lg">{e.what}</h3>
                 <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {t.where}
+                  {e.where}
                 </div>
-                {t.note && (
-                  <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    {t.note}
-                  </p>
+                <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {e.points.map((p, i) => (
+                    <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}>
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* --- formacion --- */}
+      <section>
+        <SectionTitle eyebrow="Education">Training</SectionTitle>
+        <ol className="flex list-none flex-col gap-4 p-0">
+          {EDUCATION.map((e) => (
+            <li key={e.when}>
+              <Card>
+                <div className="mono text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+                  {e.when}
+                </div>
+                <h3 className="mt-1 text-lg">{e.what}</h3>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {e.where}
+                </div>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {e.detail}
+                </p>
+                {e.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {e.tags.map((t) => (
+                      <Tag key={t} tone="accent">
+                        {t}
+                      </Tag>
+                    ))}
+                  </div>
                 )}
               </Card>
             </li>
@@ -100,23 +175,91 @@ export default function About() {
         </ol>
       </section>
 
+      {/* --- publicaciones --- */}
       <section>
-        <SectionTitle eyebrow="Selected work">Publications</SectionTitle>
+        <SectionTitle eyebrow="Scientific production">Publications</SectionTitle>
         <div className="grid gap-4 md:grid-cols-2">
-          {PAPERS.map((p) => (
-            <Card key={p.title} accent>
-              <Badge tone="info">{p.tag}</Badge>
+          {PUBLICATIONS.map((p) => (
+            <Card key={p.title} accent={Boolean(p.note)}>
+              <div className="flex flex-wrap items-center gap-2">
+                <Tag tone="accent">{p.tag}</Tag>
+                <span className="mono text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {p.year}
+                </span>
+              </div>
               <h3 className="mt-3 text-base">{p.title}</h3>
-              <div className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                {p.where}
+              <div className="mt-1 text-sm italic" style={{ color: 'var(--text-muted)' }}>
+                {p.journal}
+              </div>
+              {p.note && (
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {p.note}
+                </p>
+              )}
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* --- proyectos --- */}
+      <section>
+        <SectionTitle eyebrow="Funded research">Competitive R&amp;D projects</SectionTitle>
+        <Card>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Six competitive projects at European, national and regional level, contributing to data
+            analysis and technical reporting.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {PROJECTS.map((p) => (
+              <Tag key={p} tone="accent">
+                {p}
+              </Tag>
+            ))}
+          </div>
+        </Card>
+      </section>
+
+      {/* --- competencias --- */}
+      <section>
+        <SectionTitle eyebrow="Skills">What the toolbox holds</SectionTitle>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {SKILLS.map((s) => (
+            <Card key={s.group}>
+              <h3 className="text-base">{s.group}</h3>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {s.items.map((i) => (
+                  <Tag key={i}>{i}</Tag>
+                ))}
               </div>
             </Card>
           ))}
         </div>
-        <div className="mt-4">
-          <Placeholder source="methodology/Profile.pdf">
-            Full publication list, funded projects and conference record pending layout.
-          </Placeholder>
+      </section>
+
+      {/* --- divulgacion --- */}
+      <section>
+        <SectionTitle eyebrow="Outreach">Writing for a wider audience</SectionTitle>
+        <div className="grid gap-4 md:grid-cols-3">
+          {OUTREACH.map((o) => (
+            <Card key={o.title}>
+              <div className="mono text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+                {o.when} · {o.where}
+              </div>
+              <h3 className="mt-2 text-base">{o.title}</h3>
+              {o.url && (
+                <a
+                  href={o.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1 text-sm no-underline"
+                  style={{ color: 'var(--accent-primary)' }}
+                >
+                  Read it
+                  <ExternalLink size={13} aria-hidden />
+                </a>
+              )}
+            </Card>
+          ))}
         </div>
       </section>
     </div>

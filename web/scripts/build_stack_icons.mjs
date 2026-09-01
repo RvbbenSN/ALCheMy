@@ -79,6 +79,24 @@ writeFileSync(
   'utf8',
 )
 
+// Iconos sociales, aparte del stack. LinkedIn no esta en simple-icons: lo
+// retiraron a peticion de la propia marca, asi que en la web se usa un icono
+// neutro en vez de reproducir su logotipo.
+const SOCIAL = [
+  ['siGithub', 'github'],
+  ['siOrcid', 'orcid'],
+]
+const social = {}
+for (const [key, name] of SOCIAL) {
+  if (si[key]?.path) social[name] = si[key].path
+}
+writeFileSync(
+  new URL('../src/data/social_icons.json', import.meta.url),
+  JSON.stringify(social, null, 1),
+  'utf8',
+)
+console.log(`escritos ${Object.keys(social).length} iconos sociales -> src/data/social_icons.json`)
+
 console.log(`escritos ${out.length} elementos (${out.filter((i) => i.path).length} con logotipo)`)
 if (noIcon.length) console.log(`sin marca, iran como etiqueta: ${noIcon.join(', ')}`)
 if (notFound.length) console.log(`AVISO, slug no encontrado: ${notFound.join(', ')}`)

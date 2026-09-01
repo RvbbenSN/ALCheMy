@@ -26,6 +26,71 @@ export default function DataCollection() {
         </p>
       </section>
 
+      {/* --- Que problema resuelve esto, antes de nada --- */}
+      <section>
+        <SectionTitle eyebrow="The problem">Why this exists</SectionTitle>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <p style={{ color: 'var(--text-secondary)' }}>
+              At the end of the previous screen the laboratory has thousands of instrument files spread
+              across network folders, written by nine different machines in nine different formats. None
+              of them knows which synthesis it belongs to, and nothing stops the same file being saved
+              twice under two names.
+            </p>
+            <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
+              What is needed is unglamorous and specific: <strong>a way to drop a file somewhere and have
+              it end up in a database, correctly attributed, without anyone retyping anything.</strong>
+            </p>
+          </Card>
+          <Card accent>
+            <h3 className="text-base">What the workflow guarantees</h3>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <li>
+                <strong>Attribution.</strong> Every measurement is linked to the synthesis it came from,
+                by sample code, and to the person who submitted it.
+              </li>
+              <li>
+                <strong>No duplicates.</strong> A cryptographic fingerprint of the file contents rejects
+                a second copy before it is parsed.
+              </li>
+              <li>
+                <strong>Uniform shape.</strong> Nine formats become one row shape, so a query can span
+                techniques without knowing anything about instruments.
+              </li>
+              <li>
+                <strong>A record of every decision.</strong> Accepted or rejected, with the reason, in an
+                audit table written by code and never by a language model.
+              </li>
+            </ul>
+          </Card>
+        </div>
+
+        <Card className="mt-4">
+          <h3 className="text-base">What this workflow deliberately does not do</h3>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            It ingests <em>measurements</em>, not <em>synthesis conditions</em>. Those arrive by a
+            separate route — a master spreadsheet transformed and merged into the database, covered on
+            the next screen. The two lanes write to the same tables and neither can overwrite the other,
+            which is why the merge is an upsert rather than a replace.
+          </p>
+        </Card>
+      </section>
+
+      {/* --- Que hay dentro del flujo, en una frase --- */}
+      <section>
+        <SectionTitle eyebrow="In one sentence">How it works</SectionTitle>
+        <Card accent>
+          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+            A file arrives by one of three routes. Its metadata is normalised and the sender checked
+            against a whitelist. Its fingerprint is taken and compared against what is already stored. It
+            is then routed by technique to one of three extraction strategies — a deterministic parser
+            for the seven formats that are well understood, an AI agent for the reports that only exist
+            as PDFs, and a vision agent that adds a description to microscopy images without ever
+            inventing a measurement. Whatever happens, the outcome is written to the audit log.
+          </p>
+        </Card>
+      </section>
+
       <section>
         <SectionTitle eyebrow="Start from the goal, not the flow">
           What a row must look like when it lands
@@ -38,36 +103,6 @@ export default function DataCollection() {
           set it.
         </p>
         <ScrollTable head={['Field', 'What it carries']} rows={ROW_SHAPE.map(([a, b]) => [<code key={a}>{a}</code>, b])} />
-      </section>
-
-      <section>
-        <SectionTitle eyebrow="Three details worth stopping on">Where the engineering shows</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card accent>
-            <Badge tone="amorphous">Bug found and fixed</Badge>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The <Term k="MD5" /> hash was being computed over the binary&rsquo;s metadata marker instead of
-              the file bytes. Every file therefore looked unique and the deduplication gate was silently
-              useless. Now it hashes the decoded bytes.
-            </p>
-          </Card>
-          <Card accent>
-            <Badge tone="info">Design decision</Badge>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Error handling used to be a sub-workflow called eleven times. It is now two shared nodes,
-              because a webhook response cannot be sent from outside the workflow that owns the trigger —
-              and because sharing nodes beats duplicating them.
-            </p>
-          </Card>
-          <Card accent>
-            <Badge tone="pure">Guardrail</Badge>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The vision agent <em>adds</em> a qualitative morphology description to the deterministic
-              parser output. It never replaces a measured value, and it never invents a numeric particle
-              size.
-            </p>
-          </Card>
-        </div>
       </section>
 
       <section>
