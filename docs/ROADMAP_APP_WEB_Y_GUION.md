@@ -961,11 +961,23 @@ flowchart LR
 **F0 — Cerrar decisiones** *(una sesión de conversación, sin código)*
 - [ ] Resolver D1–D9 y anotar la respuesta en la sección 9.
 
-**F1 — Redactar el contenido que falta** *(la pestaña 04 es la más urgente)*
-- [ ] Pantalla 04 (EDA) — escribir el guión desde el Notebook 06, punto 5.
-- [ ] Pantalla 05 (Modeling) — redactar con el tono "paper didáctico" pedido.
-- [ ] Pantalla 03 (ETL) — enumerar cada transformación del Notebook 01.
-- [ ] Corregir el `XX` y `phpAdmin`.
+**F1 — Redactar el contenido que falta** ✅ **COMPLETADA (2026-09-01)**
+- [x] Pantalla 04 (EDA) — escrita desde el Notebook 06 §5. Nueve bloques: el factor de confusión
+      con su tabla, el embudo, las cinco causas de ausentes, el desequilibrio 5,8:1, las variables
+      discretas de facto, las dos preguntas de la correlación, la vista bivariante, la fuga por
+      agrupamiento y el PCA como diagnóstico.
+- [x] Pantalla 05 (Modeling) — escrita desde §7 y §8 con el tono de paper didáctico: los 10
+      modelos con lo que asume cada uno, la validación agrupada, los dos modelos (completo y
+      accionable), las métricas, los 5 hallazgos, el análisis de errores y la lectura química por
+      bloques.
+- [x] Pantalla 03 (ETL) — escrita desde el Notebook 01 y §6: las 6 transformaciones del Excel con
+      sus fórmulas, el contrato del parser, los 7 defectos uno a uno, cero-frente-a-NULL, la
+      exclusión como etiqueta, el ácido tánico y la imputación comprobada.
+- [x] Corregido el `XX` (→ 1.877) y `phpAdmin` (→ pgAdmin).
+
+El contenido vive en `web/src/content/screens.js`, separado de los componentes. Lo que sigue
+marcado como `Pending copy` en esas tres pantallas ya **no es texto**, son **figuras y
+componentes interactivos** (gráfica de capas del PXRD, matriz de confusión, SHAP, proyección PCA).
 
 **F2 — Tokens ejecutables**
 - [ ] `scripts/build_design_tokens.py`: `style_guide.yaml` → `tokens.css` + `tailwind.config.js`.
@@ -1071,5 +1083,6 @@ Se usó la carpeta `docs/`, que llevaba vacía desde agosto, en vez de crear otr
 | Fecha | Cambio |
 |---|---|
 | 2026-09-01 | Documento creado. Unifica `Guion_web.docx`, `GUIÓN_PANTALLAS_WEB.md`, `ROADMAP_IDENTIDAD_VISUAL_Y_APP.md` y `style_guide.yaml`. Se detectan y resuelven 7 incoherencias (sección 3) y se abren 9 decisiones (sección 9) |
+| 2026-09-01 | **F1 completada.** Guión redactado de las pantallas 03 (ETL), 04 (EDA) y 05 (Modeling) desde los cuadernos 01 y 06, en `web/src/content/screens.js`. Lo que queda pendiente en esas pantallas ya no es texto sino figuras e interactivos |
 | 2026-09-01 | **Revisión de Rubén incorporada.** D2–D9 cerradas (sección 9). Nueva sección 11 con la organización pública/privada del repositorio: `design_system/` pasa a `.gitignore` y lo publicable cruza como artefacto generado. Frontend: **React desde cero**, descartado Lovable. Esqueleto de las 9 pantallas construido en `web/`, tokens generados con corrección de contraste WCAG, favicons desplegados. Detectado que `style_guide.yaml` no era YAML válido |
 | 2026-09-01 | **Auditoría de recuentos y cierre de D1.** Verificado que los números altos eran error de recuento, no corrupción: 2.167 síntesis reales + 1.037 filas-muleta `PENDING_RECORD`; 1.877 difractogramas con 4.964 juicios. Confirmado que **0 placeholders llegan a `v_ml_features`** — el ML está limpio. Sección 3.1 reescrita con el embudo verificado y KPIs con consulta congelada |
