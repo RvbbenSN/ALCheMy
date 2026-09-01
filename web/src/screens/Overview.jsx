@@ -7,6 +7,11 @@ export default function Overview() {
     <div className="flex flex-col gap-16">
       {/* --- Hero --- */}
       <section>
+        <span
+          className="logo-mark mb-6 block"
+          aria-hidden
+          style={{ width: 'clamp(72px, 12vw, 116px)', height: 'clamp(72px, 12vw, 116px)', color: 'var(--accent-primary)' }}
+        />
         <h1
           className="max-w-4xl text-4xl uppercase md:text-6xl"
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2.5px' }}

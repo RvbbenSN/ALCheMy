@@ -66,7 +66,14 @@ export default function Layout() {
         style={{ background: 'var(--surface-elevated)', borderBottom: '2.5px solid var(--surface-border)' }}
       >
         <div className="mx-auto flex max-w-[var(--content-max)] items-center gap-4 px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 no-underline">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 no-underline"
+            style={{ color: 'var(--accent-primary)' }}
+            aria-label="ALCheMy — home"
+          >
+            {/* El isotipo hereda el color por mask-image, asi que cambia solo con el tema. */}
+            <span className="logo-mark" aria-hidden style={{ width: '34px', height: '34px' }} />
             <span
               className="text-xl uppercase"
               style={{ fontFamily: 'var(--font-display)', letterSpacing: '2.5px', color: 'var(--text-primary)' }}
@@ -140,12 +147,23 @@ export default function Layout() {
         className="mt-16 px-4 py-8 text-xs"
         style={{ borderTop: '2.5px solid var(--surface-border)', color: 'var(--text-muted)' }}
       >
-        <div className="mx-auto flex max-w-[var(--content-max)] flex-col gap-2 md:flex-row md:justify-between">
-          <span>© {new Date().getFullYear()} Rubén Serrano · {SITE.tagline}</span>
-          <span>
-            Sample identifiers and unpublished ligand names shown on this site are pseudonymized. No raw
-            instrument data is served.
-          </span>
+        <div className="mx-auto flex max-w-[var(--content-max)] flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          {/* El lockup completo (isotipo + palabra) cabe aqui, donde hay espacio vertical. */}
+          <span
+            className="logo-lockup shrink-0"
+            aria-label="ALCheMy"
+            role="img"
+            style={{ width: '120px', height: '66px', color: 'var(--accent-primary)' }}
+          />
+          <div className="flex flex-col gap-2 md:text-right">
+            <span>
+              © {new Date().getFullYear()} Rubén Serrano · {SITE.tagline}
+            </span>
+            <span>
+              Sample identifiers and unpublished ligand names shown on this site are pseudonymized. No raw
+              instrument data is served.
+            </span>
+          </div>
         </div>
       </footer>
 

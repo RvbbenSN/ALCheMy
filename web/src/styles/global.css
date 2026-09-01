@@ -31,34 +31,58 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--bg);
 }
 
+/* --------------------------------------------------------------------------
+   El campo estelar.
+
+   Va como `background-image` del propio body y no como un pseudo-elemento con
+   z-index negativo: un ::before detras del body se pinta **por debajo del
+   background-color del body**, asi que el fondo tapaba las estrellas y el
+   efecto no se veia nunca. Una background-image siempre pinta por encima del
+   background-color del mismo elemento, asi que no hay forma de que se pierda.
+
+   Dos capas con teselas de distinto tamano dan sensacion de profundidad sin
+   coste: los puntos no coinciden nunca porque 230 y 370 no comparten divisores
+   pequenos, asi que el patron tarda mucho en repetirse a la vista.
+   -------------------------------------------------------------------------- */
 body {
   margin: 0;
-  background-color: var(--bg);
   color: var(--text-primary);
   font-family: var(--font-body);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+
+  background-color: var(--bg);
+  background-image:
+    /* resplandor superior, muy tenue, para que la pagina no sea plana */
+    radial-gradient(120% 70% at 50% -10%, var(--accent-glow) 0%, transparent 60%),
+    /* capa cercana: puntos algo mayores */
+    radial-gradient(circle 1.6px at 14% 18%, var(--star-1) 99%, transparent 100%),
+    radial-gradient(circle 1.6px at 71% 12%, var(--star-2) 99%, transparent 100%),
+    radial-gradient(circle 1.4px at 38% 74%, var(--star-3) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 88% 61%, var(--star-1) 99%, transparent 100%),
+    /* capa lejana: puntos finos y mas densos */
+    radial-gradient(circle 1px at 6% 44%, var(--star-2) 99%, transparent 100%),
+    radial-gradient(circle 1px at 55% 33%, var(--star-1) 99%, transparent 100%),
+    radial-gradient(circle 1px at 27% 91%, var(--star-3) 99%, transparent 100%),
+    radial-gradient(circle 1px at 79% 83%, var(--star-2) 99%, transparent 100%),
+    radial-gradient(circle 1px at 94% 26%, var(--star-1) 99%, transparent 100%);
+  background-size:
+    100% 100%,
+    370px 370px, 370px 370px, 370px 370px, 370px 370px,
+    230px 230px, 230px 230px, 230px 230px, 230px 230px, 230px 230px;
+  background-attachment: fixed;
+  background-repeat: no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat;
 }
 
-/* Campo estelar sutil, el "galactico" del style guide.
-   Va en un pseudo-elemento fijo para que no repinte al hacer scroll. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1px 1px at 12% 22%, var(--star-1), transparent),
-    radial-gradient(1px 1px at 68% 14%, var(--star-2), transparent),
-    radial-gradient(1px 1px at 34% 71%, var(--star-3), transparent),
-    radial-gradient(1px 1px at 84% 58%, var(--star-1), transparent),
-    radial-gradient(1px 1px at 52% 41%, var(--star-2), transparent),
-    radial-gradient(1px 1px at 22% 88%, var(--star-3), transparent);
-  background-size: 340px 340px;
-  opacity: 0.5;
+/* En modo oscuro las estrellas son blancas y oro sobre vino: pueden brillar
+   mas sin resultar ruidosas. En claro son borgonia sobre champan y hay que
+   contenerlas, o parecen suciedad en el papel. */
+[data-theme='dark'] body,
+[data-theme='ultra'] body {
+  background-blend-mode: normal;
 }
 
 h1,
@@ -84,6 +108,36 @@ kbd,
 :focus-visible {
   outline: 3px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   El logo.
+
+   Se pinta con `mask-image` en vez de <img>, para que herede el color del tema
+   desde una sola fuente. Un <img> con un SVG externo no puede tomar
+   `currentColor`, asi que la alternativa habria sido mantener un fichero por
+   color y por tema — seis ficheros que se desincronizan.
+   -------------------------------------------------------------------------- */
+.logo-mark,
+.logo-lockup {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.logo-mark {
+  -webkit-mask-image: url('/logo-mark.svg');
+  mask-image: url('/logo-mark.svg');
+}
+
+.logo-lockup {
+  -webkit-mask-image: url('/logo-lockup.svg');
+  mask-image: url('/logo-lockup.svg');
 }
 
 @media (prefers-reduced-motion: reduce) {
