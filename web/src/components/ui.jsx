@@ -6,6 +6,37 @@ import { GLOSSARY } from '../content/site.js'
    Todas leen los tokens, ninguna trae colores propios.
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   Rich — resalta en negrita lo que va entre **dobles asteriscos**.
+
+   El contenido de la web vive como cadenas de texto plano en content/, para que
+   se pueda reescribir una frase sin tocar JSX ni arriesgarse a romper el
+   maquetado. Pero el texto tecnico se lee mucho mejor con las palabras clave
+   destacadas, y meter <strong> en las cadenas obligaria a convertirlas en JSX.
+
+   Este componente resuelve las dos cosas: las cadenas siguen siendo texto, y
+   marcar una palabra clave es escribir **asi**. No es Markdown completo a
+   proposito — solo negrita — porque un parser mas ambicioso invita a meter
+   maquetado en el contenido, que es justo lo que se quiere evitar.
+   -------------------------------------------------------------------------- */
+export function Rich({ children }) {
+  if (typeof children !== 'string') return children
+  const parts = children.split(/\*\*(.+?)\*\*/g)
+  return (
+    <>
+      {parts.map((p, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+            {p}
+          </strong>
+        ) : (
+          p
+        ),
+      )}
+    </>
+  )
+}
+
 export function Card({ children, className = '', accent = false, as: Tag = 'div' }) {
   return (
     <Tag

@@ -9,8 +9,9 @@ import {
   MODEL_TWO,
   MODEL_VALIDATION,
 } from '../content/screens.js'
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle } from '../components/ui.jsx'
+import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
+import NotebookFigure from '../components/NotebookFigure.jsx'
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -67,9 +68,17 @@ export default function Modeling() {
       <section>
         <SectionTitle eyebrow="Experimental design">Ten models, not one</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          {MODEL_LINEUP.intro}
+          <Rich>{MODEL_LINEUP.intro}</Rich>
         </p>
         <ScrollTable head={MODEL_LINEUP.tableHead} rows={MODEL_LINEUP.tableRows} />
+        <div className="mt-6">
+          <NotebookFigure
+            src="nb06-09.png"
+            alt="Comparison of the ten models by macro F1 and MCC, high-throughput syntheses only"
+            caption="All ten compared under the same grouped cross-validation. The baseline is the bar everything else has to clear — and Naive Bayes does not clear it."
+            source="notebook 06 §8"
+          />
+        </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
           Every model that supports it carries balanced class weights, which offsets the 5.8:1 imbalance
           by penalising errors on the minority classes more heavily.
@@ -78,35 +87,35 @@ export default function Modeling() {
 
       {/* --- Validacion --- */}
       <section>
-        <SectionTitle eyebrow="Validation">{MODEL_VALIDATION.title}</SectionTitle>
+        <SectionTitle eyebrow="Validation"><Rich>{MODEL_VALIDATION.title}</Rich></SectionTitle>
         <Card accent>
-          <p style={{ color: 'var(--text-secondary)' }}>{MODEL_VALIDATION.body}</p>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{MODEL_VALIDATION.body}</Rich></p>
         </Card>
       </section>
 
       {/* --- Dos modelos --- */}
       <section>
-        <SectionTitle eyebrow="A criticism of the problem, not the execution">{MODEL_TWO.title}</SectionTitle>
-        <Pullquote>{MODEL_TWO.objection}</Pullquote>
+        <SectionTitle eyebrow="A criticism of the problem, not the execution"><Rich>{MODEL_TWO.title}</Rich></SectionTitle>
+        <Pullquote><Rich>{MODEL_TWO.objection}</Rich></Pullquote>
         <p className="max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          {MODEL_TWO.body}
+          <Rich>{MODEL_TWO.body}</Rich>
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Card accent>
             <Badge tone="info">Full model</Badge>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {MODEL_TWO.full}
+              <Rich>{MODEL_TWO.full}</Rich>
             </p>
           </Card>
           <Card accent>
             <Badge tone="pure">Actionable model</Badge>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {MODEL_TWO.actionable}
+              <Rich>{MODEL_TWO.actionable}</Rich>
             </p>
           </Card>
         </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-          {MODEL_TWO.note}
+          <Rich>{MODEL_TWO.note}</Rich>
         </p>
       </section>
 
@@ -115,7 +124,7 @@ export default function Modeling() {
         <SectionTitle eyebrow="Evaluation">The metrics, and why accuracy misleads here</SectionTitle>
         <ScrollTable head={MODEL_METRICS.tableHead} rows={MODEL_METRICS.tableRows} />
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-          {MODEL_METRICS.note}
+          <Rich>{MODEL_METRICS.note}</Rich>
         </p>
       </section>
 
@@ -126,15 +135,15 @@ export default function Modeling() {
           head={['Model', 'Algorithm', 'F1 macro', 'Size', 'Status']}
           rows={MODELS.map((m) => [
             <span key={m.name}>
-              <code>{m.name}</code>
+              <code><Rich>{m.name}</Rich></code>
               <br />
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em' }}>{m.note}</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em' }}><Rich>{m.note}</Rich></span>
             </span>,
             m.algo,
             m.f1,
             m.size,
             <Badge key="s" tone={m.status === 'INVALID' ? 'amorphous' : 'pure'}>
-              {m.status}
+              <Rich>{m.status}</Rich>
             </Badge>,
           ])}
         />
@@ -155,9 +164,9 @@ export default function Modeling() {
                     {i + 1}
                   </span>
                   <div>
-                    <h3 className="text-base">{f.title}</h3>
+                    <h3 className="text-base"><Rich>{f.title}</Rich></h3>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {f.body}
+                      <Rich>{f.body}</Rich>
                     </p>
                     {f.caveat && (
                       <p
@@ -168,7 +177,7 @@ export default function Modeling() {
                           color: 'var(--text-secondary)',
                         }}
                       >
-                        {f.caveat}
+                        <Rich>{f.caveat}</Rich>
                       </p>
                     )}
                   </div>
@@ -181,46 +190,51 @@ export default function Modeling() {
 
       {/* --- Errores --- */}
       <section>
-        <SectionTitle eyebrow="Error analysis">{MODEL_ERRORS.title}</SectionTitle>
+        <SectionTitle eyebrow="Error analysis"><Rich>{MODEL_ERRORS.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          {MODEL_ERRORS.intro}
+          <Rich>{MODEL_ERRORS.intro}</Rich>
         </p>
         <ScrollTable head={MODEL_ERRORS.tableHead} rows={MODEL_ERRORS.tableRows} />
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Card>
             <Badge tone="pure">As hoped</Badge>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {MODEL_ERRORS.amorphous}
+              <Rich>{MODEL_ERRORS.amorphous}</Rich>
             </p>
           </Card>
           <Card>
             <Badge tone="amorphous">The main weakness</Badge>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {MODEL_ERRORS.crystalline}
+              <Rich>{MODEL_ERRORS.crystalline}</Rich>
             </p>
           </Card>
         </div>
-        <Pullquote tone="incipient">{MODEL_ERRORS.usage}</Pullquote>
-        <Placeholder source="notebooks/06 (section 8.3)">
-          Interactive confusion matrix pending, normalised by true class.
-        </Placeholder>
+        <div className="my-6">
+          <NotebookFigure
+            src="nb06-10.png"
+            alt="Confusion matrix of the Random Forest model on held-out plates, as counts and row-normalised"
+            caption="Left, raw counts; right, normalised by true class so each row reads as recall. The diagonal is where the model is right — and the crystalline row is where it is weakest."
+            source="notebook 06 §8.3"
+          />
+        </div>
+        <Pullquote tone="incipient"><Rich>{MODEL_ERRORS.usage}</Rich></Pullquote>
       </section>
 
       {/* --- Lectura quimica --- */}
       <section>
-        <SectionTitle eyebrow="Interpretation">{MODEL_CHEMISTRY.title}</SectionTitle>
+        <SectionTitle eyebrow="Interpretation"><Rich>{MODEL_CHEMISTRY.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {MODEL_CHEMISTRY.why}
+          <Rich>{MODEL_CHEMISTRY.why}</Rich>
         </p>
         <div className="grid gap-4 lg:grid-cols-3">
           {MODEL_CHEMISTRY.blocks.map((b) => (
             <Card key={b.name} accent>
-              <h3 className="text-base">{b.name}</h3>
+              <h3 className="text-base"><Rich>{b.name}</Rich></h3>
               <div className="mt-1 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                {b.rank}
+                <Rich>{b.rank}</Rich>
               </div>
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {b.body}
+                <Rich>{b.body}</Rich>
               </p>
             </Card>
           ))}
@@ -228,24 +242,33 @@ export default function Modeling() {
         <Pullquote tone="incipient">⚠️ {MODEL_CHEMISTRY.caution}</Pullquote>
         <Card accent>
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-            {MODEL_CHEMISTRY.distinction}
+            <Rich>{MODEL_CHEMISTRY.distinction}</Rich>
           </p>
         </Card>
       </section>
 
       {/* --- SHAP --- */}
       <section>
-        <SectionTitle eyebrow="Direction, not just magnitude">{MODEL_SHAP.title}</SectionTitle>
+        <SectionTitle eyebrow="Direction, not just magnitude"><Rich>{MODEL_SHAP.title}</Rich></SectionTitle>
         <Card>
-          <p style={{ color: 'var(--text-secondary)' }}>{MODEL_SHAP.body}</p>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{MODEL_SHAP.body}</Rich></p>
           <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-            {MODEL_SHAP.note}
+            <Rich>{MODEL_SHAP.note}</Rich>
           </p>
         </Card>
-        <div className="mt-4">
-          <Placeholder source="notebooks/06 (section 8.4)">
-            SHAP beeswarm plot pending, plus the block-level permutation importance chart.
-          </Placeholder>
+        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+          <NotebookFigure
+            src="nb06-11.png"
+            alt="Permutation importance of the features, coloured by chemical block"
+            caption="Permutation importance, coloured by chemical block. Metal chemistry dominates; the stoichiometry and medium block comes out negative, which is the operational definition of noise."
+            source="notebook 06 §8.4"
+          />
+          <NotebookFigure
+            src="nb06-12.png"
+            alt="SHAP summary plot showing the direction in which each feature pushes the prediction"
+            caption="SHAP values: horizontal position is how far a feature pushed the prediction towards crystalline, colour is the value of the feature itself."
+            source="notebook 06 §8.4"
+          />
         </div>
       </section>
 

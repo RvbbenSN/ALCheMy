@@ -7,8 +7,9 @@ import {
   ETL_THERMAL,
   ETL_ZERO_VS_NULL,
 } from '../content/screens.js'
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
+import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term, Rich} from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
+import NotebookFigure from '../components/NotebookFigure.jsx'
 import PxrdChart from '../components/PxrdChart.jsx'
 
 const FORMATS = [
@@ -85,7 +86,7 @@ export default function DataPreparation() {
           <Card>
             <h3 className="text-base">2 · Stoichiometric feature engineering</h3>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {ETL_STOICHIOMETRY.intro}
+              <Rich>{ETL_STOICHIOMETRY.intro}</Rich>
             </p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div>
@@ -112,7 +113,7 @@ export default function DataPreparation() {
           <Card>
             <h3 className="text-base">3 · {ETL_THERMAL.title}</h3>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {ETL_THERMAL.body}
+              <Rich>{ETL_THERMAL.body}</Rich>
             </p>
             {ETL_THERMAL.formulas.map((f) => (
               <Formula key={f}>{f}</Formula>
@@ -174,17 +175,17 @@ export default function DataPreparation() {
                     className="shrink-0 text-2xl"
                     style={{ fontFamily: 'var(--font-display)', color: 'var(--status-amorphous)' }}
                   >
-                    {d.n}
+                    <Rich>{d.n}</Rich>
                   </span>
                   <div>
-                    <h3 className="text-base">{d.defect}</h3>
+                    <h3 className="text-base"><Rich>{d.defect}</Rich></h3>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <strong style={{ color: 'var(--text-primary)' }}>How it surfaced. </strong>
-                      {d.found}
+                      <Rich>{d.found}</Rich>
                     </p>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <strong style={{ color: 'var(--status-pure)' }}>Fix. </strong>
-                      {d.fix}
+                      <Rich>{d.fix}</Rich>
                     </p>
                   </div>
                 </div>
@@ -194,11 +195,11 @@ export default function DataPreparation() {
         </ol>
 
         <Card className="mt-6">
-          <h3 className="text-lg">{ETL_ZERO_VS_NULL.title}</h3>
+          <h3 className="text-lg"><Rich>{ETL_ZERO_VS_NULL.title}</Rich></h3>
           <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {ETL_ZERO_VS_NULL.body}
+            <Rich>{ETL_ZERO_VS_NULL.body}</Rich>
           </p>
-          <Pullquote>{ETL_ZERO_VS_NULL.pullquote}</Pullquote>
+          <Pullquote><Rich>{ETL_ZERO_VS_NULL.pullquote}</Rich></Pullquote>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             The check that proves defects 4 and 5 are genuinely fixed: the composition of the medium now
             sums to 1.000. Before the correction the mean was 0.789 — and version 2 had no such check,
@@ -209,23 +210,23 @@ export default function DataPreparation() {
 
       {/* --- 4. Exclusion como etiqueta --- */}
       <section>
-        <SectionTitle eyebrow="Curation">{ETL_EXCLUSION.title}</SectionTitle>
+        <SectionTitle eyebrow="Curation"><Rich>{ETL_EXCLUSION.title}</Rich></SectionTitle>
         <Card accent>
-          <p style={{ color: 'var(--text-secondary)' }}>{ETL_EXCLUSION.body}</p>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_EXCLUSION.body}</Rich></p>
           <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            {ETL_EXCLUSION.decision}
+            <Rich>{ETL_EXCLUSION.decision}</Rich>
           </p>
-          <Pullquote>{ETL_EXCLUSION.pullquote}</Pullquote>
+          <Pullquote><Rich>{ETL_EXCLUSION.pullquote}</Rich></Pullquote>
         </Card>
       </section>
 
       {/* --- 5. Acido tanico --- */}
       <section>
-        <SectionTitle eyebrow="A decision that could have been cheating">{ETL_TANNIC.title}</SectionTitle>
+        <SectionTitle eyebrow="A decision that could have been cheating"><Rich>{ETL_TANNIC.title}</Rich></SectionTitle>
         <Card>
-          <p style={{ color: 'var(--text-secondary)' }}>{ETL_TANNIC.body}</p>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_TANNIC.body}</Rich></p>
           <p className="mt-4 text-sm" style={{ color: 'var(--status-pure)' }}>
-            {ETL_TANNIC.measure}
+            <Rich>{ETL_TANNIC.measure}</Rich>
           </p>
         </Card>
         <Pullquote tone="incipient">⚠️ {ETL_TANNIC.caution}</Pullquote>
@@ -233,17 +234,17 @@ export default function DataPreparation() {
 
       {/* --- 6. Imputacion --- */}
       <section>
-        <SectionTitle eyebrow="Filling the gaps">{ETL_IMPUTATION.title}</SectionTitle>
+        <SectionTitle eyebrow="Filling the gaps"><Rich>{ETL_IMPUTATION.title}</Rich></SectionTitle>
         <Card>
-          <p style={{ color: 'var(--text-secondary)' }}>{ETL_IMPUTATION.body}</p>
-          <Pullquote tone="amorphous">{ETL_IMPUTATION.leak}</Pullquote>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_IMPUTATION.body}</Rich></p>
+          <Pullquote tone="amorphous"><Rich>{ETL_IMPUTATION.leak}</Rich></Pullquote>
           <p className="mb-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
             The alternative — explicitly flagging which values were missing, letting the model learn from
             the fact of absence — was tested rather than assumed:
           </p>
           <ScrollTable head={ETL_IMPUTATION.tableHead} rows={ETL_IMPUTATION.tableRows} />
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {ETL_IMPUTATION.conclusion}
+            <Rich>{ETL_IMPUTATION.conclusion}</Rich>
           </p>
         </Card>
       </section>
@@ -292,12 +293,21 @@ export default function DataPreparation() {
             </ul>
           </Card>
           <Card>
-            <h3 className="text-base">Required figure</h3>
+            <h3 className="text-base">Where all 29 come from</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              &ldquo;Anatomy of the PXRD descriptor vector&rdquo; — one annotated diffractogram showing
-              where each of the 29 numbers comes from. The single most explanatory image in the project.
+              The figure below is the whole descriptor vector on a single annotated scan: peak geometry,
+              phase composition, intensity concentration, and the complete list grouped by what each
+              number is for. Enlarge it — it is dense on purpose.
             </p>
           </Card>
+        </div>
+        <div className="mt-6">
+          <NotebookFigure
+            src="nb05-17.png"
+            alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
+            caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
+            source="notebook 05"
+          />
         </div>
       </section>
 

@@ -1,3 +1,4 @@
+import { NotebookText, ExternalLink } from 'lucide-react'
 import { Badge, Card } from './ui.jsx'
 
 /* Los cuadernos publicados. Se generan con scripts/build_public_notebooks.py
@@ -77,22 +78,33 @@ export default function NotebookList({ only }) {
           className="block no-underline"
         >
           <Card accent={nb.highlight} className="h-full transition-transform hover:-translate-y-1">
-            <div className="flex items-baseline gap-3">
-              <span
-                className="text-2xl"
-                style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}
-              >
-                {nb.n}
-              </span>
-              <h3 className="text-base">{nb.title}</h3>
+            <div className="flex items-start gap-3">
+              <NotebookText
+                size={26}
+                aria-hidden
+                style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: 2 }}
+              />
+              <div>
+                <span
+                  className="mono text-xs"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  Notebook {nb.n}
+                </span>
+                <h3 className="text-base">{nb.title}</h3>
+              </div>
             </div>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               {nb.blurb}
             </p>
             <div className="mt-4 flex items-center gap-2">
               <Badge tone="info">Read-only render</Badge>
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                opens in a new tab
+              <span
+                className="ml-auto flex items-center gap-1 text-xs"
+                style={{ color: 'var(--accent-primary)' }}
+              >
+                Open
+                <ExternalLink size={13} aria-hidden />
               </span>
             </div>
           </Card>

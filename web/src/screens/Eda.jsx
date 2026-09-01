@@ -9,8 +9,9 @@ import {
   EDA_MISSING,
   EDA_PCA,
 } from '../content/screens.js'
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle } from '../components/ui.jsx'
+import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
+import NotebookFigure from '../components/NotebookFigure.jsx'
 import { ConfounderFigure, SeparationFigure } from '../components/Figures.jsx'
 
 function Pullquote({ children, tone = 'accent' }) {
@@ -46,9 +47,9 @@ export default function Eda() {
 
       {/* --- 1. El factor de confusion --- */}
       <section>
-        <SectionTitle eyebrow="Before loading anything">{EDA_CONFOUNDER.title}</SectionTitle>
+        <SectionTitle eyebrow="Before loading anything"><Rich>{EDA_CONFOUNDER.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          {EDA_CONFOUNDER.intro}
+          <Rich>{EDA_CONFOUNDER.intro}</Rich>
         </p>
         <ConfounderFigure />
         <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -59,12 +60,12 @@ export default function Eda() {
         </div>
 
         <Card accent className="mt-6">
-          <p style={{ color: 'var(--text-secondary)' }}>{EDA_CONFOUNDER.shortcut}</p>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{EDA_CONFOUNDER.shortcut}</Rich></p>
           <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            {EDA_CONFOUNDER.bias}
+            <Rich>{EDA_CONFOUNDER.bias}</Rich>
           </p>
           <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            {EDA_CONFOUNDER.thermal}
+            <Rich>{EDA_CONFOUNDER.thermal}</Rich>
           </p>
         </Card>
 
@@ -75,7 +76,7 @@ export default function Eda() {
               <li key={i}>{d}</li>
             ))}
           </ol>
-          <Pullquote>{EDA_CONFOUNDER.price}</Pullquote>
+          <Pullquote><Rich>{EDA_CONFOUNDER.price}</Rich></Pullquote>
         </Card>
       </section>
 
@@ -96,9 +97,9 @@ export default function Eda() {
                     className="text-3xl"
                     style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)', minWidth: '5ch' }}
                   >
-                    {f.n}
+                    <Rich>{f.n}</Rich>
                   </span>
-                  <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{f.label}</span>
+                  <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}><Rich>{f.label}</Rich></span>
                   <span className="ml-auto text-sm" style={{ color: 'var(--text-muted)' }}>
                     {i === 0 ? f.why : `↓ ${f.why}`}
                   </span>
@@ -130,24 +131,32 @@ export default function Eda() {
 
       {/* --- 3. Ausentes --- */}
       <section>
-        <SectionTitle eyebrow="Profiling">{EDA_MISSING.title}</SectionTitle>
+        <SectionTitle eyebrow="Profiling"><Rich>{EDA_MISSING.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          {EDA_MISSING.intro}
+          <Rich>{EDA_MISSING.intro}</Rich>
         </p>
+        <div className="mb-6">
+          <NotebookFigure
+            src="nb06-01.png"
+            alt="Bar chart of the percentage of missing values per column"
+            caption="Missingness by column. The bars look similar; the causes behind them are not, and that is the whole point of the table below."
+            source="notebook 06 §5.3"
+          />
+        </div>
         <ScrollTable head={EDA_MISSING.tableHead} rows={EDA_MISSING.tableRows} />
-        <Pullquote>{EDA_MISSING.lesson}</Pullquote>
+        <Pullquote><Rich>{EDA_MISSING.lesson}</Rich></Pullquote>
       </section>
 
       {/* --- 4. Desequilibrio --- */}
       <section>
-        <SectionTitle eyebrow="The target">{EDA_IMBALANCE.title}</SectionTitle>
+        <SectionTitle eyebrow="The target"><Rich>{EDA_IMBALANCE.title}</Rich></SectionTitle>
         <div className="grid gap-4 md:grid-cols-2">
           <Card accent>
             <div className="text-4xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--status-incipient)' }}>
               64%
             </div>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {EDA_IMBALANCE.trivial}
+              <Rich>{EDA_IMBALANCE.trivial}</Rich>
             </p>
           </Card>
           <Card accent>
@@ -155,7 +164,7 @@ export default function Eda() {
               5.8 : 1
             </div>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {EDA_IMBALANCE.ratio}
+              <Rich>{EDA_IMBALANCE.ratio}</Rich>
             </p>
           </Card>
         </div>
@@ -163,43 +172,57 @@ export default function Eda() {
 
       {/* --- 5. Variables discretas --- */}
       <section>
-        <SectionTitle eyebrow="Distributions">{EDA_DISCRETE.title}</SectionTitle>
+        <SectionTitle eyebrow="Distributions"><Rich>{EDA_DISCRETE.title}</Rich></SectionTitle>
         <Card>
-          <p style={{ color: 'var(--text-secondary)' }}>{EDA_DISCRETE.body}</p>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{EDA_DISCRETE.body}</Rich></p>
           <p className="mt-4" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-            {EDA_DISCRETE.consequence}
+            <Rich>{EDA_DISCRETE.consequence}</Rich>
           </p>
         </Card>
       </section>
 
       {/* --- 6. Correlacion --- */}
       <section>
-        <SectionTitle eyebrow="Association">{EDA_CORRELATION.title}</SectionTitle>
+        <SectionTitle eyebrow="Association"><Rich>{EDA_CORRELATION.title}</Rich></SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <Badge tone="info">Question 1</Badge>
-            <h3 className="mt-3 text-base">{EDA_CORRELATION.q1title}</h3>
+            <h3 className="mt-3 text-base"><Rich>{EDA_CORRELATION.q1title}</Rich></h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {EDA_CORRELATION.q1body}
+              <Rich>{EDA_CORRELATION.q1body}</Rich>
             </p>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {EDA_CORRELATION.q1note}
+              <Rich>{EDA_CORRELATION.q1note}</Rich>
             </p>
           </Card>
           <Card>
             <Badge tone="info">Question 2</Badge>
-            <h3 className="mt-3 text-base">{EDA_CORRELATION.q2title}</h3>
+            <h3 className="mt-3 text-base"><Rich>{EDA_CORRELATION.q2title}</Rich></h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {EDA_CORRELATION.q2body}
+              <Rich>{EDA_CORRELATION.q2body}</Rich>
             </p>
           </Card>
         </div>
-        <Pullquote tone="incipient">⚠️ {EDA_CORRELATION.causation}</Pullquote>
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <NotebookFigure
+            src="nb06-04.png"
+            alt="Feature-to-feature correlation map"
+            caption="Feature against feature. The red blocks are mostly properties of the same metal, correlated by physics — not a problem, but the reason the final interpretation is done by chemical block."
+            source="notebook 06 §5.6"
+          />
+          <NotebookFigure
+            src="nb06-05.png"
+            alt="Association of each feature with the target class, top twenty numeric features"
+            caption="Association with the target, measured by correlation ratio rather than Pearson — the target has three categories, not a magnitude."
+            source="notebook 06 §5.6"
+          />
+        </div>
+        <Pullquote tone="incipient">⚠️ <Rich>{EDA_CORRELATION.causation}</Rich></Pullquote>
       </section>
 
       {/* --- 7. Bivariante --- */}
       <section>
-        <SectionTitle eyebrow="Class separation">{EDA_BIVARIATE.title}</SectionTitle>
+        <SectionTitle eyebrow="Class separation"><Rich>{EDA_BIVARIATE.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           The descriptors do order the classes, and cleanly: every one of them rises monotonically from
           amorphous through incipient to crystalline. That is the reassuring half of the picture.
@@ -207,7 +230,7 @@ export default function Eda() {
         <SeparationFigure />
         <Card accent className="mt-6">
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-            {EDA_BIVARIATE.body}
+            <Rich>{EDA_BIVARIATE.body}</Rich>
           </p>
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
             The medians above separate; the <em>distributions</em> behind them overlap. A median that
@@ -219,21 +242,29 @@ export default function Eda() {
 
       {/* --- 8. Fuga por agrupamiento --- */}
       <section>
-        <SectionTitle eyebrow="The most important subsection">{EDA_LEAKAGE.title}</SectionTitle>
+        <SectionTitle eyebrow="The most important subsection"><Rich>{EDA_LEAKAGE.title}</Rich></SectionTitle>
         <Card accent>
-          <p style={{ color: 'var(--text-secondary)' }}>{EDA_LEAKAGE.body}</p>
-          <Pullquote tone="amorphous">{EDA_LEAKAGE.consequence}</Pullquote>
+          <p style={{ color: 'var(--text-secondary)' }}><Rich>{EDA_LEAKAGE.body}</Rich></p>
+          <div className="my-5">
+            <NotebookFigure
+              src="nb06-07.png"
+              alt="Distribution of samples across high-throughput plates, and how homogeneous each plate is"
+              caption="Samples cluster in plates, and plates are internally homogeneous. Knowing one well of a plate tells you most of what its neighbours did."
+              source="notebook 06 §5.8"
+            />
+          </div>
+          <Pullquote tone="amorphous"><Rich>{EDA_LEAKAGE.consequence}</Rich></Pullquote>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {EDA_LEAKAGE.drift}
+            <Rich>{EDA_LEAKAGE.drift}</Rich>
           </p>
         </Card>
       </section>
 
       {/* --- 9. PCA --- */}
       <section>
-        <SectionTitle eyebrow="A last look before modeling">{EDA_PCA.title}</SectionTitle>
+        <SectionTitle eyebrow="A last look before modeling"><Rich>{EDA_PCA.title}</Rich></SectionTitle>
         <p className="mb-6 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-          {EDA_PCA.disclaimer}
+          <Rich>{EDA_PCA.disclaimer}</Rich>
         </p>
         <Card>
           <h3 className="text-base">How it is built, in three steps</h3>
@@ -243,7 +274,7 @@ export default function Eda() {
             ))}
           </ol>
           <p className="mt-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {EDA_PCA.honest}
+            <Rich>{EDA_PCA.honest}</Rich>
           </p>
         </Card>
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -259,10 +290,12 @@ export default function Eda() {
           ))}
         </div>
         <div className="mt-6">
-          <Placeholder source="notebooks/06 (section 5.9)">
-            Interactive projection pending: the 2D and 3D scatter coloured by class, with linker scaffold
-            as the marker shape, plus the cumulative variance curve.
-          </Placeholder>
+          <NotebookFigure
+            src="nb06-08.png"
+            alt="PCA projection of the syntheses, coloured by outcome class with linker scaffold as marker shape"
+            caption="Colour is the outcome class, marker shape the linker scaffold. The scaffolds occupy distinct regions — the linker chemistry is a large part of what separates the space — but the classes themselves overlap heavily."
+            source="notebook 06 §5.9"
+          />
         </div>
       </section>
 

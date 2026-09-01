@@ -1,5 +1,5 @@
 import { LAB_CYCLE } from '../content/site.js'
-import { Badge, Card, Placeholder, SectionTitle, Term } from '../components/ui.jsx'
+import { Badge, Card, Placeholder, Rich, SectionTitle, Term } from '../components/ui.jsx'
 
 export default function Science() {
   return (
@@ -17,17 +17,37 @@ export default function Science() {
 
       <section>
         <SectionTitle eyebrow="The material">What is a MOF?</SectionTitle>
+        <figure className="m-0 mb-8">
+          <img
+            src="/mof-formation.jpg"
+            alt="Rendering of metal nodes, shown as golden octahedra, linked by burgundy organic ligands into an extended porous framework"
+            loading="lazy"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              borderRadius: 'var(--radius-card)',
+              border: 'var(--border-card) solid var(--surface-border)',
+            }}
+          />
+          <figcaption className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+            Metal nodes (the octahedra) joined by organic linkers into an extended network. The empty space
+            between them is the point: that is where guest molecules go.
+          </figcaption>
+        </figure>
+
         <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
           <Card>
             <p style={{ color: 'var(--text-secondary)' }}>
-              A hybrid compound formed by inorganic metal ions or clusters bonded to organic polydentate
-              ligands, giving rise to extended structures riddled with potential voids.
+              A <strong>hybrid compound</strong> formed by inorganic <strong>metal ions or clusters</strong>{' '}
+              bonded to organic <strong>polydentate ligands</strong>, giving rise to extended structures
+              riddled with <strong>potential voids</strong>.
             </p>
             <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-              <Term k="MOF">MOFs</Term> are attractive because their tunability — swap the metal, swap the
-              linker — changes chemical functionality on demand. As a result they can display exceptional
-              surface areas, well-defined active sites, and highly controlled environments for adsorption,
-              catalysis, separation or light-driven processes.
+              <Term k="MOF">MOFs</Term> are attractive because of their <strong>tunability</strong> — swap
+              the metal, swap the linker — which changes chemical functionality on demand. As a result they
+              can display <strong>exceptional surface areas</strong>, well-defined active sites, and highly
+              controlled environments for adsorption, catalysis, separation or light-driven processes.
             </p>
           </Card>
           <Card accent>
@@ -56,12 +76,12 @@ export default function Science() {
                     className="shrink-0 text-3xl"
                     style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}
                   >
-                    {s.step}
+                    <Rich>{s.step}</Rich>
                   </div>
                   <div>
-                    <h3 className="text-lg">{s.title}</h3>
+                    <h3 className="text-lg"><Rich>{s.title}</Rich></h3>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {s.body}
+                      <Rich>{s.body}</Rich>
                     </p>
                     {s.highlight && (
                       <p
@@ -72,7 +92,7 @@ export default function Science() {
                           background: 'var(--surface-elevated)',
                         }}
                       >
-                        {s.highlight}
+                        <Rich>{s.highlight}</Rich>
                       </p>
                     )}
                   </div>

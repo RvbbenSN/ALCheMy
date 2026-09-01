@@ -1,16 +1,24 @@
 import { Link } from 'react-router-dom'
-import { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, SCREENS, STACK } from '../content/site.js'
+import { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, SCREENS } from '../content/site.js'
 import { Button, Card, KpiCard, SectionTitle, Term } from '../components/ui.jsx'
+import StackGrid from '../components/StackGrid.jsx'
 
 export default function Overview() {
   return (
     <div className="flex flex-col gap-16">
       {/* --- Hero --- */}
       <section>
+        {/* Lockup completo: el cristal con el nombre debajo, igual que en el pie.
+            En la barra superior se usa solo el isotipo, que es donde encaja. */}
         <span
-          className="logo-mark mb-6 block"
-          aria-hidden
-          style={{ width: 'clamp(72px, 12vw, 116px)', height: 'clamp(72px, 12vw, 116px)', color: 'var(--accent-primary)' }}
+          className="logo-lockup mb-8 block"
+          role="img"
+          aria-label="ALCheMy"
+          style={{
+            width: 'clamp(190px, 26vw, 280px)',
+            height: 'clamp(104px, 14vw, 153px)',
+            color: 'var(--accent-primary)',
+          }}
         />
         <h1
           className="max-w-4xl text-4xl uppercase md:text-6xl"
@@ -122,20 +130,8 @@ export default function Overview() {
           </Card>
           <Card>
             <h3 className="text-base uppercase tracking-wider">Stack</h3>
-            <div className="mt-4 flex flex-col gap-3">
-              {STACK.map((row, i) => (
-                <div key={i} className="flex flex-wrap gap-1.5">
-                  {row.map((t) => (
-                    <span
-                      key={t}
-                      className="mono rounded-[var(--radius-badge)] px-2 py-0.5 text-xs"
-                      style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              ))}
+            <div className="mt-5">
+              <StackGrid />
             </div>
           </Card>
         </div>
