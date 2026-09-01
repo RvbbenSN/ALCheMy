@@ -36,6 +36,15 @@ data/raw_datalake/*
 methodology/
 .agents/
 
+# Material de marca en bruto: moodboards, audio, .docx del guion, logos fuente.
+# Es material de trabajo, no producto. Lo publicable ya sale de aqui como
+# artefacto: los tokens en web/src/styles/tokens.css (generados por
+# scripts/build_design_tokens.py) y los favicons en web/public/.
+design_system/
+
+# Dependencias de Node (la app web se reconstruye con `npm install`)
+node_modules/
+
 # MCP config (contains n8n API key)
 .mcp.json
 

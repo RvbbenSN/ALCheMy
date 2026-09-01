@@ -1,0 +1,108 @@
+/* ==========================================================================
+   tokens.css — Design tokens de ALCheMy
+   GENERADO por scripts/build_design_tokens.py desde design_system/style_guide.yaml
+   No editar a mano: edita el YAML y vuelve a generar.
+
+   Se commitea el resultado a proposito, para que el repositorio publico compile
+   sin necesitar design_system/, que es privado.
+
+   Los valores anotados "fix a11y" se apartan del YAML porque el original no
+   llegaba a WCAG AA como color de texto. En el YAML siguen siendo validos como
+   borde o relleno; lo que falla es usarlos para texto.
+   ========================================================================== */
+
+
+:root,
+[data-theme='light'] {
+  --bg: #F5EFE4;
+  --surface: rgba(255, 255, 255, 0.94);
+  --surface-elevated: rgba(250, 246, 238, 0.98);
+  --surface-border: rgba(180, 140, 120, 0.55);
+  --text-primary: #3B0B15;
+  --text-secondary: #57333B;
+  --text-muted: #7a555c; /* fix a11y: el original #8C686F daba 4.24:1 sobre el fondo */
+  --accent-primary: #85253C;
+  --accent-secondary: #B8933A;
+  --accent-tertiary: #00606B;
+  --accent-glow: rgba(133, 37, 60, 0.20);
+  --chart-bg: #FFFFFF;
+  --accent-secondary-text: #856823; /* fix a11y: variante legible del oro; el original da 2.52:1 */
+  --status-pure: #15803d;
+  --status-incipient: #b45309;
+  --status-amorphous: #b91c1c;
+  --status-info: #0369a1; /* fix a11y: el original #0284C7 daba 3.58:1 sobre el fondo */
+  --star-1: rgba(133, 37, 60, 0.7);
+  --star-2: rgba(184, 147, 58, 0.8);
+  --star-3: rgba(0, 96, 107, 0.7);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg: #340B15;
+  --surface: rgba(77, 18, 32, 0.88);
+  --surface-elevated: rgba(99, 25, 43, 0.95);
+  --surface-border: rgba(180, 60, 85, 0.6);
+  --text-primary: #FFFFFF;
+  --text-secondary: #F7EAD7;
+  --text-muted: #D1A9A2;
+  --accent-primary: #E5D694;
+  --accent-secondary: #85253C;
+  --accent-tertiary: #00b4c8; /* fix a11y: el original #008D9E daba 4.05:1 sobre surface */
+  --accent-glow: rgba(229, 214, 148, 0.35);
+  --chart-bg: #2B0810;
+  --accent-secondary-text: #d97b92; /* fix a11y: variante legible del borgonia; el original da 1.78:1 */
+  --status-pure: #2ed573;
+  --status-incipient: #e5d694;
+  --status-amorphous: #ff5252;
+  --status-info: #38bdf8; /* fix a11y: azul claro legible sobre fondo vino */
+  --star-1: #FFFFFF;
+  --star-2: #E5D694;
+  --star-3: #008D9E;
+  color-scheme: dark;
+}
+
+[data-theme='ultra'] {
+  --bg: #150306;
+  --surface: rgba(49, 7, 15, 0.88);
+  --surface-elevated: rgba(77, 15, 28, 0.95);
+  --surface-border: rgba(104, 27, 48, 0.7);
+  --text-primary: #FFFFFF;
+  --text-secondary: #F3E7D2;
+  --text-muted: #AE857E;
+  --accent-primary: #E1D28C;
+  --accent-secondary: #681B30;
+  --accent-tertiary: #00a5b8; /* fix a11y: el original #004048 daba 1.59:1, ilegible */
+  --accent-glow: rgba(225, 210, 140, 0.25);
+  --chart-bg: #0D0204;
+  --accent-secondary-text: #d97b92; /* fix a11y: variante legible del borgonia */
+  --status-pure: #2ed573;
+  --status-incipient: #e1d28c;
+  --status-amorphous: #ff5252;
+  --status-info: #38bdf8; /* fix a11y: azul claro legible sobre fondo negro-vino */
+  --star-1: #FFFFFF;
+  --star-2: #E1D28C;
+  --star-3: #21754A;
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   Tokens que no dependen del tema
+   -------------------------------------------------------------------------- */
+:root {
+  --font-display: 'Poiret One', 'Marcellus', serif;
+  --font-heading: 'Marcellus', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --radius-card: 8px;
+  --radius-button: 6px;
+  --radius-badge: 4px;
+  --border-card: 2.5px;
+  --border-button: 2.5px;
+  --border-badge: 1.5px;
+  --shadow-card: 6px 6px 0px var(--accent-primary);
+  --shadow-button: 4px 4px 0px var(--text-primary);
+
+  --space-section: clamp(3rem, 8vw, 6rem);
+  --content-max: 1200px;
+}

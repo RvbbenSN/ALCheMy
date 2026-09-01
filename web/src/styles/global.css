@@ -1,0 +1,99 @@
+@import './tokens.css';
+@import 'tailwindcss';
+
+/* Puente entre los tokens y las utilidades de Tailwind:
+   asi `bg-surface` o `text-muted` funcionan en el JSX. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--surface-elevated);
+  --color-line: var(--surface-border);
+
+  --color-ink: var(--text-primary);
+  --color-ink-soft: var(--text-secondary);
+  --color-muted: var(--text-muted);
+
+  --color-accent: var(--accent-primary);
+  --color-gold: var(--accent-secondary);
+  --color-gold-text: var(--accent-secondary-text);
+  --color-teal: var(--accent-tertiary);
+
+  --color-pure: var(--status-pure);
+  --color-incipient: var(--status-incipient);
+  --color-amorphous: var(--status-amorphous);
+  --color-info: var(--status-info);
+
+  --font-display: var(--font-display);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Campo estelar sutil, el "galactico" del style guide.
+   Va en un pseudo-elemento fijo para que no repinte al hacer scroll. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, var(--star-1), transparent),
+    radial-gradient(1px 1px at 68% 14%, var(--star-2), transparent),
+    radial-gradient(1px 1px at 34% 71%, var(--star-3), transparent),
+    radial-gradient(1px 1px at 84% 58%, var(--star-1), transparent),
+    radial-gradient(1px 1px at 52% 41%, var(--star-2), transparent),
+    radial-gradient(1px 1px at 22% 88%, var(--star-3), transparent);
+  background-size: 340px 340px;
+  opacity: 0.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+code,
+kbd,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+::selection {
+  background: var(--accent-glow);
+}
+
+/* Foco visible siempre: requisito de accesibilidad, no decorativo. */
+:focus-visible {
+  outline: 3px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

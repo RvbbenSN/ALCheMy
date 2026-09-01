@@ -915,21 +915,22 @@ tal como está en `ROADMAP_IDENTIDAD_VISUAL_Y_APP.md`, secciones 6–7. No se du
 
 ---
 
-## 9. Decisiones abiertas — necesitan a Rubén
+## 9. Decisiones — todas cerradas (revisión de Rubén, 2026-09-01)
 
-Estas nueve decisiones bloquean contenido concreto. Ordenadas por lo que más frena.
+Las nueve decisiones quedaron resueltas en `methodology/revisions/app_roadmap_revision`.
+Se conservan con su respuesta, porque el *por qué* de cada una sigue siendo útil.
 
 | ID | Decisión | Bloquea | Recomendación |
 |---|---|---|---|
 | ~~**D1**~~ | ~~¿Qué significan exactamente los 4 KPIs?~~ | — | ✅ **CERRADA 2026-09-01.** Auditada la BD: 2.167 síntesis reales, 1.877 difractogramas etiquetados con 4.964 juicios, 0 placeholders en el ML. Consultas congeladas en 3.1 y en el bloque 0.2 |
-| **D2** | ¿Cómo se enseñan los notebooks? Descarga / visor Jupyter / PDF embebido | Bloque 3.5 | **HTML estático pre-renderizado** (`nbconvert --to html`) embebido: se ve el código y las figuras, no se descarga nada, y permite auditar celda por celda antes de publicar |
-| **D3** | ¿Se abre el webhook n8n al público? ¿Con generador de ficheros sintéticos? | Bloque 2.4 | Sí, pero **solo generador sintético** — nada de subida de ficheros del visitante. Sandbox aparte, purga cada 24 h, rate limit |
-| **D4** | ¿Se degrada el modelo público para proteger la IP? | Pantalla 06 entera | Servir el modelo `actionable` (LightGBM, F1 0.413) con el espacio de ligandos reducido a familias genéricas. **Requiere una sesión dedicada** |
-| **D5** | ¿El RAG público consulta el corpus real? | Pantalla 07 | Solo sobre artículos **publicados**; nada del corpus interno. Rate limit y respuestas cacheadas para preguntas frecuentes |
-| **D6** | ¿Qué parte de `design_system/` se publica en GitHub? | Próximo commit | Publicar `style_guide.yaml`, `README.md` y assets del logo. Mover `.docx`, moodboards y audio a `methodology/` o añadirlos a `.gitignore` |
-| **D7** | ¿Audio ambiental sí o no? | Widget global | Sí, pero apagado por defecto y con estado persistente. Ya hay 3 pistas en `assets/audio/` |
-| **D8** | ¿Se traduce la app o se queda en inglés? | Todo el contenido | **Solo inglés.** Los textos ya escritos están en inglés y el público objetivo es internacional. Traducir duplica el mantenimiento |
-| **D9** | ¿Qué se hace con el `XX` sin rellenar del pilar 2, y con `phpAdmin`? | Bloque 0.3 y 0.6 | Correcciones directas: `XX` → **1.877**, y `phpAdmin` → **pgAdmin** |
+| **D2** | ¿Cómo se enseñan los notebooks? | ✅ **HTML estático pre-renderizado.** Un visor tipo nbviewer sirve el `.ipynb`; el HTML no. Se genera el HTML primero, y el PDF sale luego del mismo HTML |
+| **D3** | ¿Se abre el webhook n8n al público? | ✅ **Pospuesto.** No compensa el trabajo de protegerlo frente a la urgencia de publicar. Se retoma más adelante. **Sí** se enseña la organización de las tablas de PostgreSQL, que era lo que aportaba valor de ese bloque |
+| **D4** | ¿Se degrada el modelo público para proteger la IP? | ✅ **Ocultar los ligandos** basta: es donde está la química propietaria. El resto de variables puede ser real |
+| **D5** | ¿El RAG público consulta el corpus real? | ✅ **Solo el corpus publicado.** Nada interno |
+| **D6** | ¿Qué parte de `design_system/` se publica? | ✅ **Ninguna: `design_system/` pasa entera a `.gitignore`.** Es material de trabajo. Lo publicable sale como *artefacto*: `web/src/styles/tokens.css` (generado) y los favicons en `web/public/`. Ver sección 13 |
+| **D7** | ¿Audio ambiental? | ✅ **Sí**, apagado por defecto, volumen 20 %, nunca autoplay. Ya implementado |
+| **D8** | ¿Idioma? | ✅ **Solo inglés** de momento. Una versión en español si sobra tiempo al final |
+| **D9** | El `XX` y `phpAdmin` | ✅ `XX` → **1.877**; `phpAdmin` → **pgAdmin**. Ya corregidos en `web/src/content/site.js` |
 
 ---
 
@@ -992,7 +993,64 @@ flowchart LR
 
 ---
 
-## 11. Anexo — De dónde sale el contenido de cada pantalla
+## 11. Organización del repositorio: qué es público y qué no
+
+Decidido en la revisión del 2026-09-01. **No se ha movido nada de lo que ya funcionaba**: ningún
+path de los cuadernos, de `src/` o de `scripts/` ha cambiado. La reorganización es puramente
+aditiva.
+
+```mermaid
+flowchart LR
+    subgraph PUB["Público — va a GitHub"]
+        W["web/<br/>la app React"]:::pub
+        D["docs/<br/>documentación refinada"]:::pub
+        S["src/ · scripts/ · app/<br/>notebooks/ · schema"]:::pub
+    end
+    subgraph PRIV["Privado — .gitignore"]
+        M["methodology/<br/>diario, roadmaps, revisiones"]:::priv
+        DS["design_system/<br/>moodboards, audio, .docx, logos"]:::priv
+        DAT["data/ · backups/"]:::priv
+    end
+    DS -->|"artefactos generados"| W
+
+    classDef pub  fill:#F7EAD7,stroke:#85253C,stroke-width:2px,color:#3B0B15
+    classDef priv fill:#F5EFE4,stroke:#8C686F,stroke-width:2px,color:#3B0B15
+```
+
+**La regla, en una frase:** si está en `docs/` o en `web/`, es público; si no, no lo es.
+
+`design_system/` pasa entera a `.gitignore` porque es material de trabajo, no producto. Lo que de
+ella tiene que llegar al repositorio público cruza la frontera **como artefacto generado**, nunca
+por copia manual:
+
+| Artefacto | Origen | Generado por |
+|---|---|---|
+| `web/src/styles/tokens.css` | `design_system/style_guide.yaml` | `scripts/build_design_tokens.py` |
+| `web/public/favicon*` | `design_system/assets/logo/*.zip` | Descomprimido una vez |
+
+Se usó la carpeta `docs/`, que llevaba vacía desde agosto, en vez de crear otra más.
+
+> ⚠️ **Hallazgo:** `style_guide.yaml` **no era YAML válido**. La línea 102 tenía
+> `crystals_olive_green:{ hex: ... }` sin espacio tras los dos puntos, y eso rompe el documento
+> entero. Llevaba así desde que existe el archivo, porque hasta ahora ningún programa lo había
+> leído. Está corregido en la copia del worktree; **hay que aplicar el mismo arreglo al original**.
+
+### Lo que falta traer a `docs/`
+
+- **Cuadernos refinados**, en HTML estático de solo lectura (D2). Dos reglas al hacerlo:
+  1. **Los outputs filtran más que el código.** Un `.ipynb` guarda lo que imprimió cada celda:
+     `head()` con códigos de muestra reales, ligandos en las leyendas, rutas del disco local en
+     los errores. El código sin el data lake es inofensivo; los resultados guardados no.
+  2. **No reejecutar los cuadernos** para regenerarlos: varios escriben en PostgreSQL y podrían
+     insertar filas duplicadas o borrar en cascada. Se transforma el `.ipynb` ya ejecutado.
+- **Glosario de términos** con cada abreviatura, su nombre completo y una explicación llana,
+  generado desde `methodology/logbook/GUIA_DIDACTICA_PORTFOLIO.md`. La semilla de 13 términos ya
+  vive en `web/src/content/site.js`.
+- **Versión en español** de los documentos, si sobra tiempo.
+
+---
+
+## 12. Anexo — De dónde sale el contenido de cada pantalla
 
 | Pantalla | Notebook | Tablas / vistas SQL | Scripts |
 |---|---|---|---|
@@ -1008,9 +1066,10 @@ flowchart LR
 
 ---
 
-## 12. Registro de cambios
+## 13. Registro de cambios
 
 | Fecha | Cambio |
 |---|---|
 | 2026-09-01 | Documento creado. Unifica `Guion_web.docx`, `GUIÓN_PANTALLAS_WEB.md`, `ROADMAP_IDENTIDAD_VISUAL_Y_APP.md` y `style_guide.yaml`. Se detectan y resuelven 7 incoherencias (sección 3) y se abren 9 decisiones (sección 9) |
+| 2026-09-01 | **Revisión de Rubén incorporada.** D2–D9 cerradas (sección 9). Nueva sección 11 con la organización pública/privada del repositorio: `design_system/` pasa a `.gitignore` y lo publicable cruza como artefacto generado. Frontend: **React desde cero**, descartado Lovable. Esqueleto de las 9 pantallas construido en `web/`, tokens generados con corrección de contraste WCAG, favicons desplegados. Detectado que `style_guide.yaml` no era YAML válido |
 | 2026-09-01 | **Auditoría de recuentos y cierre de D1.** Verificado que los números altos eran error de recuento, no corrupción: 2.167 síntesis reales + 1.037 filas-muleta `PENDING_RECORD`; 1.877 difractogramas con 4.964 juicios. Confirmado que **0 placeholders llegan a `v_ml_features`** — el ML está limpio. Sección 3.1 reescrita con el embudo verificado y KPIs con consulta congelada |

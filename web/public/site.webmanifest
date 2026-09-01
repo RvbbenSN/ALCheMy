@@ -1,0 +1,11 @@
+{
+  "name": "ALCheMy — Autonomous Lab for Chemistry, Materials & In-Silico Synthesis",
+  "short_name": "ALCheMy",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#85253c",
+  "background_color": "#f5efe4",
+  "display": "standalone"
+}

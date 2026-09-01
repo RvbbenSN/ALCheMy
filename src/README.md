@@ -1162,3 +1162,57 @@ the four missing table comments. Idempotent, so it can be reapplied safely.
 **Two layers, on purpose.** Native `COMMENT ON` makes pgAdmin self-documenting for a human
 browsing the schema; `data_dictionary` is queryable by agents and by the web app. Both
 should exist, and `--audit` reports on both so they cannot drift apart unnoticed.
+
+
+---
+
+### `scripts/build_design_tokens.py` + `scripts/check_contrast.py`
+
+Turn the visual identity from a document nobody's code reads into an artefact the frontend
+consumes, and make the accessibility claim checkable instead of assumed.
+
+**`build_design_tokens.py`** reads `design_system/style_guide.yaml` and writes
+`web/src/styles/tokens.css` — the three themes as CSS custom properties.
+
+The problem it solves: the style guide lived in a YAML no program had ever parsed. The
+frontend would have had to copy hex values by hand, and the moment either side was touched
+they would drift apart silently — the kind of bug nobody notices until a chart comes out the
+wrong colour.
+
+Worth recording: **the first run failed, because `style_guide.yaml` was not valid YAML.**
+Line 102 had `crystals_olive_green:{ hex: ... }` with no space after the colon, which makes
+the whole document unparseable. It had been broken for as long as the file existed, precisely
+because nothing had ever read it. Writing a consumer is what found the bug — the same lesson
+as `--check` on the data dictionary above.
+
+Why the generated CSS is committed: `design_system/` is gitignored (private working
+material), so without a versioned artefact the public repository would not build. The YAML is
+the source; the CSS is the publishable output.
+
+The accessibility exceptions are the interesting part. Several palette colours fail WCAG AA
+*as text* — the gold `#B8933A` on the champagne background gives 2.52:1 where 4.5:1 is
+required. They are not "fixed" in the YAML, because as border and fill colours they are
+perfectly valid; what fails is using them for text. `A11Y_OVERRIDES` adds readable variants
+(`--accent-secondary-text`) and writes the measured ratio into the generated CSS as a
+comment, so nobody reverts them later for looking arbitrary.
+
+**`check_contrast.py`** parses the generated CSS, composites every surface over its own
+background, and reports the WCAG ratio of every text/surface pair.
+
+The detail that makes it correct: several surfaces are translucent
+(`rgba(77, 18, 32, 0.88)`). Measuring against the declared colour gives the wrong answer,
+because what the eye sees is that colour *composited over the background*. Skipping the alpha
+compositing is the usual reason a palette passes an audit on paper and is still hard to read
+on screen.
+
+```bash
+python scripts/build_design_tokens.py           # write the CSS
+python scripts/build_design_tokens.py --check   # exit 1 if stale (CI / pre-commit)
+python scripts/check_contrast.py                # full report
+python scripts/check_contrast.py --strict       # exit 1 on any AA failure
+```
+
+**Reusable beyond the web app.** The compositing and ratio functions apply directly to the
+Plotly/Matplotlib theme for figures, which is the next thing needing a palette derived from
+these tokens — the style guide still says `plotly_white`, which matches neither the champagne
+nor the dark themes.
