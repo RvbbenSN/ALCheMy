@@ -9,6 +9,7 @@ import {
 } from '../content/screens.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
+import PxrdChart from '../components/PxrdChart.jsx'
 
 const FORMATS = [
   ['.xrdml', 'PANalytical PXRD', 'Only counts are stored; the 2θ axis is reconstructed by linspace from start and end angles.'],
@@ -250,12 +251,36 @@ export default function DataPreparation() {
       {/* --- 7. Senal PXRD --- */}
       <section>
         <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
-        <Placeholder source="src/pxrd_descriptors.py, notebooks/05">
-          Interactive chart pending: raw curve, <Term k="arPLS" /> baseline with a stiffness slider from
-          1e4 to 1e8, the narrow component after Savitzky-Golay smoothing, and peaks accepted at 3σ against
-          those rejected — with the 29-descriptor vector recomputing live beside it.
-        </Placeholder>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          These are real diffractograms from the laboratory, decomposed by the same code that populated
+          the descriptor table. Each one is the <strong>median case</strong> of its class by crystallinity
+          index — not the most flattering example. The amorphous one looks poor because a typical
+          amorphous sample <em>is</em> poor, and picking the prettiest scan would turn the figure into
+          advertising instead of evidence.
+        </p>
+        <PxrdChart />
         <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <Card accent>
+            <h3 className="text-base">What the three layers mean</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              The <Term k="arPLS" /> baseline is the instrument talking about itself — air scatter, the
+              sample holder, detector drift. It is discarded. What remains splits into the broad
+              amorphous halo and the sharp Bragg reflections, and <strong>both are signal</strong>. The
+              easy mistake is to flatten the halo along with the baseline, which throws away precisely
+              the information that separates an amorphous solid from a failed measurement.
+            </p>
+          </Card>
+          <Card accent>
+            <h3 className="text-base">Why the peaks are counted at 3σ</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              X-ray detection is photon counting, so noise follows Poisson statistics and its scale is the
+              square root of the counts. Three sigma is the level for <em>one</em> comparison, though —
+              scanning thousands of points for a maximum needs a stricter level, or noise gets counted as
+              reflections. The threshold drawn here is the honest floor, not the final criterion.
+            </p>
+          </Card>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           <Card>
             <h3 className="text-base">Didactic modals to attach here</h3>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>

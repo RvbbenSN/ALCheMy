@@ -11,6 +11,7 @@ import {
 } from '../content/screens.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
+import { ConfounderFigure, SeparationFigure } from '../components/Figures.jsx'
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -49,7 +50,13 @@ export default function Eda() {
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           {EDA_CONFOUNDER.intro}
         </p>
-        <ScrollTable head={EDA_CONFOUNDER.tableHead} rows={EDA_CONFOUNDER.tableRows} />
+        <ConfounderFigure />
+        <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+          Look at the microwave row: the amorphous segment is not small, it is <em>absent</em>.
+        </p>
+        <div className="mt-6">
+          <ScrollTable head={EDA_CONFOUNDER.tableHead} rows={EDA_CONFOUNDER.tableRows} />
+        </div>
 
         <Card accent className="mt-6">
           <p style={{ color: 'var(--text-secondary)' }}>{EDA_CONFOUNDER.shortcut}</p>
@@ -193,9 +200,19 @@ export default function Eda() {
       {/* --- 7. Bivariante --- */}
       <section>
         <SectionTitle eyebrow="Class separation">{EDA_BIVARIATE.title}</SectionTitle>
-        <Card accent>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          The descriptors do order the classes, and cleanly: every one of them rises monotonically from
+          amorphous through incipient to crystalline. That is the reassuring half of the picture.
+        </p>
+        <SeparationFigure />
+        <Card accent className="mt-6">
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
             {EDA_BIVARIATE.body}
+          </p>
+          <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            The medians above separate; the <em>distributions</em> behind them overlap. A median that
+            moves is not the same as a boundary that holds, and confusing the two is how a promising
+            plot becomes a disappointing model.
           </p>
         </Card>
       </section>

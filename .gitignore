@@ -20,17 +20,21 @@ dist/
 .env.*.local
 
 # Database Data Directories & Persistence (Ocultos de GitHub por Propiedad Intelectual)
-data/
-data/postgres/
-data/n8n/
-data/pgadmin/
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/raw_datalake/*
-!data/raw_datalake/.gitkeep
-!data/sample_demo/
+# Anclados con "/" inicial a proposito: sin el, "data/" casa con CUALQUIER
+# carpeta llamada data a cualquier profundidad, y se tragaba en silencio
+# web/src/data/ (los datos de las figuras). El repositorio compilaba en local y
+# habria fallado en cualquier clon nuevo, sin error visible al commitear.
+/data/
+/data/postgres/
+/data/n8n/
+/data/pgadmin/
+/data/raw/*
+!/data/raw/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+/data/raw_datalake/*
+!/data/raw_datalake/.gitkeep
+!/data/sample_demo/
 
 # Carpeta Privada de Metodología, Diario y Protocolos (OCULTA EN GITHUB)
 methodology/
