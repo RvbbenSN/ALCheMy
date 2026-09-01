@@ -96,59 +96,82 @@ Así cada punto de la rejilla es una receta plausible y no una mezcla imposible.
 
 ---
 
-## 3. Cómo de bueno es el modelo, sin adornos
+## 3. Valoración del rendimiento del modelo
 
-Conviene tenerlo escrito, porque es fácil recordar el número bonito y olvidar el matiz.
+Conviene tenerlo escrito con precisión, porque es fácil retener la cifra agregada y perder el
+matiz que la califica.
 
-### Los números
+### Las cifras
 
-| | F1 macro | MCC | Referencia |
+Todas proceden de la validación cruzada agrupada por placa del cuaderno 06. No son cifras de
+entrenamiento.
+
+| | F1 macro | MCC | Exactitud equilibrada |
 |---|---|---|---|
-| Clasificador trivial | 0,26 | 0,00 | El listón |
-| **Modelo completo** | **0,522** | **0,31** | El doble que el listón |
-| **Modelo accionable** | **0,413** | **0,13** | Apenas por encima del azar |
+| Clasificador trivial | 0,26 | 0,00 | 0,33 |
+| **Modelo completo** | **0,522** | **0,31** | **0,57** |
+| **Modelo accionable** | **0,413** | **0,13** | — |
 
-Y la matriz de confusión, por clase: acierta el **71 %** de los incipientes, el **50 %** de los
-amorfos y el **50 %** de los cristalinos.
+Sensibilidad por clase: **71 %** en incipiente, **50 %** en amorfo, **50 %** en cristalino.
+Conjunto de entrenamiento: 1.516 síntesis en 68 placas, de las cuales 167 cristalinas.
 
-### La lectura crítica
+### Lectura
 
-**1. Es un modelo débil, y conviene decirlo.** Un MCC de 0,31 es una asociación real pero
-modesta. Sobre todo: **se le escapa la mitad de los cristalinos**, que son justo lo que a un
-cribado le interesa encontrar. Para la tarea que importa, acierta como una moneda.
+**El modelo completo duplica holgadamente la línea base** y alcanza un MCC de 0,31: una
+asociación real, de magnitud moderada. Dos aspectos de este resultado conviene enunciarlos de
+forma explícita en lugar de dejarlos a la inferencia del lector.
 
-**2. El modelo accionable está prácticamente en el azar.** Con MCC 0,13, el modelo que responde
-*«dada esta química, qué condiciones la hacen cristalizar»* —que es la pregunta que de verdad
-sirve en el laboratorio— **todavía no sabe responder**. Ese es el titular honesto.
+**1. La sensibilidad sobre la clase cristalina es de 0,50.** Dado que la finalidad de la
+herramienta es preseleccionar condiciones prometedoras, esta es la cifra que gobierna su
+utilidad práctica, y constituye una limitación relevante. Es también la consecuencia esperable
+de una clase con 167 ejemplos frente a 967 incipientes, y de ser además la más heterogénea:
+existen muchas maneras de cristalizar y una sola de no hacerlo.
 
-**3. La causa no es el algoritmo, es el diseño experimental.** El histórico tiene ~13
-temperaturas y ~9 tiempos en cinco años, y además variados *de forma confundida* con la química:
-cada campaña barría una cosa para un sistema. El modelo no puede aprender el efecto de una
-variable que apenas se movió.
+**2. El modelo accionable se sitúa cerca del límite que los datos permiten.** Restringido a
+variables de proceso —el que responde *«dada esta química, qué condiciones favorecen la
+cristalización»*— el MCC desciende a 0,13. Está por encima del azar y todavía no constituye una
+base para recomendar condiciones. Puesto que es la pregunta que formula el laboratorio, es el
+más relevante de los dos resultados.
 
-**4. Ajustar hiperparámetros no lo va a arreglar.** Es realista esperar entre +0,02 y +0,05 de
-F1. La distancia entre 0,52 y algo útil no está en los hiperparámetros; está en los datos.
-Merece la pena saberlo antes de dedicarle una sesión.
+### El límite reside en el registro experimental, no en el modelo
 
-### Qué sí movería la aguja, por orden
+A lo largo de cinco años el histórico contiene aproximadamente **trece temperaturas objetivo
+distintas y nueve tiempos de reacción**, variados además de forma confundida con la química:
+cada campaña barría un factor dentro de un sistema metal-ligando. Un modelo supervisado no puede
+estimar el efecto de una variable que se mantuvo casi constante, ni separar un efecto de un
+factor con el que siempre coincidió.
 
-1. **Más ejemplos cristalinos.** 167 casos es la restricción que ata todo lo demás.
-2. **Un barrido diseñado**: temperatura × tiempo × modulador, fino, **dentro de un solo sistema
-   metal-ligando**. Ataca directamente el problema de la variación insuficiente y son una o dos
-   placas. Es, con diferencia, lo más rentable.
-3. **Completar el desglose de disolvente** del 18 % de filas que no lo tienen: ese bloque
-   entero puntúa hoy como ruido.
-4. **Revisar el objetivo**: con más datos, el índice de cristalinidad como variable continua
-   podría dar más que tres clases.
+Es una propiedad de los datos. Ninguna elección de algoritmo o de hiperparámetros recupera
+información que los experimentos no generaron.
 
-### Y por qué esto no es un fracaso del proyecto
+> **Expectativa realista sobre la optimización de hiperparámetros:** una mejora de entre 0,02 y
+> 0,05 en F1 macro. Merece hacerse por completitud metodológica; no es una vía hacia un modelo
+> materialmente mejor.
 
-Lo valioso aquí no es el 0,52: es **saber por qué es 0,52**, y haberlo medido. El proyecto
-detectó y corrigió siete defectos de datos, descubrió que la versión anterior puntuaba más alto
-porque detectaba el *método de síntesis* en vez de la química, y midió que las condiciones no se
-habían variado lo suficiente. Eso último convierte un resultado negativo en **una instrucción
-experimental concreta**.
+### Qué mejoraría el resultado, por retorno esperado
 
-> Un 0,52 que sabe explicarse vale más que un 0,85 que nadie puede auditar. Y «seguir
-> alimentando el modelo» funciona, pero **importa más qué se le da que cuánto**: más de lo mismo
-> —las mismas 13 temperaturas— apenas cambiará nada; un barrido diseñado, sí.
+1. **Un barrido diseñado** de temperatura, tiempo y modulador a resolución fina **dentro de un
+   único sistema metal-ligando**. Ataca directamente el confundido y equivale a una o dos placas
+   de alto rendimiento: con diferencia, la intervención más eficiente disponible.
+2. **Más ejemplos cristalinos.** Con 167 en el conjunto de entrenamiento, la clase minoritaria
+   es la restricción que limita todas las métricas anteriores.
+3. **Completar el desglose de disolvente** del 18 % de registros que carecen de él. Ese bloque
+   puntúa hoy como ruido bajo importancia por permutación, y su contribución real no podrá
+   evaluarse hasta que el medio esté registrado por completo.
+4. **Revisar la variable objetivo** cuando haya más datos. Un índice de cristalinidad continuo
+   podría portar más información que tres clases, si bien las tres clases siguen siendo el
+   juicio que el laboratorio registró efectivamente.
+
+### Sobre el valor de este resultado
+
+El mérito de esta etapa no descansa en la magnitud de la puntuación, sino en que la puntuación
+sea defendible: validada con las placas como grupos, calculada tras corregir siete defectos de
+datos, y reportada junto a la línea base que le da sentido.
+
+Una versión anterior de este análisis reportaba una cifra superior que se demostró después que
+reflejaba el método de síntesis antes que la química. Establecer que la limitación actual es de
+diseño experimental convierte un resultado negativo en un experimento concreto y accionable.
+
+> Alimentar el modelo con más datos mejora el resultado, pero **importa más la naturaleza de los
+> datos que su volumen**: repetir el mismo espacio de condiciones aportará poco; un barrido
+> diseñado, bastante.

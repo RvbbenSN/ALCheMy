@@ -311,8 +311,8 @@ export const MODEL_FINDINGS = [
     body: 'The best full model reaches a macro F1 of about 0.52 against 0.26 for the baseline — twice as good. MCC lands near 0.31: a real association, but far from strong.',
   },
   {
-    title: 'The earlier 0.62 was not true',
-    body: 'The drop from 0.62 to 0.52 is exactly what it cost to remove microwave and standard solvothermal syntheses — that is, the portion of the score that came from detecting the method rather than the chemistry. It is uncomfortable, and it is **the most valuable result here**.',
+    title: 'The earlier figure of 0.62 did not measure what it appeared to',
+    body: 'The drop from 0.62 to 0.52 corresponds precisely to the removal of microwave and standard solvothermal syntheses — that is, to the portion of the score that derived from identifying the synthesis method rather than the chemistry. Quantifying that difference is **arguably the most useful outcome of this stage**.',
   },
   {
     title: 'The actionable model drops further, and that answers the objection',
@@ -371,6 +371,42 @@ export const MODEL_CHEMISTRY = {
     'Permutation importance tends to split and to understate when variables are correlated: if two columns say almost the same thing, shuffling one barely hurts the model because the other covers the gap. So the absolute values should not be read as "percentage of the chemistry explained", and the block-level split is more reliable than any individual variable.',
   distinction:
     '"It does not matter" and "it was not explored" are different things, and only the second is actionable. The model is not saying temperature is irrelevant to phosphonate crystallisation — that would be chemically absurd. It is saying that in this record it **was not varied enough to be learnable**. That turns a negative result into a concrete experimental instruction.',
+}
+
+/* Valoracion del rendimiento. Tono de discusion de articulo: se declara la
+   limitacion, se identifica su causa, y se propone el experimento que la
+   resolveria. Sin dramatizar y sin disculparse. */
+export const MODEL_ASSESSMENT = {
+  title: 'An honest reading of the performance',
+  lead:
+    'The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31 — a real but moderate association. Two features of these results deserve to be stated plainly rather than left for the reader to infer.',
+  points: [
+    {
+      title: 'Half of the crystalline syntheses are not recovered',
+      body: 'Recall on the crystalline class is 0.50. Since the purpose of the tool is to shortlist promising conditions, this is the figure that governs its practical value, and it is a meaningful limitation. It is also the expected consequence of a class with 167 examples against 967 incipient ones, and of that class being the most heterogeneous: there are many ways for a framework to crystallise and only one way for it not to.',
+    },
+    {
+      title: 'The actionable model is close to the limit of what the data supports',
+      body: 'Restricted to process variables — the model that answers "given this chemistry, which conditions favour crystallisation?" — performance falls to a Matthews correlation of 0.13. That is above chance and it is not yet a basis for recommending conditions. Since this is the question the laboratory actually asks, it is the more important of the two results.',
+    },
+  ],
+  cause: {
+    title: 'The limit lies in the experimental record, not in the model',
+    body: 'Across five years the record contains roughly thirteen distinct target temperatures and nine reaction times, and these were varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate.',
+    expectation:
+      'Hyperparameter optimisation on this dataset can reasonably be expected to yield an improvement of 0.02 to 0.05 in macro F1. It is worth doing for methodological completeness; it is not a route to a materially better model.',
+  },
+  next: {
+    title: 'What would improve it, in order of expected return',
+    items: [
+      'A designed sweep of temperature, time and modulator at fine resolution within a single metal-linker system. This addresses the confounding directly and amounts to one or two high-throughput plates — by a wide margin the most efficient intervention available.',
+      'More crystalline examples. With 167 in the training set, the minority class is the binding constraint on every metric reported above.',
+      'Completion of the solvent breakdown for the 18% of records that lack it. That block currently scores as noise under permutation importance, and its true contribution cannot be assessed until the medium is recorded completely.',
+      'Revisiting the target once more data exists. A continuous crystallinity index may carry more information than a three-way class, although the three classes remain the judgement the bench actually recorded.',
+    ],
+  },
+  closing:
+    'The value of this stage does not rest on the magnitude of the score. It rests on the score being defensible: cross-validated with plates as groups, computed after seven data defects were corrected, and reported alongside the baseline that gives it meaning. A previous version of this analysis reported a higher figure that was later shown to reflect the synthesis method rather than the chemistry. Establishing that the present limitation is one of experimental design converts a negative result into a specific and actionable experiment.',
 }
 
 export const MODEL_SHAP = {

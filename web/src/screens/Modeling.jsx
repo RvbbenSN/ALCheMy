@@ -1,5 +1,6 @@
 import { MODELS } from '../content/site.js'
 import {
+  MODEL_ASSESSMENT,
   MODEL_CHEMISTRY,
   MODEL_ERRORS,
   MODEL_FINDINGS,
@@ -12,6 +13,7 @@ import {
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
+import ModelScorecard from '../components/ModelScorecard.jsx'
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -39,9 +41,9 @@ export default function Modeling() {
           Training &amp; Evaluation
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          With the problem properly framed and the data prepared, this stage is surprisingly short. That
-          is the correct order — and the reason the honest score here is lower than the dishonest one that
-          preceded it.
+          With the problem framed and the data prepared, this stage is short. That is the correct order,
+          and it is also why the figure reported here is lower than the one this analysis reported before
+          the confounding was removed.
         </p>
       </section>
 
@@ -117,6 +119,68 @@ export default function Modeling() {
         <p className="mt-4 text-sm" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
           <Rich>{MODEL_TWO.note}</Rich>
         </p>
+      </section>
+
+      {/* --- Cifras de rendimiento, antes que la prosa --- */}
+      <section>
+        <SectionTitle eyebrow="Performance">Where the model stands</SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          The figures first. Every number below is cross-validated with plates as groups, and is shown
+          against the trivial baseline — without that reference an F1 of 0.52 could mean anything.
+        </p>
+        <ModelScorecard />
+      </section>
+
+      {/* --- La lectura honesta --- */}
+      <section>
+        <SectionTitle eyebrow="Assessment"><Rich>{MODEL_ASSESSMENT.title}</Rich></SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{MODEL_ASSESSMENT.lead}</Rich>
+        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          {MODEL_ASSESSMENT.points.map((p) => (
+            <Card key={p.title}>
+              <h3 className="text-base">{p.title}</h3>
+              <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Rich>{p.body}</Rich>
+              </p>
+            </Card>
+          ))}
+        </div>
+
+        <Card accent className="mt-4">
+          <h3 className="text-lg">{MODEL_ASSESSMENT.cause.title}</h3>
+          <p className="mt-3" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{MODEL_ASSESSMENT.cause.body}</Rich>
+          </p>
+          <p
+            className="mt-4 p-3 text-sm"
+            style={{
+              borderLeft: '4px solid var(--accent-secondary)',
+              background: 'var(--surface-elevated)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <Rich>{MODEL_ASSESSMENT.cause.expectation}</Rich>
+          </p>
+        </Card>
+
+        <Card className="mt-4">
+          <h3 className="text-base">{MODEL_ASSESSMENT.next.title}</h3>
+          <ol className="mt-4 flex list-decimal flex-col gap-3 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {MODEL_ASSESSMENT.next.items.map((it, i) => (
+              <li key={i}>
+                <Rich>{it}</Rich>
+              </li>
+            ))}
+          </ol>
+        </Card>
+
+        <Card accent className="mt-4">
+          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{MODEL_ASSESSMENT.closing}</Rich>
+          </p>
+        </Card>
       </section>
 
       {/* --- Metricas --- */}
