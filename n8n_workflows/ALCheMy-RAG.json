@@ -1,0 +1,1402 @@
+{
+  "name": "ALCheMy-RAG",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n01",
+      "name": "▶ Run Ingestion",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/data/rag_corpus/public/*.pdf",
+        "options": {}
+      },
+      "id": "n02",
+      "name": "Read PUBLIC Corpus",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/data/rag_corpus/internal/*.pdf",
+        "options": {}
+      },
+      "id": "n03",
+      "name": "Read INTERNAL Corpus",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "sensitivity",
+              "value": "PUBLIC",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "doc_type",
+              "value": "PAPER",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "file_name",
+              "value": "={{ $binary.data.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "file_path",
+              "value": "={{ '/home/node/data/rag_corpus/public/' + $binary.data.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "n04",
+      "name": "Label PUBLIC",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1",
+              "name": "sensitivity",
+              "value": "INTERNAL",
+              "type": "string"
+            },
+            {
+              "id": "b2",
+              "name": "doc_type",
+              "value": "LAB_NOTEBOOK",
+              "type": "string"
+            },
+            {
+              "id": "b3",
+              "name": "file_name",
+              "value": "={{ $binary.data.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "b4",
+              "name": "file_path",
+              "value": "={{ '/home/node/data/rag_corpus/internal/' + $binary.data.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "n05",
+      "name": "Label INTERNAL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "binaryData": true,
+        "type": "MD5",
+        "dataPropertyName": "file_hash"
+      },
+      "id": "n06",
+      "name": "Compute File MD5",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT metadata->>'file_hash' AS file_hash\nFROM   rag_chunks\nWHERE  jsonb_exists(metadata, 'file_hash');",
+        "options": {}
+      },
+      "id": "n07",
+      "name": "Already Indexed Hashes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -688,
+        288
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "file_hash",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input1",
+        "options": {}
+      },
+      "id": "n08",
+      "name": "Discard Already Indexed",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -448,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "rag_chunks",
+        "options": {
+          "columnNames": {
+            "values": {}
+          }
+        }
+      },
+      "id": "n09",
+      "name": "Insert into pgvector",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO rag_documents (file_name, file_path, file_hash, doc_type, sensitivity)\nVALUES ($1, $2, $3, $4, $5)\nON CONFLICT (file_hash) DO NOTHING;",
+        "options": {
+          "queryReplacement": "={{ $json.file_name }},={{ $json.file_path }},={{ $json.file_hash }},={{ $json.doc_type }},={{ $json.sensitivity }}"
+        }
+      },
+      "id": "n10",
+      "name": "Register in rag_documents",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -176,
+        -128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "dTKBybMDqtv6Qt85",
+          "name": "ALCheMy PostgreSQL Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_name",
+                "value": "={{ $json.file_name }}"
+              },
+              {
+                "name": "file_hash",
+                "value": "={{ $json.file_hash }}"
+              },
+              {
+                "name": "doc_type",
+                "value": "={{ $json.doc_type }}"
+              },
+              {
+                "name": "sensitivity",
+                "value": "={{ $json.sensitivity }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "n11",
+      "name": "Document Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 1200,
+        "chunkOverlap": 250,
+        "options": {}
+      },
+      "id": "n12",
+      "name": "Split Text (Chunking)",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "model": "bge-m3:latest"
+      },
+      "id": "n13",
+      "name": "Embeddings bge-m3 (Local Ollama)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        400
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "KtOCxPRFPXTgPjso",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "n20",
+      "name": "Chat: Ask the Lab",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1648,
+        912
+      ],
+      "webhookId": "a3892c4a-2cb0-4c11-9910-93813787b4f8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Identify Caller').first().json.question }}",
+        "options": {
+          "systemMessage": "You are the scientific assistant of the ALCheMy laboratory (MOFs and POPs, APMU unit).\n\nYou do NOT write SQL. You have a catalogue of tools with typed parameters: you\npick the tool and fill in the blanks. If something cannot be answered with the\ncatalogue, say so instead of improvising.\n\nLABORATORY DATA (exact figures, never approximate):\n\n- search_synthesis(metal, linker, temp_min, temp_max, date_from, date_to, limit)\n  Syntheses matching conditions. All filters optional: pass an empty string for\n  the ones you skip. Metals actually present: Ca, Fe, Cu, Bi, Ti, Mg, Ni, Co.\n\n- sample_summary(sample_code)\n  Full record of ONE sample. This is the right tool whenever the question names\n  a code (RS1883, LP0042, IEF-31...).\n\n- get_characterisation(sample_code, technique, limit)\n  Which measurements a sample has. Returns records, not curves.\n\n- statistics(dimension, limit)\n  Counts. dimension must be EXACTLY one of: metal_center, linker,\n  researcher_name, synthesis_type, research_unit, year, technique.\n\nDOCUMENTATION (concepts, methods, background):\n\n- search_documentation(query)\n  Hybrid search over the text of papers and protocols. For CONTENT.\n\n- search_library(text, year, limit)\n  Which documents exist and how to cite them. For the BIBLIOGRAPHY, not content.\n\n- read_data_dictionary()\n  The meaning of every column of every table. Consult it if a term is unclear.\n\nRELATIONS (knowledge graph, for questions no other tool can answer):\n\n- find_graph_node(query, limit)\n  Finds the exact node_id (e.g. SAMPLE:RS1884, LIGAND:H2BDC, METAL:Cu) from free\n  text. ALWAYS call this before explore_graph: you need the exact node_id.\n\n- explore_graph(node_id, hops)\n  Walks the knowledge graph up to 3 hops from a node_id already found with\n  find_graph_node, and returns everything connected to it: same metal, same\n  ligand, same modulator, what measurements exist. Use it for relational\n  questions the SQL tools above cannot answer, like 'what do RS1884 and RS1902\n  have in common' or 'which samples share a ligand with RS1884'. Note: samples\n  with unresolved chemistry share the placeholder value UNKNOWN, so exploring\n  from one of those can return many unrelated samples - that is a real data\n  quality signal, not a bug.\n\nTHE RULE THAT IS NOT NEGOTIABLE:\nA number, a count, a date or a sample code ALWAYS comes from the data tools,\nnever from search_documentation. Vectors capture semantic similarity, not\nnumeric precision: a figure lifted from a retrieved passage looks right and may\nbe wrong, and the error would be silent.\n\nOTHER RULES:\n- If a retrieved passage carries a sensitivity other than PUBLIC, do not\n  reproduce it verbatim: summarise without naming specific ligands or parameters.\n- If the information is in none of the tools, say explicitly that you do not\n  know. Do not fill gaps with general knowledge.\n\nMANDATORY ANSWER FORMAT (no exceptions):\n\n1. LANGUAGE: always answer in SPANISH, even though the retrieved documents are\n   in English and even if the question arrives in another language. Translate\n   the content. Never answer in English.\n\n2. SOURCES: always end with a section titled exactly 'Fuentes:' with one line\n   per origin used:\n     - documentary: <first author> et al. (<year>), <journal>. DOI: <doi>\n       taken from the passage metadata (authors, year, journal, doi)\n     - data: the tool name and the parameters you passed, for example:\n       statistics(dimension='metal_center')\n   If you used no tool at all, write 'Fuentes: ninguna, no he encontrado\n   informacion en el corpus.'\n\nBefore sending, check both: it is in Spanish, and it carries the 'Fuentes:'\nsection."
+        }
+      },
+      "id": "n21",
+      "name": "Agent - ALCheMy Lab Assistant",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        896
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.6-flash",
+        "options": {}
+      },
+      "id": "n22",
+      "name": "Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        1056
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RPHHSBb04tJjn7BZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "n23",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Searches passages inside the laboratory documentation (papers, protocols, digitised notebooks). Use for concepts, methods and background. NEVER for numeric facts about samples.",
+        "tableName": "rag_chunks",
+        "topK": 8,
+        "options": {
+          "columnNames": {
+            "values": {}
+          }
+        }
+      },
+      "id": "n24",
+      "name": "search_documentation",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "n25",
+      "name": "Reranker (Cohere) - DISABLED",
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        256,
+        1696
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Returns the full data dictionary: for every table, the name of each column, its type, units, valid values and meaning. Documents synthesis_experiments, characterization_measurements, rag_documents, rag_chunks, audit_log and agent_chat_log. Consult it before reasoning about any column name.",
+        "operation": "executeQuery",
+        "query": "SELECT table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description\nFROM   data_dictionary\nORDER  BY table_name, section_name, column_name;",
+        "options": {}
+      },
+      "id": "n27",
+      "name": "read_data_dictionary",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        16,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## FLOW 1 - INDEXING (manual, run each time you add documents)\n**Before the first run:**\n1. `docker compose up -d ollama` and `docker exec -it alchemy_ollama ollama pull bge-m3`\n2. `docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/init_db.sql`\n3. Assign the Postgres credential to the 4 nodes that need it.\n\nDrop PDFs into `data/rag_corpus/public/` or `data/rag_corpus/internal/`.",
+        "height": 264,
+        "width": 1000,
+        "color": 4
+      },
+      "id": "s01",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### The folder decides the label\nTwo reading branches instead of one: what you drop in `public/` gets tagged `PUBLIC`, what you drop in `internal/` gets tagged `INTERNAL`.\nThat way confidentiality never depends on anyone remembering: it depends on where the file was dropped.",
+        "height": 200,
+        "width": 440,
+        "color": 7
+      },
+      "id": "s03",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Anti-duplication (MD5 + Merge)\nMD5 is the file's fingerprint: same content = same hash, even if you rename it.\nBelow, the DB is asked for the list of hashes **already indexed**, and the Merge in *Keep Non-Matches* mode lets through **only the ones not on that list**.\nWithout this, every run would duplicate the whole corpus.",
+        "height": 284,
+        "width": 416,
+        "color": 3
+      },
+      "id": "s04",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Chunking\n`chunkSize 1200 / overlap 250` (~20%).\nThe high overlap is deliberate: in dense technical text, a sentence split across two chunks is lost forever without overlap.",
+        "height": 200,
+        "width": 400,
+        "color": 3
+      },
+      "id": "s05",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### A single embeddings node\nFeeds both indexing **and** querying.\nDeliberate: if the index model and the query model ever diverge, the RAG returns garbage **with no error at all**.\n\nAnd it all happens locally: the text never leaves this machine.",
+        "height": 256,
+        "width": 324,
+        "color": 6
+      },
+      "id": "s06",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## FLOW 2 - QUERY (the agent)\nNot a classic single-retriever RAG: an **agent with a tool catalogue**, and the model picks which one to use.\nHard rule: **structured data is NEVER vectorised**. For numbers, SQL.\n\nEvery caller is identified (Identify Caller -> Authorise Caller) and every exchange is logged in agent_chat_log, attributed to that person.",
+        "height": 150,
+        "width": 1000,
+        "color": 5
+      },
+      "id": "s07",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Reranker: the missing improvement, disabled on purpose\nHybrid search **retrieves** well but **ranks** so-so. A reranker re-reads the 8 candidates against the question and reorders them: +10-25% precision.\n\nIt is **disabled** because the only one available in n8n is Cohere, an external service: turning it on sends your chunk text off-machine. Only enable it for PUBLIC-only corpora.",
+        "height": 272,
+        "width": 508,
+        "color": 2
+      },
+      "id": "s08",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search laboratory syntheses filtered by metal centre, linker, target temperature and date range. Every filter is optional: pass an empty string for the ones you do not want to apply. Returns sample_code, date, metal, linker, target temperature, hours, L/M ratio and how many characterisation techniques were measured.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_search_synthesis($1::text, $2::text, NULLIF($3,'')::text, NULLIF($4,'')::text, NULLIF($5,'')::numeric, NULLIF($6,'')::numeric, NULLIF($7,'')::date, NULLIF($8,'')::date, COALESCE(NULLIF($9,'')::int, 20), COALESCE($10::boolean, false));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('metal', 'Metal centre symbol, ONE value only, e.g. Cu, Fe, Ca, Bi, Ti, Mg, Ni, Co. Empty string for no filter', 'string', ''), $fromAI('linker', 'Part of the linker name, e.g. H6ttbmp. Empty string for no filter', 'string', ''), $fromAI('temp_min', 'Minimum target temperature in Celsius. Empty string for no filter', 'string', ''), $fromAI('temp_max', 'Maximum target temperature in Celsius. Empty string for no filter', 'string', ''), $fromAI('date_from', 'Earliest synthesis date, YYYY-MM-DD. Empty string for no filter', 'string', ''), $fromAI('date_to', 'Latest synthesis date, YYYY-MM-DD. Empty string for no filter', 'string', ''), $fromAI('limit', 'Maximum rows, 1 to 200. Default 20', 'string', '20'), $('Authorise Caller').first().json.is_owner] }}"
+        }
+      },
+      "id": "b381c4b3-5bb5-442b-9dc8-a8287835dc44",
+      "name": "search_synthesis",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1088,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Lists which characterisation measurements a given sample has: technique, instrument, operator, file and which metadata fields it holds. Returns the measurement records, never the data curves.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_get_characterisation($1::text, $2::text, $3::text, NULLIF($4,'')::text, COALESCE(NULLIF($5,'')::int, 20), COALESCE($6::boolean, false));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('sample_code', 'Exact sample code, e.g. RS1883', 'string'), $fromAI('technique', 'One technique: PXRD, VT-XRD, TGA, FTIR, adsorption, UV_VIS, SEM, ICP, EA. Empty string for all', 'string', ''), $fromAI('limit', 'Maximum rows. Default 20', 'string', '20'), $('Authorise Caller').first().json.is_owner] }}"
+        }
+      },
+      "id": "1f0fa021-93d4-46ae-b198-4e2f7ee50242",
+      "name": "get_characterisation",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -864,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Full record of ONE sample: all its synthesis conditions (solvents, thermal ramps, modulators, masses) as field/value pairs, omitting empty fields. Use it whenever the question names a specific sample code.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_sample_summary($1::text, $2::text, $3::text, COALESCE($4::boolean, false));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('sample_code', 'Exact sample code, e.g. RS1883', 'string'), $('Authorise Caller').first().json.is_owner] }}"
+        }
+      },
+      "id": "542043cf-ce9a-4151-ab18-2171cff6b9fc",
+      "name": "sample_summary",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -656,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Counts how many samples exist grouped by one dimension. Valid dimensions, EXACTLY: metal_center, linker, researcher_name, synthesis_type, research_unit, year, technique. Use for questions like how many nickel samples are there, or which metal is used most.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_statistics($1::text, $2::text, $3::text, COALESCE(NULLIF($4,'')::int, 20));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('dimension', 'Exactly one of: metal_center, linker, researcher_name, synthesis_type, research_unit, year, technique', 'string'), $fromAI('limit', 'Maximum categories. Default 20', 'string', '20')] }}"
+        }
+      },
+      "id": "fe7c2cac-0680-4811-917c-81e3236e23b8",
+      "name": "statistics",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -432,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Tells you WHICH documents exist in the corpus and how to cite them (authors, year, journal, DOI). Use it for questions about the available bibliography, not about its contents. For contents use search_documentation.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_search_library($1::text, $2::text, NULLIF($3,'')::text, NULLIF($4,'')::int, COALESCE(NULLIF($5,'')::int, 20));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('text', 'Text to look for in title, authors or journal. Empty string for no filter', 'string', ''), $fromAI('year', 'Publication year. Empty string for no filter', 'string', ''), $fromAI('limit', 'Maximum documents. Default 20', 'string', '20')] }}"
+        }
+      },
+      "id": "9a76bcfc-f2c5-49ce-af25-cd6a79327000",
+      "name": "search_library",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -208,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "actor_email",
+              "type": "string",
+              "value": "={{ ($json.metadata && $json.metadata.email) || $json.user_email || '' }}"
+            },
+            {
+              "id": "a2",
+              "name": "session_id",
+              "type": "string",
+              "value": "={{ $json.sessionId }}"
+            },
+            {
+              "id": "a3",
+              "name": "question",
+              "type": "string",
+              "value": "={{ $json.chatInput }}"
+            },
+            {
+              "id": "a4",
+              "name": "require_identity",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "a5",
+              "name": "owner_token",
+              "type": "string",
+              "value": "={{ ($json.metadata && $json.metadata.owner_token) || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "30cd8cb1-5ec8-4eef-b226-92b0f3e4065d",
+      "name": "Identify Caller",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1424,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT a.*, agent_verify_owner($3) AS is_owner FROM agent_authorise($1, $2) a;",
+        "options": {
+          "queryReplacement": "={{ [$json.actor_email, $json.session_id, $json.owner_token] }}"
+        }
+      },
+      "id": "af6d3d50-6858-4b60-9a14-4a74abcd1fc8",
+      "name": "Authorise Caller",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1200,
+        912
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.allowed === true || $('Identify Caller').first().json.require_identity !== true }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2c0fa57b-bbc3-49b1-81e7-3ad9f18c89be",
+      "name": "Is Caller Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -976,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT agent_log_exchange($1, $2, $3, $4, 'ALLOWED', NULL) AS chat_id;",
+        "options": {
+          "queryReplacement": "={{ $('Identify Caller').first().json.session_id }},{{ $('Identify Caller').first().json.actor_email }},{{ $('Identify Caller').first().json.question }},{{ $json.output }}"
+        }
+      },
+      "id": "e43b42ac-215f-4e3d-b573-47fd3228463e",
+      "name": "Log Exchange",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        432,
+        784
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "r1",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Agent - ALCheMy Lab Assistant').first().json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "120bbc20-ac02-4138-855e-574381d6ec2f",
+      "name": "Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT agent_log_exchange($1, $2, $3, NULL, 'DENIED', $4) AS chat_id;",
+        "options": {
+          "queryReplacement": "={{ $('Identify Caller').first().json.session_id }},{{ $('Identify Caller').first().json.actor_email }},{{ $('Identify Caller').first().json.question }},{{ $json.reason }}"
+        }
+      },
+      "id": "4496e18e-deaf-4c7f-ad16-c40b4c75963d",
+      "name": "Log Denied Access",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -800,
+        1024
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1",
+              "name": "output",
+              "type": "string",
+              "value": "=No puedo atender esta consulta: {{ $('Is Caller Allowed?').first().json.reason }}. Si crees que es un error, pide que te den de alta en la tabla authorized_researchers."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b747ad1a-26fb-4d90-b95e-9606d2e15889",
+      "name": "Denied Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "model": "qwen3:14b",
+        "options": {}
+      },
+      "id": "c6f20eb9-d327-42db-8ae0-4716eae216d9",
+      "name": "Qwen Chat Model (Local Fallback)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        112,
+        1056
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "KtOCxPRFPXTgPjso",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Identify Caller').first().json.question }}",
+        "options": {
+          "systemMessage": "You are the scientific assistant of the ALCheMy laboratory (MOFs and POPs, APMU unit).\n\nYou do NOT write SQL. You have a catalogue of tools with typed parameters: you\npick the tool and fill in the blanks. If something cannot be answered with the\ncatalogue, say so instead of improvising.\n\nLABORATORY DATA (exact figures, never approximate):\n\n- search_synthesis(metal, linker, temp_min, temp_max, date_from, date_to, limit)\n  Syntheses matching conditions. All filters optional: pass an empty string for\n  the ones you skip. Metals actually present: Ca, Fe, Cu, Bi, Ti, Mg, Ni, Co.\n\n- sample_summary(sample_code)\n  Full record of ONE sample. This is the right tool whenever the question names\n  a code (RS1883, LP0042, IEF-31...).\n\n- get_characterisation(sample_code, technique, limit)\n  Which measurements a sample has. Returns records, not curves.\n\n- statistics(dimension, limit)\n  Counts. dimension must be EXACTLY one of: metal_center, linker,\n  researcher_name, synthesis_type, research_unit, year, technique.\n\nDOCUMENTATION (concepts, methods, background):\n\n- search_documentation(query)\n  Hybrid search over the text of papers and protocols. For CONTENT.\n\n- search_library(text, year, limit)\n  Which documents exist and how to cite them. For the BIBLIOGRAPHY, not content.\n\n- read_data_dictionary()\n  The meaning of every column of every table. Consult it if a term is unclear.\n\nRELATIONS (knowledge graph, for questions no other tool can answer):\n\n- find_graph_node(query, limit)\n  Finds the exact node_id (e.g. SAMPLE:RS1884, LIGAND:H2BDC, METAL:Cu) from free\n  text. ALWAYS call this before explore_graph: you need the exact node_id.\n\n- explore_graph(node_id, hops)\n  Walks the knowledge graph up to 3 hops from a node_id already found with\n  find_graph_node, and returns everything connected to it: same metal, same\n  ligand, same modulator, what measurements exist. Use it for relational\n  questions the SQL tools above cannot answer, like 'what do RS1884 and RS1902\n  have in common' or 'which samples share a ligand with RS1884'. Note: samples\n  with unresolved chemistry share the placeholder value UNKNOWN, so exploring\n  from one of those can return many unrelated samples - that is a real data\n  quality signal, not a bug.\n\nTHE RULE THAT IS NOT NEGOTIABLE:\nA number, a count, a date or a sample code ALWAYS comes from the data tools,\nnever from search_documentation. Vectors capture semantic similarity, not\nnumeric precision: a figure lifted from a retrieved passage looks right and may\nbe wrong, and the error would be silent.\n\nOTHER RULES:\n- If a retrieved passage carries a sensitivity other than PUBLIC, do not\n  reproduce it verbatim: summarise without naming specific ligands or parameters.\n- If the information is in none of the tools, say explicitly that you do not\n  know. Do not fill gaps with general knowledge.\n\nMANDATORY ANSWER FORMAT (no exceptions):\n\n1. LANGUAGE: always answer in SPANISH, even though the retrieved documents are\n   in English and even if the question arrives in another language. Translate\n   the content. Never answer in English.\n\n2. SOURCES: always end with a section titled exactly 'Fuentes:' with one line\n   per origin used:\n     - documentary: <first author> et al. (<year>), <journal>. DOI: <doi>\n       taken from the passage metadata (authors, year, journal, doi)\n     - data: the tool name and the parameters you passed, for example:\n       statistics(dimension='metal_center')\n   If you used no tool at all, write 'Fuentes: ninguna, no he encontrado\n   informacion en el corpus.'\n\nBefore sending, check both: it is in Spanish, and it carries the 'Fuentes:'\nsection."
+        }
+      },
+      "id": "f65fa856-c9b0-45e1-bb55-c217d7da1842",
+      "name": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        112,
+        896
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Finds the exact node_id in the knowledge graph from free text (a sample code, a ligand, a metal or a modulator name). ALWAYS call this before explore_graph: you need the exact node_id (e.g. SAMPLE:RS1884) to be able to walk the graph.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_find_graph_node($1::text, $2::text, NULLIF($3,'')::text, COALESCE(NULLIF($4,'')::int, 20));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('query', 'Free text to search for: a sample code, ligand, metal or modulator name', 'string', ''), $fromAI('limit', 'Maximum nodes to return. Default 20', 'string', '20')] }}"
+        }
+      },
+      "id": "kg01find",
+      "name": "find_graph_node",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Walks the knowledge graph up to 3 hops from a node_id already found with find_graph_node, and returns everything connected to it: same metal, same ligand, same modulator, what measurements exist. Use it for relational questions the other tools cannot answer, like 'what do RS1884 and RS1902 have in common' or 'which samples share a ligand with RS1884'.",
+        "operation": "executeQuery",
+        "query": "SELECT * FROM agent_explore_graph($1::text, $2::text, NULLIF($3,'')::text, COALESCE(NULLIF($4,'')::int, 2), COALESCE(NULLIF($5,'')::int, 30));",
+        "options": {
+          "queryReplacement": "={{ [$('Identify Caller').first().json.actor_email, $('Identify Caller').first().json.session_id, $fromAI('node_id', 'Exact node_id from find_graph_node, e.g. SAMPLE:RS1884', 'string', ''), $fromAI('hops', 'Number of hops to explore, between 1 and 3. Default 2', 'string', '2'), $fromAI('limit', 'Maximum neighbours to return, closest first. Default 30', 'string', '30')] }}"
+        }
+      },
+      "id": "kg02explore",
+      "name": "explore_graph",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        1520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b1iH5xIdPTeO6vwO",
+          "name": "ALCheMy Agent (read-only)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "▶ Run Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Read PUBLIC Corpus",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read INTERNAL Corpus",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Already Indexed Hashes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PUBLIC Corpus": {
+      "main": [
+        [
+          {
+            "node": "Label PUBLIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read INTERNAL Corpus": {
+      "main": [
+        [
+          {
+            "node": "Label INTERNAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label PUBLIC": {
+      "main": [
+        [
+          {
+            "node": "Compute File MD5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label INTERNAL": {
+      "main": [
+        [
+          {
+            "node": "Compute File MD5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute File MD5": {
+      "main": [
+        [
+          {
+            "node": "Discard Already Indexed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Indexed Hashes": {
+      "main": [
+        [
+          {
+            "node": "Discard Already Indexed",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Discard Already Indexed": {
+      "main": [
+        [
+          {
+            "node": "Insert into pgvector",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Register in rag_documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into pgvector",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Text (Chunking)": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Document Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings bge-m3 (Local Ollama)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into pgvector",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "search_documentation",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_documentation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker (Cohere) - DISABLED": {
+      "ai_reranker": [
+        [
+          {
+            "node": "search_documentation",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_data_dictionary": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_synthesis": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_characterisation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sample_summary": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "statistics": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_library": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat: Ask the Lab": {
+      "main": [
+        [
+          {
+            "node": "Identify Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify Caller": {
+      "main": [
+        [
+          {
+            "node": "Authorise Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorise Caller": {
+      "main": [
+        [
+          {
+            "node": "Is Caller Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Caller Allowed?": {
+      "main": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Denied Access",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Denied Access": {
+      "main": [
+        [
+          {
+            "node": "Denied Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent - ALCheMy Lab Assistant": {
+      "main": [
+        [
+          {
+            "node": "Log Exchange",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Exchange": {
+      "main": [
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qwen Chat Model (Local Fallback)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent - ALCheMy Lab Assistant (Qwen Fallback)": {
+      "main": [
+        [
+          {
+            "node": "Log Exchange",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "find_graph_node": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "explore_graph": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent - ALCheMy Lab Assistant",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Agent - ALCheMy Lab Assistant (Qwen Fallback)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6a48971b-0796-481b-bb1a-47b29eb57b43",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0d073460602c6db9b70ebba9e3b659d24a7bee5566e27aadaafc92a0166ea367"
+  },
+  "nodeGroups": [],
+  "id": "IQPDjDIm55kz6yEx",
+  "tags": []
+}
