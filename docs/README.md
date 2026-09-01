@@ -13,6 +13,7 @@ público; si no, no lo es.**
 | Archivo | Qué es |
 |---|---|
 | [`ROADMAP_APP_WEB_Y_GUION.md`](./ROADMAP_APP_WEB_Y_GUION.md) | Arquitectura de las 9 pantallas de la app y el guión de contenido de cada una. El documento maestro del frontend |
+| [`CONCEPTOS_CLAVE.md`](./CONCEPTOS_CLAVE.md) | Explicaciones de una idea cada una: qué significa el porcentaje de un clasificador, rejilla congelada frente a modelo activo, y una valoración crítica y sin adornos de lo bueno que es el modelo |
 
 ## Cuadernos publicados ✅
 
