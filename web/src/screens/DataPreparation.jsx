@@ -8,6 +8,7 @@ import {
   ETL_ZERO_VS_NULL,
 } from '../content/screens.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
+import NotebookList from '../components/NotebookList.jsx'
 
 const FORMATS = [
   ['.xrdml', 'PANalytical PXRD', 'Only counts are stored; the 2θ axis is reconstructed by linspace from start and end angles.'],
@@ -302,10 +303,17 @@ export default function DataPreparation() {
       {/* --- 9. Notebooks --- */}
       <section>
         <SectionTitle eyebrow="The code itself">Read the notebooks</SectionTitle>
-        <Placeholder source="docs/notebooks/">
-          Static HTML renders pending: each notebook exported read-only, with outputs audited cell by cell
-          for real sample codes and ligand names. The .ipynb file itself is never served.
-        </Placeholder>
+        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Every notebook is published as a static, read-only page. Sample identifiers and unpublished
+          ligand names are replaced by pseudonyms and local paths removed; metal centres are shown
+          unchanged, since they carry no trade secret. None of the code was re-executed to produce these
+          pages — several of these notebooks write to the production database, and re-running them to make
+          a clean copy could duplicate or cascade-delete rows.
+        </p>
+        <NotebookList only="03" />
+        <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+          The full set of seven notebooks is linked from the screen each one belongs to.
+        </p>
       </section>
 
       <section>

@@ -10,6 +10,7 @@ import {
   MODEL_VALIDATION,
 } from '../content/screens.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle } from '../components/ui.jsx'
+import NotebookList from '../components/NotebookList.jsx'
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -246,6 +247,11 @@ export default function Modeling() {
             SHAP beeswarm plot pending, plus the block-level permutation importance chart.
           </Placeholder>
         </div>
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="The code itself">The notebook behind this screen</SectionTitle>
+        <NotebookList only="05" />
       </section>
 
       <section>

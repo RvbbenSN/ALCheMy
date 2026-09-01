@@ -1,5 +1,6 @@
 import { WORKFLOW_SECTIONS } from '../content/site.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
+import NotebookList from '../components/NotebookList.jsx'
 
 const ROW_SHAPE = [
   ['sample_code', 'Foreign key into synthesis_experiments'],
@@ -100,6 +101,11 @@ export default function DataCollection() {
           Schema explorer pending: an entity diagram of the governed tables, with each column&rsquo;s
           description read from the <code>data_dictionary</code> table itself — documented at 100% coverage.
         </Placeholder>
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="The code itself">Notebooks behind this screen</SectionTitle>
+        <NotebookList only="02" />
       </section>
 
       <section>

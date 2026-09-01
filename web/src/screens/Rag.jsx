@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Badge, Button, Card, Placeholder, SectionTitle, Term } from '../components/ui.jsx'
+import NotebookList from '../components/NotebookList.jsx'
 
 const SUGGESTED = [
   'Which temperature window favours crystalline zirconium phosphonates?',
@@ -118,6 +119,11 @@ export default function Rag() {
             </Placeholder>
           </div>
         </Card>
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="The code itself">Notebooks behind this screen</SectionTitle>
+        <NotebookList only="07" />
       </section>
 
       <section>

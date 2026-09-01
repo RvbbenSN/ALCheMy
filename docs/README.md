@@ -14,28 +14,55 @@ público; si no, no lo es.**
 |---|---|
 | [`ROADMAP_APP_WEB_Y_GUION.md`](./ROADMAP_APP_WEB_Y_GUION.md) | Arquitectura de las 9 pantallas de la app y el guión de contenido de cada una. El documento maestro del frontend |
 
+## Cuadernos publicados ✅
+
+Los 7 cuadernos se publican como **HTML estático de solo lectura** en
+`web/public/notebooks/`, para que los sirva la propia aplicación y pueda enlazarlos desde la
+pantalla a la que corresponde cada uno. No viven aquí para no duplicar 6 MB que se
+desincronizarían a la primera regeneración.
+
+Se generan con:
+
+```bash
+python scripts/build_public_notebooks.py --report   # qué hay, sin escribir nada
+python scripts/build_public_notebooks.py            # genera el HTML saneado
+python scripts/build_public_notebooks.py --strip-images
+```
+
+### Las dos reglas que sigue el generador
+
+**1. Los outputs filtran más que el código.** Un `.ipynb` guarda lo que imprimió cada celda:
+`head()` de dataframes con códigos de muestra reales, ligandos en las leyendas, rutas del disco
+local en los mensajes de error. El código en sí es inofensivo — sin el data lake no tiene nada que
+leer. El script sanea **fuente y salidas**, no solo el código.
+
+**2. No ejecutar los cuadernos.** Varios escriben en PostgreSQL: reejecutarlos para producir una
+copia limpia podría insertar filas duplicadas o borrar en cascada. Se transforma el `.ipynb` ya
+ejecutado, en memoria, sin tocar el original.
+
+### Qué sustituye, verificado
+
+En la última generación: **108 códigos de muestra**, **57 nombres de ligando**, 10 rutas absolutas
+y 3 correos. Comprobado sobre el HTML resultante que no queda ni un `RS…`/`LP…`/`IEF-…` real ni
+ninguno de los cuatro ligandos. Los metales se dejan visibles: no son secreto industrial.
+
+Los seudónimos son **secuenciales** (`SMP-0001`, `LIG-A`) y no un hash: un hash sobre un espacio de
+códigos tan pequeño se invierte por fuerza bruta en segundos, y entonces no protege nada.
+
+### ⚠️ Lo que el script NO puede sanear
+
+**Las figuras.** Un gráfico va incrustado como PNG en base64: si su título dice `RS1883`, eso son
+píxeles y ninguna expresión regular los alcanza. Hay **31 figuras** publicadas (19 en el cuaderno 05
+y 12 en el 06) que **siguen pendientes de revisión humana**. `--report` dice dónde están y
+`--strip-images` permite publicar sin ellas si hiciera falta.
+
 ## Qué falta por traer aquí
 
-Pendiente de las fases F1 y F6 del roadmap:
-
-- **Cuadernos refinados.** Versiones de los notebooks pensadas para leerse, no para ejecutarse:
-  renderizadas a HTML estático de solo lectura, con lenguaje científico y didáctico.
-- **Glosario de términos.** Cada abreviatura que aparece en la app, con su nombre completo y una
-  explicación llana. Es la fuente de los tooltips del frontend, y se generará desde
-  `methodology/logbook/GUIA_DIDACTICA_PORTFOLIO.md` en vez de mantenerse a mano.
-- **Versión en español.** La app va íntegramente en inglés; los documentos de esta carpeta llevarán
-  las dos versiones cuando haya tiempo.
-
-## Dos reglas al traer algo aquí
-
-**1. Los outputs de un cuaderno filtran más que el código.** Un `.ipynb` guarda lo que imprimió cada
-celda: `head()` de dataframes con códigos de muestra reales, nombres de ligando en las leyendas de
-las figuras, rutas del disco local en los mensajes de error. El código en sí es inofensivo — sin el
-data lake no tiene nada que leer. Hay que auditar **celda por celda**, no solo revisar el código.
-
-**2. No ejecutar los cuadernos para regenerarlos.** Varios escriben en PostgreSQL: reejecutarlos
-para producir una copia limpia puede insertar filas duplicadas o borrar en cascada. Se transforma el
-`.ipynb` ya ejecutado; no se vuelve a correr.
+- **Glosario de términos.** Cada abreviatura de la app con su nombre completo y una explicación
+  llana, generado desde `methodology/logbook/GUIA_DIDACTICA_PORTFOLIO.md` en vez de mantenerse a
+  mano. La semilla de 13 términos ya vive en `web/src/content/site.js`.
+- **Versión en español.** La app va íntegramente en inglés; los documentos llevarán las dos
+  versiones cuando haya tiempo.
 
 ## Qué NO va aquí
 

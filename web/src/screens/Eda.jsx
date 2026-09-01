@@ -10,6 +10,7 @@ import {
   EDA_PCA,
 } from '../content/screens.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle } from '../components/ui.jsx'
+import NotebookList from '../components/NotebookList.jsx'
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -246,6 +247,11 @@ export default function Eda() {
             as the marker shape, plus the cumulative variance curve.
           </Placeholder>
         </div>
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="The code itself">The notebook behind this screen</SectionTitle>
+        <NotebookList only="04" />
       </section>
 
       <section>
