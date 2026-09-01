@@ -20,51 +20,52 @@ import * as si from 'simple-icons'
 
 // El stack tal como lo escribio Ruben, en sus tres filas. El primer elemento es
 // el slug de simple-icons; null para lo que no tiene logotipo de marca.
+// Tercer campo opcional: mascara PNG en /logos/ para las marcas que no estan en
+// simple-icons. Se pintan igual, con el color del tema, usando el PNG como
+// mask-image: para una forma solida el resultado es el mismo que un SVG
+// monocromo, sin tener que vectorizar nada.
 const WANTED = [
   // fila 1 - datos e infraestructura
   ['siPython', 'Python'],
-  [null, 'SQL'],
   ['siJupyter', 'Jupyter'],
   ['siPostgresql', 'PostgreSQL'],
-  [null, 'pgAdmin'],
   ['siN8n', 'n8n'],
   ['siDocker', 'Docker'],
   // fila 2 - ciencia de datos
   ['siPandas', 'Pandas'],
   ['siNumpy', 'NumPy'],
   ['siScipy', 'SciPy'],
-  [null, 'Matplotlib'],
-  [null, 'Seaborn'],
+  [null, 'Matplotlib', 'matplotlib.png'],
+  [null, 'Seaborn'], // multicolor por diseno: su silueta seria un disco liso
   ['siScikitlearn', 'Scikit-Learn'],
   ['siStreamlit', 'Streamlit'],
   ['siReact', 'React'],
   // fila 3 - entorno e IA
-  [null, 'VS Code'], // Microsoft retiro su marca de simple-icons
-  [null, 'Antigravity'],
+  [null, 'VS Code', 'vscode.png'], // Microsoft retiro su marca de simple-icons
+  [null, 'Antigravity', 'antigravity.png'],
   ['siClaudecode', 'Claude Code'],
   ['siGooglegemini', 'Gemini'],
   ['siOllama', 'Ollama'],
   ['siCloudflare', 'Cloudflare'],
-  [null, 'Slack'],
 ]
 
-const ROWS = [7, 8, 7] // como se agrupan en pantalla
+const ROWS = [5, 8, 6] // como se agrupan en pantalla
 
 const out = []
 const noIcon = []
 const notFound = []
 
-for (const [key, label] of WANTED) {
+for (const [key, label, mask] of WANTED) {
   if (key === null) {
-    out.push({ label, path: null })
-    noIcon.push(label)
+    out.push({ label, path: null, mask: mask ?? null })
+    if (!mask) noIcon.push(label)
     continue
   }
   const icon = si[key]
   if (icon && icon.path) {
-    out.push({ label, path: icon.path })
+    out.push({ label, path: icon.path, mask: null })
   } else {
-    out.push({ label, path: null })
+    out.push({ label, path: null, mask: mask ?? null })
     notFound.push(`${label} (${key})`)
   }
 }

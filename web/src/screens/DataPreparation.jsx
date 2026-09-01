@@ -59,9 +59,96 @@ export default function DataPreparation() {
           ETL &amp; PXRD Signal Processing
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          The longest stage of any real project and the one nobody teaches. It is also where the work came
-          back to, after an expert review found seven defects that no statistical alarm had ever raised.
+          The longest stage of any real project and the one nobody teaches. It starts with the piece that
+          took the most work by far — turning a raw diffractogram into 29 comparable numbers — and then
+          covers everything else the data needed before a model could see it.
         </p>
+      </section>
+
+      {/* --- 7. Senal PXRD --- */}
+      <section>
+        <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          These are real diffractograms from the laboratory, decomposed by the same code that populated
+          the descriptor table. Each one is the <strong>median case</strong> of its class by crystallinity
+          index — not the most flattering example. The amorphous one looks poor because a typical
+          amorphous sample <em>is</em> poor, and picking the prettiest scan would turn the figure into
+          advertising instead of evidence.
+        </p>
+        <PxrdChart />
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <Card accent>
+            <h3 className="text-base">What the three layers mean</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              The <Term k="arPLS" /> baseline is the instrument talking about itself — air scatter, the
+              sample holder, detector drift. It is discarded. What remains splits into the broad
+              amorphous halo and the sharp Bragg reflections, and <strong>both are signal</strong>. The
+              easy mistake is to flatten the halo along with the baseline, which throws away precisely
+              the information that separates an amorphous solid from a failed measurement.
+            </p>
+          </Card>
+          <Card accent>
+            <h3 className="text-base">Why the peaks are counted at 3σ</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              X-ray detection is photon counting, so noise follows Poisson statistics and its scale is the
+              square root of the counts. Three sigma is the level for <em>one</em> comparison, though —
+              scanning thousands of points for a maximum needs a stricter level, or noise gets counted as
+              reflections. The threshold drawn here is the honest floor, not the final criterion.
+            </p>
+          </Card>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <Card>
+            <h3 className="text-base">Didactic modals to attach here</h3>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <li>What the amorphous halo actually is, and how we nearly measured it wrong.</li>
+              <li>Three sigma is the level for one comparison, not for scanning a whole sweep.</li>
+              <li>The denominator of a fraction decides what it means.</li>
+              <li>Every descriptor has a floor, and knowing it is part of the measurement.</li>
+              <li>The log₂(N) ceiling of spectral entropy.</li>
+            </ul>
+          </Card>
+          <Card>
+            <h3 className="text-base">Where all 29 come from</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              The figure below is the whole descriptor vector on a single annotated scan: peak geometry,
+              phase composition, intensity concentration, and the complete list grouped by what each
+              number is for. Enlarge it — it is dense on purpose.
+            </p>
+          </Card>
+        </div>
+        <div className="mt-6">
+          <NotebookFigure
+            src="nb05-17.png"
+            alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
+            caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
+            source="notebook 05"
+          />
+        </div>
+      </section>
+
+      {/* --- 8. Herramientas --- */}
+      <section>
+        <SectionTitle eyebrow="The tools that produced the ground truth">Labeler &amp; Explorer</SectionTitle>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              A Streamlit labeling app produced 4,964 expert judgements over 1,877 diffractograms — four
+              independent verdicts per pattern: crystallinity class, incipient subtype, oxide flag and
+              suspected multiphase.
+            </p>
+            <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Labels are keyed by <code>file_hash</code>, not by measurement id, so they survive a full
+              regeneration of the measurement tables. That is the only data in the whole platform no
+              pipeline could ever reproduce.
+            </p>
+          </Card>
+          <Placeholder source="app/pxrd_labeler.py, app/pxrd_explorer.py">
+            Screen recording pending. These tools write to the production database, so they are shown as a
+            short video rather than served live — with sample codes and ligand names pseudonymized and
+            synthesis conditions hidden.
+          </Placeholder>
+        </div>
       </section>
 
       {/* --- 1. Del Excel a la tabla --- */}
@@ -247,92 +334,6 @@ export default function DataPreparation() {
             <Rich>{ETL_IMPUTATION.conclusion}</Rich>
           </p>
         </Card>
-      </section>
-
-      {/* --- 7. Senal PXRD --- */}
-      <section>
-        <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
-        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          These are real diffractograms from the laboratory, decomposed by the same code that populated
-          the descriptor table. Each one is the <strong>median case</strong> of its class by crystallinity
-          index — not the most flattering example. The amorphous one looks poor because a typical
-          amorphous sample <em>is</em> poor, and picking the prettiest scan would turn the figure into
-          advertising instead of evidence.
-        </p>
-        <PxrdChart />
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Card accent>
-            <h3 className="text-base">What the three layers mean</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The <Term k="arPLS" /> baseline is the instrument talking about itself — air scatter, the
-              sample holder, detector drift. It is discarded. What remains splits into the broad
-              amorphous halo and the sharp Bragg reflections, and <strong>both are signal</strong>. The
-              easy mistake is to flatten the halo along with the baseline, which throws away precisely
-              the information that separates an amorphous solid from a failed measurement.
-            </p>
-          </Card>
-          <Card accent>
-            <h3 className="text-base">Why the peaks are counted at 3σ</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              X-ray detection is photon counting, so noise follows Poisson statistics and its scale is the
-              square root of the counts. Three sigma is the level for <em>one</em> comparison, though —
-              scanning thousands of points for a maximum needs a stricter level, or noise gets counted as
-              reflections. The threshold drawn here is the honest floor, not the final criterion.
-            </p>
-          </Card>
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Card>
-            <h3 className="text-base">Didactic modals to attach here</h3>
-            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <li>What the amorphous halo actually is, and how we nearly measured it wrong.</li>
-              <li>Three sigma is the level for one comparison, not for scanning a whole sweep.</li>
-              <li>The denominator of a fraction decides what it means.</li>
-              <li>Every descriptor has a floor, and knowing it is part of the measurement.</li>
-              <li>The log₂(N) ceiling of spectral entropy.</li>
-            </ul>
-          </Card>
-          <Card>
-            <h3 className="text-base">Where all 29 come from</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The figure below is the whole descriptor vector on a single annotated scan: peak geometry,
-              phase composition, intensity concentration, and the complete list grouped by what each
-              number is for. Enlarge it — it is dense on purpose.
-            </p>
-          </Card>
-        </div>
-        <div className="mt-6">
-          <NotebookFigure
-            src="nb05-17.png"
-            alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
-            caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
-            source="notebook 05"
-          />
-        </div>
-      </section>
-
-      {/* --- 8. Herramientas --- */}
-      <section>
-        <SectionTitle eyebrow="The tools that produced the ground truth">Labeler &amp; Explorer</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              A Streamlit labeling app produced 4,964 expert judgements over 1,877 diffractograms — four
-              independent verdicts per pattern: crystallinity class, incipient subtype, oxide flag and
-              suspected multiphase.
-            </p>
-            <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Labels are keyed by <code>file_hash</code>, not by measurement id, so they survive a full
-              regeneration of the measurement tables. That is the only data in the whole platform no
-              pipeline could ever reproduce.
-            </p>
-          </Card>
-          <Placeholder source="app/pxrd_labeler.py, app/pxrd_explorer.py">
-            Screen recording pending. These tools write to the production database, so they are shown as a
-            short video rather than served live — with sample codes and ligand names pseudonymized and
-            synthesis conditions hidden.
-          </Placeholder>
-        </div>
       </section>
 
       {/* --- 9. Notebooks --- */}

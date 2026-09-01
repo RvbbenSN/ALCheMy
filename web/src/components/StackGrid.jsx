@@ -37,6 +37,26 @@ export default function StackGrid() {
                 >
                   <path d={it.path} />
                 </svg>
+              ) : it.mask ? (
+                /* Marca sin SVG monocromo disponible: se usa el PNG como
+                   mascara, asi que hereda el color del tema igual que el resto. */
+                <span
+                  aria-hidden
+                  style={{
+                    width: 30,
+                    height: 30,
+                    flexShrink: 0,
+                    backgroundColor: 'var(--accent-primary)',
+                    WebkitMaskImage: `url(/logos/${it.mask})`,
+                    maskImage: `url(/logos/${it.mask})`,
+                    WebkitMaskSize: 'contain',
+                    maskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskPosition: 'center',
+                  }}
+                />
               ) : (
                 <span
                   aria-hidden

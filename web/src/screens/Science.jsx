@@ -31,8 +31,7 @@ export default function Science() {
             }}
           />
           <figcaption className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Metal nodes (the octahedra) joined by organic linkers into an extended network. The empty space
-            between them is the point: that is where guest molecules go.
+            Metal nodes (the octahedra) joined by organic linkers into an extended network.
           </figcaption>
         </figure>
 
@@ -57,9 +56,26 @@ export default function Science() {
             <div className="mt-2 text-2xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '1px' }}>
               Nobel Prize in Chemistry
             </div>
+            <img
+              src="/nobel-2025.jpg"
+              alt="Illustrated portraits of the 2025 Nobel laureates in Chemistry: Susumu Kitagawa, Richard Robson and Omar Yaghi"
+              loading="lazy"
+              className="mt-4"
+              style={{
+                display: 'block',
+                width: '100%',
+                height: 'auto',
+                borderRadius: 'var(--radius-badge)',
+                border: '2px solid var(--surface-border)',
+              }}
+            />
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Susumu Kitagawa, Richard Robson and Omar Yaghi, for establishing the foundations of MOFs and
-              reticular chemistry.
+              <strong>Susumu Kitagawa</strong>, <strong>Richard Robson</strong> and{' '}
+              <strong>Omar Yaghi</strong>, for establishing the foundations of MOFs and reticular
+              chemistry.
+            </p>
+            <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+              © Nobel Prize Outreach. Illustration: Niklas Elmehed.
             </p>
           </Card>
         </div>

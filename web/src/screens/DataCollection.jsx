@@ -1,6 +1,6 @@
-import { WORKFLOW_SECTIONS } from '../content/site.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
+import WorkflowCanvas from '../components/WorkflowCanvas.jsx'
 
 const ROW_SHAPE = [
   ['sample_code', 'Foreign key into synthesis_experiments'],
@@ -41,23 +41,6 @@ export default function DataCollection() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="Nine stages">How the snowball grows</SectionTitle>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {WORKFLOW_SECTIONS.map((s) => (
-            <Card key={s.n}>
-              <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                Stage {s.n}
-              </div>
-              <h3 className="mt-1 text-base">{s.title}</h3>
-              <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {s.adds}
-              </p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section>
         <SectionTitle eyebrow="Three details worth stopping on">Where the engineering shows</SectionTitle>
         <div className="grid gap-4 lg:grid-cols-3">
           <Card accent>
@@ -89,10 +72,12 @@ export default function DataCollection() {
 
       <section>
         <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
-        <Placeholder source="scripts/generate_n8n_interactive_viewer.py">
-          Rebuild pending: sticky notes move out of the canvas into pop-ups, each area gets a framed title,
-          and the generic emoji iconography is replaced with the project&rsquo;s own icon set.
-        </Placeholder>
+        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Nine framed areas, in the order the item travels through them. The icon on each node says what
+          kind of work it does — a decision, a parser, an AI agent, a database write. Open the{' '}
+          <strong>Detail</strong> of an area to read what it adds to the row and why.
+        </p>
+        <WorkflowCanvas />
       </section>
 
       <section>
