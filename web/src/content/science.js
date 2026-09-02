@@ -28,22 +28,22 @@ export const MOF_FACTS = [
   {
     icon: 'grid',
     title: 'Built like a scaffold',
-    body: 'Metal nodes joined by organic linkers into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed rather than discovered.',
+    body: '**Metal nodes joined by organic linkers** into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed rather than discovered.',
   },
   {
     icon: 'expand',
     title: 'Surface areas without precedent',
-    body: 'A single gram can present the surface area of a football pitch. That is what makes them useful for storing gases, capturing CO₂ or hosting catalytic sites.',
+    body: 'A single gram can present the **surface area of a football pitch**. That is what makes them useful for storing gases, capturing CO₂ or hosting catalytic sites.',
   },
   {
     icon: 'sliders',
     title: 'Tunable by design',
-    body: 'Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the isoreticular principle, and it is why one good architecture becomes a family.',
+    body: 'Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the **isoreticular principle**, and it is why one good architecture becomes a family.',
   },
   {
     icon: 'flask',
     title: 'Applied to real problems',
-    body: 'Green hydrogen production, degradation of pharmaceuticals in wastewater, CO₂ conversion into cyclic carbonates, and polymerisation catalysis — the four applications this laboratory works on.',
+    body: '**Wide range of promising applications**. Green hydrogen production, water remediation, CO₂ conversion into cyclic carbonates, and polymerisation catalysis, among others.',
   },
 ]
 
@@ -66,7 +66,7 @@ export const WHY_CHARACTERISE = {
   title: 'Why one material needs a dozen measurements',
   /* Va como texto corrido, antes de la rejilla: es la premisa, no una nota. */
   lead:
-    'Making a solid is not the same as knowing what it is. A newly formed powder has to be interrogated from several independent angles before anything can be claimed about it: whether it is ordered, what it is made of, how much empty space it holds, how hot it can get before it collapses. **No single technique answers more than one of those questions.**',
+    'Making a solid is not the same as knowing what it is. **A newly formed powder has to be interrogated** from several independent angles before anything can be claimed about it: whether it is ordered, what it is made of, how much empty space it holds, how hot it can get before it collapses. **No single technique answers more than one of those questions.**',
   /* Y esto va en la caja de nota, condensado. */
   consequence:
     'Every promising sample generates files from several instruments, each in its own format, each written by a different manufacturer. Multiply that by thousands of samples and it stops being a chemistry problem.',
