@@ -1216,3 +1216,39 @@ python scripts/check_contrast.py --strict       # exit 1 on any AA failure
 Plotly/Matplotlib theme for figures, which is the next thing needing a palette derived from
 these tokens — the style guide still says `plotly_white`, which matches neither the champagne
 nor the dark themes.
+
+---
+
+### `scripts/build_ingested_example.py`
+
+**Qué hace.** Congela **una fila real** de `characterization_measurements` como JSON
+estático, para que la pantalla 02 pueda dibujarla como árbol desplegable
+(`web/src/components/IngestedRowTree.jsx`).
+
+**Qué problema resuelve.** Esa pantalla explica que todo fichero de instrumento acaba en una
+fila con la misma forma, y lo contaba con una tabla de nombres de campo. Una tabla de nombres
+no enseña lo que de verdad sorprende al abrirla: que de un `.xrdml` de 3.580 puntos salen
+**44 campos de cabecera** que nadie transcribió a mano —material del ánodo, las dos longitudes
+de onda K-alfa, cada ángulo de rendija, las marcas de tiempo— y que quedan consultables junto
+a la curva. Eso es la diferencia entre un fichero en un disco y una medida en una base de
+datos, y sólo se ve abriendo el árbol.
+
+**La decisión que lo hace publicable.** La fila es real en su **estructura** y en sus
+**parámetros instrumentales**, y sintética en todo lo que identifica: código de muestra,
+nombres de personas, correo, ruta en disco, número de serie y hash. Los campos
+`sample_id_raw` y `sample_name_raw` del difractómetro necesitan sustitución aparte, porque
+llevan el código de muestra incrustado dentro del nombre del fichero y un saneado por
+columnas no los alcanza. Los parámetros del equipo se dejan intactos a propósito: son
+propiedades del difractómetro, no del proyecto, y falsearlos convertiría la figura en un
+dibujo. Las curvas se recortan a los primeros y últimos valores con una marca de cuántos hay
+en medio.
+
+```bash
+python scripts/build_ingested_example.py    # escribe web/src/data/ingested_example.json
+```
+
+**Reutilizable.** El patrón —sacar una fila real, seudonimizar por lista explícita de campos,
+y verificar el resultado con una batería de expresiones regulares antes de publicarlo— sirve
+para cualquier otra vista previa de datos privados que haga falta en la web. La verificación
+importa tanto como la sustitución: es lo que caza un código de muestra escondido dentro de un
+nombre de fichero.

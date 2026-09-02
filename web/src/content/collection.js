@@ -67,6 +67,18 @@ export const ROW_SHAPE = [
   ['data_json', '{ header_metadata, raw_data } — the parser contract'],
 ]
 
+/* El arbol de una fila ya ingestada. La tabla de mas arriba dice que campos
+   tiene la fila; esto ensena lo que esa tabla no puede: cuanto trae dentro. */
+export const COLLECTION_TREE = {
+  title: 'What one ingested file actually looks like',
+  lead:
+    'The table above lists the fields a row must carry. This is one of those rows, opened up — the same shape, filled in by a real `.xrdml` going through the workflow.',
+  point:
+    'The part worth opening is `header_metadata`. **Forty-four fields nobody typed**: anode material, both K-alpha wavelengths, every slit angle, the detector pitch, the start and end timestamps. All of it was sitting inside the instrument file, and all of it is now queryable next to the curve — which is the difference between a file on a disk and a measurement in a database.',
+  contract:
+    'Note that `raw_data` holds only `x`, `y` and their labels. That is the **parser contract**: every technique, from a diffractogram to a thermogram to a micrograph, produces the same two sub-objects, so a query can span all nine without knowing anything about instruments.',
+}
+
 export const COLLECTION_PENDING = {
   schema:
     'Schema explorer pending: an entity diagram of the governed tables, with each column’s description read from the data_dictionary table itself — documented at 100% coverage.',

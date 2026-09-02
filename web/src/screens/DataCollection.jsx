@@ -2,6 +2,7 @@ import { ExternalLink, Fingerprint, Link2, ScrollText, Shapes } from 'lucide-rea
 import { Badge, Card, Placeholder, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
+import IngestedRowTree from '../components/IngestedRowTree.jsx'
 import STACK from '../data/stack_icons.json'
 import { SITE } from '../content/site.js'
 import {
@@ -10,6 +11,7 @@ import {
   COLLECTION_PENDING,
   COLLECTION_PROBLEM,
   COLLECTION_ROW_INTRO,
+  COLLECTION_TREE,
   ROW_SHAPE,
 } from '../content/collection.js'
 
@@ -112,6 +114,29 @@ export default function DataCollection() {
           <Rich>{COLLECTION_ROW_INTRO}</Rich>
         </p>
         <ScrollTable head={['Field', 'What it carries']} rows={ROW_SHAPE.map(([a, b]) => [<code key={a}><Rich>{a}</Rich></code>, b])} />
+      </section>
+
+      {/* --- La misma fila, pero de verdad --- */}
+      <section>
+        <SectionTitle eyebrow="The same row, opened up">{COLLECTION_TREE.title}</SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{COLLECTION_TREE.lead}</Rich>
+        </p>
+        <IngestedRowTree />
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Card accent>
+            <h3 className="text-base">The part worth opening</h3>
+            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{COLLECTION_TREE.point}</Rich>
+            </p>
+          </Card>
+          <Card>
+            <h3 className="text-base">And the part that never changes</h3>
+            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{COLLECTION_TREE.contract}</Rich>
+            </p>
+          </Card>
+        </div>
       </section>
 
       <section>
