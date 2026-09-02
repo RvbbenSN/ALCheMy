@@ -70,10 +70,13 @@ export const WHY_CHARACTERISE = {
   /* Y esto va en la caja de nota, condensado. */
   consequence:
     'Every promising sample generates files from several instruments, each in its own format, each written by a different manufacturer. Multiply that by thousands of samples and it stops being a chemistry problem.',
-  /* Cifras auditadas contra la base de datos y el data lake, 2026-09-02. */
+  /* Cifras auditadas el 2026-09-03. Las medidas salen de
+     `characterization_measurements`; los ficheros, de contar el data lake en
+     disco descartando lo que no escribio un instrumento (9 `.gitkeep`, 25
+     `.docx` y 1 `.rar`), que son 6.153 - 35 = 6.118. */
   numbers: [
+    ['6,118', 'raw instrument files'],
     ['3,926', 'measurements ingested'],
-    ['6,153', 'raw instrument files'],
     ['9', 'formats, one per manufacturer'],
   ],
 }
@@ -160,7 +163,7 @@ export const LAB_INTRO = {
 export const BOTTLENECK = {
   title: 'Where the data problem begins',
   scale:
-    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,153 instrument files**, **nine formats**, across network folders and local disks — plus one spreadsheet holding every synthesis condition.',
+    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,118 instrument files**, **nine formats**, across network folders and local disks — plus one spreadsheet holding every synthesis condition.',
   problem:
     'Nothing about that is unusual, and that is the point: it is how most laboratories work. But it means a simple question — *which conditions have ever produced a crystalline phase with this metal?* — is answered by opening dozens of files by hand, and the answer is only as good as someone\'s memory of where things were saved.',
   /* Va en la caja de nota. El enfasis, por peticion, en la base de datos. */
