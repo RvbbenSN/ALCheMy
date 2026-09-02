@@ -1,6 +1,7 @@
 import {
   Aperture,
   AudioWaveform,
+  Droplet,
   ChevronRight,
   Database,
   Flame,
@@ -30,7 +31,9 @@ import { Rich } from './ui.jsx'
 
    El corchete es deliberado: agrupa sin ordenar. Los circulos de dentro no van
    encadenados por flechas porque no se suceden, solo comparten origen y
-   destino.
+   destino. El decimo, ICP y EA juntos, va con trazo discontinuo: esas dos
+   tecnicas todavia no tienen filas en la base de datos —llegan como PDF y pasan
+   por la rama de IA—, asi que ese circulo cuenta ficheros, no medidas.
 
    El total de medidas va encima del icono de la base de datos y no en una
    columna propia: es el mismo dato —lo que el corchete recoge es exactamente lo
@@ -54,6 +57,7 @@ const ICONS = {
   flame: Flame,
   thermometer: Thermometer,
   gem: Gem,
+  droplet: Droplet,
 }
 
 const MIN_D = 62
@@ -134,10 +138,11 @@ function Node({ icon, count, label, note, primary }) {
 }
 
 export default function DataScale() {
-  const roots = TECHNIQUE_COUNTS.map((t) => Math.sqrt(t.count))
+  const ingested = TECHNIQUE_COUNTS.filter((t) => !t.pending)
+  const roots = ingested.map((t) => Math.sqrt(t.count))
   const hi = Math.max(...roots)
   const lo = Math.min(...roots)
-  const total = TECHNIQUE_COUNTS.reduce((a, t) => a + t.count, 0)
+  const total = ingested.reduce((a, t) => a + t.count, 0)
 
   return (
     <figure className="m-0">
@@ -153,7 +158,7 @@ export default function DataScale() {
             <Brace side="left" />
             <div className="grid grid-cols-5 gap-x-1 gap-y-4 py-2">
               {TECHNIQUE_COUNTS.map((t) => {
-                const k = (Math.sqrt(t.count) - lo) / (hi - lo || 1)
+                const k = t.pending ? 0.34 : (Math.sqrt(t.count) - lo) / (hi - lo || 1)
                 const d = MIN_D + k * (MAX_D - MIN_D)
                 const Icon = ICONS[t.icon] ?? Waves
                 return (
@@ -164,20 +169,31 @@ export default function DataScale() {
                         style={{
                           width: d,
                           height: d,
-                          border: '2.5px solid var(--surface-border)',
-                          background: 'var(--surface-elevated)',
+                          border: `2.5px ${t.pending ? 'dashed' : 'solid'} var(--surface-border)`,
+                          background: t.pending ? 'transparent' : 'var(--surface-elevated)',
                         }}
                       >
-                        <Icon size={17} aria-hidden style={{ color: 'var(--text-secondary)' }} />
+                        <Icon
+                          size={17}
+                          aria-hidden
+                          style={{ color: t.pending ? 'var(--text-muted)' : 'var(--text-secondary)' }}
+                        />
                         <span
                           className="mt-0.5 leading-none"
-                          style={{ fontFamily: 'var(--font-display)', fontSize: 15, color: 'var(--text-primary)' }}
+                          style={{
+                            fontFamily: 'var(--font-display)',
+                            fontSize: 15,
+                            color: t.pending ? 'var(--text-muted)' : 'var(--text-primary)',
+                          }}
                         >
                           {t.count.toLocaleString('en-US')}
                         </span>
                       </div>
                     </div>
-                    <div className="text-center text-xs uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>
+                    <div
+                      className="text-center text-xs uppercase tracking-wider"
+                      style={{ color: t.pending ? 'var(--text-muted)' : 'var(--text-primary)' }}
+                    >
                       {t.label}
                     </div>
                     <p className="mt-0.5 px-1 text-center text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>

@@ -71,11 +71,12 @@ export const WHY_CHARACTERISE = {
   consequence:
     'Every promising sample generates files from several instruments, each in its own format, each written by a different manufacturer. Multiply that by thousands of samples and it stops being a chemistry problem.',
   /* Cifras auditadas el 2026-09-03. Las medidas salen de
-     `characterization_measurements`; los ficheros, de contar el data lake en
-     disco descartando lo que no escribio un instrumento (9 `.gitkeep`, 25
-     `.docx` y 1 `.rar`), que son 6.153 - 35 = 6.118. */
+     `characterization_measurements`. Los ficheros, de contar el data lake
+     historico (`data/raw_datalake_historico`) descartando lo que no escribio un
+     instrumento (8 `.gitkeep`, 25 `.docx`, 1 `.rar`): 6.107 - 34 = 6.073. La
+     carpeta `data/raw_datalake` es material de prueba y no cuenta. */
   numbers: [
-    ['6,118', 'raw instrument files'],
+    ['6,073', 'raw instrument files'],
     ['3,926', 'measurements ingested'],
     ['9', 'formats, one per manufacturer'],
   ],
@@ -163,7 +164,7 @@ export const LAB_INTRO = {
 export const BOTTLENECK = {
   title: 'Where the data problem begins',
   scale:
-    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,118 instrument files**, **nine formats**, across network folders and local disks — plus one spreadsheet holding every synthesis condition.',
+    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,073 instrument files**, **nine formats**, across network folders and local disks — plus one spreadsheet holding every synthesis condition.',
   problem:
     'Nothing about that is unusual, and that is the point: it is how most laboratories work. But it means a simple question — *which conditions have ever produced a crystalline phase with this metal?* — is answered by opening dozens of files by hand, and the answer is only as good as someone\'s memory of where things were saved.',
   /* Va en la caja de nota. El enfasis, por peticion, en la base de datos. */
@@ -206,6 +207,18 @@ export const TECHNIQUE_COUNTS = [
   { key: 'tga', label: 'TGA', icon: 'flame', count: 31, note: 'Thermal stability' },
   { key: 'vtxrd', label: 'VT-XRD', icon: 'thermometer', count: 26, note: 'Structure while heated' },
   { key: 'scxrd', label: 'SC-XRD', icon: 'gem', count: 10, note: 'Full structure solved' },
+  {
+    key: 'icpea',
+    label: 'ICP · EA',
+    icon: 'droplet',
+    count: 28,
+    note: 'Composition, as PDF',
+    /* Cero filas todavia en la base de datos: llegan como informe PDF y pasan
+       por la rama de IA del flujo, aun sin ejecutar sobre el historico. Son 15
+       informes de ICP y 13 de analisis elemental (CHNS). Se dibuja con trazo
+       discontinuo para que no se confunda con lo ya ingerido. */
+    pending: true,
+  },
 ]
 
 export const DATA_SCALE = {
@@ -216,6 +229,6 @@ export const DATA_SCALE = {
   databaseLabel: 'One governed database',
   databaseNote: 'One row per synthesis, one row per measurement, every file fingerprinted.',
   footnote:
-    'Counts read from the database on 2 September 2026. Circle size scales with the count, so the small techniques stay legible; read the numbers rather than the areas.',
+    'Measurement counts read from the database on 3 September 2026; ICP and EA, shown dashed, are still PDF reports awaiting the AI branch, so that circle counts files, not rows. Circle size scales with the count so the small techniques stay legible — read the numbers, not the areas.',
 }
 

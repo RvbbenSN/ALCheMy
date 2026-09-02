@@ -21,7 +21,7 @@ export const COLLECTION_PROBLEM = {
      nivel de detalle; ahora el problema y su solucion van en el mismo hilo, y
      el hilo arranca donde termina la pantalla anterior. */
   body1:
-    'The previous screen ended with the problem stated: thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to. Solving it by hand means someone opening each file, reading the sample code off the filename, and retyping it into a spreadsheet — for **6,118 files**.',
+    'The previous screen ended with the problem stated: thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to. Solving it by hand means someone opening each file, reading the sample code off the filename, and retyping it into a spreadsheet — for **6,073 files**.',
   body2:
     'So it is automated. **A file arrives by one of three routes** — a watched folder, a web form, or a webhook. Its metadata is normalised and the sender checked against a whitelist. Its fingerprint is taken and compared against everything already stored. It is then routed by technique to one of three extraction strategies: a deterministic parser for the seven formats that are well understood, an AI agent for the reports that exist only as PDFs, and a vision agent that describes microscopy images without ever inventing a measurement. Whatever happens, the outcome is written to the audit log.',
   builtWith:
