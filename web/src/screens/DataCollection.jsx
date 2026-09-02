@@ -1,16 +1,15 @@
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
+import { Badge, Card, Placeholder, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
-
-const ROW_SHAPE = [
-  ['sample_code', 'Foreign key into synthesis_experiments'],
-  ['technique', 'PXRD / VT-XRD / TGA / FTIR / ADSORPTION / UV_VIS / SEM / ICP_OES / EA'],
-  ['researcher_email, researcher_name, operator_name', 'Accountability, checked against a whitelist'],
-  ['measurement_tag, instrument_name', 'Provenance of the measurement'],
-  ['file_name, raw_file_path', 'Where the original bytes live'],
-  ['file_hash', 'Real MD5 of the actual file bytes'],
-  ['data_json', '{ header_metadata, raw_data } — the parser contract'],
-]
+import {
+  COLLECTION_CANVAS_INTRO,
+  COLLECTION_HERO,
+  COLLECTION_HOW,
+  COLLECTION_PENDING,
+  COLLECTION_PROBLEM,
+  COLLECTION_ROW_INTRO,
+  ROW_SHAPE,
+} from '../content/collection.js'
 
 export default function DataCollection() {
   return (
@@ -21,8 +20,7 @@ export default function DataCollection() {
           The n8n Ingestion Workflow
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          Three ways in, one row out — and a gate at every step that can reject a file before it costs
-          anything to process.
+          <Rich>{COLLECTION_HERO.lead}</Rich>
         </p>
       </section>
 
@@ -32,35 +30,20 @@ export default function DataCollection() {
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <p style={{ color: 'var(--text-secondary)' }}>
-              At the end of the previous screen the laboratory has thousands of instrument files spread
-              across network folders, written by nine different machines in nine different formats. None
-              of them knows which synthesis it belongs to, and nothing stops the same file being saved
-              twice under two names.
+              <Rich>{COLLECTION_PROBLEM.body1}</Rich>
             </p>
             <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-              What is needed is unglamorous and specific: <strong>a way to drop a file somewhere and have
-              it end up in a database, correctly attributed, without anyone retyping anything.</strong>
+              <Rich>{COLLECTION_PROBLEM.body2}</Rich>
             </p>
           </Card>
           <Card accent>
-            <h3 className="text-base">What the workflow guarantees</h3>
+            <h3 className="text-base">{COLLECTION_PROBLEM.guaranteesTitle}</h3>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <li>
-                <strong>Attribution.</strong> Every measurement is linked to the synthesis it came from,
-                by sample code, and to the person who submitted it.
-              </li>
-              <li>
-                <strong>No duplicates.</strong> A cryptographic fingerprint of the file contents rejects
-                a second copy before it is parsed.
-              </li>
-              <li>
-                <strong>Uniform shape.</strong> Nine formats become one row shape, so a query can span
-                techniques without knowing anything about instruments.
-              </li>
-              <li>
-                <strong>A record of every decision.</strong> Accepted or rejected, with the reason, in an
-                audit table written by code and never by a language model.
-              </li>
+              {COLLECTION_PROBLEM.guarantees.map(([lead, body]) => (
+                <li key={lead}>
+                  <strong>{lead}</strong> {body}
+                </li>
+              ))}
             </ul>
           </Card>
         </div>
@@ -71,12 +54,7 @@ export default function DataCollection() {
         <SectionTitle eyebrow="In one sentence">How it works</SectionTitle>
         <Card accent>
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-            A file arrives by one of three routes. Its metadata is normalised and the sender checked
-            against a whitelist. Its fingerprint is taken and compared against what is already stored. It
-            is then routed by technique to one of three extraction strategies — a deterministic parser
-            for the seven formats that are well understood, an AI agent for the reports that only exist
-            as PDFs, and a vision agent that adds a description to microscopy images without ever
-            inventing a measurement. Whatever happens, the outcome is written to the audit log.
+            <Rich>{COLLECTION_HOW}</Rich>
           </p>
         </Card>
       </section>
@@ -84,10 +62,7 @@ export default function DataCollection() {
       <section>
         <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          The flow as it exists in n8n &mdash; <strong>79 nodes</strong>, <strong>114 connections</strong>,
-          nine framed areas &mdash; read straight from the exported workflow, not redrawn by hand.
-          Pick a stop and the map flies to it, with the card above saying what that area adds to the
-          row and why. The last stop pulls back to the whole flow.
+          <Rich>{COLLECTION_CANVAS_INTRO}</Rich>
         </p>
         <WorkflowMap />
       </section>
@@ -97,11 +72,7 @@ export default function DataCollection() {
           What a row must look like when it lands
         </SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Every path through this workflow has to arrive at the database write carrying exactly these
-          fields. Think of the item as a snowball rolling through the pipeline, picking up more of this
-          shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on
-          a constraint or silently stores a null — and it is worth knowing which section was supposed to
-          set it.
+          <Rich>{COLLECTION_ROW_INTRO}</Rich>
         </p>
         <ScrollTable head={['Field', 'What it carries']} rows={ROW_SHAPE.map(([a, b]) => [<code key={a}>{a}</code>, b])} />
       </section>
@@ -109,8 +80,7 @@ export default function DataCollection() {
       <section>
         <SectionTitle eyebrow="Where it lands">The PostgreSQL schema</SectionTitle>
         <Placeholder source="scripts/init_db.sql, data_dictionary">
-          Schema explorer pending: an entity diagram of the governed tables, with each column&rsquo;s
-          description read from the <code>data_dictionary</code> table itself — documented at 100% coverage.
+          {COLLECTION_PENDING.schema}
         </Placeholder>
       </section>
 
@@ -121,10 +91,7 @@ export default function DataCollection() {
 
       <section>
         <SectionTitle eyebrow="Governance">Audit log</SectionTitle>
-        <Placeholder source="audit_log">
-          Live table pending: timestamp, agent, action, verdict and cause for every automated decision.
-          Sample codes and emails pseudonymized before display.
-        </Placeholder>
+        <Placeholder source="audit_log">{COLLECTION_PENDING.audit}</Placeholder>
       </section>
     </div>
   )

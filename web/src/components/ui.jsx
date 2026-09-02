@@ -7,32 +7,44 @@ import { GLOSSARY } from '../content/site.js'
    -------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------
-   Rich — resalta en negrita lo que va entre **dobles asteriscos**.
+   Rich — marcas ligeras dentro de un texto de content/.
 
-   El contenido de la web vive como cadenas de texto plano en content/, para que
-   se pueda reescribir una frase sin tocar JSX ni arriesgarse a romper el
-   maquetado. Pero el texto tecnico se lee mucho mejor con las palabras clave
-   destacadas, y meter <strong> en las cadenas obligaria a convertirlas en JSX.
+   El contenido de la web vive como cadenas de texto plano, para que se pueda
+   reescribir una frase sin tocar JSX ni arriesgarse a romper el maquetado. Pero
+   el texto tecnico se lee mucho mejor con enfasis, y meter <strong> en las
+   cadenas obligaria a convertirlas en JSX.
 
-   Este componente resuelve las dos cosas: las cadenas siguen siendo texto, y
-   marcar una palabra clave es escribir **asi**. No es Markdown completo a
-   proposito — solo negrita — porque un parser mas ambicioso invita a meter
-   maquetado en el contenido, que es justo lo que se quiere evitar.
+   Este componente resuelve las dos cosas. Las cadenas siguen siendo texto, y
+   dar enfasis es escribir:
+
+       **negrita**     *cursiva*     `codigo`
+
+   Es deliberadamente pequeno y no debe crecer hasta ser Markdown: en cuanto
+   haga falta algo mas que enfasis, eso es estructura, y la estructura va en la
+   pantalla, no en el texto.
    -------------------------------------------------------------------------- */
+const RICH_RE = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/g
+
 export function Rich({ children }) {
   if (typeof children !== 'string') return children
-  const parts = children.split(/\*\*(.+?)\*\*/g)
   return (
     <>
-      {parts.map((p, i) =>
-        i % 2 === 1 ? (
-          <strong key={i} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-            {p}
-          </strong>
-        ) : (
-          p
-        ),
-      )}
+      {children.split(RICH_RE).map((p, i) => {
+        if (p.startsWith('**') && p.endsWith('**')) {
+          return (
+            <strong key={i} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+              {p.slice(2, -2)}
+            </strong>
+          )
+        }
+        if (p.startsWith('`') && p.endsWith('`')) {
+          return <code key={i}>{p.slice(1, -1)}</code>
+        }
+        if (p.startsWith('*') && p.endsWith('*') && p.length > 2) {
+          return <em key={i}>{p.slice(1, -1)}</em>
+        }
+        return p
+      })}
     </>
   )
 }
