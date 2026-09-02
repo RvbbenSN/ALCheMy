@@ -27,7 +27,7 @@ const M = { top: 18, right: 18, bottom: 42, left: 56 }
    que hace legible su proporcion de un vistazo. */
 const LAYERS = [
   { key: 'raw', label: 'Raw scan', color: 'var(--text-muted)', width: 1.1 },
-  { key: 'instrumental', label: 'Instrument (measured blank)', color: 'var(--accent-tertiary)', width: 1.6, dash: '6 4' },
+  { key: 'instrumental', label: 'Instrument (measured blank)', color: 'var(--accent-tertiary)', width: 1.6, dash: '6 4', fill: 0.14 },
   { key: 'amorphous', label: 'Amorphous halo', color: 'var(--status-incipient)', width: 1.6, fill: 0.35 },
   { key: 'crystalline', label: 'Bragg reflections', color: 'var(--accent-primary)', width: 1.4, fill: 0.3 },
 ]
@@ -65,7 +65,15 @@ export default function PxrdChart() {
     let yMax = 0
     for (const l of LAYERS) {
       if (!on[l.key]) continue
-      for (const v of ex[l.key]) if (v > yMax) yMax = v
+      if (l.key === 'raw') {
+        for (const v of ex.raw) if (v > yMax) yMax = v
+      } else {
+        // apiladas, lo que importa es el techo acumulado
+        for (let i = 0; i < xs.length; i++) {
+          const v = ex.instrumental[i] + ex.amorphous[i] + ex.crystalline[i]
+          if (v > yMax) yMax = v
+        }
+      }
     }
     if (showPeaks) for (const p of ex.peaks) if (p.y > yMax) yMax = p.y
     if (yMax <= 0) yMax = 1
@@ -82,13 +90,46 @@ export default function PxrdChart() {
       return d
     }
 
-    /* La misma curva cerrada contra el eje, para poder rellenarla. */
-    const area = (key) => {
-      const y0 = py(0).toFixed(1)
-      return `${line(key)} L${px(xs[xs.length - 1]).toFixed(1)} ${y0} L${px(xs[0]).toFixed(1)} ${y0} Z`
+    /* --- Las capas se APILAN ------------------------------------------
+       La descomposicion es aditiva: instrumento + halo + Bragg reconstruye
+       exactamente el barrido crudo. Dibujada cada capa desde cero, el halo y
+       los picos quedaban tumbados en el suelo del grafico mientras la curva
+       cruda flotaba por encima, y no se veia que unos son parte de la otra.
+       Apiladas, el techo de la pila traza el barrido y el GROSOR de cada banda
+       es su contribucion, que es justo lo que la figura tiene que ensenar. */
+    const cum = (upto) => {
+      const keys = ['instrumental', 'amorphous', 'crystalline'].slice(0, upto)
+      return xs.map((_, i) => keys.reduce((a, k) => a + ex[k][i], 0))
+    }
+    const LEVELS = { instrumental: [null, cum(1)], amorphous: [cum(1), cum(2)], crystalline: [cum(2), cum(3)] }
+
+    const path = (arr) => {
+      let d = ''
+      for (let i = 0; i < xs.length; i++) {
+        d += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(arr[i]).toFixed(1)
+      }
+      return d
     }
 
-    return { px, py, line, area, xMin, xMax, yMax }
+    /* Linea superior de la banda: donde llega esa capa una vez apilada. */
+    const stackLine = (key) => (LEVELS[key] ? path(LEVELS[key][1]) : line(key))
+
+    /* Banda cerrada entre su suelo y su techo. */
+    const band = (key) => {
+      const [lo, hi] = LEVELS[key]
+      let d = path(hi)
+      if (lo) {
+        for (let i = xs.length - 1; i >= 0; i--) {
+          d += 'L' + px(xs[i]).toFixed(1) + ' ' + py(lo[i]).toFixed(1)
+        }
+      } else {
+        const y0 = py(0).toFixed(1)
+        d += `L${px(xs[xs.length - 1]).toFixed(1)} ${y0} L${px(xs[0]).toFixed(1)} ${y0}`
+      }
+      return d + ' Z'
+    }
+
+    return { px, py, line, stackLine, band, xMin, xMax, yMax }
   }, [ex, on, showPeaks])
 
   const xTicks = niceTicks(geom.xMin, geom.xMax, 6)
@@ -213,15 +254,14 @@ export default function PxrdChart() {
             </>
           )}
 
-          {/* capas: primero las areas rellenas, para que las lineas queden
-              encima y no las tape el relleno de la siguiente */}
+          {/* Bandas apiladas primero, para que las lineas queden encima. */}
           {LAYERS.filter((l) => on[l.key] && l.fill).map((l) => (
-            <path key={`${l.key}-fill`} d={geom.area(l.key)} fill={l.color} fillOpacity={l.fill} stroke="none" />
+            <path key={`${l.key}-fill`} d={geom.band(l.key)} fill={l.color} fillOpacity={l.fill} stroke="none" />
           ))}
           {LAYERS.filter((l) => on[l.key]).map((l) => (
             <path
               key={l.key}
-              d={geom.line(l.key)}
+              d={l.key === 'raw' ? geom.line('raw') : geom.stackLine(l.key)}
               fill="none"
               stroke={l.color}
               strokeWidth={l.width}

@@ -2,6 +2,7 @@ import { FUNNEL } from '../content/site.js'
 import {
   EDA_BIVARIATE,
   EDA_CONFOUNDER,
+  EDA_INTRO,
   EDA_CORRELATION,
   EDA_DISCRETE,
   EDA_IMBALANCE,
@@ -40,9 +41,52 @@ export default function Eda() {
           Data Understanding
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          The stage that returns the most per hour invested, and the one most often skipped. Everything
-          below changed the plan before a single model was trained.
+          Everything below changed the plan before a single model was trained.
         </p>
+      </section>
+
+      {/* --- Que es un EDA --- */}
+      <section>
+        <SectionTitle eyebrow="First, the name">
+          {EDA_INTRO.acronym} &mdash; {EDA_INTRO.expansion}
+        </SectionTitle>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <p style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_INTRO.what}</Rich>
+            </p>
+            <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_INTRO.why}</Rich>
+            </p>
+          </Card>
+          <Card accent>
+            <p className="text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+              <Rich>{EDA_INTRO.rule}</Rich>
+            </p>
+          </Card>
+        </div>
+
+        <p className="mb-3 mt-6 text-sm" style={{ color: 'var(--text-muted)' }}>
+          What this one found, in order:
+        </p>
+        <ol className="flex list-none flex-col gap-2 p-0">
+          {EDA_INTRO.found.map(([what, why], i) => (
+            <li
+              key={what}
+              className="flex flex-wrap items-baseline gap-x-3 rounded-[var(--radius-badge)] p-3"
+              style={{ border: '2px solid var(--surface-border)' }}
+            >
+              <span
+                className="text-sm"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}
+              >
+                {i + 1}
+              </span>
+              <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{what}</span>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>&mdash; {why}</span>
+            </li>
+          ))}
+        </ol>
       </section>
 
       {/* --- 1. El factor de confusion --- */}

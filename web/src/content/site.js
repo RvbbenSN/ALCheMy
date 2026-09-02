@@ -26,7 +26,7 @@ export const SCREENS = [
   { id: '01', slug: 'science', short: 'The Science', title: 'MOFs & Lab Daily-life', crisp: 'Analytic approach · Data requirements' },
   { id: '02', slug: 'data-collection', short: 'Data Collection', title: 'The Ingestion Workflow', crisp: 'Data collection' },
   { id: '03', slug: 'data-preparation', short: 'Data Preparation', title: 'ETL & PXRD Signal Processing', crisp: 'Data preparation' },
-  { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Data Understanding', crisp: 'Data understanding' },
+  { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Data Understanding', crisp: 'Exploratory data analysis' },
   { id: '05', slug: 'modeling', short: 'Modeling', title: 'Training & Evaluation', crisp: 'Modeling · Evaluation' },
   { id: '06', slug: 'the-model', short: 'The Model', title: 'Simulator, Registry & Active Learning', crisp: 'Deployment · Feedback' },
   { id: '07', slug: 'rag', short: 'RAG Assistant', title: 'Scientific Co-pilot', crisp: 'Decision support' },

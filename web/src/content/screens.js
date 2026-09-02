@@ -124,6 +124,27 @@ export const ETL_IMPUTATION = {
    04 · DATA UNDERSTANDING (EDA)
    ========================================================================== */
 
+/* Que es un EDA, antes de hacer uno. La pestana se llama "Data Understanding"
+   porque es el nombre de la fase en CRISP-DM, pero el trabajo que hay dentro se
+   conoce en todas partes por sus tres siglas, y quien las busque tiene que
+   encontrarlas aqui. */
+export const EDA_INTRO = {
+  acronym: 'EDA',
+  expansion: 'Exploratory Data Analysis',
+  what:
+    'Looking at the data before modelling it. Nothing more than that: plotting every variable, counting what is missing, checking whether the classes are balanced and whether two columns say the same thing twice — **before** committing to an algorithm.',
+  why:
+    'It is the stage that returns the most per hour invested, and the one most often skipped, because it produces no model and no metric. What it produces is **decisions**: which rows to drop, which columns cannot be trusted, and which apparent signal is an artefact of how the data was collected rather than a property of the chemistry.',
+  rule:
+    'The rule that governs it: **a model cannot warn you about a problem it has learned to exploit.** If a confounder is in the training data, cross-validation will reward the model for using it. The only place to catch that is here, by looking.',
+  found: [
+    ['A confounder', 'One synthesis method had produced no amorphous samples at all — so the method itself predicted the answer'],
+    ['Five kinds of gap', 'Nine per cent missing, from five unrelated causes, each needing a different fix'],
+    ['A 5.8 : 1 imbalance', 'Between the largest and smallest class, enough to make accuracy meaningless'],
+    ['Hidden structure', 'Rows that are not independent of one another, which makes a random split lie'],
+  ],
+}
+
 export const EDA_CONFOUNDER = {
   title: 'The confounder that nearly ruined the analysis',
   intro:
