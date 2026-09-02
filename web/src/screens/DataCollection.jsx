@@ -109,11 +109,9 @@ export default function DataCollection() {
       <section>
         <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          The map below is the flow as it actually exists in n8n: <strong>79 nodes</strong>,{' '}
-          <strong>114 connections</strong> and the nine framed areas, drawn from the exported workflow
-          rather than redrawn by hand. Drag to pan, scroll to zoom, and use the numbered pins to fly to
-          an area. Below it, the same nine areas as cards &mdash; the didactic layer, where each one says
-          what it adds to the row and why.
+          The flow as it exists in n8n &mdash; <strong>79 nodes</strong>, <strong>114 connections</strong>,
+          nine framed areas &mdash; read straight from the exported workflow, not redrawn by hand.
+          The nine stops above are its index: pick one and the map flies there.
         </p>
         <WorkflowMap />
       </section>

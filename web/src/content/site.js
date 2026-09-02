@@ -10,7 +10,7 @@
 
 export const SITE = {
   name: 'ALCheMy',
-  tagline: 'Autonomous Lab for Chemistry, Materials & In-Silico Synthesis',
+  tagline: 'Augmented Laboratory for Chemical Materials',
   repo: 'https://github.com/RvbbenSN/ALCheMy',
   github: 'https://github.com/RvbbenSN',
   linkedin: 'https://www.linkedin.com/in/rubén-serrano-nieto',

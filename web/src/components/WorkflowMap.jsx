@@ -2,43 +2,64 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Bot,
   Braces,
-  Crosshair,
   Database,
+  DoorOpen,
   FileInput,
+  Fingerprint,
+  FlaskConical,
   GitBranch,
   GitMerge,
-  Info,
   Maximize2,
+  Microscope,
   Minus,
   Play,
   Plus,
+  ScrollText,
   Send,
+  ShieldCheck,
   Shuffle,
   Sparkles,
+  Tags,
   Wand2,
-  X,
 } from 'lucide-react'
 import { AREAS } from '../content/workflow.js'
-import { Badge } from './ui.jsx'
 
 /* --------------------------------------------------------------------------
    WorkflowMap — el lienzo de n8n, navegable.
 
    Reconstruye el flujo con la geometria REAL del export
-   (scripts/build_workflow_canvas.py): las posiciones de los 79 nodos, sus 114
-   conexiones, y los nueve marcos de area, que en n8n son sticky notes grandes
-   y por tanto no hay que inventarlos.
+   (scripts/build_workflow_canvas.py): los 79 nodos donde Ruben los dejo, sus
+   114 conexiones y los nueve marcos de area, que en n8n son sticky notes
+   grandes y por tanto no hay que inventarlos.
 
    Por que un mapa y no una captura: un flujo de 11.900 x 4.500 unidades no cabe
    en una pagina. Reducido entero es ilegible, y recortado pierde lo unico que
-   importa de un flujo, que es como se conectan las cosas. Con desplazamiento y
-   zoom se puede mirar de cerca sin perder el conjunto.
+   importa de un flujo, que es como se conectan las cosas.
 
-   Las chinchetas numeradas de arriba llevan la vista a cada area, y el panel de
-   detalle recoge lo que en n8n son sticky notes de anotacion. Sobre el lienzo
-   solo queda la estructura.
+   Cuatro problemas de la primera version y como se resuelven aqui:
+
+   1. **El lienzo empieza en coordenadas negativas** (-456, -1032). Un `<svg>`
+      recorta todo lo que caiga a la izquierda o por encima de su origen, asi
+      que el area 5, que arranca en y = -912, salia con las conexiones
+      cortadas. Se traslada el mundo entero por `-bounds` y todo pasa a ser
+      positivo. Es la causa raiz de las lineas que se veian truncadas.
+
+   2. **El arrastre expulsaba la vista.** No habia limites, asi que era posible
+      empujar el flujo fuera de la ventana y quedarse mirando el vacio.
+      `clamp()` obliga a que siempre quede lienzo en pantalla.
+
+   3. **Abria con el flujo entero**, a un zoom donde nada es legible. Ahora
+      entra enfocado en el area 1 y el lector se aleja si quiere.
+
+   4. **Las lineas desaparecian al alejarse.** Un trazo de 2,5 unidades a escala
+      0,1 mide un cuarto de pixel. Los grosores se dividen por la escala, asi
+      que el trazo mide lo mismo en pantalla a cualquier zoom.
+
+   El detalle de cada area NO se repite aqui: ya vive en el boton `(!)` de las
+   tarjetas de abajo. Este mapa es para navegar, no para leer.
    -------------------------------------------------------------------------- */
 
+/* Familia visual de cada nodo. El icono dice que clase de trabajo hace. */
 const KIND = {
   trigger: { icon: Play, color: 'var(--status-pure)' },
   file: { icon: FileInput, color: 'var(--status-pure)' },
@@ -53,17 +74,33 @@ const KIND = {
   model: { icon: Sparkles, color: 'var(--accent-secondary-text)' },
 }
 
+/* Un simbolo por area, para el indice de arriba. */
+const AREA_ICON = {
+  1: DoorOpen,
+  2: Tags,
+  3: Fingerprint,
+  4: Shuffle,
+  5: FlaskConical,
+  6: ScrollText,
+  7: Microscope,
+  8: Database,
+  9: ShieldCheck,
+}
+
 const VIEW_H = 620
 const MIN_K = 0.05
 const MAX_K = 1.6
+
+const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi)
 
 export default function WorkflowMap() {
   const wrapRef = useRef(null)
   const [data, setData] = useState(null)
   const [failed, setFailed] = useState(false)
-  const [view, setView] = useState({ x: 0, y: 0, k: 0.1 })
-  const [detail, setDetail] = useState(null)
+  const [view, setView] = useState({ x: 0, y: 0, k: 0.35 })
+  const [active, setActive] = useState(1)
   const [hover, setHover] = useState(null)
+  const [dragging, setDragging] = useState(false)
   const drag = useRef(null)
 
   useEffect(() => {
@@ -77,42 +114,68 @@ export default function WorkflowMap() {
     }
   }, [])
 
-  /* Encaja un rectangulo del lienzo en la ventana visible. */
-  const fitTo = useCallback((rect, margin = 60) => {
-    const el = wrapRef.current
-    if (!el) return
-    const w = el.clientWidth
-    const k = Math.min(
-      Math.max(Math.min((w - margin * 2) / rect.w, (VIEW_H - margin * 2) / rect.h), MIN_K),
-      MAX_K,
-    )
-    setView({
-      k,
-      x: w / 2 - (rect.x + rect.w / 2) * k,
-      y: VIEW_H / 2 - (rect.y + rect.h / 2) * k,
-    })
-  }, [])
+  const world = data
+    ? { w: data.bounds.w, h: data.bounds.h, ox: -data.bounds.x, oy: -data.bounds.y }
+    : null
 
-  // Encuadre inicial: el flujo entero.
+  /* Impide que el lienzo se salga del todo: siempre queda un tercio dentro. */
+  const clampView = useCallback(
+    (v, w) => {
+      if (!w) return v
+      const el = wrapRef.current
+      const vw = el ? el.clientWidth : 900
+      const keep = 0.34
+      return {
+        k: v.k,
+        x: clamp(v.x, vw * keep - w.w * v.k, vw * (1 - keep)),
+        y: clamp(v.y, VIEW_H * keep - w.h * v.k, VIEW_H * (1 - keep)),
+      }
+    },
+    [],
+  )
+
+  /* Encaja un rectangulo del lienzo (en coordenadas de n8n) en la ventana. */
+  const fitTo = useCallback(
+    (rect, margin = 70) => {
+      const el = wrapRef.current
+      if (!el || !world) return
+      const vw = el.clientWidth
+      const k = clamp(
+        Math.min((vw - margin * 2) / rect.w, (VIEW_H - margin * 2) / rect.h),
+        MIN_K,
+        MAX_K,
+      )
+      const cx = rect.x + world.ox + rect.w / 2
+      const cy = rect.y + world.oy + rect.h / 2
+      setView(clampView({ k, x: vw / 2 - cx * k, y: VIEW_H / 2 - cy * k }, world))
+    },
+    [world, clampView],
+  )
+
+  /* Encuadre inicial: el area 1, no el flujo entero. Entrar viendolo todo a la
+     vez abruma y no se lee nada. */
   useEffect(() => {
-    if (data) fitTo(data.bounds)
+    if (!data) return
+    const first = data.areas.find((a) => a.n === 1) ?? data.bounds
+    fitTo(first, 60)
   }, [data, fitTo])
 
   const onPointerDown = (e) => {
-    if (e.target.closest('[data-node]')) return
-    drag.current = { px: e.clientX, py: e.clientY, x: view.x, y: view.y }
+    drag.current = { px: e.clientX, py: e.clientY, x: view.x, y: view.y, moved: false }
+    setDragging(true)
     e.currentTarget.setPointerCapture(e.pointerId)
   }
   const onPointerMove = (e) => {
-    if (!drag.current) return
-    setView((v) => ({
-      ...v,
-      x: drag.current.x + (e.clientX - drag.current.px),
-      y: drag.current.y + (e.clientY - drag.current.py),
-    }))
+    const d = drag.current
+    if (!d) return
+    const dx = e.clientX - d.px
+    const dy = e.clientY - d.py
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) d.moved = true
+    setView((v) => clampView({ ...v, x: d.x + dx, y: d.y + dy }, world))
   }
   const onPointerUp = () => {
     drag.current = null
+    setDragging(false)
   }
 
   /* Zoom anclado al cursor: el punto bajo el raton no se mueve. */
@@ -123,8 +186,8 @@ export default function WorkflowMap() {
     const mx = e.clientX - box.left
     const my = e.clientY - box.top
     setView((v) => {
-      const k = Math.min(Math.max(v.k * (e.deltaY < 0 ? 1.15 : 1 / 1.15), MIN_K), MAX_K)
-      return { k, x: mx - ((mx - v.x) / v.k) * k, y: my - ((my - v.y) / v.k) * k }
+      const k = clamp(v.k * (e.deltaY < 0 ? 1.15 : 1 / 1.15), MIN_K, MAX_K)
+      return clampView({ k, x: mx - ((mx - v.x) / v.k) * k, y: my - ((my - v.y) / v.k) * k }, world)
     })
   }
 
@@ -133,79 +196,82 @@ export default function WorkflowMap() {
       const el = wrapRef.current
       const cx = el ? el.clientWidth / 2 : 0
       const cy = VIEW_H / 2
-      const k = Math.min(Math.max(v.k * f, MIN_K), MAX_K)
-      return { k, x: cx - ((cx - v.x) / v.k) * k, y: cy - ((cy - v.y) / v.k) * k }
+      const k = clamp(v.k * f, MIN_K, MAX_K)
+      return clampView({ k, x: cx - ((cx - v.x) / v.k) * k, y: cy - ((cy - v.y) / v.k) * k }, world)
     })
 
   if (failed) {
-    return (
-      <p style={{ color: 'var(--status-amorphous)' }}>
-        The workflow map could not be loaded.
-      </p>
-    )
+    return <p style={{ color: 'var(--status-amorphous)' }}>The workflow map could not be loaded.</p>
   }
-  if (!data) {
+  if (!data || !world) {
     return <p style={{ color: 'var(--text-muted)' }}>Loading the workflow map…</p>
   }
 
-  const { nodeSize, bounds, areas, nodes, edges, notes } = data
+  const { nodeSize, areas, nodes, edges } = data
   const pos = Object.fromEntries(nodes.map((n) => [n.id, n]))
-  const detailArea = detail ? AREAS.find((a) => a.n === detail) : null
-  const detailNotes = detail ? notes.filter((n) => n.area === detail && n.content) : []
+  const meta = Object.fromEntries(AREAS.map((a) => [a.n, a]))
+  /* Los grosores se compensan con la escala para que el trazo mida siempre lo
+     mismo en pantalla. Sin esto las lineas desaparecen al alejarse. */
+  const px = (n) => n / view.k
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* --- chinchetas: llevan la vista a cada area --- */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => fitTo(bounds)}
-          className="flex items-center gap-1.5 rounded-[var(--radius-badge)] px-3 py-1.5 text-xs uppercase tracking-wider"
-          style={{ border: '2px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-        >
-          <Maximize2 size={13} aria-hidden />
-          Whole flow
-        </button>
-        {areas.map((a) => (
-          <button
-            key={a.n}
-            type="button"
-            onClick={() => {
-              fitTo(a, 40)
-              setDetail(a.n)
-            }}
-            className="flex items-center gap-1.5 rounded-[var(--radius-badge)] px-2.5 py-1.5 text-xs"
+    <div className="flex flex-col gap-4">
+      {/* ---------------------------------------------------------------
+          Indice: nueve paradas de izquierda a derecha, en el orden en que
+          el fichero las atraviesa. Cada una lleva la vista a su zona.
+          --------------------------------------------------------------- */}
+      <div className="overflow-x-auto pb-1">
+        <div className="relative flex min-w-max items-start gap-0">
+          {/* la linea que las une, por detras */}
+          <div
+            aria-hidden
+            className="absolute"
             style={{
-              border: `2px solid ${detail === a.n ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
-              background: detail === a.n ? 'var(--accent-primary)' : 'transparent',
-              color: detail === a.n ? 'var(--surface)' : 'var(--text-secondary)',
+              top: 21,
+              left: 32,
+              right: 32,
+              height: 2,
+              background: 'var(--surface-border)',
             }}
-            title={a.title}
-          >
-            <Crosshair size={12} aria-hidden />
-            {a.n}
-          </button>
-        ))}
-        <span className="ml-auto flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => zoomBy(1 / 1.3)}
-            aria-label="Zoom out"
-            className="rounded-[var(--radius-badge)] p-1.5"
-            style={{ border: '2px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-          >
-            <Minus size={14} aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => zoomBy(1.3)}
-            aria-label="Zoom in"
-            className="rounded-[var(--radius-badge)] p-1.5"
-            style={{ border: '2px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-          >
-            <Plus size={14} aria-hidden />
-          </button>
-        </span>
+          />
+          {areas.map((a) => {
+            const Icon = AREA_ICON[a.n] ?? Shuffle
+            const on = active === a.n
+            return (
+              <button
+                key={a.n}
+                type="button"
+                onClick={() => {
+                  setActive(a.n)
+                  fitTo(a, 50)
+                }}
+                className="relative flex w-[104px] shrink-0 flex-col items-center gap-1.5 bg-transparent px-1"
+                title={meta[a.n]?.subtitle ?? a.title}
+              >
+                <span
+                  className="flex h-11 w-11 items-center justify-center rounded-full transition-transform"
+                  style={{
+                    border: `2.5px solid ${on ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+                    background: on ? 'var(--accent-primary)' : 'var(--surface)',
+                    color: on ? 'var(--surface)' : 'var(--text-secondary)',
+                    transform: on ? 'scale(1.12)' : 'none',
+                  }}
+                >
+                  <Icon size={19} aria-hidden />
+                </span>
+                <span
+                  className="text-center text-[11px] leading-tight"
+                  style={{
+                    color: on ? 'var(--accent-primary)' : 'var(--text-muted)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  {a.n} · {meta[a.n]?.title ?? a.title}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* --- el lienzo --- */}
@@ -221,90 +287,104 @@ export default function WorkflowMap() {
           height: VIEW_H,
           border: 'var(--border-card) solid var(--surface-border)',
           background: 'var(--chart-bg)',
-          cursor: drag.current ? 'grabbing' : 'grab',
+          cursor: dragging ? 'grabbing' : 'grab',
           touchAction: 'none',
         }}
       >
         <div
           style={{
             position: 'absolute',
+            top: 0,
+            left: 0,
             transformOrigin: '0 0',
             transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})`,
-            width: bounds.x + bounds.w,
-            height: bounds.y + bounds.h,
+            width: world.w,
+            height: world.h,
+            willChange: 'transform',
           }}
         >
-          {/* marcos de area + conexiones */}
+          {/* Marcos de area y conexiones. El grupo se desplaza por el origen
+              negativo del lienzo de n8n: sin esto el SVG recorta el area 5. */}
           <svg
-            width={bounds.x + bounds.w}
-            height={bounds.y + bounds.h}
-            style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+            width={world.w}
+            height={world.h}
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', overflow: 'visible' }}
             aria-hidden
           >
-            {areas.map((a) => (
-              <g key={a.n}>
-                <rect
-                  x={a.x}
-                  y={a.y}
-                  width={a.w}
-                  height={a.h}
-                  rx={16}
-                  fill={detail === a.n ? 'var(--accent-glow)' : 'transparent'}
-                  stroke={detail === a.n ? 'var(--accent-primary)' : 'var(--surface-border)'}
-                  strokeWidth={detail === a.n ? 8 : 4}
-                  strokeDasharray="18 12"
-                />
-                <text
-                  x={a.x + 20}
-                  y={a.y + 56}
-                  fontSize={44}
-                  fill="var(--accent-primary)"
-                  fontFamily="var(--font-display)"
-                >
-                  {a.n} · {a.title}
-                </text>
-              </g>
-            ))}
+            <g transform={`translate(${world.ox}, ${world.oy})`}>
+              {areas.map((a) => {
+                const on = active === a.n
+                return (
+                  <g key={a.n}>
+                    <rect
+                      x={a.x}
+                      y={a.y}
+                      width={a.w}
+                      height={a.h}
+                      rx={20}
+                      fill={on ? 'var(--accent-glow)' : 'var(--surface-elevated)'}
+                      fillOpacity={on ? 1 : 0.5}
+                      stroke={on ? 'var(--accent-primary)' : 'var(--text-muted)'}
+                      strokeWidth={px(on ? 3.5 : 1.5)}
+                      strokeDasharray={on ? 'none' : `${px(9)} ${px(7)}`}
+                    />
+                    <text
+                      x={a.x + px(14)}
+                      y={a.y - px(10)}
+                      fontSize={px(15)}
+                      fill={on ? 'var(--accent-primary)' : 'var(--text-muted)'}
+                      fontFamily="var(--font-display)"
+                      letterSpacing={px(1)}
+                    >
+                      {a.n} · {(meta[a.n]?.title ?? a.title).toUpperCase()}
+                    </text>
+                  </g>
+                )
+              })}
 
-            {edges.map((e, i) => {
-              const a = pos[e.from]
-              const b = pos[e.to]
-              if (!a || !b) return null
-              const x1 = a.x + nodeSize.w
-              const y1 = a.y + nodeSize.h / 2
-              const x2 = b.x
-              const y2 = b.y + nodeSize.h / 2
-              const dx = Math.max(60, Math.abs(x2 - x1) * 0.4)
-              const lit = hover && (e.from === hover || e.to === hover)
-              return (
-                <path
-                  key={i}
-                  d={`M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`}
-                  fill="none"
-                  stroke={lit ? 'var(--accent-primary)' : 'var(--surface-border)'}
-                  strokeWidth={lit ? 5 : 2.5}
-                  opacity={lit ? 1 : 0.75}
-                />
-              )
-            })}
+              {edges.map((e, i) => {
+                const a = pos[e.from]
+                const b = pos[e.to]
+                if (!a || !b) return null
+                const x1 = a.x + nodeSize.w
+                const y1 = a.y + nodeSize.h / 2
+                const x2 = b.x
+                const y2 = b.y + nodeSize.h / 2
+                /* Curva en S. El tirador crece con la distancia para que los
+                   saltos largos entre areas no crucen los nodos de en medio. */
+                const dx = Math.max(70, Math.abs(x2 - x1) * 0.4)
+                const lit = hover && (e.from === hover || e.to === hover)
+                return (
+                  <path
+                    key={i}
+                    d={`M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`}
+                    fill="none"
+                    stroke={lit ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                    strokeWidth={px(lit ? 2.6 : 1.3)}
+                    opacity={lit ? 1 : 0.55}
+                    strokeLinecap="round"
+                  />
+                )
+              })}
+            </g>
           </svg>
 
           {/* nodos */}
           {nodes.map((n) => {
             const k = KIND[n.kind] ?? KIND.transform
             const Icon = k.icon
+            const dim = active && n.area && n.area !== active
             return (
               <div
                 key={n.id}
                 data-node
                 onMouseEnter={() => setHover(n.id)}
                 onMouseLeave={() => setHover(null)}
-                onClick={() => n.area && setDetail(n.area)}
                 title={n.name}
                 style={{
                   position: 'absolute',
-                  left: n.x,
-                  top: n.y,
+                  left: n.x + world.ox,
+                  top: n.y + world.oy,
                   width: nodeSize.w,
                   height: nodeSize.h,
                   display: 'flex',
@@ -312,10 +392,10 @@ export default function WorkflowMap() {
                   gap: 8,
                   padding: '0 10px',
                   borderRadius: 8,
-                  border: `3px solid ${k.color}`,
+                  border: `${px(1.6)}px solid ${k.color}`,
                   background: 'var(--surface)',
-                  boxShadow: hover === n.id ? `0 0 0 6px var(--accent-glow)` : 'none',
-                  cursor: 'pointer',
+                  opacity: dim ? 0.45 : 1,
+                  boxShadow: hover === n.id ? `0 0 0 ${px(3)}px var(--accent-glow)` : 'none',
                   overflow: 'hidden',
                 }}
               >
@@ -339,97 +419,38 @@ export default function WorkflowMap() {
           })}
         </div>
 
-        <div
-          className="pointer-events-none absolute bottom-2 left-3 text-xs"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          Drag to pan · scroll to zoom · {nodes.length} nodes, {edges.length} connections
-        </div>
-      </div>
-
-      {/* --- panel de detalle: lo que en n8n son sticky notes --- */}
-      {detailArea && (
-        <div
-          className="rounded-[var(--radius-card)] p-5"
-          style={{
-            border: 'var(--border-card) solid var(--accent-primary)',
-            background: 'var(--surface-elevated)',
-          }}
-        >
-          <div className="flex items-start gap-3">
-            <Badge tone="accent">Area {detailArea.n}</Badge>
-            <div className="min-w-0">
-              <h3 className="text-lg leading-tight">{detailArea.title}</h3>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                {detailArea.subtitle}
-              </p>
-            </div>
+        {/* controles, flotando sobre el lienzo */}
+        <div className="absolute right-3 top-3 flex flex-col gap-1.5">
+          {[
+            [Plus, 'Zoom in', () => zoomBy(1.3)],
+            [Minus, 'Zoom out', () => zoomBy(1 / 1.3)],
+            [Maximize2, 'Fit whole flow', () => fitTo(data.bounds, 30)],
+          ].map(([Icon, label, fn]) => (
             <button
+              key={label}
               type="button"
-              onClick={() => setDetail(null)}
-              aria-label="Close detail"
-              className="ml-auto rounded-[var(--radius-badge)] p-1"
-              style={{ border: '2px solid var(--surface-border)', color: 'var(--text-primary)' }}
-            >
-              <X size={15} aria-hidden />
-            </button>
-          </div>
-
-          <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            {detailArea.objective}
-          </p>
-
-          <h4 className="mt-5 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-            What this area adds to the item
-          </h4>
-          <ul className="mt-2 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {detailArea.adds.map((a, i) => (
-              <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}>
-                {a}
-              </li>
-            ))}
-          </ul>
-
-          {detailArea.note && (
-            <p
-              className="mt-4 p-3 text-sm"
+              onClick={fn}
+              aria-label={label}
+              title={label}
+              className="rounded-[var(--radius-badge)] p-1.5"
               style={{
-                borderLeft: '4px solid var(--accent-secondary)',
+                border: '2px solid var(--surface-border)',
                 background: 'var(--surface)',
                 color: 'var(--text-secondary)',
               }}
             >
-              {detailArea.note}
-            </p>
-          )}
-
-          {detailNotes.length > 0 && (
-            <>
-              <h4 className="mt-5 flex items-center gap-1.5 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                <Info size={13} aria-hidden />
-                Notes pinned to this area in n8n
-              </h4>
-              <div className="mt-2 flex flex-col gap-2">
-                {detailNotes.map((n, i) => (
-                  <pre
-                    key={i}
-                    className="mono overflow-x-auto rounded-[var(--radius-badge)] p-3 text-xs"
-                    style={{
-                      background: 'var(--surface)',
-                      border: '1.5px solid var(--surface-border)',
-                      color: 'var(--text-secondary)',
-                      whiteSpace: 'pre-wrap',
-                      margin: 0,
-                    }}
-                  >
-                    {n.content}
-                  </pre>
-                ))}
-              </div>
-            </>
-          )}
+              <Icon size={14} aria-hidden />
+            </button>
+          ))}
         </div>
-      )}
+
+        <div
+          className="pointer-events-none absolute bottom-2 left-3 text-xs"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          Drag to pan · scroll to zoom · {nodes.length} nodes · {edges.length} connections
+        </div>
+      </div>
     </div>
   )
 }
