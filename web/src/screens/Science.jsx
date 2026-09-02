@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import DataFunnel from '../components/DataFunnel.jsx'
+import DataScale from '../components/DataScale.jsx'
 import { Link } from 'react-router-dom'
 import {
   Atom,
@@ -28,7 +28,7 @@ import {
   NOBEL,
   SCIENCE_INTRO,
   TECHNIQUES,
-  FUNNEL,
+  DATA_SCALE,
   WHY_CHARACTERISE,
 } from '../content/science.js'
 import { Badge, Card, Note, Rich, SectionTitle, Term } from '../components/ui.jsx'
@@ -354,11 +354,11 @@ export default function Science() {
       <section>
         <SectionTitle eyebrow="The bottleneck"><Rich>{BOTTLENECK.title}</Rich></SectionTitle>
 
-        <h3 className="text-lg"><Rich>{FUNNEL.title}</Rich></h3>
+        <h3 className="text-lg"><Rich>{DATA_SCALE.title}</Rich></h3>
         <p className="mb-6 mt-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          <Rich>{FUNNEL.lead}</Rich>
+          <Rich>{DATA_SCALE.lead}</Rich>
         </p>
-        <DataFunnel />
+        <DataScale />
 
         <p className="mt-8 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{BOTTLENECK.scale}</Rich>

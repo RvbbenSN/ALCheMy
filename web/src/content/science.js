@@ -172,57 +172,47 @@ export const BOTTLENECK = {
     'Thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to — and nothing stopping the same file being saved twice under two names. What is needed is unglamorous and specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**',
 }
 
-/* --- El embudo de datos ----------------------------------------------------
-   De izquierda a derecha: muchas sintesis, un PXRD por cada una, y solo las
-   prometedoras siguen adelante hacia el resto de tecnicas. La forma del embudo
-   es el argumento entero de la pantalla siguiente: el volumen esta al principio
-   del proceso, no al final, y decrece justo cuando las medidas se encarecen.
+/* --- La escala del dato ----------------------------------------------------
+   Un recuento, no una secuencia. La primera version dibujaba esto como un
+   embudo y era enganoso: sugeria que las tecnicas se aplican uma tras otra en
+   un orden fijo, y no es asi. Solo el PXRD es rutinario; las demas se piden
+   segun lo que haga falta saber de cada muestra, en el orden que convenga y
+   muchas veces ninguna.
 
-   Los recuentos son reales (characterization_measurements, 2026-09-02) y el
-   ancho de cada etapa se dibuja a partir de ellos. */
-export const FUNNEL_STAGES = [
-  {
-    key: 'synthesis',
-    label: 'Syntheses',
-    icon: 'flask',
-    count: 2167,
-    note: 'Two 24-well plates a week, five years.',
-  },
-  {
-    key: 'pxrd',
-    label: 'PXRD',
-    icon: 'waves',
-    count: 1879,
-    note: 'Every sample that yielded a powder gets one. This is the gate.',
-  },
-  {
-    key: 'imaging',
-    label: 'Microscopy',
-    icon: 'microscope',
-    count: 1791,
-    note: 'SEM and FESEM: what the crystals actually look like.',
-  },
-  {
-    key: 'deep',
-    label: 'Textural & spectroscopic',
-    icon: 'wind',
-    count: 220,
-    note: 'Adsorption, FTIR, UV-Vis, TGA. Only for what looked promising.',
-  },
-  {
-    key: 'structure',
-    label: 'Structure & stability',
-    icon: 'thermometer',
-    count: 36,
-    note: 'Variable-temperature and single-crystal diffraction. The few that earned it.',
-  },
+   Lo que si es cierto —y es lo unico que la figura debe decir— es cuanto
+   material genera el laboratorio y donde acaba: muchas sintesis a la izquierda,
+   un monton de medidas repartidas entre nueve tecnicas en el centro, y una sola
+   base de datos a la derecha que las recoge todas.
+
+   Recuentos reales de `characterization_measurements`, 2026-09-02. */
+
+export const SYNTHESIS_NODE = {
+  label: 'Syntheses',
+  icon: 'flask',
+  count: 2167,
+  note: 'Two 24-well plates a week, five years.',
+}
+
+export const TECHNIQUE_COUNTS = [
+  { key: 'pxrd', label: 'PXRD', icon: 'waves', count: 1879, note: 'Routine on everything' },
+  { key: 'sem', label: 'SEM', icon: 'microscope', count: 1659, note: 'Crystal habit' },
+  { key: 'fesem', label: 'FESEM', icon: 'aperture', count: 132, note: 'Finer morphology' },
+  { key: 'ftir', label: 'FTIR', icon: 'audio', count: 77, note: 'Did the linker bind?' },
+  { key: 'ads', label: 'Adsorption', icon: 'wind', count: 68, note: 'Accessible porosity' },
+  { key: 'uv', label: 'UV-Vis', icon: 'sun', count: 44, note: 'Optical band gap' },
+  { key: 'tga', label: 'TGA', icon: 'flame', count: 31, note: 'Thermal stability' },
+  { key: 'vtxrd', label: 'VT-XRD', icon: 'thermometer', count: 26, note: 'Structure while heated' },
+  { key: 'scxrd', label: 'SC-XRD', icon: 'gem', count: 10, note: 'Full structure solved' },
 ]
 
-export const FUNNEL = {
-  title: 'How the data actually piles up',
+export const DATA_SCALE = {
+  title: 'How much data one laboratory produces',
   lead:
-    'Characterisation is not applied evenly. It is a funnel: everything gets a diffractogram, and each further technique is reserved for whatever survived the previous one. **The widest step of the pipeline is also the cheapest one** — which is exactly why predicting it is worth doing.',
+    'On the left, every synthesis ever performed. In the middle, every measurement taken on those samples, by technique. **They are not a sequence** — only the diffractogram is routine; the rest are requested when a specific question needs answering, in whatever order that question arises, and for most samples never. On the right, the one place all of it has to end up.',
+  bracketLabel: 'measurements',
+  databaseLabel: 'One governed database',
+  databaseNote: 'One row per synthesis, one row per measurement, every file fingerprinted.',
   footnote:
-    'Widths are proportional to the real number of measurements held in the database: 3,926 in total.',
+    'Counts read from the database on 2 September 2026. Circle size scales with the count, so the small techniques stay legible; read the numbers rather than the areas.',
 }
 
