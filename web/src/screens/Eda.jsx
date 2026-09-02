@@ -73,7 +73,7 @@ export default function Eda() {
           <h3 className="text-lg">The decision: high-throughput syntheses only</h3>
           <ol className="mt-4 flex list-decimal flex-col gap-2 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {EDA_CONFOUNDER.decision.map((d, i) => (
-              <li key={i}>{d}</li>
+              <li key={i}><Rich>{d}</Rich></li>
             ))}
           </ol>
           <Pullquote><Rich>{EDA_CONFOUNDER.price}</Rich></Pullquote>
@@ -270,7 +270,7 @@ export default function Eda() {
           <h3 className="text-base">How it is built, in three steps</h3>
           <ol className="mt-4 flex list-decimal flex-col gap-3 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {EDA_PCA.steps.map((s, i) => (
-              <li key={i}>{s}</li>
+              <li key={i}><Rich>{s}</Rich></li>
             ))}
           </ol>
           <p className="mt-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -284,7 +284,7 @@ export default function Eda() {
                 Finding {i + 1}
               </div>
               <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {f}
+                <Rich>{f}</Rich>
               </p>
             </Card>
           ))}

@@ -11,7 +11,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, PILLARS_INTRO, SCREENS } from '../content/site.js'
-import { Button, Card, KpiCard, SectionTitle, Term } from '../components/ui.jsx'
+import { Button, Card, KpiCard, Rich, SectionTitle, Term } from '../components/ui.jsx'
 import StackGrid from '../components/StackGrid.jsx'
 
 /* Un icono por pestana. Representan la fase, no la decoran: una brujula para
@@ -81,19 +81,19 @@ export default function Overview() {
       <section>
         <SectionTitle eyebrow="What holds it up">Three synchronized pillars</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          {PILLARS_INTRO}
+          <Rich>{PILLARS_INTRO}</Rich>
         </p>
         <div className="grid gap-6 lg:grid-cols-3">
           {PILLARS.map((p) => (
             <Card key={p.key} accent>
-              <h3 className="text-lg">{p.title}</h3>
+              <h3 className="text-lg"><Rich>{p.title}</Rich></h3>
               <p className="mt-1 text-sm" style={{ color: 'var(--accent-secondary-text)' }}>
-                {p.subtitle}
+                <Rich>{p.subtitle}</Rich>
               </p>
               <ul className="mt-4 flex list-none flex-col gap-3 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {p.points.map((pt, i) => (
                   <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}>
-                    {pt}
+                    <Rich>{pt}</Rich>
                   </li>
                 ))}
               </ul>
@@ -129,7 +129,7 @@ export default function Overview() {
                           className="mt-1 text-base"
                           style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
                         >
-                          {s.title}
+                          <Rich>{s.title}</Rich>
                         </div>
                       </div>
                     </div>
@@ -148,7 +148,7 @@ export default function Overview() {
           <Card>
             {BIO_SHORT.map((p, i) => (
               <p key={i} className={i ? 'mt-4' : ''} style={{ color: 'var(--text-secondary)' }}>
-                {p}
+                <Rich>{p}</Rich>
               </p>
             ))}
             <blockquote
@@ -159,7 +159,7 @@ export default function Overview() {
                 fontFamily: 'var(--font-heading)',
               }}
             >
-              {BIO_PULLQUOTE}
+              <Rich>{BIO_PULLQUOTE}</Rich>
             </blockquote>
             <div className="mt-6">
               <Button href="/about" variant="secondary">

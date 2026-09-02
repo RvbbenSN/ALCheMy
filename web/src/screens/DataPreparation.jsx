@@ -93,7 +93,7 @@ function FieldChips({ fields }) {
           className="rounded-[var(--radius-badge)] px-2 py-0.5 text-xs"
           style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
         >
-          {f}
+          <Rich>{f}</Rich>
         </code>
       ))}
     </div>
@@ -107,8 +107,8 @@ function FeatureList({ items, accent }) {
     <ul className="flex list-none flex-col gap-2.5 p-0">
       {items.map(([name, what]) => (
         <li key={name} style={{ borderLeft: `2px solid ${accent}`, paddingLeft: '0.75rem' }}>
-          <code className="text-xs" style={{ color: 'var(--text-primary)' }}>{name}</code>
-          <p className="mt-0.5 text-sm" style={{ color: 'var(--text-secondary)' }}>{what}</p>
+          <code className="text-xs" style={{ color: 'var(--text-primary)' }}><Rich>{name}</Rich></code>
+          <p className="mt-0.5 text-sm" style={{ color: 'var(--text-secondary)' }}><Rich>{what}</Rich></p>
         </li>
       ))}
     </ul>
@@ -162,16 +162,16 @@ export default function DataPreparation() {
               >
                 <div className="flex items-center gap-3">
                   <Icon size={22} aria-hidden style={{ color: on ? 'var(--accent-primary)' : 'var(--text-muted)' }} />
-                  <h2 className="text-lg leading-tight">{l.label}</h2>
+                  <h2 className="text-lg leading-tight"><Rich>{l.label}</Rich></h2>
                   <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                    {l.tag}
+                    <Rich>{l.tag}</Rich>
                   </span>
                 </div>
                 <p className="mt-1 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  {l.sub}
+                  <Rich>{l.sub}</Rich>
                 </p>
                 <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {l.blurb}
+                  <Rich>{l.blurb}</Rich>
                 </p>
               </button>
             )
@@ -187,14 +187,14 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow="What the table looks like">One row per synthesis</SectionTitle>
             <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              {SYNTH_PREVIEW.caption}
+              <Rich>{SYNTH_PREVIEW.caption}</Rich>
             </p>
             <ScrollTable head={SYNTH_PREVIEW.head} rows={SYNTH_PREVIEW.rows} />
             <p
               className="mt-3 p-3 text-xs"
               style={{ borderLeft: '4px solid var(--status-incipient)', background: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
             >
-              {SYNTH_PREVIEW.warning}
+              <Rich>{SYNTH_PREVIEW.warning}</Rich>
             </p>
           </section>
 
@@ -212,9 +212,9 @@ export default function DataPreparation() {
                   <Card key={g.title}>
                     <div className="flex items-center gap-3">
                       <Icon size={18} aria-hidden style={{ color: 'var(--accent-primary)' }} />
-                      <h3 className="text-base">{g.title}</h3>
+                      <h3 className="text-base"><Rich>{g.title}</Rich></h3>
                       <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                        {g.fields.length}
+                        <Rich>{g.fields.length}</Rich>
                       </span>
                     </div>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -254,32 +254,32 @@ export default function DataPreparation() {
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
                     <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                      {ETL_STOICHIOMETRY.typeA.title}
+                      <Rich>{ETL_STOICHIOMETRY.typeA.title}</Rich>
                     </div>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {ETL_STOICHIOMETRY.typeA.body}
+                      <Rich>{ETL_STOICHIOMETRY.typeA.body}</Rich>
                     </p>
-                    <Formula>{ETL_STOICHIOMETRY.typeA.formula}</Formula>
+                    <Formula><Rich>{ETL_STOICHIOMETRY.typeA.formula}</Rich></Formula>
                   </div>
                   <div>
                     <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                      {ETL_STOICHIOMETRY.typeB.title}
+                      <Rich>{ETL_STOICHIOMETRY.typeB.title}</Rich>
                     </div>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {ETL_STOICHIOMETRY.typeB.body}
+                      <Rich>{ETL_STOICHIOMETRY.typeB.body}</Rich>
                     </p>
-                    <Formula>{ETL_STOICHIOMETRY.typeB.formula}</Formula>
+                    <Formula><Rich>{ETL_STOICHIOMETRY.typeB.formula}</Rich></Formula>
                   </div>
                 </div>
               </Card>
 
               <Card>
-                <h3 className="text-base">3 · {ETL_THERMAL.title}</h3>
+                <h3 className="text-base">3 · <Rich>{ETL_THERMAL.title}</Rich></h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{ETL_THERMAL.body}</Rich>
                 </p>
                 {ETL_THERMAL.formulas.map((f) => (
-                  <Formula key={f}>{f}</Formula>
+                  <Formula key={f}><Rich>{f}</Rich></Formula>
                 ))}
               </Card>
 
@@ -419,7 +419,7 @@ export default function DataPreparation() {
                 <Rich>{ETL_TANNIC.measure}</Rich>
               </p>
             </Card>
-            <Pullquote tone="incipient">⚠️ {ETL_TANNIC.caution}</Pullquote>
+            <Pullquote tone="incipient">⚠️ <Rich>{ETL_TANNIC.caution}</Rich></Pullquote>
           </section>
 
           <section>
@@ -462,10 +462,10 @@ export default function DataPreparation() {
                   }}
                 >
                   <span className="text-sm" style={{ fontFamily: 'var(--font-mono)', color: first ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
-                    {name}
+                    <Rich>{name}</Rich>
                   </span>
-                  <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{question}</span>
-                  <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{cost}</span>
+                  <span className="text-sm" style={{ color: 'var(--text-primary)' }}><Rich>{question}</Rich></span>
+                  <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}><Rich>{cost}</Rich></span>
                 </li>
               ))}
             </ol>
@@ -505,7 +505,7 @@ export default function DataPreparation() {
             </p>
             <ScrollTable
               head={['Format', 'Instrument', 'What makes it awkward']}
-              rows={FORMATS.map(([a, b, c]) => [<code key={a}>{a}</code>, b, c])}
+              rows={FORMATS.map(([a, b, c]) => [<code key={a}><Rich>{a}</Rich></code>, b, c])}
             />
           </section>
 
@@ -582,7 +582,7 @@ export default function DataPreparation() {
             <ScrollTable
               head={DESCRIPTOR_RECAP.head}
               rows={DESCRIPTOR_RECAP.rows.map(([name, what, a, i, c]) => [
-                <code key={name}>{name}</code>,
+                <code key={name}><Rich>{name}</Rich></code>,
                 what,
                 a,
                 i,

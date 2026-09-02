@@ -22,8 +22,13 @@ import { GLOSSARY } from '../content/site.js'
    Es deliberadamente pequeno y no debe crecer hasta ser Markdown: en cuanto
    haga falta algo mas que enfasis, eso es estructura, y la estructura va en la
    pantalla, no en el texto.
+
+   La cursiva exige que el asterisco toque al texto por dentro —`*asi*`, nunca
+   `* asi *`— para que una multiplicacion escrita en prosa ("2 * 3 * 4") no se
+   convierta en cursiva por accidente. Las marcas no se anidan: `**`x`**` deja
+   las comillas a la vista, asi que hay que elegir una.
    -------------------------------------------------------------------------- */
-const RICH_RE = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/g
+const RICH_RE = /(\*\*[^*]+\*\*|\*[^\s*](?:[^*\n]*[^\s*])?\*|`[^`\n]+`)/g
 
 export function Rich({ children }) {
   if (typeof children !== 'string') return children
@@ -194,7 +199,9 @@ export function Placeholder({ children, source }) {
       }}
     >
       <Badge tone="info">Pending copy</Badge>
-      <p className="mt-3">{children}</p>
+      <p className="mt-3">
+        <Rich>{children}</Rich>
+      </p>
       {source && (
         <p className="mt-2 mono text-xs" style={{ color: 'var(--text-muted)' }}>
           Source: {source}
@@ -242,7 +249,7 @@ export function ScrollTable({ head, rows }) {
             <tr key={i} style={{ borderBottom: '1px solid var(--surface-border)' }}>
               {r.map((cell, j) => (
                 <td key={j} className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
-                  {cell}
+                  <Rich>{cell}</Rich>
                 </td>
               ))}
             </tr>

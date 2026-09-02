@@ -140,7 +140,7 @@ export default function Modeling() {
         <div className="grid gap-4 md:grid-cols-2">
           {MODEL_ASSESSMENT.points.map((p) => (
             <Card key={p.title}>
-              <h3 className="text-base">{p.title}</h3>
+              <h3 className="text-base"><Rich>{p.title}</Rich></h3>
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 <Rich>{p.body}</Rich>
               </p>
@@ -149,7 +149,7 @@ export default function Modeling() {
         </div>
 
         <Card accent className="mt-4">
-          <h3 className="text-lg">{MODEL_ASSESSMENT.cause.title}</h3>
+          <h3 className="text-lg"><Rich>{MODEL_ASSESSMENT.cause.title}</Rich></h3>
           <p className="mt-3" style={{ color: 'var(--text-secondary)' }}>
             <Rich>{MODEL_ASSESSMENT.cause.body}</Rich>
           </p>
@@ -166,7 +166,7 @@ export default function Modeling() {
         </Card>
 
         <Card className="mt-4">
-          <h3 className="text-base">{MODEL_ASSESSMENT.next.title}</h3>
+          <h3 className="text-base"><Rich>{MODEL_ASSESSMENT.next.title}</Rich></h3>
           <ol className="mt-4 flex list-decimal flex-col gap-3 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {MODEL_ASSESSMENT.next.items.map((it, i) => (
               <li key={i}>
@@ -303,7 +303,7 @@ export default function Modeling() {
             </Card>
           ))}
         </div>
-        <Pullquote tone="incipient">⚠️ {MODEL_CHEMISTRY.caution}</Pullquote>
+        <Pullquote tone="incipient">⚠️ <Rich>{MODEL_CHEMISTRY.caution}</Rich></Pullquote>
         <Card accent>
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
             <Rich>{MODEL_CHEMISTRY.distinction}</Rich>

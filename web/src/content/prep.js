@@ -74,7 +74,7 @@ export const SYNTH_GROUPS = [
     title: 'Theoretical design',
     icon: 'design',
     body:
-      'The chemistry the experiment was meant to be. **`lm_ratio`** — linker to metal — is the single most argued-over number in the whole table: it decides whether there is enough organic strut to build a framework at all.',
+      'The chemistry the experiment was meant to be. **lm_ratio** — linker to metal — is the single most argued-over number in the whole table: it decides whether there is enough organic strut to build a framework at all.',
     fields: ['metal_center', 'metal_source', 'linker', 'metal_conc_m', 'lm_ratio', 'metal_mass_mg', 'linker_mass_mg'],
   },
   {

@@ -28,7 +28,7 @@ export default function TheModel() {
 
       <section>
         <SectionTitle eyebrow="Closing the loop">Design tomorrow&rsquo;s 24-well block</SectionTitle>
-        <Placeholder source="notebooks/06_...ipynb (section 9)">{MODEL_NEXT_BLOCK}</Placeholder>
+        <Placeholder source="notebooks/06_...ipynb (section 9)"><Rich>{MODEL_NEXT_BLOCK}</Rich></Placeholder>
       </section>
 
       <section>
@@ -61,7 +61,7 @@ export default function TheModel() {
 
       <section>
         <SectionTitle eyebrow="Deliverable">One-page technical datasheet</SectionTitle>
-        <Placeholder source="design_system/templates/, n8n">{MODEL_DATASHEET}</Placeholder>
+        <Placeholder source="design_system/templates/, n8n"><Rich>{MODEL_DATASHEET}</Rich></Placeholder>
       </section>
     </div>
   )

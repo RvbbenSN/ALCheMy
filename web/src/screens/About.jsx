@@ -14,7 +14,7 @@ import {
   PUBLICATION_SUMMARY,
   SKILLS,
 } from '../content/about.js'
-import { Badge, Card, SectionTitle } from '../components/ui.jsx'
+import { Badge, Card, Rich, SectionTitle } from '../components/ui.jsx'
 
 function Tag({ children, tone = 'line' }) {
   return (
@@ -86,7 +86,7 @@ function ContactForm() {
       <h3 className="text-base">Say something</h3>
       <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
         Thoughts on the platform, a question about the chemistry, an opportunity — whatever it is, it
-        reaches <code>{SITE.email}</code>.
+        reaches <code><Rich>{SITE.email}</Rich></code>.
       </p>
 
       <label className="mt-4 block text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
@@ -157,12 +157,12 @@ export default function About() {
           Rubén Serrano Nieto
         </h1>
         <p className="mt-3 text-lg" style={{ color: 'var(--accent-secondary-text)', fontFamily: 'var(--font-heading)' }}>
-          {HEADLINE}
+          <Rich>{HEADLINE}</Rich>
         </p>
         <div className="mt-6 max-w-3xl">
           {BIO_ABOUT.map((p, i) => (
             <p key={i} className={i ? 'mt-4' : ''} style={{ color: 'var(--text-secondary)' }}>
-              {p}
+              <Rich>{p}</Rich>
             </p>
           ))}
         </div>
@@ -191,10 +191,10 @@ export default function About() {
           {METRICS.map((m) => (
             <Card key={m.l} accent className="text-center">
               <div className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}>
-                {m.v}
+                <Rich>{m.v}</Rich>
               </div>
               <div className="mt-2 text-xs uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-                {m.l}
+                <Rich>{m.l}</Rich>
               </div>
             </Card>
           ))}
@@ -209,16 +209,16 @@ export default function About() {
             <li key={e.when}>
               <Card>
                 <div className="mono text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  {e.when}
+                  <Rich>{e.when}</Rich>
                 </div>
-                <h3 className="mt-1 text-lg">{e.what}</h3>
+                <h3 className="mt-1 text-lg"><Rich>{e.what}</Rich></h3>
                 <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {e.where}
+                  <Rich>{e.where}</Rich>
                 </div>
                 <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   {e.points.map((p, i) => (
                     <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}>
-                      {p}
+                      <Rich>{p}</Rich>
                     </li>
                   ))}
                 </ul>
@@ -236,20 +236,20 @@ export default function About() {
             <li key={e.when}>
               <Card>
                 <div className="mono text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  {e.when}
+                  <Rich>{e.when}</Rich>
                 </div>
-                <h3 className="mt-1 text-lg">{e.what}</h3>
+                <h3 className="mt-1 text-lg"><Rich>{e.what}</Rich></h3>
                 <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {e.where}
+                  <Rich>{e.where}</Rich>
                 </div>
                 <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {e.detail}
+                  <Rich>{e.detail}</Rich>
                 </p>
                 {e.tags.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {e.tags.map((t) => (
                       <Tag key={t} tone="accent">
-                        {t}
+                        <Rich>{t}</Rich>
                       </Tag>
                     ))}
                   </div>
@@ -267,18 +267,18 @@ export default function About() {
           {PUBLICATIONS.map((p) => (
             <Card key={p.title} accent={Boolean(p.note)}>
               <div className="flex flex-wrap items-center gap-2">
-                <Tag tone="accent">{p.tag}</Tag>
+                <Tag tone="accent"><Rich>{p.tag}</Rich></Tag>
                 <span className="mono text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {p.year}
+                  <Rich>{p.year}</Rich>
                 </span>
               </div>
-              <h3 className="mt-3 text-base">{p.title}</h3>
+              <h3 className="mt-3 text-base"><Rich>{p.title}</Rich></h3>
               <div className="mt-1 text-sm italic" style={{ color: 'var(--text-muted)' }}>
-                {p.journal}
+                <Rich>{p.journal}</Rich>
               </div>
               {p.note && (
                 <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {p.note}
+                  <Rich>{p.note}</Rich>
                 </p>
               )}
               <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -304,9 +304,9 @@ export default function About() {
           ))}
         </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <strong>{PUBLICATION_SUMMARY.firstAuthor}</strong> works as first author · mean impact factor{' '}
-          <strong>{PUBLICATION_SUMMARY.meanIf}</strong> · <strong>{PUBLICATION_SUMMARY.cites}</strong>{' '}
-          citations · h-index <strong>{PUBLICATION_SUMMARY.hIndex}</strong>{' '}
+          <strong><Rich>{PUBLICATION_SUMMARY.firstAuthor}</Rich></strong> works as first author · mean impact factor{' '}
+          <strong><Rich>{PUBLICATION_SUMMARY.meanIf}</Rich></strong> · <strong><Rich>{PUBLICATION_SUMMARY.cites}</Rich></strong>{' '}
+          citations · h-index <strong><Rich>{PUBLICATION_SUMMARY.hIndex}</Rich></strong>{' '}
           <span style={{ color: 'var(--text-muted)' }}>(Scopus, May 2026)</span>
         </p>
       </section>
@@ -322,7 +322,7 @@ export default function About() {
           <div className="mt-4 flex flex-wrap gap-2">
             {PROJECTS.map((p) => (
               <Tag key={p} tone="accent">
-                {p}
+                <Rich>{p}</Rich>
               </Tag>
             ))}
           </div>
@@ -331,7 +331,7 @@ export default function About() {
         <Card className="mt-4">
           <h3 className="text-base">The contracts behind them</h3>
           <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {FUNDING.intro}
+            <Rich>{FUNDING.intro}</Rich>
           </p>
           <ul className="mt-4 flex list-none flex-col gap-2 p-0">
             {FUNDING.contracts.map((c) => (
@@ -340,19 +340,19 @@ export default function About() {
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
                 style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}
               >
-                <span className="mono text-sm" style={{ color: 'var(--text-primary)' }}>{c.ref}</span>
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{c.role}</span>
+                <span className="mono text-sm" style={{ color: 'var(--text-primary)' }}><Rich>{c.ref}</Rich></span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}><Rich>{c.role}</Rich></span>
                 <span
                   className="mono ml-auto text-sm"
                   style={{ color: 'var(--accent-primary)' }}
                 >
-                  {c.budget}
+                  <Rich>{c.budget}</Rich>
                 </span>
               </li>
             ))}
           </ul>
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Combined budget of the projects funding that work: <strong>{FUNDING.total}</strong>. Principal
+            Combined budget of the projects funding that work: <strong><Rich>{FUNDING.total}</Rich></strong>. Principal
             investigator in all of them: Dr. Patricia Horcajada.
           </p>
         </Card>
@@ -364,10 +364,10 @@ export default function About() {
         <div className="grid gap-4 lg:grid-cols-3">
           {SKILLS.map((s) => (
             <Card key={s.group}>
-              <h3 className="text-base">{s.group}</h3>
+              <h3 className="text-base"><Rich>{s.group}</Rich></h3>
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {s.items.map((i) => (
-                  <Tag key={i}>{i}</Tag>
+                  <Tag key={i}><Rich>{i}</Rich></Tag>
                 ))}
               </div>
             </Card>
@@ -384,7 +384,7 @@ export default function About() {
               <div className="mono text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
                 {o.when} · {o.where}
               </div>
-              <h3 className="mt-2 text-base">{o.title}</h3>
+              <h3 className="mt-2 text-base"><Rich>{o.title}</Rich></h3>
               {o.url && (
                 <a
                   href={o.url}
@@ -416,7 +416,7 @@ export default function About() {
                 style={{ color: 'var(--accent-primary)' }}
               >
                 <Mail size={15} aria-hidden />
-                {SITE.email}
+                <Rich>{SITE.email}</Rich>
               </a>
               <a
                 href={SITE.linkedin}

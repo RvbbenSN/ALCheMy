@@ -28,13 +28,13 @@ export default function Rag() {
         <SectionTitle eyebrow="The corpus">956 documents, 87,765 chunks</SectionTitle>
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
-            <h3 className="text-base">{RAG_CORPUS.chunkingTitle}</h3>
+            <h3 className="text-base"><Rich>{RAG_CORPUS.chunkingTitle}</Rich></h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{RAG_CORPUS.chunkingBody}</Rich>
             </p>
           </Card>
           <Card>
-            <h3 className="text-base">{RAG_CORPUS.sourcesTitle}</h3>
+            <h3 className="text-base"><Rich>{RAG_CORPUS.sourcesTitle}</Rich></h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{RAG_CORPUS.sourcesBody}</Rich> Retrieval runs on <Term k="pgvector" /> inside the
               same PostgreSQL instance.
@@ -79,7 +79,7 @@ export default function Rag() {
             {masked ? RAG_MASKING.after : RAG_MASKING.before}
           </pre>
           <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-            {RAG_MASKING.footnote}
+            <Rich>{RAG_MASKING.footnote}</Rich>
           </p>
         </Card>
       </section>
@@ -94,13 +94,13 @@ export default function Rag() {
                 className="rounded-[var(--radius-badge)] px-3 py-1.5 text-xs"
                 style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
               >
-                {q}
+                <Rich>{q}</Rich>
               </span>
             ))}
           </div>
           <div className="mt-5">
             <Placeholder source="src/rag_query.py → POST /api/v1/rag/query">
-              {RAG_PENDING.chat}
+              <Rich>{RAG_PENDING.chat}</Rich>
             </Placeholder>
           </div>
         </Card>
@@ -113,7 +113,7 @@ export default function Rag() {
 
       <section>
         <SectionTitle eyebrow="Beyond vectors">The knowledge graph</SectionTitle>
-        <Placeholder source="src/build_knowledge_graph.py">{RAG_PENDING.graph}</Placeholder>
+        <Placeholder source="src/build_knowledge_graph.py"><Rich>{RAG_PENDING.graph}</Rich></Placeholder>
       </section>
     </div>
   )

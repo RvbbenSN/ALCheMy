@@ -44,7 +44,7 @@ function LabStep({ step, isLast, open, onToggle }) {
               fontFamily: 'var(--font-display)',
             }}
           >
-            {step.step}
+            <Rich>{step.step}</Rich>
           </button>
           {!isLast && <div className="w-0.5 flex-1" style={{ background: 'var(--surface-border)', minHeight: 16 }} />}
         </div>
@@ -56,7 +56,7 @@ function LabStep({ step, isLast, open, onToggle }) {
             className="flex w-full items-center gap-2 border-0 bg-transparent p-0 text-left"
           >
             <h3 className="text-lg" style={{ color: 'var(--text-primary)' }}>
-              {step.title}
+              <Rich>{step.title}</Rich>
             </h3>
             <ChevronDown
               size={18}
@@ -73,7 +73,7 @@ function LabStep({ step, isLast, open, onToggle }) {
           {open && (
             <div className="mt-3">
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {step.body}
+                <Rich>{step.body}</Rich>
               </p>
               {step.highlight && (
                 <p
@@ -84,7 +84,7 @@ function LabStep({ step, isLast, open, onToggle }) {
                     color: 'var(--text-primary)',
                   }}
                 >
-                  {step.highlight}
+                  <Rich>{step.highlight}</Rich>
                 </p>
               )}
             </div>
@@ -107,7 +107,7 @@ export default function Science() {
           MOFs &amp; Lab Daily-life
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          {SCIENCE_INTRO}
+          <Rich>{SCIENCE_INTRO}</Rich>
         </p>
       </section>
 
@@ -130,30 +130,30 @@ export default function Science() {
                 &ldquo;{MOF_DEF.iupac}&rdquo;
               </blockquote>
               <div className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                {MOF_DEF.iupacNote}
+                <Rich>{MOF_DEF.iupacNote}</Rich>
               </div>
               <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {MOF_DEF.plain}
+                <Rich>{MOF_DEF.plain}</Rich>
               </p>
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {MOF_DEF.why}
+                <Rich>{MOF_DEF.why}</Rich>
               </p>
             </Card>
 
             <Card>
-              <h3 className="text-base">{MOF_NAMING.title}</h3>
+              <h3 className="text-base"><Rich>{MOF_NAMING.title}</Rich></h3>
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {MOF_NAMING.body}
+                <Rich>{MOF_NAMING.body}</Rich>
               </p>
             </Card>
           </div>
 
           <Card accent>
             <div className="text-xs uppercase tracking-[2px]" style={{ color: 'var(--accent-secondary-text)' }}>
-              {NOBEL.year}
+              <Rich>{NOBEL.year}</Rich>
             </div>
             <div className="mt-2 text-2xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '1px' }}>
-              {NOBEL.title}
+              <Rich>{NOBEL.title}</Rich>
             </div>
             <img
               src="/nobel-2025.jpg"
@@ -169,10 +169,10 @@ export default function Science() {
               }}
             />
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <strong>{NOBEL.laureates}</strong>. {NOBEL.reason}
+              <strong><Rich>{NOBEL.laureates}</Rich></strong>. {NOBEL.reason}
             </p>
             <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-              {NOBEL.credit}
+              <Rich>{NOBEL.credit}</Rich>
             </p>
           </Card>
         </div>
@@ -184,9 +184,9 @@ export default function Science() {
             return (
               <Card key={f.title}>
                 <Icon size={26} aria-hidden style={{ color: 'var(--accent-primary)' }} />
-                <h3 className="mt-3 text-base">{f.title}</h3>
+                <h3 className="mt-3 text-base"><Rich>{f.title}</Rich></h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {f.body}
+                  <Rich>{f.body}</Rich>
                 </p>
               </Card>
             )
@@ -215,13 +215,13 @@ export default function Science() {
 
       {/* --- 2. Por que hay que caracterizar --- */}
       <section>
-        <SectionTitle eyebrow="Characterisation">{WHY_CHARACTERISE.title}</SectionTitle>
+        <SectionTitle eyebrow="Characterisation"><Rich>{WHY_CHARACTERISE.title}</Rich></SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <p style={{ color: 'var(--text-secondary)' }}>{WHY_CHARACTERISE.body}</p>
+            <p style={{ color: 'var(--text-secondary)' }}><Rich>{WHY_CHARACTERISE.body}</Rich></p>
           </Card>
           <Card accent>
-            <p style={{ color: 'var(--text-secondary)' }}>{WHY_CHARACTERISE.consequence}</p>
+            <p style={{ color: 'var(--text-secondary)' }}><Rich>{WHY_CHARACTERISE.consequence}</Rich></p>
           </Card>
         </div>
 
@@ -244,7 +244,7 @@ export default function Science() {
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="mono text-sm" style={{ color: 'var(--accent-primary)' }}>
-                  {t.abbr}
+                  <Rich>{t.abbr}</Rich>
                 </span>
                 <ChevronDown
                   size={15}
@@ -257,14 +257,14 @@ export default function Science() {
                 />
               </div>
               <div className="mt-1 text-sm" style={{ color: 'var(--text-primary)' }}>
-                {t.name}
+                <Rich>{t.name}</Rich>
               </div>
               <div className="mt-2 text-xs italic" style={{ color: 'var(--text-secondary)' }}>
-                {t.answers}
+                <Rich>{t.answers}</Rich>
               </div>
               {openTech === t.abbr && (
                 <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {t.body}
+                  <Rich>{t.body}</Rich>
                 </p>
               )}
             </button>
@@ -274,13 +274,13 @@ export default function Science() {
 
       {/* --- 3. El dia en el laboratorio --- */}
       <section>
-        <SectionTitle eyebrow="Inside the lab">{LAB_INTRO.title}</SectionTitle>
+        <SectionTitle eyebrow="Inside the lab"><Rich>{LAB_INTRO.title}</Rich></SectionTitle>
         <div className="mb-8 grid gap-4 lg:grid-cols-2">
           <Card>
-            <p style={{ color: 'var(--text-secondary)' }}>{LAB_INTRO.body}</p>
+            <p style={{ color: 'var(--text-secondary)' }}><Rich>{LAB_INTRO.body}</Rich></p>
           </Card>
           <Card accent>
-            <p style={{ color: 'var(--text-secondary)' }}>{LAB_INTRO.cadence}</p>
+            <p style={{ color: 'var(--text-secondary)' }}><Rich>{LAB_INTRO.cadence}</Rich></p>
           </Card>
         </div>
 
@@ -299,17 +299,17 @@ export default function Science() {
 
       {/* --- 4. El cuello de botella --- */}
       <section>
-        <SectionTitle eyebrow="The bottleneck">{BOTTLENECK.title}</SectionTitle>
+        <SectionTitle eyebrow="The bottleneck"><Rich>{BOTTLENECK.title}</Rich></SectionTitle>
         <div className="flex flex-col gap-4">
           <Card>
-            <p style={{ color: 'var(--text-secondary)' }}>{BOTTLENECK.scale}</p>
+            <p style={{ color: 'var(--text-secondary)' }}><Rich>{BOTTLENECK.scale}</Rich></p>
           </Card>
           <Card>
-            <p style={{ color: 'var(--text-secondary)' }}>{BOTTLENECK.problem}</p>
+            <p style={{ color: 'var(--text-secondary)' }}><Rich>{BOTTLENECK.problem}</Rich></p>
           </Card>
           <Card accent>
             <p className="text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-              {BOTTLENECK.turn}
+              <Rich>{BOTTLENECK.turn}</Rich>
             </p>
           </Card>
         </div>

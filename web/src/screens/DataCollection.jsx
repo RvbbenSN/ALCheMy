@@ -37,11 +37,11 @@ export default function DataCollection() {
             </p>
           </Card>
           <Card accent>
-            <h3 className="text-base">{COLLECTION_PROBLEM.guaranteesTitle}</h3>
+            <h3 className="text-base"><Rich>{COLLECTION_PROBLEM.guaranteesTitle}</Rich></h3>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
               {COLLECTION_PROBLEM.guarantees.map(([lead, body]) => (
                 <li key={lead}>
-                  <strong>{lead}</strong> {body}
+                  <strong><Rich>{lead}</Rich></strong> {body}
                 </li>
               ))}
             </ul>
@@ -74,13 +74,13 @@ export default function DataCollection() {
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_ROW_INTRO}</Rich>
         </p>
-        <ScrollTable head={['Field', 'What it carries']} rows={ROW_SHAPE.map(([a, b]) => [<code key={a}>{a}</code>, b])} />
+        <ScrollTable head={['Field', 'What it carries']} rows={ROW_SHAPE.map(([a, b]) => [<code key={a}><Rich>{a}</Rich></code>, b])} />
       </section>
 
       <section>
         <SectionTitle eyebrow="Where it lands">The PostgreSQL schema</SectionTitle>
         <Placeholder source="scripts/init_db.sql, data_dictionary">
-          {COLLECTION_PENDING.schema}
+          <Rich>{COLLECTION_PENDING.schema}</Rich>
         </Placeholder>
       </section>
 
@@ -91,7 +91,7 @@ export default function DataCollection() {
 
       <section>
         <SectionTitle eyebrow="Governance">Audit log</SectionTitle>
-        <Placeholder source="audit_log">{COLLECTION_PENDING.audit}</Placeholder>
+        <Placeholder source="audit_log"><Rich>{COLLECTION_PENDING.audit}</Rich></Placeholder>
       </section>
     </div>
   )
