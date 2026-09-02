@@ -37,7 +37,7 @@ export default function Eda() {
       <section>
         <Badge tone="accent">04 · Data Understanding</Badge>
         <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          Exploratory Data Analysis
+          Data Understanding
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           The stage that returns the most per hour invested, and the one most often skipped. Everything

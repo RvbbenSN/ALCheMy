@@ -1,3 +1,16 @@
+import { useState } from 'react'
+import {
+  Atom,
+  Beaker,
+  Droplets,
+  FlaskConical,
+  Flame,
+  IdCard,
+  Link2,
+  Microscope,
+  Ruler,
+  Waves,
+} from 'lucide-react'
 import {
   ETL_DEFECTS,
   ETL_EXCLUSION,
@@ -7,7 +20,18 @@ import {
   ETL_THERMAL,
   ETL_ZERO_VS_NULL,
 } from '../content/screens.js'
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term, Rich} from '../components/ui.jsx'
+import {
+  DESCRIPTOR_RECAP,
+  ELEMENT_INTRO,
+  LANES,
+  LINKER_FEATURES,
+  METAL_FEATURES,
+  PREP_INTRO,
+  SYNTH_GROUPS,
+  SYNTH_PREVIEW,
+  WHY_PXRD,
+} from '../content/prep.js'
+import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term, Rich } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
 import PxrdChart from '../components/PxrdChart.jsx'
@@ -21,6 +45,15 @@ const FORMATS = [
   ['.asc / .csv', 'UV-Vis', 'Kubelka-Munk and Tauc vectors derived at parse time.'],
   ['.jpg + .txt', 'Hitachi SEM', 'Image plus companion sidecar; the AI description is added later, never fabricated.'],
 ]
+
+/* Un simbolo por grupo de variables de sintesis. */
+const GROUP_ICON = {
+  id: IdCard,
+  design: Beaker,
+  solvent: Droplets,
+  thermal: Flame,
+  modulator: FlaskConical,
+}
 
 function Formula({ children }) {
   return (
@@ -50,7 +83,41 @@ function Pullquote({ children, tone = 'accent' }) {
   )
 }
 
+/* Lista de campos como fichas monoespaciadas, en vez de otro parrafo. */
+function FieldChips({ fields }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-1.5">
+      {fields.map((f) => (
+        <code
+          key={f}
+          className="rounded-[var(--radius-badge)] px-2 py-0.5 text-xs"
+          style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
+        >
+          {f}
+        </code>
+      ))}
+    </div>
+  )
+}
+
+/* Tabla de dos columnas: nombre de variable y que significa. Mas legible que
+   una lista de vinetas cuando lo que se compara son definiciones. */
+function FeatureList({ items, accent }) {
+  return (
+    <ul className="flex list-none flex-col gap-2.5 p-0">
+      {items.map(([name, what]) => (
+        <li key={name} style={{ borderLeft: `2px solid ${accent}`, paddingLeft: '0.75rem' }}>
+          <code className="text-xs" style={{ color: 'var(--text-primary)' }}>{name}</code>
+          <p className="mt-0.5 text-sm" style={{ color: 'var(--text-secondary)' }}>{what}</p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export default function DataPreparation() {
+  const [lane, setLane] = useState('synthesis')
+
   return (
     <div className="flex flex-col gap-16">
       <section>
@@ -59,284 +126,488 @@ export default function DataPreparation() {
           ETL &amp; PXRD Signal Processing
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          The longest stage of any real project and the one nobody teaches. It starts with the piece that
-          took the most work by far — turning a raw diffractogram into 29 comparable numbers — and then
-          covers everything else the data needed before a model could see it.
+          <Rich>{PREP_INTRO.lead}</Rich>
+        </p>
+        <p className="mt-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{PREP_INTRO.body}</Rich>
+        </p>
+        <p
+          className="mt-5 max-w-3xl p-3 text-sm"
+          style={{ borderLeft: '4px solid var(--accent-secondary)', background: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
+        >
+          <Rich>{PREP_INTRO.note}</Rich>
         </p>
       </section>
 
-      {/* --- 7. Senal PXRD --- */}
+      {/* ---------------------------------------------------------------
+          Las dos vias. Antes estaban intercaladas en una sola columna y no
+          habia forma de saber cual se estaba leyendo.
+          --------------------------------------------------------------- */}
       <section>
-        <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
-        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          These are real diffractograms from the laboratory, decomposed by the same code that populated
-          the descriptor table. Each one is the <strong>median case</strong> of its class by crystallinity
-          index — not the most flattering example. The amorphous one looks poor because a typical
-          amorphous sample <em>is</em> poor, and picking the prettiest scan would turn the figure into
-          advertising instead of evidence.
-        </p>
-        <PxrdChart />
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Card accent>
-            <h3 className="text-base">What the three layers mean</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The <Term k="arPLS" /> baseline is the instrument talking about itself — air scatter, the
-              sample holder, detector drift. It is discarded. What remains splits into the broad
-              amorphous halo and the sharp Bragg reflections, and <strong>both are signal</strong>. The
-              easy mistake is to flatten the halo along with the baseline, which throws away precisely
-              the information that separates an amorphous solid from a failed measurement.
-            </p>
-          </Card>
-          <Card accent>
-            <h3 className="text-base">Why the peaks are counted at 3σ</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              X-ray detection is photon counting, so noise follows Poisson statistics and its scale is the
-              square root of the counts. Three sigma is the level for <em>one</em> comparison, though —
-              scanning thousands of points for a maximum needs a stricter level, or noise gets counted as
-              reflections. The threshold drawn here is the honest floor, not the final criterion.
-            </p>
-          </Card>
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Card>
-            <h3 className="text-base">Didactic modals to attach here</h3>
-            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <li>What the amorphous halo actually is, and how we nearly measured it wrong.</li>
-              <li>Three sigma is the level for one comparison, not for scanning a whole sweep.</li>
-              <li>The denominator of a fraction decides what it means.</li>
-              <li>Every descriptor has a floor, and knowing it is part of the measurement.</li>
-              <li>The log₂(N) ceiling of spectral entropy.</li>
-            </ul>
-          </Card>
-          <Card>
-            <h3 className="text-base">Where all 29 come from</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The figure below is the whole descriptor vector on a single annotated scan: peak geometry,
-              phase composition, intensity concentration, and the complete list grouped by what each
-              number is for. Enlarge it — it is dense on purpose.
-            </p>
-          </Card>
-        </div>
-        <div className="mt-6">
-          <NotebookFigure
-            src="nb05-17.png"
-            alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
-            caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
-            source="notebook 05"
-          />
-        </div>
-      </section>
-
-      {/* --- 8. Herramientas --- */}
-      <section>
-        <SectionTitle eyebrow="The tools that produced the ground truth">Labeler &amp; Explorer</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              A Streamlit labeling app produced 4,964 expert judgements over 1,877 diffractograms — four
-              independent verdicts per pattern: crystallinity class, incipient subtype, oxide flag and
-              suspected multiphase.
-            </p>
-            <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Labels are keyed by <code>file_hash</code>, not by measurement id, so they survive a full
-              regeneration of the measurement tables. That is the only data in the whole platform no
-              pipeline could ever reproduce.
-            </p>
-          </Card>
-          <Placeholder source="app/pxrd_labeler.py, app/pxrd_explorer.py">
-            Screen recording pending. These tools write to the production database, so they are shown as a
-            short video rather than served live — with sample codes and ligand names pseudonymized and
-            synthesis conditions hidden.
-          </Placeholder>
-        </div>
-      </section>
-
-      {/* --- 1. Del Excel a la tabla --- */}
-      <section>
-        <SectionTitle eyebrow="Notebook 01">From spreadsheet to governed table</SectionTitle>
-        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          Five years of handwritten synthesis conditions lived in one multi-tab Excel file with arbitrary
-          headers. Turning it into a governed table takes six transformations, and every one of them is a
-          decision rather than a formatting step.
-        </p>
-
-        <div className="flex flex-col gap-4">
-          <Card>
-            <h3 className="text-base">1 · Header normalisation</h3>
-            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              A master mapping dictionary translates arbitrary spreadsheet headers into a strict SQL
-              schema. Kept as an explicit dictionary rather than automatic slug-casing, so that renaming a
-              column in the spreadsheet produces a visible failure instead of a silently new column.
-            </p>
-          </Card>
-
-          <Card>
-            <h3 className="text-base">2 · Stoichiometric feature engineering</h3>
-            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{ETL_STOICHIOMETRY.intro}</Rich>
-            </p>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div>
-                <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  {ETL_STOICHIOMETRY.typeA.title}
-                </div>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {ETL_STOICHIOMETRY.typeA.body}
-                </p>
-                <Formula>{ETL_STOICHIOMETRY.typeA.formula}</Formula>
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  {ETL_STOICHIOMETRY.typeB.title}
-                </div>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {ETL_STOICHIOMETRY.typeB.body}
-                </p>
-                <Formula>{ETL_STOICHIOMETRY.typeB.formula}</Formula>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <h3 className="text-base">3 · {ETL_THERMAL.title}</h3>
-            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{ETL_THERMAL.body}</Rich>
-            </p>
-            {ETL_THERMAL.formulas.map((f) => (
-              <Formula key={f}>{f}</Formula>
-            ))}
-          </Card>
-
-          <Card>
-            <h3 className="text-base">4 · An MD5 business natural key</h3>
-            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              A checksum over six business fields — sample code, date, researcher, unit, metal centre and
-              linker — gives every synthesis an identity derived from what it <em>is</em>, not from the row
-              it happened to occupy. Two spreadsheets describing the same experiment collapse to the same
-              key. See <Term k="MD5" />.
-            </p>
-          </Card>
-
-          <Card accent>
-            <h3 className="text-base">5 · The load is an UPSERT, never a replace</h3>
-            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              This is a governance decision, not a convenience. The same table is written by two
-              independent lanes: this notebook, and the automated ingestion workflow. A delete-and-reinsert
-              would silently destroy every row the workflow had written since the last run. Conflicting on
-              the sample code and updating in place means the two lanes can coexist without either being
-              able to erase the other.
-            </p>
-          </Card>
-        </div>
-      </section>
-
-      {/* --- 2. Contrato del parser --- */}
-      <section>
-        <SectionTitle eyebrow="Notebook 02">One contract, nine formats</SectionTitle>
-        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Every parser — Python and JavaScript alike — returns the same dictionary shape, and{' '}
-          <code>data_json</code> always holds <code>header_metadata</code> and <code>raw_data</code>. Stored
-          as <Term k="JSONB" /> with a GIN index, so an agent can query any technique uniformly and adding
-          a tenth format needs no schema migration.
-        </p>
-        <ScrollTable
-          head={['Format', 'Instrument', 'What makes it awkward']}
-          rows={FORMATS.map(([a, b, c]) => [<code key={a}>{a}</code>, b, c])}
-        />
-      </section>
-
-      {/* --- 3. Los siete defectos --- */}
-      <section>
-        <SectionTitle eyebrow="What the expert review found">Seven defects, zero statistical alarms</SectionTitle>
-        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          Version 2 of the analysis was accepted with a macro F1 of 0.62. Reading its tables{' '}
-          <em>chemically</em> — asking whether the numbers were physically possible rather than whether
-          they were statistically odd — found seven problems. None of them had triggered any alarm.
-        </p>
-        <ol className="flex list-none flex-col gap-4 p-0">
-          {ETL_DEFECTS.map((d) => (
-            <li key={d.n}>
-              <Card accent={d.n === 1}>
-                <div className="flex items-start gap-4">
-                  <span
-                    className="shrink-0 text-2xl"
-                    style={{ fontFamily: 'var(--font-display)', color: 'var(--status-amorphous)' }}
-                  >
-                    <Rich>{d.n}</Rich>
+        <div className="grid gap-4 md:grid-cols-2">
+          {LANES.map((l) => {
+            const on = lane === l.id
+            const Icon = l.id === 'synthesis' ? Beaker : Waves
+            return (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => setLane(l.id)}
+                aria-pressed={on}
+                className="rounded-[var(--radius-card)] p-5 text-left"
+                style={{
+                  border: `var(--border-card) solid ${on ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+                  background: on ? 'var(--accent-glow)' : 'var(--surface-elevated)',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon size={22} aria-hidden style={{ color: on ? 'var(--accent-primary)' : 'var(--text-muted)' }} />
+                  <h2 className="text-lg leading-tight">{l.label}</h2>
+                  <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    {l.tag}
                   </span>
+                </div>
+                <p className="mt-1 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+                  {l.sub}
+                </p>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {l.blurb}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* =============================================================
+          VIA A — CONDICIONES DE SINTESIS
+          ============================================================= */}
+      {lane === 'synthesis' && (
+        <>
+          <section>
+            <SectionTitle eyebrow="What the table looks like">One row per synthesis</SectionTitle>
+            <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              {SYNTH_PREVIEW.caption}
+            </p>
+            <ScrollTable head={SYNTH_PREVIEW.head} rows={SYNTH_PREVIEW.rows} />
+            <p
+              className="mt-3 p-3 text-xs"
+              style={{ borderLeft: '4px solid var(--status-incipient)', background: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
+            >
+              {SYNTH_PREVIEW.warning}
+            </p>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="The variables, before anything is removed">What each column holds</SectionTitle>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              Forty-six columns in five blocks, plus the timestamps the database keeps on its own. Knowing what is there matters, because most of the
+              decisions further down this page are about <strong>taking things out</strong> — and that
+              only reads as a decision if you know what was in.
+            </p>
+            <div className="flex flex-col gap-4">
+              {SYNTH_GROUPS.map((g) => {
+                const Icon = GROUP_ICON[g.icon] ?? Beaker
+                return (
+                  <Card key={g.title}>
+                    <div className="flex items-center gap-3">
+                      <Icon size={18} aria-hidden style={{ color: 'var(--accent-primary)' }} />
+                      <h3 className="text-base">{g.title}</h3>
+                      <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        {g.fields.length}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      <Rich>{g.body}</Rich>
+                    </p>
+                    <FieldChips fields={g.fields} />
+                  </Card>
+                )
+              })}
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="Notebook 01">From spreadsheet to governed table</SectionTitle>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              Five years of handwritten synthesis conditions lived in one multi-tab Excel file with
+              arbitrary headers. Turning it into the table above takes five transformations, and every one
+              of them is a decision rather than a formatting step.
+            </p>
+
+            <div className="flex flex-col gap-4">
+              <Card>
+                <h3 className="text-base">1 · Header normalisation</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  A master mapping dictionary translates arbitrary spreadsheet headers into a strict SQL
+                  schema. Kept as an explicit dictionary rather than automatic slug-casing, so that
+                  renaming a column in the spreadsheet produces a visible failure instead of a silently
+                  new column.
+                </p>
+              </Card>
+
+              <Card>
+                <h3 className="text-base">2 · Stoichiometric feature engineering</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{ETL_STOICHIOMETRY.intro}</Rich>
+                </p>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
-                    <h3 className="text-base"><Rich>{d.defect}</Rich></h3>
+                    <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+                      {ETL_STOICHIOMETRY.typeA.title}
+                    </div>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <strong style={{ color: 'var(--text-primary)' }}>How it surfaced. </strong>
-                      <Rich>{d.found}</Rich>
+                      {ETL_STOICHIOMETRY.typeA.body}
                     </p>
+                    <Formula>{ETL_STOICHIOMETRY.typeA.formula}</Formula>
+                  </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+                      {ETL_STOICHIOMETRY.typeB.title}
+                    </div>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <strong style={{ color: 'var(--status-pure)' }}>Fix. </strong>
-                      <Rich>{d.fix}</Rich>
+                      {ETL_STOICHIOMETRY.typeB.body}
                     </p>
+                    <Formula>{ETL_STOICHIOMETRY.typeB.formula}</Formula>
                   </div>
                 </div>
               </Card>
-            </li>
-          ))}
-        </ol>
 
-        <Card className="mt-6">
-          <h3 className="text-lg"><Rich>{ETL_ZERO_VS_NULL.title}</Rich></h3>
-          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{ETL_ZERO_VS_NULL.body}</Rich>
-          </p>
-          <Pullquote><Rich>{ETL_ZERO_VS_NULL.pullquote}</Rich></Pullquote>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            The check that proves defects 4 and 5 are genuinely fixed: the composition of the medium now
-            sums to 1.000. Before the correction the mean was 0.789 — and version 2 had no such check,
-            which is precisely why the fault survived.
-          </p>
-        </Card>
-      </section>
+              <Card>
+                <h3 className="text-base">3 · {ETL_THERMAL.title}</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{ETL_THERMAL.body}</Rich>
+                </p>
+                {ETL_THERMAL.formulas.map((f) => (
+                  <Formula key={f}>{f}</Formula>
+                ))}
+              </Card>
 
-      {/* --- 4. Exclusion como etiqueta --- */}
-      <section>
-        <SectionTitle eyebrow="Curation"><Rich>{ETL_EXCLUSION.title}</Rich></SectionTitle>
-        <Card accent>
-          <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_EXCLUSION.body}</Rich></p>
-          <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{ETL_EXCLUSION.decision}</Rich>
-          </p>
-          <Pullquote><Rich>{ETL_EXCLUSION.pullquote}</Rich></Pullquote>
-        </Card>
-      </section>
+              <Card>
+                <h3 className="text-base">4 · An MD5 business natural key</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  A checksum over six business fields — sample code, date, researcher, unit, metal centre
+                  and linker — gives every synthesis an identity derived from what it <em>is</em>, not from
+                  the row it happened to occupy. Two spreadsheets describing the same experiment collapse
+                  to the same key. See <Term k="MD5" />.
+                </p>
+              </Card>
 
-      {/* --- 5. Acido tanico --- */}
-      <section>
-        <SectionTitle eyebrow="A decision that could have been cheating"><Rich>{ETL_TANNIC.title}</Rich></SectionTitle>
-        <Card>
-          <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_TANNIC.body}</Rich></p>
-          <p className="mt-4 text-sm" style={{ color: 'var(--status-pure)' }}>
-            <Rich>{ETL_TANNIC.measure}</Rich>
-          </p>
-        </Card>
-        <Pullquote tone="incipient">⚠️ {ETL_TANNIC.caution}</Pullquote>
-      </section>
+              <Card accent>
+                <h3 className="text-base">5 · The load is an UPSERT, never a replace</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  This is a governance decision, not a convenience. The same table is written by two
+                  independent lanes: this notebook, and the automated ingestion workflow. A
+                  delete-and-reinsert would silently destroy every row the workflow had written since the
+                  last run. Conflicting on the sample code and updating in place means the two lanes can
+                  coexist without either being able to erase the other.
+                </p>
+              </Card>
+            </div>
+          </section>
 
-      {/* --- 6. Imputacion --- */}
-      <section>
-        <SectionTitle eyebrow="Filling the gaps"><Rich>{ETL_IMPUTATION.title}</Rich></SectionTitle>
-        <Card>
-          <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_IMPUTATION.body}</Rich></p>
-          <Pullquote tone="amorphous"><Rich>{ETL_IMPUTATION.leak}</Rich></Pullquote>
-          <p className="mb-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            The alternative — explicitly flagging which values were missing, letting the model learn from
-            the fact of absence — was tested rather than assumed:
-          </p>
-          <ScrollTable head={ETL_IMPUTATION.tableHead} rows={ETL_IMPUTATION.tableRows} />
-          <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{ETL_IMPUTATION.conclusion}</Rich>
-          </p>
-        </Card>
-      </section>
+          <section>
+            <SectionTitle eyebrow="From a chemical symbol to physics">Why the element is replaced by its properties</SectionTitle>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <h3 className="text-base">The problem with a label</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{ELEMENT_INTRO.problem}</Rich>
+                </p>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{ELEMENT_INTRO.fix}</Rich>
+                </p>
+              </Card>
+              <Card accent>
+                <h3 className="text-base">What it buys</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{ELEMENT_INTRO.payoff}</Rich>
+                </p>
+              </Card>
+            </div>
 
-      {/* --- 9. Notebooks --- */}
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-base">
+                  <Atom size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
+                  Eight numbers for the metal
+                  <span className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    mendeleev · pymatgen
+                  </span>
+                </h3>
+                <FeatureList items={METAL_FEATURES} accent="var(--accent-primary)" />
+              </div>
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-base">
+                  <Link2 size={17} aria-hidden style={{ color: 'var(--accent-tertiary)' }} />
+                  Six for the linker
+                  <span className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    RDKit
+                  </span>
+                </h3>
+                <FeatureList items={LINKER_FEATURES} accent="var(--accent-tertiary)" />
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="What the expert review found">Seven defects, zero statistical alarms</SectionTitle>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              Version 2 of the analysis was accepted with a macro F1 of 0.62. Reading its tables{' '}
+              <em>chemically</em> — asking whether the numbers were physically possible rather than
+              whether they were statistically odd — found seven problems. None of them had triggered any
+              alarm.
+            </p>
+            <ol className="flex list-none flex-col gap-4 p-0">
+              {ETL_DEFECTS.map((d) => (
+                <li key={d.n}>
+                  <Card accent={d.n === 1}>
+                    <div className="flex items-start gap-4">
+                      <span
+                        className="shrink-0 text-2xl"
+                        style={{ fontFamily: 'var(--font-display)', color: 'var(--status-amorphous)' }}
+                      >
+                        <Rich>{d.n}</Rich>
+                      </span>
+                      <div>
+                        <h3 className="text-base"><Rich>{d.defect}</Rich></h3>
+                        <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          <strong style={{ color: 'var(--text-primary)' }}>How it surfaced. </strong>
+                          <Rich>{d.found}</Rich>
+                        </p>
+                        <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          <strong style={{ color: 'var(--status-pure)' }}>Fix. </strong>
+                          <Rich>{d.fix}</Rich>
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </li>
+              ))}
+            </ol>
+
+            <Card className="mt-6">
+              <h3 className="text-lg"><Rich>{ETL_ZERO_VS_NULL.title}</Rich></h3>
+              <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Rich>{ETL_ZERO_VS_NULL.body}</Rich>
+              </p>
+              <Pullquote><Rich>{ETL_ZERO_VS_NULL.pullquote}</Rich></Pullquote>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                The check that proves defects 4 and 5 are genuinely fixed: the composition of the medium
+                now sums to 1.000. Before the correction the mean was 0.789 — and version 2 had no such
+                check, which is precisely why the fault survived.
+              </p>
+            </Card>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="Curation"><Rich>{ETL_EXCLUSION.title}</Rich></SectionTitle>
+            <Card accent>
+              <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_EXCLUSION.body}</Rich></p>
+              <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
+                <Rich>{ETL_EXCLUSION.decision}</Rich>
+              </p>
+              <Pullquote><Rich>{ETL_EXCLUSION.pullquote}</Rich></Pullquote>
+            </Card>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="A decision that could have been cheating"><Rich>{ETL_TANNIC.title}</Rich></SectionTitle>
+            <Card>
+              <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_TANNIC.body}</Rich></p>
+              <p className="mt-4 text-sm" style={{ color: 'var(--status-pure)' }}>
+                <Rich>{ETL_TANNIC.measure}</Rich>
+              </p>
+            </Card>
+            <Pullquote tone="incipient">⚠️ {ETL_TANNIC.caution}</Pullquote>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="Filling the gaps"><Rich>{ETL_IMPUTATION.title}</Rich></SectionTitle>
+            <Card>
+              <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_IMPUTATION.body}</Rich></p>
+              <Pullquote tone="amorphous"><Rich>{ETL_IMPUTATION.leak}</Rich></Pullquote>
+              <p className="mb-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                The alternative — explicitly flagging which values were missing, letting the model learn
+                from the fact of absence — was tested rather than assumed:
+              </p>
+              <ScrollTable head={ETL_IMPUTATION.tableHead} rows={ETL_IMPUTATION.tableRows} />
+              <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Rich>{ETL_IMPUTATION.conclusion}</Rich>
+              </p>
+            </Card>
+          </section>
+        </>
+      )}
+
+      {/* =============================================================
+          VIA B — SENAL DE CARACTERIZACION
+          ============================================================= */}
+      {lane === 'characterisation' && (
+        <>
+          <section>
+            <SectionTitle eyebrow="Why one technique out of nine">PXRD is the gate everything else waits behind</SectionTitle>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{WHY_PXRD.lead}</Rich>
+            </p>
+
+            <ol className="flex list-none flex-col gap-2 p-0">
+              {WHY_PXRD.steps.map(([name, question, cost, first]) => (
+                <li
+                  key={name}
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-[var(--radius-badge)] p-3"
+                  style={{
+                    border: `2px solid ${first ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+                    background: first ? 'var(--accent-glow)' : 'transparent',
+                  }}
+                >
+                  <span className="text-sm" style={{ fontFamily: 'var(--font-mono)', color: first ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                    {name}
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{question}</span>
+                  <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{cost}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              <Card accent>
+                <h3 className="flex items-center gap-2 text-base">
+                  <Ruler size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
+                  Why it goes first
+                </h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{WHY_PXRD.gate}</Rich>
+                </p>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{WHY_PXRD.consequence}</Rich>
+                </p>
+              </Card>
+              <Card>
+                <h3 className="flex items-center gap-2 text-base">
+                  <Microscope size={17} aria-hidden style={{ color: 'var(--accent-tertiary)' }} />
+                  And why the model predicts it
+                </h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{WHY_PXRD.why_model}</Rich>
+                </p>
+              </Card>
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="Notebook 02">One contract, nine formats</SectionTitle>
+            <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Every parser — Python and JavaScript alike — returns the same dictionary shape, and{' '}
+              <code>data_json</code> always holds <code>header_metadata</code> and <code>raw_data</code>.
+              Stored as <Term k="JSONB" /> with a GIN index, so an agent can query any technique uniformly
+              and adding a tenth format needs no schema migration.
+            </p>
+            <ScrollTable
+              head={['Format', 'Instrument', 'What makes it awkward']}
+              rows={FORMATS.map(([a, b, c]) => [<code key={a}>{a}</code>, b, c])}
+            />
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              These are real diffractograms from the laboratory, decomposed by the same code that
+              populated the descriptor table. Each one is the <strong>median case</strong> of its class by
+              crystallinity index — not the most flattering example. The amorphous one looks poor because
+              a typical amorphous sample <em>is</em> poor, and picking the prettiest scan would turn the
+              figure into advertising instead of evidence.
+            </p>
+            <PxrdChart />
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <Card accent>
+                <h3 className="text-base">What the three layers mean</h3>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  The <Term k="arPLS" /> baseline is the instrument talking about itself — air scatter,
+                  the sample holder, detector drift. It is discarded. What remains splits into the broad
+                  amorphous halo and the sharp Bragg reflections, and <strong>both are signal</strong>.
+                  The easy mistake is to flatten the halo along with the baseline, which throws away
+                  precisely the information that separates an amorphous solid from a failed measurement.
+                </p>
+              </Card>
+              <Card accent>
+                <h3 className="text-base">Why the peaks are counted at 3σ</h3>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  X-ray detection is photon counting, so noise follows Poisson statistics and its scale is
+                  the square root of the counts. Three sigma is the level for <em>one</em> comparison,
+                  though — scanning thousands of points for a maximum needs a stricter level, or noise
+                  gets counted as reflections. The threshold drawn here is the honest floor, not the final
+                  criterion.
+                </p>
+              </Card>
+            </div>
+            <div className="mt-6">
+              <NotebookFigure
+                src="nb05-17.png"
+                alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
+                caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
+                source="notebook 05"
+              />
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="The tools that produced the ground truth">Labeler &amp; Explorer</SectionTitle>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  A Streamlit labeling app produced four independent verdicts per pattern over 1,877
+                  diffractograms: crystallinity class, incipient subtype, oxide flag and suspected
+                  multiphase.
+                </p>
+                <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Labels are keyed by <code>file_hash</code>, not by measurement id, so they survive a full
+                  regeneration of the measurement tables. That is the only data in the whole platform no
+                  pipeline could ever reproduce.
+                </p>
+              </Card>
+              <Placeholder source="app/pxrd_labeler.py, app/pxrd_explorer.py">
+                Screen recording pending. These tools write to the production database, so they are shown
+                as a short video rather than served live — with sample codes and ligand names
+                pseudonymized and synthesis conditions hidden.
+              </Placeholder>
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle eyebrow="The translation, in one table">What a diffractogram becomes</SectionTitle>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{DESCRIPTOR_RECAP.lead}</Rich>
+            </p>
+            <ScrollTable
+              head={DESCRIPTOR_RECAP.head}
+              rows={DESCRIPTOR_RECAP.rows.map(([name, what, a, i, c]) => [
+                <code key={name}>{name}</code>,
+                what,
+                a,
+                i,
+                c,
+              ])}
+            />
+            <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              <Card accent>
+                <h3 className="text-base">How to read it</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{DESCRIPTOR_RECAP.reading}</Rich>
+                </p>
+              </Card>
+              <Card>
+                <h3 className="text-base">One number in it is a trap</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{DESCRIPTOR_RECAP.caveat}</Rich>
+                </p>
+              </Card>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* --- comun a las dos vias --- */}
       <section>
         <SectionTitle eyebrow="The code itself">Read the notebooks</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>

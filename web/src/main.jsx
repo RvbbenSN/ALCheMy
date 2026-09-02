@@ -23,7 +23,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="science" element={<Science />} />
           <Route path="data-collection" element={<DataCollection />} />
           <Route path="data-preparation" element={<DataPreparation />} />
-          <Route path="eda" element={<Eda />} />
+          <Route path="data-understanding" element={<Eda />} />
           <Route path="modeling" element={<Modeling />} />
           <Route path="the-model" element={<TheModel />} />
           <Route path="rag" element={<Rag />} />
