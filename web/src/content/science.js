@@ -20,7 +20,7 @@ export const MOF_DEF = {
     'A coordination network with organic ligands containing potential voids.',
   iupacNote: 'IUPAC recommendation, 2013.',
   plain:
-    'In plain terms: **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold. What matters is what the scaffold does not contain — the empty space running through it.',
+    'In plain terms: **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold.',
   why: 'Because both halves can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today.',
 }
 
@@ -78,7 +78,7 @@ export const WHY_CHARACTERISE = {
   numbers: [
     ['6,073', 'raw instrument files'],
     ['3,926', 'measurements ingested'],
-    ['9', 'formats, one per manufacturer'],
+    ['9', 'analytical techniques'],
   ],
 }
 

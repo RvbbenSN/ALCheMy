@@ -141,13 +141,13 @@ export const WHY_PXRD = {
   consequence:
     'Everything else waits on that answer. A diffractogram with sharp peaks earns the sample a thermogravimetric run to check its stability, a gas adsorption isotherm to measure its porosity, an electron micrograph to see its habit. A flat, featureless curve ends the sample — no further instrument time is spent on it.',
   why_model:
-    'That is why the model predicts crystallinity and not surface area or yield. It is not the most interesting property a MOF has; it is the property that **gates access to every other measurement**. Predicting it before the synthesis is run is what turns a screening campaign from exhaustive into selective.',
+    'That is why the model predicts crystallinity and not surface area or yield. It is the property that ** gates access to every other measurement**.Predicting it before the synthesis is run is what turns a screening campaign from exhaustive into selective.',
   steps: [
     ['PXRD', 'Is it crystalline?', 'Minutes. Non-destructive. Run on everything.', true],
-    ['TGA', 'Up to what temperature does it survive?', 'Hours. Consumes the sample.', false],
-    ['Gas adsorption', 'Is it actually porous, and how much?', 'A day per sample. Needs prior activation.', false],
-    ['SEM', 'What do the crystals look like?', 'Booked instrument time, and a trained operator.', false],
     ['FTIR · UV-Vis · ICP · EA', 'Which groups, which gap, which composition?', 'Confirmatory. Only once the material is worth confirming.', false],
+    ['TGA', 'Up to what temperature does it survive?', 'Hours. Consumes the sample.', false],
+    ['SEM', 'What do the crystals look like?', 'Booked instrument time, and a trained operator.', false],
+    ['Gas adsorption', 'Is it actually porous, and how much?', 'A day per sample. Needs prior activation.', false],
   ],
 }
 

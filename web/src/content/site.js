@@ -24,7 +24,7 @@ export const SITE = {
 export const SCREENS = [
   { id: '00', slug: '', short: 'Overview', title: 'Overview', crisp: 'Business understanding' },
   { id: '01', slug: 'science', short: 'The Science', title: 'MOFs & Lab Daily-life', crisp: 'Analytic approach · Data requirements' },
-  { id: '02', slug: 'data-collection', short: 'Data Collection', title: 'The n8n Ingestion Workflow', crisp: 'Data collection' },
+  { id: '02', slug: 'data-collection', short: 'Data Collection', title: 'The Ingestion Workflow', crisp: 'Data collection' },
   { id: '03', slug: 'data-preparation', short: 'Data Preparation', title: 'ETL & PXRD Signal Processing', crisp: 'Data preparation' },
   { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Data Understanding', crisp: 'Data understanding' },
   { id: '05', slug: 'modeling', short: 'Modeling', title: 'Training & Evaluation', crisp: 'Modeling · Evaluation' },
@@ -109,7 +109,7 @@ export const BIO_ABOUT = [
 ]
 
 export const BIO_PULLQUOTE =
-  'This platform is itself a living testament to that: agentic pair-programming was instrumental in architecting, coding and building the entire ecosystem from the ground up.'
+  'ALCheMy is itself a living testament to that: agentic pair-programming was instrumental in architecting, coding and building the entire ecosystem from the ground up.'
 
 /* Los cuatro pasos del ciclo de laboratorio. FINAL, del guion. */
 export const LAB_CYCLE = [
