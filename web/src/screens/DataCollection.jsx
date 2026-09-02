@@ -1,6 +1,5 @@
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
-import WorkflowCanvas from '../components/WorkflowCanvas.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
 
 const ROW_SHAPE = [
@@ -111,19 +110,10 @@ export default function DataCollection() {
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           The flow as it exists in n8n &mdash; <strong>79 nodes</strong>, <strong>114 connections</strong>,
           nine framed areas &mdash; read straight from the exported workflow, not redrawn by hand.
-          The nine stops above are its index: pick one and the map flies there.
+          Pick a stop and the map flies to it, with the card above saying what that area adds to the
+          row and why. The last stop pulls back to the whole flow.
         </p>
         <WorkflowMap />
-      </section>
-
-      <section>
-        <SectionTitle eyebrow="Area by area">What each stage adds</SectionTitle>
-        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Nine framed areas, in the order the item travels through them. The icon on each node says what
-          kind of work it does — a decision, a parser, an AI agent, a database write. Open the{' '}
-          <strong>Detail</strong> of an area to read what it adds to the row and why.
-        </p>
-        <WorkflowCanvas />
       </section>
 
       <section>
