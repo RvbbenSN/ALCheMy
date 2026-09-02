@@ -3,6 +3,8 @@ import {
   EDA_BIVARIATE,
   EDA_CONFOUNDER,
   EDA_INTRO,
+  EDA_MODULATORS,
+  EDA_POPULATION,
   EDA_CORRELATION,
   EDA_DISCRETE,
   EDA_IMBALANCE,
@@ -10,7 +12,7 @@ import {
   EDA_MISSING,
   EDA_PCA,
 } from '../content/screens.js'
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
+import { Badge, Card, Note, Placeholder, ScrollTable, SectionTitle, Rich } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
 import { ConfounderFigure, SeparationFigure } from '../components/Figures.jsx'
@@ -89,6 +91,38 @@ export default function Eda() {
         </ol>
       </section>
 
+      {/* --- Sobre que filas se cuenta --- */}
+      <section>
+        <SectionTitle eyebrow="Before any number">{EDA_POPULATION.title}</SectionTitle>
+        <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{EDA_POPULATION.intro}</Rich>
+        </p>
+        <ol className="flex list-none flex-col gap-2 p-0">
+          {EDA_POPULATION.rows.map(([n, what, why], i) => (
+            <li
+              key={what}
+              className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-[var(--radius-badge)] p-3"
+              style={{
+                border: `2px solid ${i === 2 ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+                background: i === 2 ? 'var(--accent-glow)' : 'transparent',
+              }}
+            >
+              <span
+                className="text-xl"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)', minWidth: '5ch' }}
+              >
+                {n}
+              </span>
+              <span style={{ color: 'var(--text-primary)' }}>{what}</span>
+              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{why}</span>
+            </li>
+          ))}
+        </ol>
+        <Note>
+          <Rich>{EDA_POPULATION.note}</Rich>
+        </Note>
+      </section>
+
       {/* --- 1. El factor de confusion --- */}
       <section>
         <SectionTitle eyebrow="Before loading anything"><Rich>{EDA_CONFOUNDER.title}</Rich></SectionTitle>
@@ -126,11 +160,18 @@ export default function Eda() {
 
       {/* --- 2. El embudo --- */}
       <section>
-        <SectionTitle eyebrow="A worked example">Counting rows is not a metric</SectionTitle>
+        <SectionTitle eyebrow="A worked example">From 3,204 rows to 1,516</SectionTitle>
+        <p className="mb-3 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          The database holds 3,204 synthesis rows. The model trained on 1,516. The gap is not waste:
+          <strong> every drop below is a deliberate exclusion with a stated reason</strong>, and the
+          point of showing them in order is that each one changes what the resulting model can honestly
+          claim to be about.
+        </p>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          A raw row count of the database returns 3,204 syntheses and 4,964 labels. Both numbers are
-          wrong, for two unrelated reasons, and neither reached the model. Every step below drops, and
-          each drop has a stated reason.
+          Read it as the definition of the model&rsquo;s scope. By the last row the model is no longer
+          &ldquo;a model of this laboratory&rsquo;s chemistry&rdquo;: it is a model of{' '}
+          <strong>combinatorial syntheses that produced a powder someone was willing to judge</strong>.
+          That is a narrower and more honest claim, and it is what the exclusions bought.
         </p>
         <ol className="flex list-none flex-col gap-3 p-0">
           {FUNNEL.map((f, i) => (
@@ -152,25 +193,6 @@ export default function Eda() {
             </li>
           ))}
         </ol>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Card>
-            <h3 className="text-base">Why 3,204 is not 2,167</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              1,037 rows are placeholders, created so a foreign key would not block loading a measurement
-              whose sample had no synthesis record yet. They are typed{' '}
-              <code>synthesis_type = &apos;PENDING_RECORD&apos;</code> precisely so they can be told apart,
-              and the feature view excludes them in its own WHERE clause.
-            </p>
-          </Card>
-          <Card>
-            <h3 className="text-base">Why 4,964 is not 1,877</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The label table is keyed by <code>(file_hash, label_type)</code>: one row per{' '}
-              <em>judgement</em>, not per pattern. 1,877 diffractograms received 4,964 independent expert
-              verdicts between them. Not a single duplicate.
-            </p>
-          </Card>
-        </div>
       </section>
 
       {/* --- 3. Ausentes --- */}
@@ -188,13 +210,94 @@ export default function Eda() {
           />
         </div>
         <ScrollTable head={EDA_MISSING.tableHead} rows={EDA_MISSING.tableRows} />
-        <Pullquote><Rich>{EDA_MISSING.lesson}</Rich></Pullquote>
+
+        <Card accent className="mt-8">
+          <h3 className="text-base">{EDA_MISSING.zeroTitle}</h3>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_MISSING.zeroBody}</Rich>
+          </p>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_MISSING.zeroDetail}</Rich>
+          </p>
+        </Card>
+        <Note>
+          <Rich>{EDA_MISSING.zeroRule}</Rich>
+        </Note>
+        <p className="max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{EDA_MISSING.lesson}</Rich>
+        </p>
+      </section>
+
+      {/* --- De donde salen las columnas de modulador --- */}
+      <section>
+        <SectionTitle eyebrow="One gap deserves its own section">{EDA_MODULATORS.title}</SectionTitle>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_MODULATORS.problem}</Rich>
+            </p>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_MODULATORS.fix}</Rich>
+            </p>
+            <div
+              className="mono mt-4 overflow-x-auto rounded-[var(--radius-badge)] p-3 text-xs"
+              style={{ background: 'var(--surface-elevated)', border: '2px solid var(--surface-border)', color: 'var(--text-primary)' }}
+            >
+              {EDA_MODULATORS.formula}
+            </div>
+          </Card>
+          <Card accent>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_MODULATORS.consequence}</Rich>
+            </p>
+          </Card>
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {EDA_MODULATORS.caveats.map((c) => (
+            <div
+              key={c.title}
+              className="p-4"
+              style={{ borderLeft: '4px solid var(--status-incipient)', background: 'var(--surface-elevated)' }}
+            >
+              <h4 className="text-sm" style={{ color: 'var(--text-primary)' }}>{c.title}</h4>
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Rich>{c.body}</Rich>
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* --- 4. Desequilibrio --- */}
       <section>
         <SectionTitle eyebrow="The target"><Rich>{EDA_IMBALANCE.title}</Rich></SectionTitle>
-        <div className="grid gap-4 md:grid-cols-2">
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{EDA_IMBALANCE.intro}</Rich>
+        </p>
+
+        {/* Barras proporcionales: el desequilibrio se ve antes de leerlo. */}
+        <div className="flex flex-col gap-2">
+          {EDA_IMBALANCE.tableRows.map(([klass, what, n, pct], i) => {
+            const tone = ['var(--status-incipient)', 'var(--status-amorphous)', 'var(--status-pure)'][i]
+            return (
+              <div key={klass} className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span className="w-24 shrink-0 text-sm uppercase tracking-wider" style={{ color: tone }}>
+                  {klass}
+                </span>
+                <span
+                  className="h-6 shrink-0 rounded-[var(--radius-badge)]"
+                  style={{ width: pct, minWidth: 24, background: tone, opacity: 0.7 }}
+                />
+                <span className="mono text-sm" style={{ color: 'var(--text-primary)' }}>
+                  {n} <span style={{ color: 'var(--text-muted)' }}>· {pct}</span>
+                </span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{what}</span>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           <Card accent>
             <div className="text-4xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--status-incipient)' }}>
               64%
@@ -205,7 +308,7 @@ export default function Eda() {
           </Card>
           <Card accent>
             <div className="text-4xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}>
-              5.8 : 1
+              6 : 1
             </div>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{EDA_IMBALANCE.ratio}</Rich>
@@ -217,37 +320,59 @@ export default function Eda() {
       {/* --- 5. Variables discretas --- */}
       <section>
         <SectionTitle eyebrow="Distributions"><Rich>{EDA_DISCRETE.title}</Rich></SectionTitle>
-        <Card>
-          <p style={{ color: 'var(--text-secondary)' }}><Rich>{EDA_DISCRETE.body}</Rich></p>
-          <p className="mt-4" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-            <Rich>{EDA_DISCRETE.consequence}</Rich>
-          </p>
-        </Card>
+        <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{EDA_DISCRETE.body}</Rich>
+        </p>
+        <ScrollTable head={EDA_DISCRETE.tableHead} rows={EDA_DISCRETE.tableRows} />
+        <p className="mt-4 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{EDA_DISCRETE.concentration}</Rich>
+        </p>
+        <p className="mt-3 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{EDA_DISCRETE.why}</Rich>
+        </p>
+        <Note>
+          <Rich>{EDA_DISCRETE.consequence}</Rich>
+        </Note>
       </section>
 
       {/* --- 6. Correlacion --- */}
       <section>
         <SectionTitle eyebrow="Association"><Rich>{EDA_CORRELATION.title}</Rich></SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <Badge tone="info">Question 1</Badge>
-            <h3 className="mt-3 text-base"><Rich>{EDA_CORRELATION.q1title}</Rich></h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_CORRELATION.q1body}</Rich>
-            </p>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_CORRELATION.q1note}</Rich>
-            </p>
-          </Card>
-          <Card>
-            <Badge tone="info">Question 2</Badge>
-            <h3 className="mt-3 text-base"><Rich>{EDA_CORRELATION.q2title}</Rich></h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_CORRELATION.q2body}</Rich>
-            </p>
-          </Card>
+          {EDA_CORRELATION.questions.map((q, qi) => (
+            <Card key={q.title}>
+              <Badge tone="info">Question {qi + 1}</Badge>
+              <h3 className="mt-3 text-base"><Rich>{q.title}</Rich></h3>
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Rich>{q.lead}</Rich>
+              </p>
+              <ul className="mt-4 flex list-none flex-col gap-3 p-0">
+                {q.points.map(([label, body]) => (
+                  <li key={label} style={{ borderLeft: '2px solid var(--accent-secondary)', paddingLeft: '0.75rem' }}>
+                    <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+                      {label}
+                    </div>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      <Rich>{body}</Rich>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              {q.note && (
+                <p
+                  className="mt-4 p-3 text-sm"
+                  style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
+                >
+                  <Rich>{q.note}</Rich>
+                </p>
+              )}
+            </Card>
+          ))}
         </div>
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+
+        {/* Una figura debajo de la otra: en dos columnas los mapas salian
+            demasiado pequenos para leer las etiquetas de los ejes. */}
+        <div className="mt-8 flex flex-col gap-8">
           <NotebookFigure
             src="nb06-04.png"
             alt="Feature-to-feature correlation map"
@@ -261,15 +386,31 @@ export default function Eda() {
             source="notebook 06 §5.6"
           />
         </div>
+
+        <Card className="mt-6">
+          <h3 className="text-base">{EDA_CORRELATION.blankTitle}</h3>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_CORRELATION.blankBody}</Rich>
+          </p>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_CORRELATION.blankConsequence}</Rich>
+          </p>
+        </Card>
+
         <Pullquote tone="incipient">⚠️ <Rich>{EDA_CORRELATION.causation}</Rich></Pullquote>
       </section>
 
       {/* --- 7. Bivariante --- */}
       <section>
         <SectionTitle eyebrow="Class separation"><Rich>{EDA_BIVARIATE.title}</Rich></SectionTitle>
+        <Card className="mb-6">
+          <h3 className="text-base">{EDA_BIVARIATE.whichTitle}</h3>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_BIVARIATE.which}</Rich>
+          </p>
+        </Card>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          The descriptors do order the classes, and cleanly: every one of them rises monotonically from
-          amorphous through incipient to crystalline. That is the reassuring half of the picture.
+          <Rich>{EDA_BIVARIATE.ordering}</Rich>
         </p>
         <SeparationFigure />
         <Card accent className="mt-6">
@@ -299,6 +440,9 @@ export default function Eda() {
           </div>
           <Pullquote tone="amorphous"><Rich>{EDA_LEAKAGE.consequence}</Rich></Pullquote>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_LEAKAGE.reminder}</Rich>
+          </p>
+          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
             <Rich>{EDA_LEAKAGE.drift}</Rich>
           </p>
         </Card>
@@ -310,7 +454,22 @@ export default function Eda() {
         <p className="mb-6 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
           <Rich>{EDA_PCA.disclaimer}</Rich>
         </p>
-        <Card>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card accent>
+            <h3 className="text-base">{EDA_PCA.whatTitle}</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_PCA.what}</Rich>
+            </p>
+          </Card>
+          <Card>
+            <h3 className="text-base">Which variables go into it</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{EDA_PCA.varsNote}</Rich>
+            </p>
+          </Card>
+        </div>
+
+        <Card className="mt-4">
           <h3 className="text-base">How it is built, in three steps</h3>
           <ol className="mt-4 flex list-decimal flex-col gap-3 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {EDA_PCA.steps.map((s, i) => (

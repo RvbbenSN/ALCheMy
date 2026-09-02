@@ -145,6 +145,22 @@ export const EDA_INTRO = {
   ],
 }
 
+/* Las cifras de esta pantalla pueden referirse a dos poblaciones distintas, y
+   mezclarlas es la causa de que varios numeros parezcan contradecirse. Se dice
+   una vez, arriba, y se mantiene. Auditado el 2026-09-02. */
+export const EDA_POPULATION = {
+  title: 'Which rows are we counting?',
+  intro:
+    'Two numbers in this screen can both be right and still disagree, because they count different things. It is worth fixing which is which before anything else.',
+  rows: [
+    ['2,152', 'The feature table', 'Every synthesis on record, including the methods the model does not use'],
+    ['1,786', 'Restricted to high-throughput', 'The universe the model works in, before requiring a label'],
+    ['1,516', 'The training set', 'What actually trained the model: combinatorial synthesis, with an expert verdict'],
+  ],
+  note:
+    'Everything below refers to **the training set** unless it says otherwise. When a figure quotes the full table instead, it says so.',
+}
+
 export const EDA_CONFOUNDER = {
   title: 'The confounder that nearly ruined the analysis',
   intro:
@@ -173,19 +189,19 @@ export const EDA_CONFOUNDER = {
 export const EDA_MISSING = {
   title: 'Missing values: five causes, five different fixes',
   intro:
-    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the text did not match" — and only the first resembles what imputation assumes.',
+    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the record is internally inconsistent" — and only the first resembles what imputation assumes. Of the five causes below, **only one was a mistake made by this project**.',
   tableHead: ['Property', 'Who is missing', 'Why', 'What was done'],
   tableRows: [
     [
       'Allen electronegativity',
-      'Ce, La, Dy, Nd',
+      'Ce, La, Nd, Dy',
       'The Allen scale is spectroscopic and is not defined for lanthanides',
       'Column dropped. This is not a gap — the quantity does not exist. Pauling covers all 20 metals and stays',
     ],
     [
       'Absolute hardness',
       'Mg, Zn',
-      'η = (IE − EA)/2, and there is no electron affinity: their closed shells do not bind an extra electron',
+      'η = (IE − EA)/2, and there is no measured electron affinity: their closed shells do not bind an extra electron',
       'Imputed, knowing it is imperfect',
     ],
     [
@@ -197,51 +213,127 @@ export const EDA_MISSING = {
     [
       'Oxidation state, ionic radius',
       '22 rows',
-      'A non-breaking space (U+00A0) in the precursor text',
+      'A non-breaking space (U+00A0) in the precursor text — **the only one of the five that was our own bug**',
       'Fixed by normalising the join, not by hand-listing variants',
     ],
     [
       'Mean carboxylic pKa',
-      '~70% of rows',
+      '70% of rows',
       'Not a fault: those syntheses carry no carboxylic modulator, and "no acid" has no pKa',
       'Imputed; flagging it was tested and adds nothing',
     ],
     [
       'Solvent fractions',
-      '~18% of rows',
-      'The record kept the total volume but not its breakdown',
+      '18% of rows',
+      'The volumes written down do not add up to the total volume declared',
       '**NULL, not 0**',
     ],
   ],
+  /* La objecion natural de quien llevo el Excel, y por que no aplica. El texto
+     anterior decia "el registro guardo el total pero no el desglose", que solo
+     describe 20 de las 452 filas; en las otras 431 el desglose SI esta y lo que
+     pasa es que no cuadra. */
+  zeroTitle: 'An empty cell does read as zero — that is not what the null is about',
+  zeroBody:
+    'The obvious objection is that a blank cell in the master spreadsheet means "none of that solvent", not "unknown". **And the pipeline agrees**: it reads every blank solvent column as zero, with an explicit `COALESCE(column, 0)`. The null appears afterwards, for a different reason.',
+  zeroDetail:
+    'After turning every blank into a zero, the volumes are added up and compared with the total volume declared for that synthesis. In **431 of 452 flagged rows** the components are written down and simply do not reach the total. Sample RS1873 declares 15 mL of reaction and records 15 µL of water. Reading the rest as zeros there does not give "a synthesis without methanol": it gives **a synthesis without solvent**, which is impossible. Only 20 rows are the other case — a total with nothing itemised — and those are equally impossible for the same reason.',
+  zeroRule:
+    'So the flag does not distrust the chemist. It distrusts arithmetic that does not close: **a zero is a claim, a gap is not, and a model cannot tell them apart if it is handed a zero.**',
   lesson:
-    'The last row is the underlying lesson. Telling a model "this synthesis contained no methanol" when the truth is "how much methanol it contained was never recorded" is feeding it a falsehood dressed as data.',
+    'That is the underlying lesson of the whole table. Telling a model "this synthesis contained no methanol" when the truth is "the record of what it contained is incomplete" is feeding it a falsehood dressed as data.',
+}
+
+/* De donde salen las dos columnas de modulador que el lector va a preguntar,
+   con los dos matices que un quimico veria enseguida. */
+export const EDA_MODULATORS = {
+  title: 'Where the modulator descriptors come from',
+  problem:
+    'Ten columns of acids, nearly all zero in any given row, would let the model memorise which plate used which reagent instead of learning chemistry.',
+  fix:
+    'So they were **grouped by chemical role** — carboxylic, strong acid, HF, base, fluorinated — and summed. To avoid losing the chemistry that the sum discards, two extra columns carry the **mean pKa and mean logP of the acids present, weighted by how much of each was added**.',
+  formula: 'mod_carbox_mean_pka = (3.75·formic + 4.76·acetic + 4.87·propionic) / total carboxylic mmol',
+  consequence:
+    'Which explains the gap directly: when a synthesis carries no carboxylic modulator the denominator is zero and the mean does not exist. That is 70% of the training set, and the correspondence is exact — **not one row** has a null pKa while carrying carboxylic acid.',
+  caveats: [
+    {
+      title: '"Carboxylic" here means "weak carboxylic"',
+      body: 'Trifluoroacetic acid **is** a carboxylic acid, but it was grouped with the strong acids, because the grouping criterion was pKa rather than functional family — at pKa 0.23 it behaves like a strong acid, not like a modulator. 82 syntheses. The chemistry is defensible; the column name is not entirely.',
+    },
+    {
+      title: 'These two values have no cited source',
+      body: 'The pKa and logP values are standard aqueous figures at 25 °C written directly into the SQL. Every other chemical property in the model — electronegativity, hardness, oxophilicity, ionic radius — is traceable to a reference in a `property_sources` table. **These two are the exception**, and saying so is cheaper than being caught.',
+    },
+  ],
 }
 
 export const EDA_IMBALANCE = {
   title: 'The target: how much imbalance there is',
+  /* La pregunta era "desequilibrio entre que". Se responde con la tabla, no con
+     una frase: son las tres clases de cristalinidad que etiqueto Ruben a mano. */
+  intro:
+    'The imbalance is **between the three crystallinity classes** — the verdict a human gave each diffractogram, and the thing the model has to predict. They are not equally common, and that is a property of the chemistry, not a sampling error: most attempts land somewhere in between.',
+  tableHead: ['Class', 'What it means', 'Samples', 'Share'],
+  tableRows: [
+    ['Incipient', 'Broad reflections near a crystallisation boundary', '967', '64.1%'],
+    ['Amorphous', 'No reflections at all', '382', '25.3%'],
+    ['Crystalline', 'Sharp, well-ordered reflections', '160', '10.6%'],
+  ],
   trivial:
-    'A model that learns nothing — one that always answers INCIPIENT — is right about 64% of the time. Reporting "64% accuracy" would sound like the model does something, when it would do nothing at all.',
+    'That first row is the whole problem. A model that learns nothing — one that always answers **INCIPIENT** — is right 64% of the time. Reporting "64% accuracy" would sound like the model does something, when it would do nothing at all. This is why every metric on the next screen is compared against that floor rather than against zero.',
   ratio:
-    'The imbalance is **5.8:1** between the largest and smallest class, sharper than before restricting to high-throughput synthesis, because what was removed was almost entirely crystalline. It is handled by weighting the classes inside each model, which is simpler than resampling and does not invent samples.',
+    'The gap between the largest and smallest class is **6 : 1**, and it is sharper than over the whole record, because restricting to high-throughput synthesis removed material that was almost entirely crystalline. It is handled by **weighting the classes inside each model**, which is simpler than resampling and does not invent samples that were never made.',
 }
 
 export const EDA_DISCRETE = {
   title: 'The process variables are **discrete in practice**',
-  body: 'Target temperature takes about 13 distinct values across the whole record, reaction time about 9, and the ligand-to-metal ratio about 9. That is not a defect in the data: it reflects how combinatorial synthesis is actually designed — fix a grid of conditions and sweep composition.',
+  /* Los valores concretos, que era la peticion: decir "unos 13 valores" no
+     permite juzgar nada. Medidos sobre el conjunto de entrenamiento. */
+  body: 'A continuous variable on paper is not continuous in the record. Over the training set, three of the main process variables take these values and no others:',
+  tableHead: ['Variable', 'Distinct values', 'Which ones'],
+  tableRows: [
+    ['temp_target_c', '9', '80 · 100 · 110 · 120 · 130 · 135 · 140 · 150 · 160 °C'],
+    ['lm_ratio', '8', '0.15 · 0.20 · 0.30 · 0.33 · 0.50 · 0.60 · 0.80 · 1.00'],
+    ['time_hours', '3', '24 · 48 · 72 h'],
+  ],
+  concentration:
+    'And they are not evenly used either: **816 of the syntheses sit at 150 °C** and 442 at 120 °C, so two settings cover more than four fifths of the record.',
+  why:
+    'That is not a defect in the data. It reflects how combinatorial synthesis is actually designed — **fix a grid of conditions and sweep composition** — and a chemist filling a 24-well plate picks round numbers.',
   consequence:
-    'But it carries a consequence that returns at the interpretation stage: a variable that was barely varied cannot explain much variance, however important it is chemically.',
+    'But it carries a consequence that returns at the interpretation stage: **a variable that was barely varied cannot explain much variance, however important it is chemically**. Reaction time has three values; if the model says it does not matter, that is a statement about this record, not about chemistry.',
 }
 
 export const EDA_CORRELATION = {
   title: 'Correlation: two different questions, and only one usually gets plotted',
-  q1title: 'Do two input variables move together?',
-  q1body:
-    'What you are looking for is not zero correlation — it is knowing where it is not zero. High correlation means two columns carry nearly the same information, and that matters most for interpretation: if ionic radius and charge-over-radius always travel together, the model splits the credit between them arbitrarily. Reading "this variable barely matters" would then be a mistake — it matters, but its twin took the credit. Which is why the final interpretation is done by chemical block.',
-  q1note:
-    'A correlation map with red blocks is not a problem. Here the red blocks are mostly properties of the same metal, correlated by physics: the electronegativity and hardness of a cation are not independent in nature.',
-  q2title: 'Does each variable relate to the target?',
-  q2body:
-    'This is the one you do want to be high — it is literally the signal the model will exploit. But Pearson correlation does not apply: the target is categorical with three levels. The correct equivalents are the correlation ratio η² for numeric-versus-categorical and Cramér\'s V for categorical-versus-categorical. Both are plotted.',
+  questions: [
+    {
+      title: 'Do two input variables move together?',
+      lead: 'This one is about **interpretation**, not about performance.',
+      points: [
+        ['What to look for', 'Not zero correlation — knowing **where** it is not zero.'],
+        ['Why it matters', 'Two columns carrying nearly the same information make the model **split the credit between them arbitrarily**. Reading "this variable barely matters" would then be a mistake: it matters, but its twin took the credit.'],
+        ['What is done about it', 'The final interpretation is read **by chemical block**, never variable by variable.'],
+      ],
+      note:
+        'A map with red blocks is not a problem. Here they are mostly properties of the same metal, correlated **by physics**: the electronegativity and hardness of a cation are not independent in nature.',
+    },
+    {
+      title: 'Does each variable relate to the target?',
+      lead: 'This is the one you **do** want to be high — it is literally the signal the model will exploit.',
+      points: [
+        ['Why Pearson does not apply', 'The target is **categorical with three levels**, not a number. A Pearson coefficient between "amorphous" and a temperature is undefined.'],
+        ['What is used instead', 'The correlation ratio **η²** for numeric against categorical, and **Cramér\'s V** for categorical against categorical.'],
+        ['How to read it', 'Both are plotted below, on the same scale, so a weak association looks weak.'],
+      ],
+    },
+  ],
+  /* Las casillas en blanco: la pregunta que se hizo Ruben y se hara cualquiera. */
+  blankTitle: 'The blank cells are not missing data',
+  blankBody:
+    'A white square in the map means the correlation **is not defined**, not that the value was lost. It happens when a variable has **no variance** in this subset: `reactor_volume_ml` is 2.5 mL in every single high-throughput synthesis, so its standard deviation is zero and every correlation involving it divides by zero.',
+  blankConsequence:
+    'It also has a corollary worth stating, because it is the textbook case of the point made just above: since the reactor is always 2.5 mL, **`fill_fraction` is exactly `total_volume_ml / 2.5`**. The two columns are the same variable rescaled — perfect collinearity, verified across all 1,516 rows, not an approximation. Neither can be credited independently, and that is precisely why importance is read by block.',
   causation:
     '**Correlation is not causation**. These plots measure whether two things move together, nothing more. That temperature appears associated with crystallinity does not demonstrate that raising it causes crystallisation: they may share a common cause, or it may be a coincidence of this particular record. Establishing causation requires intervening — changing only the temperature and seeing what happens — which is precisely what the model suggests where to do, not what it proves.',
 }
@@ -250,21 +342,32 @@ export const EDA_LEAKAGE = {
   title: 'Hidden structure: why a random split would lie',
   body: 'The rows of this dataset are **not independent of one another**. Samples come in plates: batches prepared on the same day, with the same linker, the same thermal ramp and often the same metal, sweeping one variable. And the plates are internally homogeneous — knowing one sample from a plate tells you almost the outcome of its neighbours.',
   consequence:
-    'A random split would put samples from the same plate in both training and test. The model would not need to learn any chemistry: recognising the plate would be enough. The score would come out inflated and false. Validation therefore groups by plate, so no plate ever appears on both sides.',
+    'A random split would put samples from the same plate in both training and test. The model would not need to learn any chemistry: **recognising the plate would be enough**. The score would come out inflated and false. Validation therefore groups by plate, so no plate ever appears on both sides.',
+  /* Recordatorio del desequilibrio, porque aqui es donde se combina con el
+     agrupamiento y donde mas dano hace. */
+  reminder:
+    'And this compounds with the imbalance from two sections ago. With **64% of samples incipient** and whole plates that are almost uniformly one class, a lucky split can hand the test set a plate that is 90% incipient — where the do-nothing baseline scores 90% and any model looks brilliant. Grouping by plate is what stops the split from choosing its own difficulty.',
   drift:
-    'There is temporal drift too: the class proportions change year on year, because the laboratory was learning. Counts are annotated on every bar deliberately — a proportion without its sample size misleads. A year with seven samples would show a 100% bar that means nothing.',
+    'There is temporal drift too: the class proportions change year on year, because the laboratory was learning. Counts are annotated on every bar deliberately — **a proportion without its sample size misleads**. A year with seven samples would show a 100% bar that means nothing.',
 }
 
 export const EDA_PCA = {
   title: 'A global look: the PCA projection',
   disclaimer: 'This is a diagnostic, not a model.',
+  /* Faltaba decir que es un PCA antes de contar como se aplico, y aclarar de
+     que variables se habla: son las de SINTESIS, no los 29 descriptores. */
+  whatTitle: 'What a PCA does, in one paragraph',
+  what:
+    'Each synthesis is a point in a space with as many dimensions as it has variables — impossible to look at. PCA finds the **direction along which the points are most spread out**, calls it the first component, then the most spread-out direction perpendicular to that one, and so on. Projecting onto the first two gives a flat picture that keeps as much of the original spread as any flat picture can. It is a **change of viewpoint**, not a summary: nothing is discarded, the cloud is only turned to be seen from its widest side.',
+  varsNote:
+    'The variables here are the **synthesis conditions** — 38 columns of metal properties, linker properties, solvent fractions, thermal ramp and modulators — not the 29 PXRD descriptors. Those describe the *outcome*; these describe what was *done*, and the question is whether what was done already separates the outcomes.',
   steps: [
-    'The ~30 numeric variables are standardised after imputation. Without this, reaction time (up to 96) would crush a solvent fraction (0 to 1) purely through the scale of its units, and the result would measure the choice of units rather than the chemistry.',
-    'The direction of maximum variance is found in that ~30-dimensional space. That direction is a linear combination of every variable — not a subset — and becomes the first component. Then the direction of maximum remaining variance perpendicular to it, and so on.',
+    'The numeric synthesis variables are standardised after imputation. Without this, reaction time (up to 96) would crush a solvent fraction (0 to 1) purely through the scale of its units, and the result would measure the choice of units rather than the chemistry.',
+    'The direction of maximum variance is found in that space. That direction is a linear combination of every variable — not a subset — and becomes the first component. Then the direction of maximum remaining variance perpendicular to it, and so on.',
     'The samples are projected onto those components so they can be drawn.',
   ],
   honest:
-    'None of this decides which variables to collapse: PCA uses all of them and, crucially, does not know the classes — it is unsupervised. The colours are painted on afterwards. That is what makes it an honest diagnostic: if the classes come out separated, it is real structure in the synthesis conditions, not something the method went looking for.',
+    'None of this decides which variables to collapse: PCA uses all of them and, crucially, **does not know the classes** — it is unsupervised. The colours are painted on afterwards. That is what makes it an honest diagnostic: if the classes come out separated, it is real structure in the synthesis conditions, not something the method went looking for.',
   findings: [
     'There is structure, but the classes overlap heavily. The problem is genuinely multivariate and genuinely hard.',
     'Adding a third component reveals no hidden separation. That is a useful negative result: there is **no plane that separates the classes**, which already predicts that no linear model will shine.',
@@ -274,7 +377,13 @@ export const EDA_PCA = {
 
 export const EDA_BIVARIATE = {
   title: 'Does any single variable separate the classes?',
-  body: 'No. The boxes overlap for every variable tested. That is not bad news: it is the definition of a multivariate problem, and it is exactly why a model is needed instead of a threshold. If one variable separated the classes cleanly, machine learning would be unnecessary — a rule would do.',
+  /* "A que te refieres con descriptores" — habia que decirlo. */
+  whichTitle: 'Which variables are being tested here',
+  which:
+    'The **29 PXRD descriptors**: the numbers extracted from each diffractogram on the previous screen — peak count, crystalline fraction, peak width, entropy, signal-to-noise and the rest. Not the synthesis conditions. The question is whether any single measurement taken *from the pattern* is enough, on its own, to tell the three classes apart.',
+  ordering:
+    'They do order the classes, and cleanly: every descriptor tested rises or falls **monotonically** from amorphous through incipient to crystalline. That is the reassuring half of the picture — the numbers agree with the human verdicts about the direction of the effect.',
+  body: 'But ordering is not separating. The boxes **overlap for every variable tested**: an incipient sample and a crystalline one can share the same peak count, the same width, the same entropy. That is not bad news — it is the definition of a multivariate problem, and exactly why a model is needed instead of a threshold. If one variable separated the classes cleanly, machine learning would be unnecessary: a rule would do.',
 }
 
 /* ==========================================================================
