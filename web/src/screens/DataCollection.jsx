@@ -64,16 +64,6 @@ export default function DataCollection() {
             </ul>
           </Card>
         </div>
-
-        <Card className="mt-4">
-          <h3 className="text-base">What this workflow deliberately does not do</h3>
-          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            It ingests <em>measurements</em>, not <em>synthesis conditions</em>. Those arrive by a
-            separate route — a master spreadsheet transformed and merged into the database, covered on
-            the next screen. The two lanes write to the same tables and neither can overwrite the other,
-            which is why the merge is an upsert rather than a replace.
-          </p>
-        </Card>
       </section>
 
       {/* --- Que hay dentro del flujo, en una frase --- */}
@@ -92,6 +82,17 @@ export default function DataCollection() {
       </section>
 
       <section>
+        <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
+        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          The flow as it exists in n8n &mdash; <strong>79 nodes</strong>, <strong>114 connections</strong>,
+          nine framed areas &mdash; read straight from the exported workflow, not redrawn by hand.
+          Pick a stop and the map flies to it, with the card above saying what that area adds to the
+          row and why. The last stop pulls back to the whole flow.
+        </p>
+        <WorkflowMap />
+      </section>
+
+      <section>
         <SectionTitle eyebrow="Start from the goal, not the flow">
           What a row must look like when it lands
         </SectionTitle>
@@ -103,17 +104,6 @@ export default function DataCollection() {
           set it.
         </p>
         <ScrollTable head={['Field', 'What it carries']} rows={ROW_SHAPE.map(([a, b]) => [<code key={a}>{a}</code>, b])} />
-      </section>
-
-      <section>
-        <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
-        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          The flow as it exists in n8n &mdash; <strong>79 nodes</strong>, <strong>114 connections</strong>,
-          nine framed areas &mdash; read straight from the exported workflow, not redrawn by hand.
-          Pick a stop and the map flies to it, with the card above saying what that area adds to the
-          row and why. The last stop pulls back to the whole flow.
-        </p>
-        <WorkflowMap />
       </section>
 
       <section>

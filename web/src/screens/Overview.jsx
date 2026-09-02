@@ -50,7 +50,7 @@ export default function Overview() {
           className="max-w-4xl text-4xl uppercase md:text-6xl"
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2.5px' }}
         >
-          Augmented Laboratory for Chemical Materials
+          Augmented Laboratory for Chemistry &amp; Materials
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and

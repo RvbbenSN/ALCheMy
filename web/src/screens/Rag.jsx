@@ -23,7 +23,7 @@ export default function Rag() {
       <section>
         <Badge tone="accent">07 · RAG Assistant</Badge>
         <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          IP-Shielded Scientific Co-pilot
+          Scientific Co-pilot
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           Generative AI with governance: grounded in 956 real papers, and unable to leak a ligand name it

@@ -36,11 +36,13 @@ import { Badge } from './ui.jsx'
 
    La lectura va de arriba abajo y es una sola pieza, no dos:
 
-       ficha del area activa  ->  indice de nueve paradas  ->  lienzo  ->  leyenda
+       indice de nueve paradas  ->  ficha del area activa  ->  lienzo  ->  leyenda
 
    Antes la explicacion de las areas vivia en tarjetas aparte, debajo del mapa,
-   y habia que leerlas dos veces. Ahora la ficha esta encima del lienzo y cambia
-   al pulsar una parada: se lee lo que hace la zona y se la mira a la vez.
+   y habia que leerlas dos veces. Ahora la ficha va entre el indice y el lienzo:
+   se pulsa una parada, se lee ahi mismo lo que hace esa zona, y justo debajo se
+   la mira. El orden importa —la ficha separa el gesto de su explicacion lo
+   menos posible.
 
    Cuatro bugs de las versiones anteriores y su causa, que conviene no repetir:
 
@@ -237,6 +239,56 @@ export default function WorkflowMap() {
   return (
     <div className="flex flex-col gap-4">
       {/* ---------------------------------------------------------------
+          Indice: nueve paradas en el orden en que el fichero las atraviesa,
+          y al final la vista general.
+          --------------------------------------------------------------- */}
+      <div className="overflow-x-auto pb-1">
+        <div className="relative flex min-w-max items-start gap-0">
+          <div
+            aria-hidden
+            className="absolute"
+            style={{ top: 21, left: 40, right: 40, height: 2, background: 'var(--surface-border)' }}
+          />
+          {[...areas.map((a) => ({ n: a.n, label: meta[a.n]?.title ?? a.title, icon: AREA_ICON[a.n] ?? Shuffle })),
+            { n: OVERVIEW, label: 'Whole flow', icon: Layers }].map((s) => {
+            const Icon = s.icon
+            const on = active === s.n
+            return (
+              <button
+                key={s.n}
+                type="button"
+                onClick={() => goTo(s.n)}
+                className="relative flex w-[104px] shrink-0 flex-col items-center gap-1.5 bg-transparent px-1"
+                title={s.n === OVERVIEW ? 'Fit the whole flow' : meta[s.n]?.subtitle ?? s.label}
+                aria-current={on ? 'true' : undefined}
+              >
+                <span
+                  className="flex h-11 w-11 items-center justify-center rounded-full"
+                  style={{
+                    border: `2.5px solid ${on ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+                    background: on ? 'var(--accent-primary)' : 'var(--surface)',
+                    color: on ? 'var(--surface)' : 'var(--text-secondary)',
+                    transform: on ? 'scale(1.12)' : 'none',
+                  }}
+                >
+                  <Icon size={19} aria-hidden />
+                </span>
+                <span
+                  className="text-center text-[11px] leading-tight"
+                  style={{
+                    color: on ? 'var(--accent-primary)' : 'var(--text-muted)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  {s.n === OVERVIEW ? s.label : `${s.n} · ${s.label}`}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* ---------------------------------------------------------------
           Ficha del area activa. Antes eran nueve tarjetas apiladas debajo
           del mapa; aqui solo se muestra la que se esta mirando.
           --------------------------------------------------------------- */}
@@ -331,56 +383,6 @@ export default function WorkflowMap() {
             </ol>
           </>
         )}
-      </div>
-
-      {/* ---------------------------------------------------------------
-          Indice: nueve paradas en el orden en que el fichero las atraviesa,
-          y al final la vista general.
-          --------------------------------------------------------------- */}
-      <div className="overflow-x-auto pb-1">
-        <div className="relative flex min-w-max items-start gap-0">
-          <div
-            aria-hidden
-            className="absolute"
-            style={{ top: 21, left: 40, right: 40, height: 2, background: 'var(--surface-border)' }}
-          />
-          {[...areas.map((a) => ({ n: a.n, label: meta[a.n]?.title ?? a.title, icon: AREA_ICON[a.n] ?? Shuffle })),
-            { n: OVERVIEW, label: 'Whole flow', icon: Layers }].map((s) => {
-            const Icon = s.icon
-            const on = active === s.n
-            return (
-              <button
-                key={s.n}
-                type="button"
-                onClick={() => goTo(s.n)}
-                className="relative flex w-[104px] shrink-0 flex-col items-center gap-1.5 bg-transparent px-1"
-                title={s.n === OVERVIEW ? 'Fit the whole flow' : meta[s.n]?.subtitle ?? s.label}
-                aria-current={on ? 'true' : undefined}
-              >
-                <span
-                  className="flex h-11 w-11 items-center justify-center rounded-full"
-                  style={{
-                    border: `2.5px solid ${on ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
-                    background: on ? 'var(--accent-primary)' : 'var(--surface)',
-                    color: on ? 'var(--surface)' : 'var(--text-secondary)',
-                    transform: on ? 'scale(1.12)' : 'none',
-                  }}
-                >
-                  <Icon size={19} aria-hidden />
-                </span>
-                <span
-                  className="text-center text-[11px] leading-tight"
-                  style={{
-                    color: on ? 'var(--accent-primary)' : 'var(--text-muted)',
-                    fontFamily: 'var(--font-mono)',
-                  }}
-                >
-                  {s.n === OVERVIEW ? s.label : `${s.n} · ${s.label}`}
-                </span>
-              </button>
-            )
-          })}
-        </div>
       </div>
 
       {/* --- el lienzo --- */}

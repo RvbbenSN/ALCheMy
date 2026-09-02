@@ -306,7 +306,7 @@ decide si el visitante sigue leyendo.
 
 Titular y subtítulo ya definidos:
 
-> **ALCheMy** — *Augmented Laboratory for Chemical Materials*
+> **ALCheMy** — *Augmented Laboratory for Chemistry & Materials*
 > A materials-informatics and data-driven ecosystem based on agentic AI, data engineering and
 > governed MLOps.
 

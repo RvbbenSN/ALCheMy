@@ -10,7 +10,7 @@
 
 export const SITE = {
   name: 'ALCheMy',
-  tagline: 'Augmented Laboratory for Chemical Materials',
+  tagline: 'Augmented Laboratory for Chemistry & Materials',
   repo: 'https://github.com/RvbbenSN/ALCheMy',
   github: 'https://github.com/RvbbenSN',
   linkedin: 'https://www.linkedin.com/in/rubén-serrano-nieto',
@@ -29,7 +29,7 @@ export const SCREENS = [
   { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Data Understanding', crisp: 'Data understanding' },
   { id: '05', slug: 'modeling', short: 'Modeling', title: 'Training & Evaluation', crisp: 'Modeling · Evaluation' },
   { id: '06', slug: 'the-model', short: 'The Model', title: 'Simulator, Registry & Active Learning', crisp: 'Deployment · Feedback' },
-  { id: '07', slug: 'rag', short: 'RAG Assistant', title: 'IP-Shielded Scientific Co-pilot', crisp: 'Decision support' },
+  { id: '07', slug: 'rag', short: 'RAG Assistant', title: 'Scientific Co-pilot', crisp: 'Decision support' },
   { id: '08', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: '—' },
 ]
 
@@ -92,7 +92,16 @@ export const STACK = [
 
 /* Bio corta. Reescrita a partir del resumen de LinkedIn y del CV, para que
    suene a como Ruben se presenta y no a eslogan. */
+/* Dos voces distintas a proposito. En el Overview el lector acaba de llegar y
+   agradece una presentacion en primera persona; en el 08 ya ha decidido leer
+   un CV y espera el registro profesional. */
 export const BIO_SHORT = [
+  "Hi! I'm Rubén, a PhD in Advanced Chemistry turned Data Science and AI enthusiast.",
+  'For over five years I worked in the laboratory synthesizing new functional materials for sustainability challenges. During thousands of hours at the bench I realized something essential: experiments generate massive amounts of rich data, yet too often it remains trapped in lab notebooks or local disks.',
+  'That sparked a genuine idea: bridging the gap between hands-on experimental chemistry and the data lifecycle. I specialize in turning laboratory observations into automated pipelines and machine learning models that drive smarter, faster scientific decisions.',
+]
+
+export const BIO_ABOUT = [
   'My professional focus lies at the intersection of experimental chemistry, data science and artificial intelligence: turning complex scientific data into reproducible pipelines, predictive models and decision-support tools.',
   'As a PhD in Advanced Chemistry I drove the end-to-end development of metal-organic frameworks for sustainability challenges — green hydrogen production, CO₂ valorisation, water treatment, biopolymers. That work meant generating, processing and analysing large datasets from a dozen characterisation techniques, and it is where the problem this platform solves first became obvious.',
   'ALCheMy is that analytical mindset moved into the digital domain: Python, SQL, machine learning and generative AI applied to the same chemistry, with the aim of accelerating materials design and extracting decisions from data that used to sit in a folder.',
