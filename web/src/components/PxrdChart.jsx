@@ -22,11 +22,14 @@ const W = 900
 const H = 380
 const M = { top: 18, right: 18, bottom: 42, left: 56 }
 
+/* `fill` marca las capas que se pintan como area y no solo como linea: son las
+   dos que componen lo que disperso la muestra, y verlas rellenas es lo unico
+   que hace legible su proporcion de un vistazo. */
 const LAYERS = [
   { key: 'raw', label: 'Raw scan', color: 'var(--text-muted)', width: 1.1 },
-  { key: 'instrumental', label: 'arPLS baseline', color: 'var(--accent-tertiary)', width: 1.8, dash: '6 4' },
-  { key: 'amorphous', label: 'Amorphous halo', color: 'var(--status-incipient)', width: 1.8 },
-  { key: 'crystalline', label: 'Crystalline component', color: 'var(--accent-primary)', width: 1.6 },
+  { key: 'instrumental', label: 'Instrument (measured blank)', color: 'var(--accent-tertiary)', width: 1.6, dash: '6 4' },
+  { key: 'amorphous', label: 'Amorphous halo', color: 'var(--status-incipient)', width: 1.6, fill: 0.35 },
+  { key: 'crystalline', label: 'Bragg reflections', color: 'var(--accent-primary)', width: 1.4, fill: 0.3 },
 ]
 
 const CLASS_TONE = { AMORFO: 'amorphous', INCIPIENTE: 'incipient', CRISTALINO: 'pure' }
@@ -79,7 +82,13 @@ export default function PxrdChart() {
       return d
     }
 
-    return { px, py, line, xMin, xMax, yMax }
+    /* La misma curva cerrada contra el eje, para poder rellenarla. */
+    const area = (key) => {
+      const y0 = py(0).toFixed(1)
+      return `${line(key)} L${px(xs[xs.length - 1]).toFixed(1)} ${y0} L${px(xs[0]).toFixed(1)} ${y0} Z`
+    }
+
+    return { px, py, line, area, xMin, xMax, yMax }
   }, [ex, on, showPeaks])
 
   const xTicks = niceTicks(geom.xMin, geom.xMax, 6)
@@ -204,7 +213,11 @@ export default function PxrdChart() {
             </>
           )}
 
-          {/* capas */}
+          {/* capas: primero las areas rellenas, para que las lineas queden
+              encima y no las tape el relleno de la siguiente */}
+          {LAYERS.filter((l) => on[l.key] && l.fill).map((l) => (
+            <path key={`${l.key}-fill`} d={geom.area(l.key)} fill={l.color} fillOpacity={l.fill} stroke="none" />
+          ))}
           {LAYERS.filter((l) => on[l.key]).map((l) => (
             <path
               key={l.key}

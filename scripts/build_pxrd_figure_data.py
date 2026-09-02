@@ -115,8 +115,12 @@ def median_case(cur, klass):
 
 def main() -> int:
     from src.pxrd_descriptors import (
+        amorphous_from_blank,
+        arpls_baseline,
         decompose_profile,
         detect_peaks_poisson,
+        load_instrument_blank,
+        normalize_by_area,
         poisson_noise_level,
         resample_to_grid,
         GRID_2THETA,
@@ -152,6 +156,41 @@ def main() -> int:
         noise = poisson_noise_level(y, x)
         peaks, _fw = detect_peaks_poisson(x, layers["crystalline"], noise)
 
+        # ---- La descomposicion que de verdad hay que ensenar ---------------
+        # `decompose_profile` separa el halo por ANCHURA, y el propio modulo
+        # avisa de que ese numero solo sirve para ordenar: "the number to trust
+        # is amorphous_fraction_blank". En un amorfo el halo es tan ancho como
+        # la ventana medida, asi que la linea base arPLS lo sigue y se lo lleva
+        # entero — medido, se queda con el 99,5 % del area y deja un 0,4 % de
+        # halo. Dibujar eso es ensenar el error contra el que advierte el texto
+        # de al lado.
+        #
+        # La via del blanco no tiene ese problema porque no adivina donde acaba
+        # el fondo: lo MIDE, con un barrido del portamuestras vacio. Lo que la
+        # linea base quito menos lo que el instrumento aporta por si solo es lo
+        # que el especimen disperso de forma difusa.
+        norm = normalize_by_area(y, x)
+        base = arpls_baseline(norm)
+        blank_full = load_instrument_blank(conn, grid=grid)
+        amo_blank = frac_blank = None
+        if blank_full is not None:
+            blank = np.asarray(blank_full, dtype=float)[valid]
+            amo_blank, frac_blank, blank_scale = amorphous_from_blank(
+                x, norm, blank, baseline=base)
+        if amo_blank is None:
+            print("aviso: sin blanco para %s, se dibuja solo la via por anchura"
+                  % klass, file=sys.stderr)
+            amo_blank = layers["amorphous"]
+            frac_blank = None
+            blank_scale = None
+            instrument = layers["instrumental"]
+        else:
+            # El instrumento es la parte de la linea base que el blanco explica;
+            # el resto de la linea base es dispersion difusa de la muestra.
+            instrument = np.maximum(base - amo_blank, 0.0)
+        # Bragg medido igual que en el modulo: lo que sobresale de la linea base.
+        cryst_blank = np.maximum(norm - base, 0.0)
+
         # Descriptores ya calculados y guardados: se leen, no se recalculan,
         # para que la figura muestre exactamente lo que hay en la base.
         cur.execute(
@@ -175,9 +214,12 @@ def main() -> int:
                 "crystallineFraction": round(float(frac), 4),
                 "x": [round(float(v), 3) for v in x[idx]],
                 "raw": [round(float(v), 6) for v in layers["normalized"][idx]],
-                "instrumental": [round(float(v), 6) for v in layers["instrumental"][idx]],
-                "amorphous": [round(float(v), 6) for v in layers["amorphous"][idx]],
-                "crystalline": [round(float(v), 6) for v in layers["crystalline"][idx]],
+                "instrumental": [round(float(v), 6) for v in instrument[idx]],
+                "amorphous": [round(float(v), 6) for v in amo_blank[idx]],
+                "crystalline": [round(float(v), 6) for v in cryst_blank[idx]],
+                "baseline": [round(float(v), 6) for v in base[idx]],
+                "amorphousFractionBlank": (round(float(frac_blank), 4)
+                                           if frac_blank is not None else None),
                 "peaks": [
                     {"x": round(float(x[p]), 3), "y": round(float(layers["crystalline"][p]), 6)}
                     for p in peaks
@@ -186,8 +228,10 @@ def main() -> int:
                 "descriptors": descriptors,
             }
         )
-        print("%-11s %-10s  fraccion %.3f  %d picos  %d puntos"
-              % (klass, PSEUDONYM[klass], frac, len(peaks), len(idx)))
+        print("%-11s %-10s  frac %.3f  blank %s  %d picos  %d puntos"
+              % (klass, PSEUDONYM[klass], frac,
+                 ("%.3f" % frac_blank) if frac_blank is not None else "n/d",
+                 len(peaks), len(idx)))
 
     cur.close()
     conn.close()

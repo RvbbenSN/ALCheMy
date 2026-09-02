@@ -571,11 +571,24 @@ export default function DataPreparation() {
               <Card accent>
                 <h3 className="text-base">What the three layers mean</h3>
                 <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  The <Term k="arPLS" /> baseline is the instrument talking about itself — air scatter,
-                  the sample holder, detector drift. It is discarded. What remains splits into the broad
-                  amorphous halo and the sharp Bragg reflections, and <strong>both are signal</strong>.
-                  The easy mistake is to flatten the halo along with the baseline, which throws away
-                  precisely the information that separates an amorphous solid from a failed measurement.
+                  The dashed line is the <strong>instrument alone</strong> — air scatter, the holder,
+                  detector drift. What sits above it splits into the broad amorphous halo and the sharp
+                  Bragg reflections, and <strong>both are signal</strong>.
+                </p>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Where that line comes from matters more than it looks. Fitting a smooth curve to the
+                  pattern — an <Term k="arPLS" /> baseline — works while the halo is narrower than the
+                  scan. In a genuinely amorphous sample it is not: the halo spans the whole measured
+                  range, so the fitted curve simply climbs onto it and carries it away. Measured on the
+                  amorphous example below, that leaves <strong>0.4% of the area as halo</strong> when the
+                  sample is almost entirely halo.
+                </p>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  So the background is not fitted, it is <strong>measured</strong>: a scan of the empty
+                  holder on the same diffractometer, rescaled to the sample and subtracted. What the
+                  fitted curve removed <em>minus</em> what the instrument contributes on its own is what
+                  the specimen scattered diffusely. On the same example the halo comes back at{' '}
+                  <strong>18% of the total area</strong>, and 94% of what the sample itself scattered.
                 </p>
               </Card>
               <Card accent>
