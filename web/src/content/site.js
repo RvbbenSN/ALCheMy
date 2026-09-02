@@ -116,22 +116,26 @@ export const LAB_CYCLE = [
   {
     step: '1',
     title: 'Planning High-Throughput Synthesis',
+    short: 'Plan the plate',
     body: 'Each campaign begins by designing a parameter matrix across 24-well Teflon multi-autoclave reactors: 48 individual weighings per batch, solvent mixtures and modulators, then 24 to 72-hour thermal programs in convection ovens.',
   },
   {
     step: '2',
     title: 'Recovery & Experimental Triage',
+    short: 'Filter & triage',
     body: 'After cooling, each of the 24 vials is vacuum-filtered, washed and submitted for powder X-ray diffraction. The verdict is one of three: amorphous solid, incipient (broad reflections near a crystallization boundary), or a well-ordered crystalline phase.',
     highlight: 'These three classes are exactly the target the model learns to predict.',
   },
   {
     step: '3',
     title: 'Scale-Up & Analytical Suite',
+    short: 'Scale up',
     body: 'Promising hits are scaled up via solvothermal liners or microwave-assisted synthesis, then characterized by TGA, VT-XRD, elemental analysis, ICP-OES, UV-Vis diffuse reflectance, FTIR and N2/CO2 physisorption.',
   },
   {
     step: '4',
     title: 'Functional Application',
+    short: 'Apply it',
     body: 'Purified materials are tested for photocatalytic hydrogen evolution, degradation of emergent pollutants, and heterogeneous CO2 valorization.',
   },
 ]

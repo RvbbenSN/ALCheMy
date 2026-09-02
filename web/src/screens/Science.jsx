@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import DataScale from '../components/DataScale.jsx'
+import LabDiagram from '../components/LabDiagram.jsx'
 import { Link } from 'react-router-dom'
 import {
   Atom,
@@ -38,7 +39,7 @@ const FACT_ICON = { grid: Grid3x3, expand: Expand, sliders: SlidersHorizontal, f
 /* Los pasos del ciclo de laboratorio, desplegables. Como pidio Ruben: una
    secuencia de hitos que se abren, en vez de cuatro bloques de texto seguidos
    que nadie termina de leer. */
-function LabStep({ step, isLast, open, onToggle }) {
+function LabStep({ step, isLast, open, onOpen }) {
   return (
     <li>
       <div className="flex gap-4">
@@ -46,7 +47,7 @@ function LabStep({ step, isLast, open, onToggle }) {
         <div className="flex flex-col items-center">
           <button
             type="button"
-            onClick={onToggle}
+            onClick={onOpen}
             aria-expanded={open}
             aria-label={`${open ? 'Collapse' : 'Expand'} step ${step.step}: ${step.title}`}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg transition-transform hover:scale-105"
@@ -65,7 +66,7 @@ function LabStep({ step, isLast, open, onToggle }) {
         <div className="min-w-0 flex-1 pb-4">
           <button
             type="button"
-            onClick={onToggle}
+            onClick={onOpen}
             className="flex w-full items-center gap-2 border-0 bg-transparent p-0 text-left"
           >
             <h3 className="text-lg" style={{ color: 'var(--text-primary)' }}>
@@ -337,17 +338,26 @@ export default function Science() {
           <Rich>{LAB_INTRO.lead}</Rich>
         </p>
 
-        <ol className="flex list-none flex-col p-0">
-          {LAB_CYCLE.map((s, i) => (
-            <LabStep
-              key={s.step}
-              step={s}
-              isLast={i === LAB_CYCLE.length - 1}
-              open={openStep === s.step}
-              onToggle={() => setOpenStep(openStep === s.step ? null : s.step)}
-            />
-          ))}
-        </ol>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
+          <ol className="flex list-none flex-col p-0">
+            {LAB_CYCLE.map((s, i) => (
+              <LabStep
+                key={s.step}
+                step={s}
+                isLast={i === LAB_CYCLE.length - 1}
+                open={openStep === s.step}
+                onOpen={() => setOpenStep(s.step)}
+              />
+            ))}
+          </ol>
+
+          <figure className="m-0 lg:sticky lg:top-24">
+            <LabDiagram steps={LAB_CYCLE} active={openStep} onPick={setOpenStep} />
+            <figcaption className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+              Schematic, not to scale. Pick a number or a panel to jump to that step.
+            </figcaption>
+          </figure>
+        </div>
       </section>
 
       {/* --- 4. El cuello de botella --- */}
