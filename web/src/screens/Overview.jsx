@@ -55,7 +55,7 @@ export default function Overview() {
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and
           governed <Term k="MLOps" />. It accelerates the discovery of advanced porous materials,
-          replacing trial-and-error chemistry with guided in-silico screening.
+          enhancing trial-and-error chemistry with guided in-silico screening.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button href="/the-model">Try the in-silico simulator</Button>

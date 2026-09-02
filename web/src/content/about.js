@@ -150,7 +150,7 @@ export const PUBLICATION_SUMMARY = {
   meanIf: '5.9',
   cites: '31',
   hIndex: '2',
-  firstAuthor: '6',
+  firstAuthor: '5',
 }
 
 export const PROJECTS = [
