@@ -211,6 +211,31 @@ export function Placeholder({ children, source }) {
   )
 }
 
+/* --------------------------------------------------------------------------
+   Note — la caja de "esto es lo importante".
+
+   Misma forma que la cita del Overview: barra de acento a la izquierda, fondo
+   elevado, tipografia de titular. Se usa para la frase que un lector deberia
+   llevarse de una seccion aunque no lea el resto, y por eso hay como mucho una
+   por seccion: si hay dos, ninguna destaca.
+   -------------------------------------------------------------------------- */
+export function Note({ children }) {
+  return (
+    <div
+      className="my-6 p-5 text-lg"
+      style={{
+        borderLeft: '4px solid var(--accent-primary)',
+        background: 'var(--surface-elevated)',
+        color: 'var(--text-primary)',
+        fontFamily: 'var(--font-heading)',
+        lineHeight: 1.5,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
 export function SectionTitle({ eyebrow, children, id }) {
   return (
     <header className="mb-6" id={id}>

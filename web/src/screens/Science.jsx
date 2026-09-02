@@ -1,10 +1,22 @@
 import { useState } from 'react'
+import DataFunnel from '../components/DataFunnel.jsx'
+import { Link } from 'react-router-dom'
 import {
+  Atom,
+  AudioWaveform,
   ChevronDown,
+  ChevronRight,
   Expand,
+  Flame,
   FlaskConical,
   Grid3x3,
+  Microscope,
   SlidersHorizontal,
+  Sparkles,
+  Sun,
+  Thermometer,
+  Waves,
+  Wind,
 } from 'lucide-react'
 import { LAB_CYCLE } from '../content/site.js'
 import {
@@ -16,9 +28,10 @@ import {
   NOBEL,
   SCIENCE_INTRO,
   TECHNIQUES,
+  FUNNEL,
   WHY_CHARACTERISE,
 } from '../content/science.js'
-import { Badge, Card, Rich, SectionTitle, Term } from '../components/ui.jsx'
+import { Badge, Card, Note, Rich, SectionTitle, Term } from '../components/ui.jsx'
 
 const FACT_ICON = { grid: Grid3x3, expand: Expand, sliders: SlidersHorizontal, flask: FlaskConical }
 
@@ -92,6 +105,33 @@ function LabStep({ step, isLast, open, onToggle }) {
         </div>
       </div>
     </li>
+  )
+}
+
+/* El mismo simbolo que lleva cada tecnica en el embudo de datos, para que las
+   dos figuras se lean como una sola: el icono que aqui se aprende, alli se
+   reconoce sin leyenda. */
+const TECH_ICONS = {
+  waves: Waves,
+  flame: Flame,
+  thermometer: Thermometer,
+  wind: Wind,
+  audio: AudioWaveform,
+  sparkles: Sparkles,
+  atom: Atom,
+  microscope: Microscope,
+  sun: Sun,
+}
+
+function TechIcon({ name, primary }) {
+  const Icon = TECH_ICONS[name]
+  if (!Icon) return null
+  return (
+    <Icon
+      size={16}
+      aria-hidden
+      style={{ color: primary ? 'var(--accent-primary)' : 'var(--text-muted)' }}
+    />
   )
 }
 
@@ -216,16 +256,31 @@ export default function Science() {
       {/* --- 2. Por que hay que caracterizar --- */}
       <section>
         <SectionTitle eyebrow="Characterisation"><Rich>{WHY_CHARACTERISE.title}</Rich></SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <p style={{ color: 'var(--text-secondary)' }}><Rich>{WHY_CHARACTERISE.body}</Rich></p>
-          </Card>
-          <Card accent>
-            <p style={{ color: 'var(--text-secondary)' }}><Rich>{WHY_CHARACTERISE.consequence}</Rich></p>
-          </Card>
-        </div>
 
-        <p className="mb-4 mt-6 text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{WHY_CHARACTERISE.lead}</Rich>
+        </p>
+
+        <Note>
+          <Rich>{WHY_CHARACTERISE.consequence}</Rich>
+          <span className="mt-4 flex flex-wrap gap-x-8 gap-y-2">
+            {WHY_CHARACTERISE.numbers.map(([v, l]) => (
+              <span key={l} className="flex items-baseline gap-2">
+                <span
+                  className="text-xl leading-none"
+                  style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}
+                >
+                  {v}
+                </span>
+                <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  {l}
+                </span>
+              </span>
+            ))}
+          </span>
+        </Note>
+
+        <p className="mb-4 mt-8 text-sm" style={{ color: 'var(--text-muted)' }}>
           The nine techniques behind this platform. Each answers one question; none answers two.
         </p>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -243,8 +298,11 @@ export default function Science() {
               }}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="mono text-sm" style={{ color: 'var(--accent-primary)' }}>
-                  <Rich>{t.abbr}</Rich>
+                <span className="flex items-center gap-2">
+                  <TechIcon name={t.icon} primary={t.primary} />
+                  <span className="mono text-sm" style={{ color: 'var(--accent-primary)' }}>
+                    <Rich>{t.abbr}</Rich>
+                  </span>
                 </span>
                 <ChevronDown
                   size={15}
@@ -275,14 +333,9 @@ export default function Science() {
       {/* --- 3. El dia en el laboratorio --- */}
       <section>
         <SectionTitle eyebrow="Inside the lab"><Rich>{LAB_INTRO.title}</Rich></SectionTitle>
-        <div className="mb-8 grid gap-4 lg:grid-cols-2">
-          <Card>
-            <p style={{ color: 'var(--text-secondary)' }}><Rich>{LAB_INTRO.body}</Rich></p>
-          </Card>
-          <Card accent>
-            <p style={{ color: 'var(--text-secondary)' }}><Rich>{LAB_INTRO.cadence}</Rich></p>
-          </Card>
-        </div>
+        <p className="mb-8 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{LAB_INTRO.lead}</Rich>
+        </p>
 
         <ol className="flex list-none flex-col p-0">
           {LAB_CYCLE.map((s, i) => (
@@ -300,19 +353,43 @@ export default function Science() {
       {/* --- 4. El cuello de botella --- */}
       <section>
         <SectionTitle eyebrow="The bottleneck"><Rich>{BOTTLENECK.title}</Rich></SectionTitle>
-        <div className="flex flex-col gap-4">
-          <Card>
-            <p style={{ color: 'var(--text-secondary)' }}><Rich>{BOTTLENECK.scale}</Rich></p>
-          </Card>
-          <Card>
-            <p style={{ color: 'var(--text-secondary)' }}><Rich>{BOTTLENECK.problem}</Rich></p>
-          </Card>
-          <Card accent>
-            <p className="text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-              <Rich>{BOTTLENECK.turn}</Rich>
-            </p>
-          </Card>
-        </div>
+
+        <h3 className="text-lg"><Rich>{FUNNEL.title}</Rich></h3>
+        <p className="mb-6 mt-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{FUNNEL.lead}</Rich>
+        </p>
+        <DataFunnel />
+
+        <p className="mt-8 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{BOTTLENECK.scale}</Rich>
+        </p>
+        <p className="mt-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{BOTTLENECK.problem}</Rich>
+        </p>
+
+        <Note>
+          <Rich>{BOTTLENECK.turn}</Rich>
+        </Note>
+      </section>
+
+      {/* --- 5. Gancho hacia la 02 --- */}
+      <section>
+        <SectionTitle eyebrow="Next">
+          <Rich>{BOTTLENECK.hookTitle}</Rich>
+        </SectionTitle>
+        <Card>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{BOTTLENECK.hook}</Rich>
+          </p>
+          <Link
+            to="/data-collection"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm no-underline"
+            style={{ color: 'var(--accent-primary)' }}
+          >
+            The ingestion workflow
+            <ChevronRight size={15} aria-hidden />
+          </Link>
+        </Card>
       </section>
     </div>
   )

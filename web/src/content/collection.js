@@ -16,24 +16,43 @@ export const COLLECTION_HERO = {
 }
 
 export const COLLECTION_PROBLEM = {
+  /* Fusion de lo que antes eran dos secciones separadas, "the problem" y "in
+     one sentence". Estaban seguidas y decian lo mismo dos veces con distinto
+     nivel de detalle; ahora el problema y su solucion van en el mismo hilo, y
+     el hilo arranca donde termina la pantalla anterior. */
   body1:
-    'At the end of the previous screen the laboratory has thousands of instrument files spread across network folders, written by nine different machines in nine different formats. None of them knows which synthesis it belongs to, and nothing stops the same file being saved twice under two names.',
+    'The previous screen ended with the problem stated: thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to. Solving it by hand means someone opening each file, reading the sample code off the filename, and retyping it into a spreadsheet — for **6,153 files**.',
   body2:
-    'What is needed is unglamorous and specific: **a way to drop a file somewhere and have it end up in a database, correctly attributed, without anyone retyping anything.**',
+    'So it is automated. **A file arrives by one of three routes** — a watched folder, a web form, or a webhook. Its metadata is normalised and the sender checked against a whitelist. Its fingerprint is taken and compared against everything already stored. It is then routed by technique to one of three extraction strategies: a deterministic parser for the seven formats that are well understood, an AI agent for the reports that exist only as PDFs, and a vision agent that describes microscopy images without ever inventing a measurement. Whatever happens, the outcome is written to the audit log.',
+  builtWith:
+    'Built in **n8n**, a workflow automation tool: every box on the canvas below is a real node in a running instance.',
   guaranteesTitle: 'What the workflow guarantees',
   guarantees: [
-    ['Attribution.', 'Every measurement is linked to the synthesis it came from, by sample code, and to the person who submitted it.'],
-    ['No duplicates.', 'A cryptographic fingerprint of the file contents rejects a second copy before it is parsed.'],
-    ['Uniform shape.', 'Nine formats become one row shape, so a query can span techniques without knowing anything about instruments.'],
-    ['A record of every decision.', 'Accepted or rejected, with the reason, in an audit table written by code and never by a language model.'],
+    {
+      icon: 'link',
+      lead: 'Attribution',
+      body: 'Every measurement is linked to the synthesis it came from, by sample code, and to the person who submitted it.',
+    },
+    {
+      icon: 'fingerprint',
+      lead: 'No duplicates',
+      body: 'A cryptographic fingerprint of the file contents rejects a second copy before it is parsed.',
+    },
+    {
+      icon: 'shapes',
+      lead: 'Uniform shape',
+      body: 'Nine formats become one row shape, so a query can span techniques without knowing anything about instruments.',
+    },
+    {
+      icon: 'scroll',
+      lead: 'A record of every decision',
+      body: 'Accepted or rejected, with the reason, in an audit table written by code and never by a language model.',
+    },
   ],
 }
 
-export const COLLECTION_HOW =
-  'A file arrives by one of three routes. Its metadata is normalised and the sender checked against a whitelist. Its fingerprint is taken and compared against what is already stored. It is then routed by technique to one of three extraction strategies — a deterministic parser for the seven formats that are well understood, an AI agent for the reports that only exist as PDFs, and a vision agent that adds a description to microscopy images without ever inventing a measurement. Whatever happens, the outcome is written to the audit log.'
-
 export const COLLECTION_CANVAS_INTRO =
-  'The flow as it exists in n8n — **79 nodes**, **114 connections**, nine framed areas — read straight from the exported workflow, not redrawn by hand. Pick a stop and the map flies to it, with the card below saying what that area adds to the row and why. The last stop pulls back to the whole flow.'
+  'The flow as it exists in n8n — **79 nodes**, **114 connections**, nine framed areas — read straight from the exported workflow, not redrawn by hand. Pick a stop and the map flies to it, with the card below the map saying what that area adds to the row and why. The last stop pulls back to the whole flow.'
 
 export const COLLECTION_ROW_INTRO =
   'Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint or silently stores a null — and it is worth knowing which section was supposed to set it.'

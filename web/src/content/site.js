@@ -99,6 +99,7 @@ export const BIO_SHORT = [
   "Hi! I'm Rubén, a PhD in Advanced Chemistry turned Data Science and AI enthusiast.",
   'For over five years I worked in the laboratory synthesizing new functional materials for sustainability challenges. During thousands of hours at the bench I realized something essential: experiments generate massive amounts of rich data, yet too often it remains trapped in lab notebooks or local disks.',
   'That sparked a genuine idea: bridging the gap between hands-on experimental chemistry and the data lifecycle. I specialize in turning laboratory observations into automated pipelines and machine learning models that drive smarter, faster scientific decisions.',
+  'With the recent rise of generative AI, I firmly believe artificial intelligence is not here to replace us but to **augment human potential**. For me it has been a cognitive accelerator, flattening the learning curve across adjacent disciplines — software engineering, MLOps, data science. It does not make anyone a veteran overnight; what it grants is the scaffolding to genuinely understand and connect technical domains at a speed that was not available before.',
 ]
 
 export const BIO_ABOUT = [
@@ -108,7 +109,7 @@ export const BIO_ABOUT = [
 ]
 
 export const BIO_PULLQUOTE =
-  'ALCheMy itself is a living testament to this paradigm: agentic pair-programming was instrumental in architecting, coding and building this entire ecosystem from the ground up.'
+  'This platform is itself a living testament to that: agentic pair-programming was instrumental in architecting, coding and building the entire ecosystem from the ground up.'
 
 /* Los cuatro pasos del ciclo de laboratorio. FINAL, del guion. */
 export const LAB_CYCLE = [

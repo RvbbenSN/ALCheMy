@@ -64,14 +64,24 @@ export const NOBEL = {
 
 export const WHY_CHARACTERISE = {
   title: 'Why one material needs a dozen measurements',
-  body: 'Making a solid is not the same as knowing what it is. A newly formed powder has to be interrogated from several independent angles before anything can be claimed about it: whether it is ordered, what it is made of, how much empty space it holds, how hot it can get before it collapses. No single technique answers more than one of those questions.',
+  /* Va como texto corrido, antes de la rejilla: es la premisa, no una nota. */
+  lead:
+    'Making a solid is not the same as knowing what it is. A newly formed powder has to be interrogated from several independent angles before anything can be claimed about it: whether it is ordered, what it is made of, how much empty space it holds, how hot it can get before it collapses. **No single technique answers more than one of those questions.**',
+  /* Y esto va en la caja de nota, condensado. */
   consequence:
-    'This is the root of the data problem. Every promising sample generates files from several instruments, each in its own format, each written by a different manufacturer. Multiply that by thousands of samples and the result is not a chemistry problem any more.',
+    'Every promising sample generates files from several instruments, each in its own format, each written by a different manufacturer. Multiply that by thousands of samples and it stops being a chemistry problem.',
+  /* Cifras auditadas contra la base de datos y el data lake, 2026-09-02. */
+  numbers: [
+    ['3,926', 'measurements ingested'],
+    ['6,153', 'raw instrument files'],
+    ['9', 'formats, one per manufacturer'],
+  ],
 }
 
 export const TECHNIQUES = [
   {
     abbr: 'PXRD',
+    icon: 'waves',
     name: 'Powder X-ray diffraction',
     answers: 'Is it crystalline, and is it the phase I wanted?',
     body: 'X-rays scattered by an ordered lattice produce sharp peaks at specific angles. A disordered solid produces a broad hump instead. This is the first test any new sample faces, and the one this platform models.',
@@ -79,48 +89,56 @@ export const TECHNIQUES = [
   },
   {
     abbr: 'TGA',
+    icon: 'flame',
     name: 'Thermogravimetric analysis',
     answers: 'How much solvent is trapped inside, and how hot can it get?',
     body: 'The sample is heated while being weighed. Mass losses reveal guest molecules leaving the pores and, eventually, the framework itself decomposing.',
   },
   {
     abbr: 'VT-XRD',
+    icon: 'thermometer',
     name: 'Variable-temperature XRD',
     answers: 'Does the structure survive heating?',
     body: 'Diffraction measured while the temperature rises, showing whether the lattice holds, transforms or collapses.',
   },
   {
     abbr: 'BET',
+    icon: 'wind',
     name: 'Gas physisorption',
     answers: 'How much empty space is really accessible?',
     body: 'Nitrogen or CO₂ is dosed onto the material and the uptake converted into a specific surface area in square metres per gram, plus the pore size distribution.',
   },
   {
     abbr: 'FTIR',
+    icon: 'audio',
     name: 'Infrared spectroscopy',
     answers: 'Did the linker actually bind to the metal?',
     body: 'Chemical bonds absorb infrared light at characteristic frequencies. Shifts in those bands distinguish a coordinated ligand from free, unreacted starting material.',
   },
   {
     abbr: 'ICP-OES',
+    icon: 'sparkles',
     name: 'Inductively coupled plasma',
     answers: 'How much metal is in there?',
     body: 'The sample is vaporised in a plasma and the light it emits quantifies each element, giving the real metal-to-ligand ratio.',
   },
   {
     abbr: 'EA',
+    icon: 'atom',
     name: 'Elemental analysis',
     answers: 'Does the organic composition match the formula?',
     body: 'Combustion analysis returns carbon, hydrogen, nitrogen and sulfur percentages, which are compared against the proposed formula.',
   },
   {
     abbr: 'SEM / TEM',
+    icon: 'microscope',
     name: 'Electron microscopy',
     answers: 'What do the particles look like?',
     body: 'Electron beams image crystal morphology and size, from the shape of a facet down to the nanometre scale.',
   },
   {
     abbr: 'UV-Vis',
+    icon: 'sun',
     name: 'Diffuse reflectance spectroscopy',
     answers: 'Can it absorb light, and at what energy?',
     body: 'Optical absorption gives the band gap, which decides whether a material can drive a photocatalytic reaction.',
@@ -131,9 +149,10 @@ export const TECHNIQUES = [
 
 export const LAB_INTRO = {
   title: 'What a week at the bench actually looks like',
-  body: 'Designing a framework is not a matter of deciding what to make and then making it. Which combination of metal, linker, solvent, temperature and time produces an ordered solid cannot be predicted reliably, so it is explored — by preparing many candidate conditions at once and seeing which ones work.',
-  cadence:
-    'The cycle below ran roughly twice a week for five years. Each pass through it produces one plate of 24 candidate syntheses, and everything that follows in this platform exists because of what that cycle generates.',
+  /* Como en la seccion anterior: la premisa va suelta, no encerrada en una
+     tarjeta. La cadencia se ha quitado porque la repite el esquema de abajo. */
+  lead:
+    'Designing a framework is not a matter of deciding what to make and then making it. Which combination of metal, linker, solvent, temperature and time produces an ordered solid **cannot be predicted reliably**, so it is explored — by preparing many candidate conditions at once and seeing which ones work.',
 }
 
 /* --- El cuello de botella -------------------------------------------------- */
@@ -141,9 +160,69 @@ export const LAB_INTRO = {
 export const BOTTLENECK = {
   title: 'Where the data problem begins',
   scale:
-    'Two plates a week, 24 conditions each, for five years. Every promising sample then passed through several of the techniques above, each writing its own file in its own format. The result was thousands of instrument files spread across network folders and local disks, plus one master spreadsheet holding the synthesis conditions.',
+    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,153 instrument files**, **nine formats**, across network folders and local disks — plus one spreadsheet holding every synthesis condition.',
   problem:
-    'Nothing about that is unusual, and that is the point. It is how most laboratories work. But it means the answer to a simple question — which conditions have ever produced a crystalline phase with this metal? — requires opening dozens of files by hand, and the answer is only as reliable as the person\'s memory of where things were saved.',
+    'Nothing about that is unusual, and that is the point: it is how most laboratories work. But it means a simple question — *which conditions have ever produced a crystalline phase with this metal?* — is answered by opening dozens of files by hand, and the answer is only as good as someone\'s memory of where things were saved.',
+  /* Va en la caja de nota. El enfasis, por peticion, en la base de datos. */
   turn:
-    'ALCheMy was built to make that question answerable by query rather than by recollection: one governed database, one row per synthesis, one row per measurement, and a model on top that learns from the whole record rather than from what anyone remembers.',
+    'The fix is a **governed database**: one row per synthesis, one row per measurement, every file fingerprinted and attributed. Once the record is a table, the question above becomes a query — and a model can learn from the whole record rather than from what anyone remembers.',
+  /* Gancho hacia la 02, con las mismas palabras con que abre esa pantalla. */
+  hookTitle: 'Which leaves one problem unsolved',
+  hook:
+    'Thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to — and nothing stopping the same file being saved twice under two names. What is needed is unglamorous and specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**',
 }
+
+/* --- El embudo de datos ----------------------------------------------------
+   De izquierda a derecha: muchas sintesis, un PXRD por cada una, y solo las
+   prometedoras siguen adelante hacia el resto de tecnicas. La forma del embudo
+   es el argumento entero de la pantalla siguiente: el volumen esta al principio
+   del proceso, no al final, y decrece justo cuando las medidas se encarecen.
+
+   Los recuentos son reales (characterization_measurements, 2026-09-02) y el
+   ancho de cada etapa se dibuja a partir de ellos. */
+export const FUNNEL_STAGES = [
+  {
+    key: 'synthesis',
+    label: 'Syntheses',
+    icon: 'flask',
+    count: 2167,
+    note: 'Two 24-well plates a week, five years.',
+  },
+  {
+    key: 'pxrd',
+    label: 'PXRD',
+    icon: 'waves',
+    count: 1879,
+    note: 'Every sample that yielded a powder gets one. This is the gate.',
+  },
+  {
+    key: 'imaging',
+    label: 'Microscopy',
+    icon: 'microscope',
+    count: 1791,
+    note: 'SEM and FESEM: what the crystals actually look like.',
+  },
+  {
+    key: 'deep',
+    label: 'Textural & spectroscopic',
+    icon: 'wind',
+    count: 220,
+    note: 'Adsorption, FTIR, UV-Vis, TGA. Only for what looked promising.',
+  },
+  {
+    key: 'structure',
+    label: 'Structure & stability',
+    icon: 'thermometer',
+    count: 36,
+    note: 'Variable-temperature and single-crystal diffraction. The few that earned it.',
+  },
+]
+
+export const FUNNEL = {
+  title: 'How the data actually piles up',
+  lead:
+    'Characterisation is not applied evenly. It is a funnel: everything gets a diffractogram, and each further technique is reserved for whatever survived the previous one. **The widest step of the pipeline is also the cheapest one** — which is exactly why predicting it is worth doing.',
+  footnote:
+    'Widths are proportional to the real number of measurements held in the database: 3,926 in total.',
+}
+

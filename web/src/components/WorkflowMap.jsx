@@ -36,13 +36,12 @@ import { Badge } from './ui.jsx'
 
    La lectura va de arriba abajo y es una sola pieza, no dos:
 
-       indice de nueve paradas  ->  ficha del area activa  ->  lienzo  ->  leyenda
+       indice de nueve paradas  ->  leyenda  ->  lienzo  ->  ficha del area activa
 
    Antes la explicacion de las areas vivia en tarjetas aparte, debajo del mapa,
-   y habia que leerlas dos veces. Ahora la ficha va entre el indice y el lienzo:
-   se pulsa una parada, se lee ahi mismo lo que hace esa zona, y justo debajo se
-   la mira. El orden importa —la ficha separa el gesto de su explicacion lo
-   menos posible.
+   y habia que leerlas dos veces. Ahora hay una sola ficha, la del area activa,
+   y va debajo del lienzo: la leyenda sube junto al mapa porque se consulta
+   mientras se mira, y la ficha baja porque se lee despues de haber mirado.
 
    Cuatro bugs de las versiones anteriores y su causa, que conviene no repetir:
 
@@ -288,103 +287,22 @@ export default function WorkflowMap() {
         </div>
       </div>
 
-      {/* ---------------------------------------------------------------
-          Ficha del area activa. Antes eran nueve tarjetas apiladas debajo
-          del mapa; aqui solo se muestra la que se esta mirando.
-          --------------------------------------------------------------- */}
-      <div
-        className="rounded-[var(--radius-card)] p-5"
-        style={{
-          border: 'var(--border-card) solid var(--accent-primary)',
-          background: 'var(--surface-elevated)',
-          minHeight: 190,
-        }}
-      >
-        {card ? (
-          <>
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge tone="accent">Area {card.n}</Badge>
-              <h3 className="text-lg leading-tight">{card.title}</h3>
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                {card.subtitle}
+      {/* --- leyenda: que significa cada icono de nodo --- */}
+      <div className="flex flex-wrap gap-x-4 gap-y-2">
+        {LEGEND.map((key) => {
+          const k = KIND[key]
+          const Icon = k.icon
+          return (
+            <span key={key} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+              <Icon size={13} aria-hidden style={{ color: k.color }} />
+              {k.label}
+              <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.7 }}>
+                {nodes.filter((n) => n.kind === key).length}
               </span>
-              <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {nodes.filter((n) => n.area === card.n).length} nodes
-              </span>
-            </div>
-
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {card.objective}
-            </p>
-
-            <h4
-              className="mt-4 text-xs uppercase tracking-wider"
-              style={{ color: 'var(--accent-secondary-text)' }}
-            >
-              What this area adds to the item
-            </h4>
-            <ul
-              className="mt-2 flex list-none flex-col gap-1.5 p-0 text-sm"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              {card.adds.map((a, i) => (
-                <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}>
-                  {a}
-                </li>
-              ))}
-            </ul>
-
-            {card.note && (
-              <p
-                className="mt-4 p-3 text-sm"
-                style={{
-                  borderLeft: '4px solid var(--accent-secondary)',
-                  background: 'var(--surface)',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {card.note}
-              </p>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge tone="accent">Whole flow</Badge>
-              <h3 className="text-lg leading-tight">Every lane, end to end</h3>
-              <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {nodes.length} nodes · {edges.length} connections
-              </span>
-            </div>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Four entry points, one exit. Whatever the lane &mdash; a webhook, a watched folder, a web
-              form, a manual run &mdash; the item is normalised into the same shape, gated on
-              authorisation and on a duplicate check, then routed by technique: deterministic parsers on
-              the left, AI agents for the formats no parser can read on the right. Every branch,
-              including every failure, ends in a database write and an audit entry.
-            </p>
-            <ol
-              className="mt-4 flex list-none flex-wrap items-center gap-x-2 gap-y-2 p-0 text-xs"
-              style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}
-            >
-              {AREAS.map((a, i) => (
-                <li key={a.n} className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => goTo(a.n)}
-                    className="rounded-[var(--radius-badge)] px-2 py-1"
-                    style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-                  >
-                    {a.n} · {a.title}
-                  </button>
-                  {i < AREAS.length - 1 && <span aria-hidden style={{ color: 'var(--text-muted)' }}>›</span>}
-                </li>
-              ))}
-            </ol>
-          </>
-        )}
+            </span>
+          )
+        })}
       </div>
-
       {/* --- el lienzo --- */}
       <div
         ref={wrapRef}
@@ -439,16 +357,29 @@ export default function WorkflowMap() {
                       strokeWidth={px(on ? 3.5 : 1.5)}
                       strokeDasharray={on ? 'none' : `${px(9)} ${px(7)}`}
                     />
-                    <text
-                      x={a.x + px(14)}
-                      y={a.y - px(10)}
-                      fontSize={px(15)}
-                      fill={on ? 'var(--accent-primary)' : 'var(--text-muted)'}
-                      fontFamily="var(--font-display)"
-                      letterSpacing={px(1)}
-                    >
-                      {a.n} · {(meta[a.n]?.title ?? a.title).toUpperCase()}
-                    </text>
+                    {/* El rotulo va DENTRO del marco, no encima: fuera podia
+                        pisar el area de al lado. Y su tamano se limita al ancho
+                        del propio marco, porque a un zoom alejado un cuerpo fijo
+                        en pantalla desbordaba areas que ya median cuatro pixeles
+                        y todos los titulos acababan encimados. */}
+                    {(() => {
+                      const label = `${a.n} · ${(meta[a.n]?.title ?? a.title).toUpperCase()}`
+                      const fits = (a.w - px(24)) / (label.length * 0.62)
+                      const size = Math.min(px(15), fits)
+                      if (size < px(6)) return null
+                      return (
+                        <text
+                          x={a.x + px(12)}
+                          y={a.y + size + px(10)}
+                          fontSize={size}
+                          fill={on ? 'var(--accent-primary)' : 'var(--text-muted)'}
+                          fontFamily="var(--font-display)"
+                          letterSpacing={size * 0.06}
+                        >
+                          {label}
+                        </text>
+                      )
+                    })()}
                   </g>
                 )
               })}
@@ -560,22 +491,103 @@ export default function WorkflowMap() {
         </div>
       </div>
 
-      {/* --- leyenda: que significa cada icono de nodo --- */}
-      <div className="flex flex-wrap gap-x-4 gap-y-2">
-        {LEGEND.map((key) => {
-          const k = KIND[key]
-          const Icon = k.icon
-          return (
-            <span key={key} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-              <Icon size={13} aria-hidden style={{ color: k.color }} />
-              {k.label}
-              <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.7 }}>
-                {nodes.filter((n) => n.kind === key).length}
+      {/* ---------------------------------------------------------------
+          Ficha del area activa. Antes eran nueve tarjetas apiladas debajo
+          del mapa; aqui solo se muestra la que se esta mirando.
+          --------------------------------------------------------------- */}
+      <div
+        className="rounded-[var(--radius-card)] p-5"
+        style={{
+          border: 'var(--border-card) solid var(--accent-primary)',
+          background: 'var(--surface-elevated)',
+          minHeight: 190,
+        }}
+      >
+        {card ? (
+          <>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge tone="accent">Area {card.n}</Badge>
+              <h3 className="text-lg leading-tight">{card.title}</h3>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                {card.subtitle}
               </span>
-            </span>
-          )
-        })}
+              <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                {nodes.filter((n) => n.area === card.n).length} nodes
+              </span>
+            </div>
+
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {card.objective}
+            </p>
+
+            <h4
+              className="mt-4 text-xs uppercase tracking-wider"
+              style={{ color: 'var(--accent-secondary-text)' }}
+            >
+              What this area adds to the item
+            </h4>
+            <ul
+              className="mt-2 flex list-none flex-col gap-1.5 p-0 text-sm"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              {card.adds.map((a, i) => (
+                <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem' }}>
+                  {a}
+                </li>
+              ))}
+            </ul>
+
+            {card.note && (
+              <p
+                className="mt-4 p-3 text-sm"
+                style={{
+                  borderLeft: '4px solid var(--accent-secondary)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {card.note}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge tone="accent">Whole flow</Badge>
+              <h3 className="text-lg leading-tight">Every lane, end to end</h3>
+              <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                {nodes.length} nodes · {edges.length} connections
+              </span>
+            </div>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Four entry points, one exit. Whatever the lane &mdash; a webhook, a watched folder, a web
+              form, a manual run &mdash; the item is normalised into the same shape, gated on
+              authorisation and on a duplicate check, then routed by technique: deterministic parsers on
+              the left, AI agents for the formats no parser can read on the right. Every branch,
+              including every failure, ends in a database write and an audit entry.
+            </p>
+            <ol
+              className="mt-4 flex list-none flex-wrap items-center gap-x-2 gap-y-2 p-0 text-xs"
+              style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}
+            >
+              {AREAS.map((a, i) => (
+                <li key={a.n} className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => goTo(a.n)}
+                    className="rounded-[var(--radius-badge)] px-2 py-1"
+                    style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
+                  >
+                    {a.n} · {a.title}
+                  </button>
+                  {i < AREAS.length - 1 && <span aria-hidden style={{ color: 'var(--text-muted)' }}>›</span>}
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
       </div>
+
     </div>
   )
 }
