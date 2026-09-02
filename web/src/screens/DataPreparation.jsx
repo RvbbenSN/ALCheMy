@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import {
+  Activity,
   Atom,
   Beaker,
   Droplets,
   FlaskConical,
   Flame,
+  Gem,
+  GitBranch,
   IdCard,
+  Layers,
   Link2,
   Microscope,
   Ruler,
+  ShieldCheck,
   Waves,
 } from 'lucide-react'
 import {
@@ -21,12 +26,14 @@ import {
   ETL_ZERO_VS_NULL,
 } from '../content/screens.js'
 import {
+  DESCRIPTOR_GROUPS,
   DESCRIPTOR_RECAP,
   ELEMENT_INTRO,
   LANES,
   LINKER_FEATURES,
   METAL_FEATURES,
   PREP_INTRO,
+  PREP_TAKEAWAY,
   SYNTH_GROUPS,
   SYNTH_PREVIEW,
   WHY_PXRD,
@@ -116,6 +123,61 @@ function FeatureList({ items, accent }) {
   )
 }
 
+/* Simbolos de la tabla de descriptores y de sus tres lecturas. */
+const DESC_ICON = { ruler: Ruler, layers: Layers, activity: Activity, shield: ShieldCheck }
+const READ_ICON = { waves: Waves, gem: Gem, gitbranch: GitBranch }
+const TAKE_ICON = { flask: FlaskConical, waves: Waves, link: Link2 }
+const READ_TONE = {
+  amorphous: 'var(--status-amorphous)',
+  incipient: 'var(--status-incipient)',
+  pure: 'var(--status-pure)',
+}
+
+/* El selector de via. Se pinta dos veces —arriba y al final de la pagina— por
+   una razon concreta: leyendo una de las dos mitades es facil olvidar que la
+   otra existe, y al llegar al final no habia forma de cambiar sin volver a
+   subir a mano. El de abajo devuelve la vista al principio al pulsar. */
+function LaneSwitch({ lane, setLane, onPick }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {LANES.map((l) => {
+        const on = lane === l.id
+        const Icon = l.id === 'synthesis' ? Beaker : Waves
+        return (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => {
+              setLane(l.id)
+              if (onPick) onPick()
+            }}
+            aria-pressed={on}
+            className="rounded-[var(--radius-card)] p-5 text-left"
+            style={{
+              border: `var(--border-card) solid ${on ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
+              background: on ? 'var(--accent-glow)' : 'var(--surface-elevated)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <Icon size={22} aria-hidden style={{ color: on ? 'var(--accent-primary)' : 'var(--text-muted)' }} />
+              <h2 className="text-lg leading-tight"><Rich>{l.label}</Rich></h2>
+              <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                <Rich>{l.tag}</Rich>
+              </span>
+            </div>
+            <p className="mt-1 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+              <Rich>{l.sub}</Rich>
+            </p>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{l.blurb}</Rich>
+            </p>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function DataPreparation() {
   const [lane, setLane] = useState('synthesis')
 
@@ -129,8 +191,25 @@ export default function DataPreparation() {
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{PREP_INTRO.lead}</Rich>
         </p>
+
+        <Card className="mt-6 max-w-3xl">
+          <h3 className="text-base">{PREP_INTRO.etlTitle}</h3>
+          <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{PREP_INTRO.etl}</Rich>
+          </p>
+        </Card>
+
+        <ul className="mt-6 flex max-w-3xl list-none flex-col gap-3 p-0">
+          {PREP_INTRO.halves.map((h) => (
+            <li key={h.lane} style={{ borderLeft: '3px solid var(--accent-primary)', paddingLeft: '0.9rem' }}>
+              <strong style={{ color: 'var(--text-primary)' }}>{h.title}.</strong>{' '}
+              <span style={{ color: 'var(--text-secondary)' }}><Rich>{h.body}</Rich></span>
+            </li>
+          ))}
+        </ul>
+
         <p className="mt-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          <Rich>{PREP_INTRO.body}</Rich>
+          <Rich>{PREP_INTRO.halvesNote}</Rich>
         </p>
         <p
           className="mt-5 max-w-3xl p-3 text-sm"
@@ -144,40 +223,8 @@ export default function DataPreparation() {
           Las dos vias. Antes estaban intercaladas en una sola columna y no
           habia forma de saber cual se estaba leyendo.
           --------------------------------------------------------------- */}
-      <section>
-        <div className="grid gap-4 md:grid-cols-2">
-          {LANES.map((l) => {
-            const on = lane === l.id
-            const Icon = l.id === 'synthesis' ? Beaker : Waves
-            return (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => setLane(l.id)}
-                aria-pressed={on}
-                className="rounded-[var(--radius-card)] p-5 text-left"
-                style={{
-                  border: `var(--border-card) solid ${on ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
-                  background: on ? 'var(--accent-glow)' : 'var(--surface-elevated)',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon size={22} aria-hidden style={{ color: on ? 'var(--accent-primary)' : 'var(--text-muted)' }} />
-                  <h2 className="text-lg leading-tight"><Rich>{l.label}</Rich></h2>
-                  <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                    <Rich>{l.tag}</Rich>
-                  </span>
-                </div>
-                <p className="mt-1 text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-                  <Rich>{l.sub}</Rich>
-                </p>
-                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  <Rich>{l.blurb}</Rich>
-                </p>
-              </button>
-            )
-          })}
-        </div>
+      <section id="lane-switch">
+        <LaneSwitch lane={lane} setLane={setLane} />
       </section>
 
       {/* =============================================================
@@ -584,33 +631,79 @@ export default function DataPreparation() {
 
           <section>
             <SectionTitle eyebrow="The translation, in one table">What a diffractogram becomes</SectionTitle>
-            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+            <p className="mb-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{DESCRIPTOR_RECAP.lead}</Rich>
             </p>
-            <ScrollTable
-              head={DESCRIPTOR_RECAP.head}
-              rows={DESCRIPTOR_RECAP.rows.map(([name, what, a, i, c]) => [
-                <code key={name}><Rich>{name}</Rich></code>,
-                what,
-                a,
-                i,
-                c,
-              ])}
-            />
-            <div className="mt-6 grid gap-4 lg:grid-cols-2">
-              <Card accent>
-                <h3 className="text-base">How to read it</h3>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  <Rich>{DESCRIPTOR_RECAP.reading}</Rich>
-                </p>
-              </Card>
-              <Card>
-                <h3 className="text-base">One number in it is a trap</h3>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  <Rich>{DESCRIPTOR_RECAP.caveat}</Rich>
-                </p>
-              </Card>
+            <p className="mb-6 text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              {DESCRIPTOR_RECAP.counts}
+            </p>
+
+            <div className="flex flex-col gap-6">
+              {DESCRIPTOR_GROUPS.map((g) => {
+                const Icon = DESC_ICON[g.icon] ?? Ruler
+                return (
+                  <div key={g.title}>
+                    <div className="mb-2 flex items-center gap-2.5">
+                      <Icon size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
+                      <h3 className="text-base">{g.title}</h3>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{g.blurb}</span>
+                      <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        {g.rows.length}
+                      </span>
+                    </div>
+                    <ScrollTable
+                      head={DESCRIPTOR_RECAP.head}
+                      rows={g.rows.map(([name, what, a, i, c]) => [
+                        <code key={name}>{name}</code>,
+                        what,
+                        a,
+                        i,
+                        c,
+                      ])}
+                    />
+                  </div>
+                )
+              })}
             </div>
+
+            <h3 className="mb-4 mt-10 text-lg">How to read it</h3>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {DESCRIPTOR_RECAP.reading.map((r) => {
+                const Icon = READ_ICON[r.icon] ?? Waves
+                const tone = READ_TONE[r.tone] ?? 'var(--accent-primary)'
+                return (
+                  <Card key={r.klass}>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                        style={{ border: `2.5px solid ${tone}`, color: tone }}
+                      >
+                        <Icon size={17} aria-hidden />
+                      </span>
+                      <span className="text-xs uppercase tracking-wider" style={{ color: tone }}>
+                        {r.klass}
+                      </span>
+                    </div>
+                    <h4 className="mt-3 text-base leading-tight">{r.title}</h4>
+                    <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      <Rich>{r.body}</Rich>
+                    </p>
+                  </Card>
+                )
+              })}
+            </div>
+
+            <p
+              className="mt-6 p-4 text-sm"
+              style={{
+                borderLeft: '4px solid var(--status-amorphous)',
+                background: 'var(--surface-elevated)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <strong style={{ color: 'var(--text-primary)' }}>One number in it is a trap. </strong>
+              <Rich>{DESCRIPTOR_RECAP.caveat}</Rich>
+            </p>
           </section>
         </>
       )}
@@ -631,19 +724,44 @@ export default function DataPreparation() {
         </p>
       </section>
 
+      {/* Volver a ofrecer la otra mitad al llegar al final. */}
       <section>
-        <SectionTitle eyebrow="Takeaway">What this stage cost, and bought</SectionTitle>
-        <Card accent>
-          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-            Seven defects, none of which any metric had complained about. The unit error alone had made
-            the most-used modulator in the entire record invisible to the model, and cross-validation
-            never noticed, because the column was still a number that ordered the rows plausibly.
-          </p>
-          <p className="mt-4 text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-            Every one was found by reading the values chemically rather than statistically. That is the
-            argument for a domain expert staying in the loop through data preparation — not as a reviewer
-            at the end, but as the person who can tell that 54 grams of formic acid does not fit in a
-            2.5 millilitre reactor.
+        <SectionTitle eyebrow="The other half">Switch lane</SectionTitle>
+        <p className="mb-4 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          This screen has two halves and you have just finished one of them.
+        </p>
+        <LaneSwitch
+          lane={lane}
+          setLane={setLane}
+          onPick={() => {
+            const el = document.getElementById('lane-switch')
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }}
+        />
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="Takeaway"><Rich>{PREP_TAKEAWAY.title}</Rich></SectionTitle>
+        <p className="mb-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{PREP_TAKEAWAY.lead}</Rich>
+        </p>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {PREP_TAKEAWAY.points.map((pt) => {
+            const Icon = TAKE_ICON[pt.icon] ?? FlaskConical
+            return (
+              <Card key={pt.title}>
+                <Icon size={18} aria-hidden style={{ color: 'var(--accent-primary)' }} />
+                <h3 className="mt-3 text-base leading-tight">{pt.title}</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{pt.body}</Rich>
+                </p>
+              </Card>
+            )
+          })}
+        </div>
+        <Card accent className="mt-4">
+          <p className="text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+            <Rich>{PREP_TAKEAWAY.close}</Rich>
           </p>
         </Card>
       </section>
