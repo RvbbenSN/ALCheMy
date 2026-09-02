@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="100%" height="100%">
+  <!-- Estilos adaptables con CSS vars -->
+  <style>
+    .flask-line { stroke: var(--text-primary, #3B0B15); stroke-width: 3px; stroke-linejoin: round; fill: none; }
+    .flask-glass { fill: var(--surface, rgba(250, 246, 238, 0.65)); }
+    .flask-stopper { fill: var(--text-secondary, #57333B); stroke: var(--text-primary, #3B0B15); stroke-width: 2.5px; }
+    .paper-facet { stroke: var(--text-primary, #3B0B15); stroke-width: 1.5px; }
+  </style>
+
+  <!-- Matraz Kitasato -->
+  <path d="M 170 650 L 430 650 C 455 650, 465 635, 455 615 L 340 375 L 340 310 L 260 310 L 260 375 L 145 615 C 135 635, 145 650, 170 650 Z" class="flask-glass flask-line" />
+  
+  <!-- Oliva de vacío -->
+  <path d="M 260 340 L 210 325 C 205 323, 200 326, 200 332 L 200 342 C 200 348, 205 352, 212 354 L 260 368" class="flask-glass flask-line" />
+  <line x1="222" y1="329" x2="224" y2="357" stroke="var(--accent-primary, #85253C)" stroke-width="1.8" />
+  <line x1="235" y1="333" x2="237" y2="361" stroke="var(--accent-primary, #85253C)" stroke-width="1.8" />
+
+  <!-- Tapón adaptador de goma -->
+  <polygon points="264,310 270,270 330,270 336,310" class="flask-stopper" />
+  <ellipse cx="300" cy="270" rx="32" ry="9" class="flask-stopper" />
+
+  <!-- Embudo cónico de vidrio -->
+  <polygon points="288,270 190,150 410,150 312,270" class="flask-glass flask-line" />
+  <ellipse cx="300" cy="138" rx="110" ry="24" class="flask-glass flask-line" />
+
+  <!-- Vástago interior del embudo -->
+  <polygon points="292,310 292,445 308,430 308,310" fill="var(--surface, #FFFFFF)" opacity="0.6" stroke="var(--accent-primary, #85253C)" stroke-width="1.5" />
+
+  <!-- Papel de filtro de pliegues (aristas cónicas) -->
+  <polygon points="300,240 195,130 225,142" fill="var(--surface, #FAF6EE)" class="paper-facet" />
+  <polygon points="300,240 225,142 250,132" fill="var(--surface, #FFFFFF)" class="paper-facet" />
+  <polygon points="300,240 250,132 278,145" fill="var(--surface, #FAF6EE)" class="paper-facet" />
+  <polygon points="300,240 278,145 300,130" fill="var(--surface, #FFFFFF)" class="paper-facet" />
+  <polygon points="300,240 300,130 322,145" fill="var(--surface, #FAF6EE)" class="paper-facet" />
+  <polygon points="300,240 322,145 350,134" fill="var(--surface, #FFFFFF)" class="paper-facet" />
+  <polygon points="300,240 350,134 375,144" fill="var(--surface, #FAF6EE)" class="paper-facet" />
+  <polygon points="300,240 375,144 405,132" fill="var(--surface, #FAF6EE)" class="paper-facet" />
+</svg>

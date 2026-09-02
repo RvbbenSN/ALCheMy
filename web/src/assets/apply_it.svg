@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <style>
+      .stroke-main { stroke: var(--text-primary, #3B0B15); stroke-width: 3.6px; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke-sub { stroke: var(--accent-primary, #85253C); stroke-width: 2.2px; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke-fine { stroke: var(--accent-primary, #85253C); stroke-width: 1.5px; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke-dash { stroke: var(--accent-primary, #85253C); stroke-width: 1.6px; stroke-dasharray: 5, 5; fill: none; opacity: 0.4; }
+      
+      .fill-canvas { fill: var(--surface-elevated, #FAF6EE); }
+      .fill-surface { fill: var(--surface, #FFFFFF); }
+      .fill-gold { fill: var(--accent-secondary, #B8933A); }
+      .fill-teal { fill: var(--accent-tertiary, #00606B); }
+      .stroke-teal { stroke: var(--accent-tertiary, #00606B); stroke-width: 2.2px; fill: none; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <!-- Órbita exterior punteada -->
+  <circle cx="250" cy="250" r="140" class="stroke-dash" />
+
+  <!-- Conectores dobles radiales -->
+  <line x1="246" y1="194" x2="246" y2="100" class="stroke-fine" />
+  <line x1="254" y1="194" x2="254" y2="100" class="stroke-fine" />
+  <line x1="203" y1="279" x2="132" y2="319" class="stroke-fine" />
+  <line x1="199" y1="271" x2="128" y2="311" class="stroke-fine" />
+  <line x1="297" y1="271" x2="368" y2="311" class="stroke-fine" />
+  <line x1="301" y1="279" x2="372" y2="319" class="stroke-fine" />
+
+  <!-- NODO 1: ENERGÍA (Arriba) -->
+  <g id="node-energy">
+    <circle cx="250" cy="60" r="38" class="fill-canvas stroke-main" />
+    <circle cx="250" cy="60" r="32" class="fill-surface stroke-sub" />
+    <polygon points="253,40 238,61 249,61 245,80 262,58 251,58" class="fill-gold stroke-main" stroke-width="2" />
+  </g>
+
+  <!-- NODO 2: REMEDIACIÓN DE AGUAS (Abajo Izquierda) -->
+  <g id="node-water">
+    <circle cx="128" cy="320" r="38" class="fill-canvas stroke-main" />
+    <circle cx="128" cy="320" r="32" class="fill-surface stroke-sub" />
+    <path d="M 128 304 C 138 316, 140 326, 128 333 C 116 326, 118 316, 128 304 Z" class="fill-teal stroke-main" stroke-width="2" />
+    <line x1="114" y1="337" x2="142" y2="337" class="stroke-sub" />
+    <line x1="120" y1="341" x2="136" y2="341" class="stroke-fine" />
+  </g>
+
+  <!-- NODO 3: VALORIZACIÓN DE CO2 (Abajo Derecha) -->
+  <g id="node-gas">
+    <circle cx="372" cy="320" r="38" class="fill-canvas stroke-main" />
+    <circle cx="372" cy="320" r="32" class="fill-surface stroke-sub" />
+    <circle cx="372" cy="321" r="7" class="fill-gold stroke-main" stroke-width="2" />
+    <circle cx="357" cy="321" r="5" class="fill-surface stroke-main" stroke-width="2" />
+    <circle cx="387" cy="321" r="5" class="fill-surface stroke-main" stroke-width="2" />
+    <line x1="358" y1="319" x2="368" y2="319" stroke="var(--text-primary, #3B0B15)" stroke-width="2" />
+    <line x1="358" y1="323" x2="368" y2="323" stroke="var(--text-primary, #3B0B15)" stroke-width="2" />
+    <line x1="376" y1="319" x2="386" y2="319" stroke="var(--text-primary, #3B0B15)" stroke-width="2" />
+    <line x1="376" y1="323" x2="386" y2="323" stroke="var(--text-primary, #3B0B15)" stroke-width="2" />
+    <path d="M 390 306 A 21 21 0 1 0 360 338" class="stroke-teal" />
+    <circle cx="360" cy="338" r="2.8" fill="var(--accent-tertiary, #00606B)" />
+  </g>
+
+  <!-- NODO CENTRAL: CELDA RETICULAR CRISTALINA -->
+  <g id="node-core">
+    <circle cx="250" cy="250" r="56" class="fill-canvas stroke-main" />
+    <circle cx="250" cy="250" r="48" class="fill-surface stroke-sub" stroke-dasharray="4, 3" />
+    
+    <polygon points="271.6,237.5 271.6,262.5 250,275 228.4,262.5 228.4,237.5 250,225" fill="none" stroke="var(--text-primary, #3B0B15)" stroke-width="2.6" />
+    <line x1="250" y1="250" x2="271.6" y2="237.5" stroke="var(--accent-tertiary, #00606B)" stroke-width="1.8" />
+    <line x1="250" y1="250" x2="271.6" y2="262.5" stroke="var(--accent-tertiary, #00606B)" stroke-width="1.8" />
+    <line x1="250" y1="250" x2="250" y2="275" stroke="var(--accent-tertiary, #00606B)" stroke-width="1.8" />
+    <line x1="250" y1="250" x2="228.4" y2="262.5" stroke="var(--accent-tertiary, #00606B)" stroke-width="1.8" />
+    <line x1="250" y1="250" x2="228.4" y2="237.5" stroke="var(--accent-tertiary, #00606B)" stroke-width="1.8" />
+    <line x1="250" y1="250" x2="250" y2="225" stroke="var(--accent-tertiary, #00606B)" stroke-width="1.8" />
+
+    <circle cx="271.6" cy="237.5" r="3.5" class="fill-gold stroke-main" stroke-width="1.2" />
+    <circle cx="271.6" cy="262.5" r="3.5" class="fill-gold stroke-main" stroke-width="1.2" />
+    <circle cx="250" cy="275" r="3.5" class="fill-gold stroke-main" stroke-width="1.2" />
+    <circle cx="228.4" cy="262.5" r="3.5" class="fill-gold stroke-main" stroke-width="1.2" />
+    <circle cx="228.4" cy="237.5" r="3.5" class="fill-gold stroke-main" stroke-width="1.2" />
+    <circle cx="250" cy="225" r="3.5" class="fill-gold stroke-main" stroke-width="1.2" />
+    <circle cx="250" cy="250" r="5.5" fill="var(--surface-elevated, #FAF6EE)" stroke="var(--text-primary, #3B0B15)" stroke-width="2.2" />
+  </g>
+</svg>

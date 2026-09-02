@@ -57,6 +57,26 @@ export default function StackGrid() {
                     maskPosition: 'center',
                   }}
                 />
+              ) : it.art ? (
+                /* Logotipo redibujado a mano en la paleta del sitio, con una
+                   version por tono de fondo. No es monocromo, asi que no puede
+                   ir por mascara: se pintan los dos y CSS oculta el que sobra. */
+                <>
+                  <img
+                    className="art-light"
+                    src={`/logos/${it.art.light}`}
+                    alt=""
+                    aria-hidden
+                    style={{ width: 30, height: 30, flexShrink: 0 }}
+                  />
+                  <img
+                    className="art-dark"
+                    src={`/logos/${it.art.dark}`}
+                    alt=""
+                    aria-hidden
+                    style={{ width: 30, height: 30, flexShrink: 0 }}
+                  />
+                </>
               ) : (
                 <span
                   aria-hidden

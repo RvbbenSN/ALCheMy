@@ -151,3 +151,21 @@ kbd,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Ilustraciones con dos versiones ya rasterizadas, una por tono de fondo.
+   Un PNG no puede heredar tokens, asi que se pintan las dos y se oculta la que
+   no toca. Los SVG del mismo diagrama no necesitan esto: van inyectados en
+   linea y sus var() resuelven solas. */
+.art-dark {
+  display: none;
+}
+
+[data-theme='dark'] .art-light,
+[data-theme='ultra'] .art-light {
+  display: none;
+}
+
+[data-theme='dark'] .art-dark,
+[data-theme='ultra'] .art-dark {
+  display: block;
+}

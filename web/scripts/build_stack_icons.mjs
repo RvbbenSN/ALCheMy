@@ -36,7 +36,7 @@ const WANTED = [
   ['siNumpy', 'NumPy'],
   ['siScipy', 'SciPy'],
   [null, 'Matplotlib', 'matplotlib.png'],
-  [null, 'Seaborn'], // multicolor por diseno: su silueta seria un disco liso
+  [null, 'Seaborn', null, { light: 'seaborn_light.svg', dark: 'seaborn_dark.svg' }],
   ['siScikitlearn', 'Scikit-Learn'],
   ['siStreamlit', 'Streamlit'],
   ['siReact', 'React'],

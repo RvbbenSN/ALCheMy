@@ -338,26 +338,19 @@ export default function Science() {
           <Rich>{LAB_INTRO.lead}</Rich>
         </p>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
-          <ol className="flex list-none flex-col p-0">
-            {LAB_CYCLE.map((s, i) => (
-              <LabStep
-                key={s.step}
-                step={s}
-                isLast={i === LAB_CYCLE.length - 1}
-                open={openStep === s.step}
-                onOpen={() => setOpenStep(s.step)}
-              />
-            ))}
-          </ol>
+        <LabDiagram steps={LAB_CYCLE} active={openStep} onPick={setOpenStep} />
 
-          <figure className="m-0 lg:sticky lg:top-24">
-            <LabDiagram steps={LAB_CYCLE} active={openStep} onPick={setOpenStep} />
-            <figcaption className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-              Schematic, not to scale. Pick a number or a panel to jump to that step.
-            </figcaption>
-          </figure>
-        </div>
+        <ol className="mt-8 flex list-none flex-col p-0">
+          {LAB_CYCLE.map((s, i) => (
+            <LabStep
+              key={s.step}
+              step={s}
+              isLast={i === LAB_CYCLE.length - 1}
+              open={openStep === s.step}
+              onOpen={() => setOpenStep(s.step)}
+            />
+          ))}
+        </ol>
       </section>
 
       {/* --- 4. El cuello de botella --- */}

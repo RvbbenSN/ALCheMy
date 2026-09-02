@@ -35,6 +35,7 @@ import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term, Rich } from 
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
 import PxrdChart from '../components/PxrdChart.jsx'
+import ScreenRecording from '../components/ScreenRecording.jsx'
 
 const FORMATS = [
   ['.xrdml', 'PANalytical PXRD', 'Only counts are stored; the 2θ axis is reconstructed by linspace from start and end angles.'],
@@ -553,24 +554,31 @@ export default function DataPreparation() {
 
           <section>
             <SectionTitle eyebrow="The tools that produced the ground truth">Labeler &amp; Explorer</SectionTitle>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Card>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  A Streamlit labeling app produced four independent verdicts per pattern over 1,877
-                  diffractograms: crystallinity class, incipient subtype, oxide flag and suspected
-                  multiphase.
-                </p>
-                <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Labels are keyed by <code>file_hash</code>, not by measurement id, so they survive a full
-                  regeneration of the measurement tables. That is the only data in the whole platform no
-                  pipeline could ever reproduce.
-                </p>
-              </Card>
-              <Placeholder source="app/pxrd_labeler.py, app/pxrd_explorer.py">
-                Screen recording pending. These tools write to the production database, so they are shown
-                as a short video rather than served live — with sample codes and ligand names
-                pseudonymized and synthesis conditions hidden.
-              </Placeholder>
+            <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+              Two Streamlit tools, built for this project. The <strong>labeler</strong> produced four
+              independent verdicts per pattern over 1,877 diffractograms — crystallinity class, incipient
+              subtype, oxide flag and suspected multiphase. The <strong>explorer</strong> is where the
+              signal-processing pipeline was tuned, curve by curve, before it was trusted on all of them.
+            </p>
+            <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+              They are shown as recordings rather than served live: both write to the production database,
+              and the human labels are the only data in the whole platform that no pipeline could ever
+              reproduce. Labels are keyed by <code>file_hash</code> rather than by measurement id, so they
+              survive a full regeneration of the measurement tables.
+            </p>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ScreenRecording
+                src="/video/pxrd_labeler.mp4"
+                title="The labeler"
+                duration="7:12"
+                note="One pattern at a time: the four verdicts on the right, written straight into pxrd_labels."
+              />
+              <ScreenRecording
+                src="/video/pxrd_explorer.mp4"
+                title="The explorer"
+                duration="2:08"
+                note="Baseline, amorphous halo and Bragg peaks separated live, with every descriptor recomputed as the parameters move."
+              />
             </div>
           </section>
 

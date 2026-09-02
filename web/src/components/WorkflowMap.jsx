@@ -254,7 +254,10 @@ export default function WorkflowMap() {
           Indice: nueve paradas en el orden en que el fichero las atraviesa,
           y al final la vista general.
           --------------------------------------------------------------- */}
-      <div className="overflow-x-auto pb-1">
+      {/* `overflow-x: auto` tambien recorta arriba, asi que el circulo activo,
+          que crece un 12 %, se veia cortado por el borde superior. Un poco de
+          relleno vertical le deja sitio dentro de la caja de desplazamiento. */}
+      <div className="overflow-x-auto px-1 pb-1 pt-2">
         <div className="relative flex min-w-max items-start gap-0">
           <div
             aria-hidden

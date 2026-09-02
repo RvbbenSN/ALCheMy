@@ -53,7 +53,11 @@
   {
    "label": "Seaborn",
    "path": null,
-   "mask": null
+   "mask": null,
+   "art": {
+    "light": "seaborn_light.svg",
+    "dark": "seaborn_dark.svg"
+   }
   },
   {
    "label": "Scikit-Learn",
