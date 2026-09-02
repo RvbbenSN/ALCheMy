@@ -32,6 +32,11 @@ import { Rich } from './ui.jsx'
    encadenados por flechas porque no se suceden, solo comparten origen y
    destino.
 
+   El total de medidas va encima del icono de la base de datos y no en una
+   columna propia: es el mismo dato —lo que el corchete recoge es exactamente lo
+   que la base de datos guarda— y asi la figura ocupa una columna menos de
+   ancho, que es lo que la hacia desbordar en pantallas estrechas.
+
    El diametro va con la raiz cuadrada del recuento. En proporcion lineal,
    SC-XRD (10) frente a PXRD (1.879) daria un circulo invisible; con la raiz se
    conserva el orden de magnitud y la etiqueta sigue siendo legible. El pie lo
@@ -82,8 +87,12 @@ function Brace({ side }) {
 
 function Node({ icon, count, label, note, primary }) {
   const Icon = ICONS[icon] ?? FlaskConical
+  /* La columna tiene que ser mas ancha que el circulo. Con 112 px el circulo
+     de origen (130 px) se desbordaba, y al ser el primer elemento de un
+     contenedor con desplazamiento horizontal lo que sobraba quedaba recortado
+     por la izquierda. */
   return (
-    <div className="flex w-[112px] shrink-0 flex-col items-center">
+    <div className={`flex ${primary ? 'w-[150px]' : 'w-[112px]'} shrink-0 flex-col items-center`}>
       <div
         className="flex flex-col items-center justify-center rounded-full"
         style={{
@@ -181,23 +190,21 @@ export default function DataScale() {
             <Brace side="right" />
           </div>
 
-          {/* --- el total que sale del corchete --- */}
-          <div className="mb-10 shrink-0 text-center">
-            <div
-              className="leading-none"
-              style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--accent-secondary-text)' }}
-            >
-              {total.toLocaleString('en-US')}
-            </div>
-            <div className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-              {DATA_SCALE.bracketLabel}
-            </div>
-          </div>
-
           <ChevronRight size={20} aria-hidden className="mb-10 shrink-0" style={{ color: 'var(--accent-secondary)' }} />
 
-          {/* --- destino --- */}
+          {/* --- destino, con el total del corchete justo encima --- */}
           <div className="flex w-[150px] shrink-0 flex-col items-center">
+            <div className="mb-1 text-center">
+              <div
+                className="leading-none"
+                style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--accent-secondary-text)' }}
+              >
+                {total.toLocaleString('en-US')}
+              </div>
+              <div className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                {DATA_SCALE.bracketLabel}
+              </div>
+            </div>
             <div
               className="flex items-center justify-center rounded-[var(--radius-card)]"
               style={{
