@@ -120,6 +120,60 @@ def main() -> int:
         if nd["area"] is None:
             orphans += 1
 
+    # --- Aireado ---------------------------------------------------------
+    # En n8n los nodos se colocan a mano y a veces quedan mas juntos que el
+    # ancho de la caja que dibuja la web (sobre todo en las zonas de agentes,
+    # 6 y 7). Una relajacion por pares los separa hasta dejar `AIR` px de hueco,
+    # empujando por el eje donde menos se solapan y moviendo lo justo, asi que
+    # el trazado relativo se conserva y las aristas siguen conectando.
+    AIR = 26
+
+    def overlaps(members):
+        for i in range(len(members)):
+            for j in range(i + 1, len(members)):
+                p, q = members[i], members[j]
+                if (NODE_W - abs((p["x"] - q["x"]))) > 0 and (NODE_H - abs((p["y"] - q["y"]))) > 0:
+                    return True
+        return False
+
+    for a in areas:
+        members = [n for n in nodes if n["area"] == a["n"]]
+        # Solo se airea el area que de verdad tiene cajas encimadas. Tocar las
+        # demas solo desplaza sus marcos hacia los vecinos sin ninguna ganancia.
+        if not overlaps(members):
+            continue
+        for _ in range(200):
+            moved = False
+            for i in range(len(members)):
+                for j in range(i + 1, len(members)):
+                    p, q = members[i], members[j]
+                    ox = (NODE_W + AIR) - abs((p["x"] + NODE_W / 2) - (q["x"] + NODE_W / 2))
+                    oy = (NODE_H + AIR) - abs((p["y"] + NODE_H / 2) - (q["y"] + NODE_H / 2))
+                    if ox > 0 and oy > 0:
+                        if ox <= oy:
+                            d = ox / 2 * (1 if p["x"] <= q["x"] else -1)
+                            p["x"] -= d
+                            q["x"] += d
+                        else:
+                            d = oy / 2 * (1 if p["y"] <= q["y"] else -1)
+                            p["y"] -= d
+                            q["y"] += d
+                        moved = True
+            if not moved:
+                break
+        # Estirar el marco solo si algun nodo aireado se sale, y lo justo: un
+        # margen de 16 px. Asi no se inflan los marcos hacia los vecinos.
+        if members:
+            m = 16
+            nx0 = min(n["x"] for n in members) - m
+            ny0 = min(n["y"] for n in members) - m
+            nx1 = max(n["x"] + NODE_W for n in members) + m
+            ny1 = max(n["y"] + NODE_H for n in members) + m
+            x0, y0 = min(a["x"], nx0), min(a["y"], ny0)
+            a["w"] = max(a["x"] + a["w"], nx1) - x0
+            a["h"] = max(a["y"] + a["h"], ny1) - y0
+            a["x"], a["y"] = x0, y0
+
     # Cada nota pequena al area que la contiene, para el panel de detalle.
     for nt in notes:
         nt["area"] = area_of(nt["x"] + nt["w"] / 2, nt["y"] + nt["h"] / 2)

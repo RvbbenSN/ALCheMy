@@ -182,6 +182,10 @@ export default function WorkflowMap() {
   }
 
   const onPointerDown = (e) => {
+    /* Los botones de zoom flotan dentro del lienzo. Sin esta guarda, el
+       pointerdown del lienzo captura el puntero y el navegador ya no dispara el
+       click del boton: dejan de responder. */
+    if (e.target.closest('button')) return
     drag.current = { px: e.clientX, py: e.clientY, x: view.x, y: view.y }
     setDragging(true)
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -196,18 +200,27 @@ export default function WorkflowMap() {
     setDragging(false)
   }
 
-  /* Zoom anclado al cursor: el punto bajo el raton no se mueve. */
-  const onWheel = (e) => {
-    if (!wrapRef.current) return
-    e.preventDefault()
-    const box = wrapRef.current.getBoundingClientRect()
-    const mx = e.clientX - box.left
-    const my = e.clientY - box.top
-    setView((v) => {
-      const k = clamp(v.k * (e.deltaY < 0 ? 1.15 : 1 / 1.15), MIN_K, MAX_K)
-      return clampView({ k, x: mx - ((mx - v.x) / v.k) * k, y: my - ((my - v.y) / v.k) * k }, world)
-    })
-  }
+  /* Zoom anclado al cursor: el punto bajo el raton no se mueve.
+
+     Va como listener nativo con `{ passive: false }` y no como `onWheel` de
+     React, porque React 19 registra el suyo como pasivo y ahi `preventDefault()`
+     no hace nada: la rueda hacia zoom Y ademas desplazaba la pagina. */
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el || !world) return
+    const handler = (e) => {
+      e.preventDefault()
+      const box = el.getBoundingClientRect()
+      const mx = e.clientX - box.left
+      const my = e.clientY - box.top
+      setView((v) => {
+        const k = clamp(v.k * (e.deltaY < 0 ? 1.15 : 1 / 1.15), MIN_K, MAX_K)
+        return clampView({ k, x: mx - ((mx - v.x) / v.k) * k, y: my - ((my - v.y) / v.k) * k }, world)
+      })
+    }
+    el.addEventListener('wheel', handler, { passive: false })
+    return () => el.removeEventListener('wheel', handler)
+  }, [world, clampView])
 
   const zoomBy = (f) =>
     setView((v) => {
@@ -310,7 +323,6 @@ export default function WorkflowMap() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onWheel={onWheel}
         className="relative overflow-hidden rounded-[var(--radius-card)]"
         style={{
           height: VIEW_H,
