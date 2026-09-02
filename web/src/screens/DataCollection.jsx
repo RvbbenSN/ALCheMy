@@ -1,6 +1,7 @@
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowCanvas from '../components/WorkflowCanvas.jsx'
+import WorkflowMap from '../components/WorkflowMap.jsx'
 
 const ROW_SHAPE = [
   ['sample_code', 'Foreign key into synthesis_experiments'],
@@ -107,6 +108,18 @@ export default function DataCollection() {
 
       <section>
         <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
+        <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          The map below is the flow as it actually exists in n8n: <strong>79 nodes</strong>,{' '}
+          <strong>114 connections</strong> and the nine framed areas, drawn from the exported workflow
+          rather than redrawn by hand. Drag to pan, scroll to zoom, and use the numbered pins to fly to
+          an area. Below it, the same nine areas as cards &mdash; the didactic layer, where each one says
+          what it adds to the row and why.
+        </p>
+        <WorkflowMap />
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="Area by area">What each stage adds</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           Nine framed areas, in the order the item travels through them. The icon on each node says what
           kind of work it does — a decision, a parser, an AI agent, a database write. Open the{' '}
