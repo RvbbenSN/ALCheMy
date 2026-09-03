@@ -1,7 +1,7 @@
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
-import GraphSample from '../components/GraphSample.jsx'
+import GraphConstellation from '../components/GraphConstellation.jsx'
 import {
   RAG_ACCESS,
   RAG_AREAS,
@@ -202,7 +202,7 @@ export default function Rag() {
           samples, metals, linkers, modulators and measurements as nodes, and what connects them as
           edges. In PostgreSQL, with recursive queries, not in a separate graph database.
         </p>
-        <GraphSample />
+        <GraphConstellation />
       </section>
 
       {/* --- Control de acceso --- */}

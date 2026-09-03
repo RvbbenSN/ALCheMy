@@ -153,6 +153,42 @@ def main() -> int:
     cur.execute("SELECT count(*) FROM kg_edges")
     salida["totals"]["edges"] = cur.fetchone()[0]
 
+    # --- La constelacion -------------------------------------------------
+    # Cuantas muestras cuelgan de cada metal y de cada ligando. Es lo unico que
+    # hace falta para dibujar el grafo entero como puntos alrededor de sus
+    # concentradores, sin mandar al navegador 3.213 nodos que no puede leer.
+    cur.execute("""
+        SELECT m.label, count(*) AS n
+          FROM kg_edges e
+          JOIN kg_nodes m ON m.node_id = e.to_node AND m.node_type = 'METAL'
+         WHERE e.edge_type = 'USES_METAL'
+         GROUP BY 1 ORDER BY 2 DESC
+    """)
+    metales = [{"label": r[0], "n": r[1]} for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT l.node_id, count(*) AS n
+          FROM kg_edges e
+          JOIN kg_nodes l ON l.node_id = e.to_node AND l.node_type = 'LIGAND'
+         WHERE e.edge_type = 'USES_LIGAND'
+         GROUP BY 1 ORDER BY 2 DESC
+    """)
+    # Los ligandos SI se seudonimizan: sus nombres no estan publicados. Los
+    # metales no, que no son secreto de nadie.
+    ligandos = [{"label": etiqueta(r[0], "LIGAND", None), "n": r[1]} for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT count(*) FROM kg_edges WHERE edge_type = 'HAS_MEASUREMENT'
+    """)
+    n_medidas = cur.fetchone()[0]
+
+    salida["constellation"] = {
+        "metals": metales,
+        "ligands": ligandos,
+        "samples": sum(m["n"] for m in metales),
+        "measurements": n_medidas,
+    }
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(salida, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -162,6 +198,11 @@ def main() -> int:
     print("vecindad a %d saltos: %d nodos, %d aristas" % (HOPS, len(nodos), len(aristas)))
     print("por tipo        : %s" % dict(Counter(n["type"] for n in nodos)))
     print("por relacion    : %s" % dict(Counter(e["type"] for e in aristas)))
+    c = salida["constellation"]
+    print("constelacion    : %d muestras, %d metales, %d ligandos, %d medidas"
+          % (c["samples"], len(c["metals"]), len(c["ligands"]), c["measurements"]))
+    print("   los tres metales mayores: %s"
+          % ", ".join("%s (%d)" % (m["label"], m["n"]) for m in c["metals"][:3]))
     print("grafo completo  : %d nodos, %d aristas"
           % (salida["totals"]["nodes"], salida["totals"]["edges"]))
     print("escrito %s (%.1f KB)" % (OUT.relative_to(ROOT), OUT.stat().st_size / 1024))

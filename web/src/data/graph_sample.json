@@ -4,25 +4,11 @@
  "hops": 1,
  "nodes": [
   {
-   "id": "SAMPLE:SMP-001",
-   "type": "SAMPLE",
-   "label": "SMP-001",
-   "hop": 0,
-   "degree": 8
-  },
-  {
-   "id": "METAL:Ni",
-   "type": "METAL",
-   "label": "Ni",
-   "hop": 1,
-   "degree": 149
-  },
-  {
    "id": "LIGAND:LIG-001",
    "type": "LIGAND",
    "label": "LIG-001",
    "hop": 1,
-   "degree": 10
+   "degree": 410
   },
   {
    "id": "MEASUREMENT:MEA-001",
@@ -60,11 +46,25 @@
    "degree": 1
   },
   {
-   "id": "MEASUREMENT:MEA-006",
-   "type": "MEASUREMENT",
-   "label": "MEA-006",
+   "id": "METAL:Co",
+   "type": "METAL",
+   "label": "Co",
    "hop": 1,
-   "degree": 1
+   "degree": 70
+  },
+  {
+   "id": "MODULATOR:MOD-001",
+   "type": "MODULATOR",
+   "label": "MOD-001",
+   "hop": 1,
+   "degree": 494
+  },
+  {
+   "id": "SAMPLE:SMP-001",
+   "type": "SAMPLE",
+   "label": "SMP-001",
+   "hop": 0,
+   "degree": 8
   }
  ],
  "edges": [
@@ -80,22 +80,7 @@
   },
   {
    "from": "SAMPLE:SMP-001",
-   "to": "MEASUREMENT:MEA-004",
-   "type": "HAS_MEASUREMENT"
-  },
-  {
-   "from": "SAMPLE:SMP-001",
-   "to": "MEASUREMENT:MEA-006",
-   "type": "HAS_MEASUREMENT"
-  },
-  {
-   "from": "SAMPLE:SMP-001",
    "to": "MEASUREMENT:MEA-002",
-   "type": "HAS_MEASUREMENT"
-  },
-  {
-   "from": "SAMPLE:SMP-001",
-   "to": "MEASUREMENT:MEA-005",
    "type": "HAS_MEASUREMENT"
   },
   {
@@ -105,12 +90,159 @@
   },
   {
    "from": "SAMPLE:SMP-001",
-   "to": "METAL:Ni",
+   "to": "MEASUREMENT:MEA-004",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:SMP-001",
+   "to": "MEASUREMENT:MEA-005",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:SMP-001",
+   "to": "METAL:Co",
    "type": "USES_METAL"
+  },
+  {
+   "from": "SAMPLE:SMP-001",
+   "to": "MODULATOR:MOD-001",
+   "type": "USES_MODULATOR"
   }
  ],
  "totals": {
-  "nodes": 6506,
-  "edges": 10906
+  "nodes": 4583,
+  "edges": 8060
+ },
+ "constellation": {
+  "metals": [
+   {
+    "label": "Ca",
+    "n": 539
+   },
+   {
+    "label": "Fe",
+    "n": 321
+   },
+   {
+    "label": "Cu",
+    "n": 258
+   },
+   {
+    "label": "Bi",
+    "n": 227
+   },
+   {
+    "label": "Mg",
+    "n": 181
+   },
+   {
+    "label": "Ti",
+    "n": 181
+   },
+   {
+    "label": "Ni",
+    "n": 142
+   },
+   {
+    "label": "Co",
+    "n": 70
+   },
+   {
+    "label": "Zr",
+    "n": 67
+   },
+   {
+    "label": "Ce",
+    "n": 64
+   },
+   {
+    "label": "UNKNOWN",
+    "n": 49
+   },
+   {
+    "label": "Hf",
+    "n": 41
+   },
+   {
+    "label": "Zn",
+    "n": 26
+   },
+   {
+    "label": "NOT_APPLICABLE",
+    "n": 13
+   },
+   {
+    "label": "Cr",
+    "n": 12
+   },
+   {
+    "label": "In",
+    "n": 5
+   },
+   {
+    "label": "Ga",
+    "n": 4
+   },
+   {
+    "label": "Dy",
+    "n": 4
+   },
+   {
+    "label": "La",
+    "n": 4
+   },
+   {
+    "label": "Nd",
+    "n": 4
+   },
+   {
+    "label": "Y",
+    "n": 4
+   },
+   {
+    "label": "-",
+    "n": 2
+   },
+   {
+    "label": "Sr",
+    "n": 2
+   }
+  ],
+  "ligands": [
+   {
+    "label": "LIG-002",
+    "n": 1304
+   },
+   {
+    "label": "LIG-001",
+    "n": 410
+   },
+   {
+    "label": "LIG-003",
+    "n": 329
+   },
+   {
+    "label": "LIG-004",
+    "n": 86
+   },
+   {
+    "label": "LIG-005",
+    "n": 49
+   },
+   {
+    "label": "LIG-006",
+    "n": 24
+   },
+   {
+    "label": "LIG-007",
+    "n": 13
+   },
+   {
+    "label": "LIG-008",
+    "n": 1
+   }
+  ],
+  "samples": 2220,
+  "measurements": 2325
  }
 }
