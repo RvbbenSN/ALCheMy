@@ -39,7 +39,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-IN_DIR = ROOT / "handoff" / "gemini_back"
+IN_DIR = ROOT / "_lab" / "handoff" / "gemini_back"
 FIG_DIR = ROOT / "web" / "public" / "figures"
 OUT_DIR = ROOT / "web" / "public" / "notebooks"
 

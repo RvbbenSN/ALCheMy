@@ -47,7 +47,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 NB_DIR = ROOT / "notebooks"
-DEFAULT_OUT = ROOT / "handoff" / "notebook_prose"
+DEFAULT_OUT = ROOT / "_lab" / "handoff" / "notebook_prose"
 
 
 def cargar_saneador():

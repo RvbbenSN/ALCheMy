@@ -104,10 +104,10 @@ def eps_to_svg(eps_path, svg_path):
     print(f'Generated: {svg_path} ({len(svg_elements)} paths, {width:.1f}x{height:.1f}px)')
 
 if __name__ == '__main__':
-    dark_eps = r'c:\Users\rubbe\Documents\ALCheMy\design_system\assets\logo\logo_alchemy_dark.eps'
-    dark_svg = r'c:\Users\rubbe\Documents\ALCheMy\design_system\assets\logo\logo_alchemy_dark.svg'
-    light_eps = r'c:\Users\rubbe\Documents\ALCheMy\design_system\assets\logo\logo_alchemy_light.eps'
-    light_svg = r'c:\Users\rubbe\Documents\ALCheMy\design_system\assets\logo\logo_alchemy_light.svg'
+    dark_eps = r'c:\Users\rubbe\Documents\ALCheMy\_lab\design_system\assets\logo\logo_alchemy_dark.eps'
+    dark_svg = r'c:\Users\rubbe\Documents\ALCheMy\_lab\design_system\assets\logo\logo_alchemy_dark.svg'
+    light_eps = r'c:\Users\rubbe\Documents\ALCheMy\_lab\design_system\assets\logo\logo_alchemy_light.eps'
+    light_svg = r'c:\Users\rubbe\Documents\ALCheMy\_lab\design_system\assets\logo\logo_alchemy_light.svg'
     
     eps_to_svg(dark_eps, dark_svg)
     eps_to_svg(light_eps, light_svg)

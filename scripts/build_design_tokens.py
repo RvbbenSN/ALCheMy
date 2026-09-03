@@ -41,7 +41,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-YAML_PATH = ROOT / "design_system" / "style_guide.yaml"
+YAML_PATH = ROOT / "_lab" / "design_system" / "style_guide.yaml"
 CSS_PATH = ROOT / "web" / "src" / "styles" / "tokens.css"
 
 # Nombre del tema en el YAML -> selector CSS que lo activa.
