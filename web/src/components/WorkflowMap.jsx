@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Bot,
+  Boxes,
   Braces,
+  BrainCircuit,
   Database,
   DoorOpen,
   FileInput,
@@ -16,12 +18,14 @@ import {
   Play,
   Plus,
   ScrollText,
+  Search,
   Send,
   ShieldCheck,
   Shuffle,
   Sparkles,
   Tags,
   Wand2,
+  Wrench,
 } from 'lucide-react'
 import { AREAS } from '../content/workflow.js'
 import { Badge } from './ui.jsx'
@@ -79,15 +83,26 @@ const KIND = {
   reply: { icon: Send, color: 'var(--text-secondary)', label: 'Response' },
   ai: { icon: Bot, color: 'var(--accent-secondary-text)', label: 'AI agent' },
   model: { icon: Sparkles, color: 'var(--accent-secondary-text)', label: 'Model' },
+  /* Solo aparecen en el flujo RAG. */
+  tool: { icon: Wrench, color: 'var(--accent-tertiary)', label: 'Agent tool' },
+  vector: { icon: Boxes, color: 'var(--accent-tertiary)', label: 'Vector store' },
+  embed: { icon: BrainCircuit, color: 'var(--accent-secondary-text)', label: 'Embeddings' },
+  memory: { icon: Layers, color: 'var(--text-secondary)', label: 'Memory' },
+  rerank: { icon: Search, color: 'var(--text-muted)', label: 'Reranker' },
 }
 
-/* La leyenda solo lista los tipos que el lienzo dibuja de verdad, en el orden
-   en que se atraviesan. Anunciar categorias que no aparecen confunde mas que
-   ayuda: el export de n8n no distingue, por ejemplo, un parser de cualquier
-   otro Code node, asi que ese matiz vive en la ficha del area, no aqui. */
-const LEGEND = ['trigger', 'file', 'transform', 'gate', 'router', 'merge', 'code', 'ai', 'model', 'db', 'reply']
+/* La leyenda lista los tipos que ESTE lienzo dibuja, no todos los posibles:
+   anunciar categorias que no aparecen confunde mas que ayuda. El orden es el
+   de KIND, que va de la entrada a la salida. Se deriva en vez de escribirse a
+   mano porque hay dos lienzos y una lista fija mentiria en uno de los dos. */
+const LEGEND_ORDER = Object.keys(KIND)
+const legendFor = (nodes) => {
+  const presentes = new Set(nodes.map((n) => n.kind))
+  return LEGEND_ORDER.filter((k) => presentes.has(k))
+}
 
-/* Un simbolo por area, para el indice. */
+/* Un simbolo por area, para el indice. El del flujo de ingesta es el valor por
+   defecto; la 07 pasa el suyo por prop. */
 const AREA_ICON = {
   1: DoorOpen,
   2: Tags,
@@ -107,7 +122,11 @@ const OVERVIEW = 0 // la parada final del indice: el flujo entero
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi)
 
-export default function WorkflowMap() {
+export default function WorkflowMap({
+  src = '/data/workflow_canvas.json',
+  areaContent = AREAS,
+  areaIcons = AREA_ICON,
+}) {
   const wrapRef = useRef(null)
   const [data, setData] = useState(null)
   const [failed, setFailed] = useState(false)
@@ -120,14 +139,14 @@ export default function WorkflowMap() {
 
   useEffect(() => {
     let alive = true
-    fetch('/data/workflow_canvas.json')
+    fetch(src)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
       .then((d) => alive && setData(d))
       .catch(() => alive && setFailed(true))
     return () => {
       alive = false
     }
-  }, [])
+  }, [src])
 
   /* Memorizado: si este objeto cambiara de identidad en cada render, `fitTo`
      cambiaria con el y el efecto del encuadre inicial no pararia nunca. */
@@ -242,7 +261,7 @@ export default function WorkflowMap() {
 
   const { nodeSize, areas, nodes, edges } = data
   const pos = Object.fromEntries(nodes.map((n) => [n.id, n]))
-  const meta = Object.fromEntries(AREAS.map((a) => [a.n, a]))
+  const meta = Object.fromEntries(areaContent.map((a) => [a.n, a]))
   const card = active === OVERVIEW ? null : meta[active]
   /* Los grosores se compensan con la escala para que el trazo mida siempre lo
      mismo en pantalla. Sin esto las lineas desaparecen al alejarse. */
@@ -264,7 +283,7 @@ export default function WorkflowMap() {
             className="absolute"
             style={{ top: 21, left: 40, right: 40, height: 2, background: 'var(--surface-border)' }}
           />
-          {[...areas.map((a) => ({ n: a.n, label: meta[a.n]?.title ?? a.title, icon: AREA_ICON[a.n] ?? Shuffle })),
+          {[...areas.map((a) => ({ n: a.n, label: meta[a.n]?.title ?? a.title, icon: areaIcons[a.n] ?? Shuffle })),
             { n: OVERVIEW, label: 'Whole flow', icon: Layers }].map((s) => {
             const Icon = s.icon
             const on = active === s.n
@@ -305,7 +324,7 @@ export default function WorkflowMap() {
 
       {/* --- leyenda: que significa cada icono de nodo --- */}
       <div className="flex flex-wrap gap-x-4 gap-y-2">
-        {LEGEND.map((key) => {
+        {legendFor(nodes).map((key) => {
           const k = KIND[key]
           const Icon = k.icon
           return (
@@ -585,7 +604,7 @@ export default function WorkflowMap() {
               className="mt-4 flex list-none flex-wrap items-center gap-x-2 gap-y-2 p-0 text-xs"
               style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}
             >
-              {AREAS.map((a, i) => (
+              {areaContent.map((a, i) => (
                 <li key={a.n} className="flex items-center gap-2">
                   <button
                     type="button"
@@ -595,7 +614,7 @@ export default function WorkflowMap() {
                   >
                     {a.n} · {a.title}
                   </button>
-                  {i < AREAS.length - 1 && <span aria-hidden style={{ color: 'var(--text-muted)' }}>›</span>}
+                  {i < areaContent.length - 1 && <span aria-hidden style={{ color: 'var(--text-muted)' }}>›</span>}
                 </li>
               ))}
             </ol>
