@@ -1,6 +1,3 @@
-import { MODEL_NOTES } from '../content/site.js'
-/* Los hechos del registro los genera scripts/build_model_scorecard.py. */
-import SCORECARD from '../data/model_scorecard.json'
 import {
   MODEL_ASSESSMENT,
   MODEL_CHEMISTRY,
@@ -246,32 +243,6 @@ export default function Modeling() {
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
           <Rich>{MODEL_METRICS.note}</Rich>
         </p>
-      </section>
-
-      {/* --- Registro --- */}
-      <section>
-        <SectionTitle eyebrow="The registry">What was trained, and what survived</SectionTitle>
-        <ScrollTable
-          head={['Model', 'Algorithm', 'F1 macro', 'Size', 'Status']}
-          rows={SCORECARD.registry.map((m) => [
-            <span key={m.name}>
-              <code><Rich>{m.name}</Rich></code>
-              <br />
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em' }}>
-                <Rich>{MODEL_NOTES[m.name] || m.note}</Rich>
-              </span>
-            </span>,
-            m.algo,
-            m.f1,
-            m.size,
-            // Tres estados, tres lecturas: vigente, retirado por otro mejor, y
-            // "no use estos resultados". Pintar SUPERSEDED igual que ACTIVE lo
-            // hacia parecer vigente.
-            <Badge key="s" tone={{ ACTIVE: 'pure', INVALID: 'amorphous' }[m.status] ?? 'neutral'}>
-              <Rich>{m.status}</Rich>
-            </Badge>,
-          ])}
-        />
       </section>
 
       {/* --- Que dicen los numeros --- */}

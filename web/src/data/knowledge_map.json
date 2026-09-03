@@ -1,0 +1,669 @@
+{
+ "model": "crystallinity_v4_hts_full",
+ "metal": "Ca",
+ "nSyntheses": 433,
+ "axes": {
+  "x": {
+   "key": "temp_target_c",
+   "label": "Target temperature (°C)",
+   "values": [
+    80.0,
+    100.0,
+    110.0,
+    120.0,
+    130.0,
+    135.0,
+    140.0,
+    150.0,
+    160.0
+   ]
+  },
+  "y": {
+   "key": "mod_carboxylic_mmol",
+   "label": "Carboxylic modulator (mmol)",
+   "values": [
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0
+   ]
+  }
+ },
+ "cells": [
+  {
+   "x": 80.0,
+   "y": 0.0,
+   "pCrystalline": 0.2729,
+   "uncertainty": 0.9449
+  },
+  {
+   "x": 80.0,
+   "y": 0.5,
+   "pCrystalline": 0.2568,
+   "uncertainty": 0.9522
+  },
+  {
+   "x": 80.0,
+   "y": 1.0,
+   "pCrystalline": 0.2565,
+   "uncertainty": 0.9481
+  },
+  {
+   "x": 80.0,
+   "y": 2.0,
+   "pCrystalline": 0.2467,
+   "uncertainty": 0.9417
+  },
+  {
+   "x": 80.0,
+   "y": 4.0,
+   "pCrystalline": 0.2569,
+   "uncertainty": 0.9571
+  },
+  {
+   "x": 80.0,
+   "y": 8.0,
+   "pCrystalline": 0.2547,
+   "uncertainty": 0.955
+  },
+  {
+   "x": 80.0,
+   "y": 16.0,
+   "pCrystalline": 0.2601,
+   "uncertainty": 0.9539
+  },
+  {
+   "x": 100.0,
+   "y": 0.0,
+   "pCrystalline": 0.2686,
+   "uncertainty": 0.945
+  },
+  {
+   "x": 100.0,
+   "y": 0.5,
+   "pCrystalline": 0.2527,
+   "uncertainty": 0.9502
+  },
+  {
+   "x": 100.0,
+   "y": 1.0,
+   "pCrystalline": 0.2541,
+   "uncertainty": 0.9457
+  },
+  {
+   "x": 100.0,
+   "y": 2.0,
+   "pCrystalline": 0.2448,
+   "uncertainty": 0.9394
+  },
+  {
+   "x": 100.0,
+   "y": 4.0,
+   "pCrystalline": 0.2542,
+   "uncertainty": 0.9551
+  },
+  {
+   "x": 100.0,
+   "y": 8.0,
+   "pCrystalline": 0.2525,
+   "uncertainty": 0.953
+  },
+  {
+   "x": 100.0,
+   "y": 16.0,
+   "pCrystalline": 0.2578,
+   "uncertainty": 0.9518
+  },
+  {
+   "x": 110.0,
+   "y": 0.0,
+   "pCrystalline": 0.2726,
+   "uncertainty": 0.9494
+  },
+  {
+   "x": 110.0,
+   "y": 0.5,
+   "pCrystalline": 0.2566,
+   "uncertainty": 0.9546
+  },
+  {
+   "x": 110.0,
+   "y": 1.0,
+   "pCrystalline": 0.2569,
+   "uncertainty": 0.9494
+  },
+  {
+   "x": 110.0,
+   "y": 2.0,
+   "pCrystalline": 0.2467,
+   "uncertainty": 0.9424
+  },
+  {
+   "x": 110.0,
+   "y": 4.0,
+   "pCrystalline": 0.2573,
+   "uncertainty": 0.9581
+  },
+  {
+   "x": 110.0,
+   "y": 8.0,
+   "pCrystalline": 0.2547,
+   "uncertainty": 0.9555
+  },
+  {
+   "x": 110.0,
+   "y": 16.0,
+   "pCrystalline": 0.2608,
+   "uncertainty": 0.9542
+  },
+  {
+   "x": 120.0,
+   "y": 0.0,
+   "pCrystalline": 0.3785,
+   "uncertainty": 0.904
+  },
+  {
+   "x": 120.0,
+   "y": 0.5,
+   "pCrystalline": 0.3464,
+   "uncertainty": 0.9379
+  },
+  {
+   "x": 120.0,
+   "y": 1.0,
+   "pCrystalline": 0.3337,
+   "uncertainty": 0.9306
+  },
+  {
+   "x": 120.0,
+   "y": 2.0,
+   "pCrystalline": 0.3147,
+   "uncertainty": 0.9304
+  },
+  {
+   "x": 120.0,
+   "y": 4.0,
+   "pCrystalline": 0.3233,
+   "uncertainty": 0.9506
+  },
+  {
+   "x": 120.0,
+   "y": 8.0,
+   "pCrystalline": 0.3182,
+   "uncertainty": 0.9489
+  },
+  {
+   "x": 120.0,
+   "y": 16.0,
+   "pCrystalline": 0.3216,
+   "uncertainty": 0.9449
+  },
+  {
+   "x": 130.0,
+   "y": 0.0,
+   "pCrystalline": 0.3918,
+   "uncertainty": 0.8913
+  },
+  {
+   "x": 130.0,
+   "y": 0.5,
+   "pCrystalline": 0.3787,
+   "uncertainty": 0.9298
+  },
+  {
+   "x": 130.0,
+   "y": 1.0,
+   "pCrystalline": 0.3568,
+   "uncertainty": 0.9232
+  },
+  {
+   "x": 130.0,
+   "y": 2.0,
+   "pCrystalline": 0.3455,
+   "uncertainty": 0.926
+  },
+  {
+   "x": 130.0,
+   "y": 4.0,
+   "pCrystalline": 0.3555,
+   "uncertainty": 0.9434
+  },
+  {
+   "x": 130.0,
+   "y": 8.0,
+   "pCrystalline": 0.3497,
+   "uncertainty": 0.9411
+  },
+  {
+   "x": 130.0,
+   "y": 16.0,
+   "pCrystalline": 0.3507,
+   "uncertainty": 0.9358
+  },
+  {
+   "x": 135.0,
+   "y": 0.0,
+   "pCrystalline": 0.3916,
+   "uncertainty": 0.8954
+  },
+  {
+   "x": 135.0,
+   "y": 0.5,
+   "pCrystalline": 0.3789,
+   "uncertainty": 0.933
+  },
+  {
+   "x": 135.0,
+   "y": 1.0,
+   "pCrystalline": 0.3576,
+   "uncertainty": 0.9282
+  },
+  {
+   "x": 135.0,
+   "y": 2.0,
+   "pCrystalline": 0.3481,
+   "uncertainty": 0.9298
+  },
+  {
+   "x": 135.0,
+   "y": 4.0,
+   "pCrystalline": 0.3579,
+   "uncertainty": 0.9466
+  },
+  {
+   "x": 135.0,
+   "y": 8.0,
+   "pCrystalline": 0.353,
+   "uncertainty": 0.9444
+  },
+  {
+   "x": 135.0,
+   "y": 16.0,
+   "pCrystalline": 0.3527,
+   "uncertainty": 0.9392
+  },
+  {
+   "x": 140.0,
+   "y": 0.0,
+   "pCrystalline": 0.3906,
+   "uncertainty": 0.8918
+  },
+  {
+   "x": 140.0,
+   "y": 0.5,
+   "pCrystalline": 0.376,
+   "uncertainty": 0.9293
+  },
+  {
+   "x": 140.0,
+   "y": 1.0,
+   "pCrystalline": 0.3563,
+   "uncertainty": 0.9228
+  },
+  {
+   "x": 140.0,
+   "y": 2.0,
+   "pCrystalline": 0.3494,
+   "uncertainty": 0.9199
+  },
+  {
+   "x": 140.0,
+   "y": 4.0,
+   "pCrystalline": 0.3629,
+   "uncertainty": 0.9385
+  },
+  {
+   "x": 140.0,
+   "y": 8.0,
+   "pCrystalline": 0.3572,
+   "uncertainty": 0.9368
+  },
+  {
+   "x": 140.0,
+   "y": 16.0,
+   "pCrystalline": 0.3584,
+   "uncertainty": 0.9313
+  },
+  {
+   "x": 150.0,
+   "y": 0.0,
+   "pCrystalline": 0.3979,
+   "uncertainty": 0.8844
+  },
+  {
+   "x": 150.0,
+   "y": 0.5,
+   "pCrystalline": 0.3763,
+   "uncertainty": 0.9174
+  },
+  {
+   "x": 150.0,
+   "y": 1.0,
+   "pCrystalline": 0.3596,
+   "uncertainty": 0.9086
+  },
+  {
+   "x": 150.0,
+   "y": 2.0,
+   "pCrystalline": 0.361,
+   "uncertainty": 0.8994
+  },
+  {
+   "x": 150.0,
+   "y": 4.0,
+   "pCrystalline": 0.3758,
+   "uncertainty": 0.9164
+  },
+  {
+   "x": 150.0,
+   "y": 8.0,
+   "pCrystalline": 0.3676,
+   "uncertainty": 0.9142
+  },
+  {
+   "x": 150.0,
+   "y": 16.0,
+   "pCrystalline": 0.3721,
+   "uncertainty": 0.9097
+  },
+  {
+   "x": 160.0,
+   "y": 0.0,
+   "pCrystalline": 0.3876,
+   "uncertainty": 0.8782
+  },
+  {
+   "x": 160.0,
+   "y": 0.5,
+   "pCrystalline": 0.3728,
+   "uncertainty": 0.9132
+  },
+  {
+   "x": 160.0,
+   "y": 1.0,
+   "pCrystalline": 0.3572,
+   "uncertainty": 0.9021
+  },
+  {
+   "x": 160.0,
+   "y": 2.0,
+   "pCrystalline": 0.3571,
+   "uncertainty": 0.8912
+  },
+  {
+   "x": 160.0,
+   "y": 4.0,
+   "pCrystalline": 0.3724,
+   "uncertainty": 0.91
+  },
+  {
+   "x": 160.0,
+   "y": 8.0,
+   "pCrystalline": 0.3643,
+   "uncertainty": 0.9078
+  },
+  {
+   "x": 160.0,
+   "y": 16.0,
+   "pCrystalline": 0.3668,
+   "uncertainty": 0.9028
+  }
+ ],
+ "coverage": {
+  "tried": 18,
+  "total": 63
+ },
+ "tried": [
+  {
+   "x": 110.0,
+   "y": 0.0,
+   "klass": "AMORFO",
+   "n": 5
+  },
+  {
+   "x": 110.0,
+   "y": 0.0,
+   "klass": "INCIPIENTE",
+   "n": 6
+  },
+  {
+   "x": 120.0,
+   "y": 0.0,
+   "klass": "AMORFO",
+   "n": 13
+  },
+  {
+   "x": 120.0,
+   "y": 0.0,
+   "klass": "CRISTALINO",
+   "n": 13
+  },
+  {
+   "x": 120.0,
+   "y": 0.0,
+   "klass": "INCIPIENTE",
+   "n": 51
+  },
+  {
+   "x": 120.0,
+   "y": 0.5,
+   "klass": "AMORFO",
+   "n": 5
+  },
+  {
+   "x": 120.0,
+   "y": 0.5,
+   "klass": "INCIPIENTE",
+   "n": 7
+  },
+  {
+   "x": 120.0,
+   "y": 1.0,
+   "klass": "AMORFO",
+   "n": 2
+  },
+  {
+   "x": 120.0,
+   "y": 1.0,
+   "klass": "CRISTALINO",
+   "n": 2
+  },
+  {
+   "x": 120.0,
+   "y": 1.0,
+   "klass": "INCIPIENTE",
+   "n": 9
+  },
+  {
+   "x": 120.0,
+   "y": 2.0,
+   "klass": "AMORFO",
+   "n": 1
+  },
+  {
+   "x": 120.0,
+   "y": 2.0,
+   "klass": "CRISTALINO",
+   "n": 1
+  },
+  {
+   "x": 120.0,
+   "y": 2.0,
+   "klass": "INCIPIENTE",
+   "n": 4
+  },
+  {
+   "x": 120.0,
+   "y": 4.0,
+   "klass": "AMORFO",
+   "n": 3
+  },
+  {
+   "x": 120.0,
+   "y": 4.0,
+   "klass": "CRISTALINO",
+   "n": 1
+  },
+  {
+   "x": 130.0,
+   "y": 0.0,
+   "klass": "AMORFO",
+   "n": 16
+  },
+  {
+   "x": 130.0,
+   "y": 0.0,
+   "klass": "CRISTALINO",
+   "n": 19
+  },
+  {
+   "x": 130.0,
+   "y": 0.0,
+   "klass": "INCIPIENTE",
+   "n": 66
+  },
+  {
+   "x": 130.0,
+   "y": 1.0,
+   "klass": "CRISTALINO",
+   "n": 2
+  },
+  {
+   "x": 130.0,
+   "y": 2.0,
+   "klass": "CRISTALINO",
+   "n": 2
+  },
+  {
+   "x": 130.0,
+   "y": 2.0,
+   "klass": "INCIPIENTE",
+   "n": 3
+  },
+  {
+   "x": 130.0,
+   "y": 4.0,
+   "klass": "CRISTALINO",
+   "n": 2
+  },
+  {
+   "x": 130.0,
+   "y": 4.0,
+   "klass": "INCIPIENTE",
+   "n": 2
+  },
+  {
+   "x": 135.0,
+   "y": 0.0,
+   "klass": "AMORFO",
+   "n": 6
+  },
+  {
+   "x": 135.0,
+   "y": 0.5,
+   "klass": "AMORFO",
+   "n": 1
+  },
+  {
+   "x": 135.0,
+   "y": 1.0,
+   "klass": "AMORFO",
+   "n": 1
+  },
+  {
+   "x": 150.0,
+   "y": 0.0,
+   "klass": "AMORFO",
+   "n": 8
+  },
+  {
+   "x": 150.0,
+   "y": 0.0,
+   "klass": "CRISTALINO",
+   "n": 17
+  },
+  {
+   "x": 150.0,
+   "y": 0.0,
+   "klass": "INCIPIENTE",
+   "n": 47
+  },
+  {
+   "x": 150.0,
+   "y": 0.5,
+   "klass": "AMORFO",
+   "n": 1
+  },
+  {
+   "x": 150.0,
+   "y": 0.5,
+   "klass": "INCIPIENTE",
+   "n": 1
+  },
+  {
+   "x": 150.0,
+   "y": 1.0,
+   "klass": "AMORFO",
+   "n": 1
+  },
+  {
+   "x": 150.0,
+   "y": 1.0,
+   "klass": "CRISTALINO",
+   "n": 3
+  },
+  {
+   "x": 150.0,
+   "y": 1.0,
+   "klass": "INCIPIENTE",
+   "n": 16
+  },
+  {
+   "x": 150.0,
+   "y": 2.0,
+   "klass": "CRISTALINO",
+   "n": 3
+  },
+  {
+   "x": 150.0,
+   "y": 2.0,
+   "klass": "INCIPIENTE",
+   "n": 16
+  },
+  {
+   "x": 150.0,
+   "y": 4.0,
+   "klass": "CRISTALINO",
+   "n": 3
+  },
+  {
+   "x": 150.0,
+   "y": 4.0,
+   "klass": "INCIPIENTE",
+   "n": 10
+  }
+ ],
+ "suggested": [
+  {
+   "x": 110.0,
+   "y": 4.0,
+   "pCrystalline": 0.2573,
+   "uncertainty": 0.9581
+  },
+  {
+   "x": 80.0,
+   "y": 4.0,
+   "pCrystalline": 0.2569,
+   "uncertainty": 0.9571
+  },
+  {
+   "x": 110.0,
+   "y": 8.0,
+   "pCrystalline": 0.2547,
+   "uncertainty": 0.9555
+  }
+ ]
+}
