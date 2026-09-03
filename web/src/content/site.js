@@ -30,7 +30,8 @@ export const SCREENS = [
   { id: '05', slug: 'modeling', short: 'Modeling', title: 'Training & Evaluation', crisp: 'Modeling · Evaluation' },
   { id: '06', slug: 'the-model', short: 'The Model', title: 'Simulator, Registry & Active Learning', crisp: 'Deployment · Feedback' },
   { id: '07', slug: 'rag', short: 'RAG Assistant', title: 'Scientific Co-pilot', crisp: 'Decision support' },
-  { id: '08', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: '—' },
+  { id: '08', slug: 'database', short: 'The Database', title: 'One Schema, Documented', crisp: 'Data governance' },
+  { id: '09', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: '—' },
 ]
 
 /* KPIs: valores auditados el 2026-09-01 contra la base de datos.

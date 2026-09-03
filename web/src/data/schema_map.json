@@ -1,0 +1,324 @@
+{
+ "generatedAt": "2026-09-03",
+ "totals": {
+  "tables": 26,
+  "views": 9,
+  "functions": 16,
+  "columns": 337,
+  "dictionaryRows": 499,
+  "documented": 35,
+  "documentedOf": 35
+ },
+ "families": [
+  {
+   "key": "lab",
+   "title": "The laboratory record",
+   "blurb": "The two tables everything else hangs off: one row per synthesis attempted, one row per instrument file measured.",
+   "tables": [
+    {
+     "name": "synthesis_experiments",
+     "columns": 49,
+     "rows": 2216,
+     "bytes": 2490368,
+     "comment": "Tabla padre del proyecto: una fila por sintesis intentada, con la clave primaria sample_code. Reune el diseno teorico, los disolventes, la rampa termica y los moduladores de cinco anos de libretas de laboratorio. Se escribe por UPSERT desde el cuaderno 01, nunca por DELETE, para no borrar filas que haya creado n8n."
+    },
+    {
+     "name": "characterization_measurements",
+     "columns": 13,
+     "rows": 3926,
+     "bytes": 144146432,
+     "comment": "Child table storing raw characterization data and header metadata in standardized JSONB format"
+    },
+    {
+     "name": "characterization_measurements_test",
+     "columns": 13,
+     "rows": 6,
+     "bytes": 4612096,
+     "comment": "Copia de pruebas de characterization_measurements, para ejercitar el pipeline de ingesta sin tocar datos reales. No forma parte del flujo de produccion."
+    }
+   ],
+   "totalRows": 6148,
+   "totalBytes": 151248896
+  },
+  {
+   "key": "chem",
+   "title": "Chemistry reference",
+   "blurb": "Turns a chemical symbol into physics. Populated from mendeleev, pymatgen and RDKit, and every value traceable to a citation.",
+   "tables": [
+    {
+     "name": "element_properties",
+     "columns": 20,
+     "rows": 20,
+     "bytes": 65536,
+     "comment": "One row per element used as a metal_center in synthesis_experiments. Properties that belong to the element itself (electronegativity, hardness) rather than to a specific ion (see ion_properties). Populated by src/build_element_properties.py."
+    },
+    {
+     "name": "ion_properties",
+     "columns": 8,
+     "rows": 22,
+     "bytes": 57344,
+     "comment": "Radius and charge density per (element, oxidation state, coordination number). Coordination number is pinned to 6 everywhere in this project (see roadmap SS3.4: the true CN is unknown before synthesis, and Shannon CN=6 radii are both the most tabulated and the ones that preserve relative ordering between metals)."
+    },
+    {
+     "name": "linker_properties",
+     "columns": 19,
+     "rows": 6,
+     "bytes": 32768,
+     "comment": "One row per linker code used in synthesis_experiments.linker. scaffold + protection_state are the two independent axes hidden inside the 6 linker names (roadmap SS1.3/SS4.2): H6ttbmp/Et6ttbmp are the same molecule as acid/ester, same for H8ptp/Et8ptp. Populated by src/build_linker_properties.py from hand-verified SMILES -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md for the one identification (H6ttbmp) that needs Ruben's confirmation."
+    },
+    {
+     "name": "metal_source_oxidation_state",
+     "columns": 6,
+     "rows": 50,
+     "bytes": 65536,
+     "comment": "Maps every distinct synthesis_experiments.metal_source string to the metal and oxidation state implied by its chemical formula. Deterministic where the formula is unambiguous (roadmap SS3.3, option 1); a handful of rows are flagged matches_metal_center=FALSE where metal_source disagrees with metal_center -- these are real data-entry questions, listed in methodology/PENDIENTE_ML_INPUTS_HUMANOS.md, not modelling choices."
+    },
+    {
+     "name": "property_sources",
+     "columns": 4,
+     "rows": 5,
+     "bytes": 32768,
+     "comment": "Citation + DOI for every property in element_properties/ion_properties/linker_properties. Exists because e.g. \"electronegativity\" alone is ambiguous (Pauling vs Allen give different orderings for transition metals) -- see roadmap SS3.1."
+    }
+   ],
+   "totalRows": 103,
+   "totalBytes": 253952
+  },
+  {
+   "key": "pxrd",
+   "title": "Signal and ground truth",
+   "blurb": "What the diffractograms became: 29 deterministic descriptors per curve, and the human verdicts that no pipeline can recompute.",
+   "tables": [
+    {
+     "name": "pxrd_descriptors",
+     "columns": 33,
+     "rows": 1874,
+     "bytes": 1294336,
+     "comment": "Canonical crystallographic descriptor vector derived deterministically from each PXRD diffractogram. One row per measurement. Specified in methodology/ROADMAP_PXRD_CRISTALINIDAD_Y_ML.md, Etapa 3."
+    },
+    {
+     "name": "pxrd_labels",
+     "columns": 11,
+     "rows": 4964,
+     "bytes": 1785856,
+     "comment": "Human ground-truth labels for PXRD diffractograms. Keyed on file_hash rather than measurement_id so that labels survive a re-ingestion of characterization_measurements. The most expensive data in the project: it cannot be recomputed."
+    }
+   ],
+   "totalRows": 6838,
+   "totalBytes": 3080192
+  },
+  {
+   "key": "ml",
+   "title": "The model registry",
+   "blurb": "Five tables holding the full lineage of every model trained: the recipe, the dataset snapshot, the features kept and excluded, the metrics, and the binary.",
+   "tables": [
+    {
+     "name": "ml_models",
+     "columns": 27,
+     "rows": 5,
+     "bytes": 106496,
+     "comment": "Un registro por modelo entrenado. Contiene la RECETA completa (datos, codigo, parametros, semilla, versiones); el binario vive aparte en ml_model_artifacts porque es lo unico regenerable si la receta esta completa."
+    },
+    {
+     "name": "ml_datasets",
+     "columns": 13,
+     "rows": 3,
+     "bytes": 81920,
+     "comment": "Instantanea de datos usada para entrenar. Guarda la consulta literal y su hash para que un cambio en los datos subyacentes sea detectable: dos modelos con la misma consulta pero distinto n_rows o class_distribution NO se entrenaron sobre lo mismo."
+    },
+    {
+     "name": "ml_model_features",
+     "columns": 7,
+     "rows": 174,
+     "bytes": 106496,
+     "comment": "Que columnas entraron en cada modelo y con que papel. Registrar tambien las EXCLUIDAS con su motivo es lo que convierte una decision en una decision auditable."
+    },
+    {
+     "name": "ml_model_metrics",
+     "columns": 7,
+     "rows": 42,
+     "bytes": 24576,
+     "comment": "Metricas en formato largo. Anadir una metrica nueva no requiere cambiar el esquema."
+    },
+    {
+     "name": "ml_model_artifacts",
+     "columns": 8,
+     "rows": 4,
+     "bytes": 26910720,
+     "comment": "El binario serializado, en su propia tabla para poder excluirlo de un volcado ligero sin perder el registro (mismo patron que los vectores de rag_chunks). Es la parte REGENERABLE si la receta de ml_models esta completa."
+    }
+   ],
+   "totalRows": 228,
+   "totalBytes": 27230208
+  },
+  {
+   "key": "rag",
+   "title": "The literature corpus",
+   "blurb": "The catalogue, the passages with their vectors, and the contextual sentence written for each one.",
+   "tables": [
+    {
+     "name": "rag_documents",
+     "columns": 22,
+     "rows": 958,
+     "bytes": 5570560,
+     "comment": "Un registro por fichero fuente indexado en el RAG. No contiene vectores."
+    },
+    {
+     "name": "rag_chunks",
+     "columns": 8,
+     "rows": 87765,
+     "bytes": 2025201664,
+     "comment": "Trozos de texto vectorizados. Columnas id/text/metadata/embedding impuestas por LangChain."
+    },
+    {
+     "name": "rag_chunk_context",
+     "columns": 5,
+     "rows": 87765,
+     "bytes": 27779072,
+     "comment": "Sidecar for contextual-retrieval sentences generated externally (Gemini/Antigravity). Never written to by anything that also writes rag_chunks.embedding."
+    }
+   ],
+   "totalRows": 176488,
+   "totalBytes": 2058551296
+  },
+  {
+   "key": "graph",
+   "title": "The knowledge graph",
+   "blurb": "Samples, ligands, metals, modulators and measurements as nodes, and what connects them as edges - in Postgres, not in a separate graph database.",
+   "tables": [
+    {
+     "name": "kg_nodes",
+     "columns": 7,
+     "rows": 6506,
+     "bytes": 3104768,
+     "comment": "Una fila por \"cosa que existe\" en el grafo de conocimiento: muestra, ligando, metal, modulador, medida, descriptor/KPI, paper, modelo de ML o prediccion de ML."
+    },
+    {
+     "name": "kg_edges",
+     "columns": 9,
+     "rows": 10906,
+     "bytes": 4784128,
+     "comment": "Una fila por relacion entre dos nodos: SAMPLE-USES_LIGAND->LIGAND, SAMPLE-HAS_MEASUREMENT->MEASUREMENT, y en el futuro PAPER-SUPPORTS->DESCRIPTOR."
+    }
+   ],
+   "totalRows": 17412,
+   "totalBytes": 7888896
+  },
+  {
+   "key": "gov",
+   "title": "Governance",
+   "blurb": "Who did what, who is allowed to ask, and what every column means. The part that turns a database into a record.",
+   "tables": [
+    {
+     "name": "data_dictionary",
+     "columns": 10,
+     "rows": 499,
+     "bytes": 335872,
+     "comment": "La documentacion del esquema como filas consultables: una por columna de cada tabla y vista. Existe para que la aplicacion web y los agentes de IA lean el diccionario DESDE la base en vez de llevarlo escrito en el codigo. Su cobertura debe ser del 100 %: un diccionario incompleto no permite distinguir entre una columna sin documentar y una columna que no existe."
+    },
+    {
+     "name": "audit_log",
+     "columns": 10,
+     "rows": 182,
+     "bytes": 131072,
+     "comment": "Audit log table tracking all system actions, approvals, rejections, and execution metrics"
+    },
+    {
+     "name": "authorized_researchers",
+     "columns": 5,
+     "rows": 3,
+     "bytes": 57344,
+     "comment": "Whitelist table storing authorized researchers and dynamic self-enrolled demo users"
+    },
+    {
+     "name": "agent_chat_log",
+     "columns": 8,
+     "rows": 8,
+     "bytes": 65536,
+     "comment": "Transcript of every exchange with the RAG agent: who asked, what they asked, what was answered. Complements audit_log, which logs tool calls rather than dialogue."
+    },
+    {
+     "name": "agent_owner_secret",
+     "columns": 2,
+     "rows": 1,
+     "bytes": 32768,
+     "comment": "Holds the md5 hash of the single owner access token for the ALCheMy-RAG chat agent. Never the plaintext token. Verified by agent_verify_owner(); downstream agent_* functions only receive the resulting boolean (p_is_owner), never the token."
+    },
+    {
+     "name": "ai_agent_calls",
+     "columns": 13,
+     "rows": 13,
+     "bytes": 65536,
+     "comment": "One row per AI agent invocation (Gemini or local Ollama fallback), for cost/usage auditing - never trims to only successful calls."
+    }
+   ],
+   "totalRows": 706,
+   "totalBytes": 688128
+  }
+ ],
+ "views": [
+  {
+   "name": "v_agent_samples",
+   "columns": 7,
+   "comment": "One row per synthesised sample with its metal, linker, date and how many characterisation techniques it has."
+  },
+  {
+   "name": "v_agente_muestras",
+   "columns": 7,
+   "comment": "Vista de solo lectura para el agente RAG. n_tecnicas es la etiqueta debil de interes experimental."
+  },
+  {
+   "name": "v_ml_deployed",
+   "columns": 12,
+   "comment": "Los modelos que se estan sirviendo ahora mismo y con que papel. Una fila por ranura; si esta vacia, no hay nada desplegado."
+  },
+  {
+   "name": "v_ml_features",
+   "columns": 49,
+   "comment": "Tabla de caracteristicas para ML (v3, 2026-09-02). Frente a la v2: unidades de volumen corregidas -- las disoluciones diluidas del Excel (HCl 0,6M, HCl 3M, HF 3M) estan en mL y no en uL, y su agua entra ahora en el balance --, mas tres columnas de disolvente recuperadas (AcOH glacial, H2PO4, NH4OH). El acido acetico glacial cuenta a la vez como disolvente y como modulador carboxilico."
+  },
+  {
+   "name": "v_ml_model_input_contract",
+   "columns": 7,
+   "comment": "Las columnas de entrada de cada modelo, en el orden exacto en que hay que pasarselas. Es lo que debe leer cualquier servicio que cargue un modelo del registro; no hardcodear la lista."
+  },
+  {
+   "name": "v_ml_model_registry",
+   "columns": 18,
+   "comment": "El registro de modelos en forma legible, sin los binarios: que modelos hay, sobre que datos, con que resultado y si siguen siendo reproducibles."
+  },
+  {
+   "name": "v_pxrd_labels_full",
+   "columns": 14,
+   "comment": "Crystallinity labels joined to the synthesis conditions they belong to. needs_relink flags labels orphaned by a re-ingestion."
+  },
+  {
+   "name": "v_rag_biblioteca",
+   "columns": 16,
+   "comment": "Catalogo del corpus con la cita bibliografica ya construida. Herramienta de solo lectura para el agente: evita que invente referencias."
+  },
+  {
+   "name": "v_rag_library",
+   "columns": 16,
+   "comment": "Corpus catalogue with the citation already assembled. Read-only tool for the agent so it never invents a reference."
+  }
+ ],
+ "functions": [
+  "agent_audit",
+  "agent_authorise",
+  "agent_explore_graph",
+  "agent_find_graph_node",
+  "agent_get_characterisation",
+  "agent_log_exchange",
+  "agent_row_limit",
+  "agent_sample_summary",
+  "agent_search_library",
+  "agent_search_synthesis",
+  "agent_statistics",
+  "agent_verify_owner",
+  "kg_neighbors",
+  "rag_find_existing_document",
+  "rag_hybrid_search",
+  "rag_source_rank"
+ ]
+}
