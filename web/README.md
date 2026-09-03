@@ -5,7 +5,7 @@ CRISP-DM. Todo lo que hay aquí es **publicable**; ningún dato crudo, ningún b
 ningún nombre de muestra real vive en esta carpeta.
 
 El guión de contenido de cada pantalla está en
-[`../docs/ROADMAP_APP_WEB_Y_GUION.md`](../docs/ROADMAP_APP_WEB_Y_GUION.md), sección 5.
+`_lab/methodology/roadmaps/ROADMAP_APP_WEB_Y_GUION.md` (privado).
 
 ## Arrancar
 
