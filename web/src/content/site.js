@@ -23,15 +23,15 @@ export const SITE = {
    sin actualizar tambien la tabla 4.2 del roadmap. */
 export const SCREENS = [
   { id: '00', slug: '', short: 'Overview', title: 'Overview', crisp: 'Business understanding' },
-  { id: '01', slug: 'science', short: 'The Science', title: 'MOFs & Lab Daily-life', crisp: 'Analytic approach · Data requirements' },
+  { id: '01', slug: 'science', short: 'The Science', title: 'MOFs & Lab Daily-life', crisp: 'Data requirements' },
   { id: '02', slug: 'data-collection', short: 'Data Collection', title: 'The Ingestion Workflow', crisp: 'Data collection' },
   { id: '03', slug: 'data-preparation', short: 'Data Preparation', title: 'ETL & PXRD Signal Processing', crisp: 'Data preparation' },
-  { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Data Understanding', crisp: 'Exploratory data analysis' },
+  { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Exploratory data analysis', crisp: 'Data Understanding' },
   { id: '05', slug: 'modeling', short: 'Modeling', title: 'Training & Evaluation', crisp: 'Modeling · Evaluation' },
   { id: '06', slug: 'the-model', short: 'The Model', title: 'Simulator, Registry & Active Learning', crisp: 'Deployment · Feedback' },
   { id: '07', slug: 'rag', short: 'RAG Assistant', title: 'Scientific Co-pilot', crisp: 'Decision support' },
-  { id: '08', slug: 'database', short: 'The Database', title: 'One Schema, Documented', crisp: 'Data governance' },
-  { id: '09', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: '—' },
+  { id: '08', slug: 'database', short: 'The Database', title: 'ALCheMy Database', crisp: 'Data governance' },
+  { id: '09', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: 'About the author' },
 ]
 
 /* KPIs: valores auditados el 2026-09-01 contra la base de datos.

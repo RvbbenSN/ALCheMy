@@ -189,7 +189,7 @@ export const EDA_CONFOUNDER = {
 export const EDA_MISSING = {
   title: 'Missing values: five causes, five different fixes',
   intro:
-    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the record is internally inconsistent" — and only the first resembles what imputation assumes. Of the five causes below, **only one was a mistake made by this project**.',
+    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the record is internally inconsistent" — and only the first resembles what imputation assumes.',
   tableHead: ['Property', 'Who is missing', 'Why', 'What was done'],
   tableRows: [
     [
@@ -213,7 +213,7 @@ export const EDA_MISSING = {
     [
       'Oxidation state, ionic radius',
       '22 rows',
-      'A non-breaking space (U+00A0) in the precursor text — **the only one of the five that was our own bug**',
+      'A non-breaking space (U+00A0) in the precursor text',
       'Fixed by normalising the join, not by hand-listing variants',
     ],
     [

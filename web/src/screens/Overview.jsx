@@ -26,7 +26,8 @@ const SCREEN_ICON = {
   '05': LineChart,
   '06': Microscope,
   '07': Bot,
-  '08': UserRound,
+  '08': Database,
+  '09': UserRound,
 }
 
 export default function Overview() {
@@ -114,7 +115,7 @@ export default function Overview() {
         </p>
         <ol className="grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {SCREENS.map((s) => {
-            const Icon = SCREEN_ICON[s.id]
+            const Icon = SCREEN_ICON[s.id] || Compass
             return (
               <li key={s.id}>
                 <Link to={`/${s.slug}`} className="block no-underline">
