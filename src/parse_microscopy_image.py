@@ -61,6 +61,39 @@ def _read_lines(txt_path):
     return [l.rstrip('\r') for l in text.split('\n')]
 
 
+# El Hitachi nombra cada micrografia como <codigo><contador><aumento>, sin
+# ningun separador: RS3520000(x400).jpg es la imagen 0000 de la muestra RS352,
+# y RS10080032(x400).jpg es la 0032 de RS1008. El contador siempre ocupa
+# exactamente cuatro digitos, asi que la frontera entre codigo y contador es
+# la posicion "cuatro digitos antes del parentesis del aumento".
+#
+# Por que importa: sin quitarlo, el `RS\d+` de mas abajo es gloton y se traga
+# tambien el contador, devolviendo muestras que no existen ("RS10080032").
+# La ingestion crea entonces una fila placeholder por cada una de ellas, y la
+# micrografia queda colgada de esa fila fantasma en vez de la muestra real.
+# Eso fue exactamente lo que paso: 988 muestras inventadas en
+# synthesis_experiments y 1.009 micrografias desviadas de 297 muestras reales.
+#
+# Solo se recorta cuando el nombre encaja en la forma completa (codigo, cuatro
+# digitos, y el "(x" del aumento). Un nombre que no la cumpla se devuelve tal
+# cual, para no estropear ficheros que sigan otro convenio.
+_SEM_COUNTER_RE = re.compile(r'^([A-Za-z]+-?\d+?)\d{4}\(x', re.IGNORECASE)
+
+
+def _strip_image_counter(base_name):
+    """Quita el contador de imagen de 4 digitos del nombre de una micrografia.
+
+    >>> _strip_image_counter('RS3520000(x400).jpg')
+    'RS352'
+    >>> _strip_image_counter('RS10080032(x1.0k)_alt.jpg')
+    'RS1008'
+    >>> _strip_image_counter('RS1883_survey.jpg')   # otra forma: sin tocar
+    'RS1883_survey.jpg'
+    """
+    match = _SEM_COUNTER_RE.match(base_name)
+    return match.group(1) if match else base_name
+
+
 def _parse_sidecar(txt_path):
     """Returns (metadata_dict, format_name) or ({}, None) if no sidecar exists."""
     if not os.path.exists(txt_path):
@@ -138,7 +171,8 @@ def parse_microscopy_image(image_path, sample_code=None, technique=None, measure
 
     if not sample_code:
         base_name = os.path.basename(image_path)
-        code_match = pd.Series([base_name]).str.extract(r'(RS\d+|LP\d+|RSMix\d+|IEF-\d+)', expand=False).dropna()
+        code_match = pd.Series([_strip_image_counter(base_name)]).str.extract(
+            r'(RS\d+|LP\d+|RSMix\d+|IEF-\d+)', expand=False).dropna()
         sample_code = code_match.iloc[0].upper() if len(code_match) > 0 else 'UNKNOWN'
 
     sample_name_raw = os.path.basename(image_path)

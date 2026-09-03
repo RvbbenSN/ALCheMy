@@ -34,6 +34,25 @@ function you need directly, or go through `characterization_parser.py`'s
 dispatcher. Each file starts with `import io; open = io.open` — a workaround
 for n8n's Python sandbox permanently blocking the bare `open` builtin.
 
+**Sample-code recovery, and the trap inside it.** When the caller does not
+supply a `sample_code`, each parser recovers it from the file name with the
+regex `(RS\d+|LP\d+|RSMix\d+|IEF-\d+)`. That works for eight of the nine
+techniques, and fails silently for SEM: the Hitachi writes
+`RS3520000(x400).jpg`, which is image `0000` of sample `RS352`, with no
+separator at all. `RS\d+` is greedy, so it swallowed the counter too and
+returned `RS10080032` — a sample that does not exist. The ingestion then
+created a placeholder synthesis row for each invented code, and hung the
+micrograph off that ghost instead of the real sample. The damage measured on
+the live database was **988 phantom rows in `synthesis_experiments` and 1,009
+micrographs detached from 297 real samples**. `parse_microscopy_image.py`
+therefore runs `_strip_image_counter()` first: the image counter is always
+exactly four digits immediately before the `(x…)` magnification, so that
+boundary is unambiguous, and a name that does not match the full shape is
+returned untouched. Reuse: import `_strip_image_counter` if you write another
+tool that reads SEM file names — and note the general lesson, that a greedy
+`\d+` against an instrument's file name is a bug waiting for the day the
+instrument appends something of its own.
+
 ### `characterization_parser_n8n.js`
 The same parsing contract as above, rewritten in JavaScript for an n8n Code
 node, reading the uploaded binary via base64/regex scanning instead of a
