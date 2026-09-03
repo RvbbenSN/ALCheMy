@@ -1271,3 +1271,296 @@ y verificar el resultado con una batería de expresiones regulares antes de publ
 para cualquier otra vista previa de datos privados que haga falta en la web. La verificación
 importa tanto como la sustitución: es lo que caza un código de muestra escondido dentro de un
 nombre de fichero.
+
+---
+
+### `src/fix_volume_units_2026_09.py`
+
+One-off data correction, already run, kept for the audit trail. It rewrites
+`h2o_total_ml`, `hcl_active_mmol` and `hf_active_mmol` for 2,153 rows of
+`synthesis_experiments`.
+
+**The problem it solves.** Notebook 01 assumed that *every* additive column of the master
+Excel was in microlitres. Three of them are not. The proof is in the spreadsheet's own
+`V total` formula:
+
+```
+V total = SUM(Q:AB) + SUM(AE:AU)/1000
+```
+
+The `/1000` is applied to the **second** block only, which means the first one — where
+`HCl (0,6M)`, `HCl (3M)` and `HF (3M)` live — is in **millilitres**. That matches bench
+practice: those are *dilute* solutions, dosed in mL, and they act as **solvent**; the
+concentrated ones and the neat liquids go in µL.
+
+**Why it mattered.** Dividing the dilute solutions by 1000 made the water they contribute
+disappear. The solvent breakdown then failed to add up to the recorded total volume in
+**18 %** of the syntheses, and those rows were flagged as unknown composition — the single
+largest gap in the ML feature table. Nothing was missing from the record: **the dilution
+water was being thrown away by the code**. After the fix the breakdown is complete in
+**99.5 %** of HTS syntheses, and **99.8 %** of the rows the model actually trains on.
+(Across all 2,152 syntheses, standard and microwave included, it is 99.1 % — the
+denominator is worth stating, because the three numbers otherwise read as if they
+disagreed.)
+
+**How it was found.** By a chemist's objection to a claim of mine. I had read RS1873's
+15 mL of reaction volume as evidence of a missing solvent record; the answer was "how can
+there be 15 µL of water?". Reading the Excel formula settled it: the volume closes exactly,
+and the units were the error. Verified by reproducing the stored `V total` in **2,162 of
+2,172 rows (99.54 %)**.
+
+**Design notes.** It reads the sheet **by column index**, not by name, because the header
+row repeats names (`HF (3M)` and `TFA` each appear twice, once per unit block) and pandas
+renames the duplicates. It replicates notebook 01's `desambiguar()` so sample codes line up.
+It deliberately does **not** re-run the full ingestion: that would overwrite chemistry
+reconciled by hand in the database.
+
+Notebook 01 is fixed in the same commit — the three columns are mapped to `*_ml`, the two
+duplicated µL columns are picked up, and the corrected notebook was checked to reproduce
+the database on 2,096 samples to within the stored rounding.
+
+---
+
+### `scripts/ddl_ml_features_v3.sql`
+
+Rebuild of `v_ml_features` on top of the corrected volumes. Same `DROP VIEW` + `CREATE VIEW`
+mechanics and the same "back up first" rule as v2. What it changes:
+
+- **Glacial acetic acid counts twice, on purpose**: as a solvent (it is one) and as a
+  carboxylic modulator (`× 17.4855` mmol/mL). Leaving it out of either place misstated the
+  medium.
+- **`solvent_breakdown_complete` uses `abs(residual_frac) <= 0.05`.** The first draft bounded
+  the residual on one side only, so rows whose components *exceeded* the recorded total
+  passed the check. A negative residual is exactly as inconsistent as a positive one.
+- **`frac_h2po4` and `frac_nh4oh` are exposed.** Without them, syntheses whose whole volume
+  is phosphoric acid appeared to have fractions summing to zero.
+
+Verification after applying: the ten fractions sum to mean 0.9997 (min 0.9536, max 1.0001)
+over 1,513 of 1,516 training rows.
+
+---
+
+### `scripts/audit_model_reproducibility.py`
+
+Comprueba que un cuaderno de modelado **dice la verdad**. Dos preguntas distintas, las dos
+importantes:
+
+```bash
+# ¿las salidas guardadas son las que ese código produce hoy?
+python scripts/audit_model_reproducibility.py notebooks/06_...ipynb --diff
+
+# ¿las métricas de ml_model_metrics coinciden con las de re-entrenar?
+python scripts/audit_model_reproducibility.py notebooks/06_...ipynb --registro \
+    --slug crystallinity_v4_hts_full --slug crystallinity_v4_hts_actionable
+```
+
+Sin argumentos de modo hace las dos. Devuelve código de salida 1 si algo no cuadra, así que
+se puede encadenar o meter en un hook.
+
+**El problema que resuelve, y no es hipotético.** Un cuaderno ejecutado guarda sus salidas
+*dentro* del `.ipynb`. Si después cambia el código, la vista o los datos, esas salidas
+siguen ahí, con el mismo aspecto de siempre — y el texto en prosa que las interpreta,
+también. **Un cuaderno cuyas cifras ya no se reproducen miente sin avisar.**
+
+**Cómo se descubrió que hacía falta.** Auditando el modelo v4 de cristalinidad
+(2026-09-03), este procedimiento detectó que el cuaderno 06 mostraba F1 = 0,511 y una
+importancia por bloques **negativa** para el medio, mientras que una ejecución limpia del
+mismo código daba **0,517** y todos los bloques **positivos**. Toda la lectura química de
+§8.4 —"arreglar el dato no lo convirtió en señal", "19 de 39 variables aportan ruido"— se
+apoyaba en unos números que ya no salían. Se re-ejecutó el cuaderno entero y se reescribió
+el texto. De paso salieron dos defectos del registro de modelos: las importancias por
+variable nunca llegaban a guardarse, y el `ON CONFLICT` de `registrar_modelo()` no
+actualizaba `algorithm` ni `library`, de modo que re-registrar un slug dejaba el algoritmo
+antiguo junto al binario nuevo. Los dos están corregidos.
+
+**Cómo funciona.** Ejecuta las celdas de código en un único espacio de nombres (como haría
+un kernel), capturando el `stdout` de cada una, y lo compara línea a línea con lo guardado.
+Se detiene en la última celda que menciona `permutation_importance` —para no volver a
+escribir en la base— o donde diga `--hasta`.
+
+**Limitación honesta.** Compara sólo la salida **impresa**: no las tablas que Jupyter
+muestra como resultado de la última expresión, ni las figuras. Es una red de seguridad, no
+una prueba formal. Aun así, con que el cuaderno imprima sus cifras clave —que es buena
+práctica de todos modos— basta para cazar este fallo.
+
+**Reutilizable** en cualquier cuaderno del proyecto que imprima resultados: el
+`--diff` no sabe nada de ML. El `--registro` sí asume la convención de este proyecto (un
+DataFrame de resultados cuya primera fila es el modelo ganador, con columnas `F1 macro` y
+`MCC`), configurable con `--variable`.
+
+---
+
+### `scripts/ddl_ml_model_features_position.sql` + `v_ml_model_input_contract`
+
+Migración aditiva que añade `ml_model_features.feature_position` y una vista,
+`v_ml_model_input_contract`, con **las columnas de entrada de cada modelo en el orden
+exacto en que hay que pasárselas**.
+
+**El problema que resuelve, y por qué es de los peligrosos.** Un `Pipeline` de
+scikit-learn entrenado con un DataFrame recuerda los nombres de sus columnas pero exige
+recibirlas **en el mismo orden**. Las instrucciones de carga ya lo advertían; el orden, en
+cambio, no estaba escrito en ninguna parte: un `SELECT feature_name FROM ml_model_features`
+devuelve las filas en el orden que decida el planificador. Y el fallo no es ruidoso: si al
+modelo le llega un DataFrame con los nombres bien, algunas versiones lo reordenan solas; si
+le llega un array de numpy, **predice con los valores en la casilla equivocada y no lanza
+ningún error**. Radio iónico entrando por la casilla de la temperatura da una predicción
+perfectamente plausible y perfectamente falsa.
+
+`registrar_modelo()` guarda ahora la posición automáticamente, y `columnas_de_entrada(conn,
+slug)` la lee. Las posiciones de los cuatro modelos ya registrados se rellenaron desde
+`pipeline.feature_names_in_` del propio binario guardado — la única fuente que no puede
+equivocarse, porque es literalmente lo que el modelo espera.
+
+```sql
+-- lo que debe leer cualquier servicio que cargue un modelo del registro
+SELECT feature_position, feature_name
+  FROM v_ml_model_input_contract
+ WHERE model_slug = 'crystallinity_v4_hts_full'
+ ORDER BY feature_position;
+```
+
+---
+
+### `scripts/check_model_serving.py`
+
+Ensayo de despliegue. Hace exactamente lo que tendrá que hacer el backend y nada más:
+
+```bash
+python scripts/check_model_serving.py                              # el modelo activo
+python scripts/check_model_serving.py --slug crystallinity_v4_hts_actionable
+```
+
+1. Carga el binario desde `ml_model_artifacts` **verificando su SHA-256**.
+2. Lee el contrato de entrada de `v_ml_model_input_contract`, sin ninguna lista escrita a
+   mano en el código.
+3. Construye `X` con `reindex`, que falla ruidosamente si falta una columna.
+4. Predice, y comprueba que las clases devueltas son las de `target_classes` y que
+   `predict_proba` suma 1.
+5. Repite la predicción con las columnas al revés, como DataFrame y como array de numpy, y
+   enseña la diferencia. **Ese paso no es adorno**: es la demostración de por qué el
+   contrato vive en la base y no en el servicio.
+
+Código de salida 1 si algo no cuadra, así que sirve como comprobación previa al despliegue
+en cualquier automatismo. Estado a 2026-09-03: `LISTO PARA SERVIR` para los dos modelos v4.
+
+**Cómo se sirve el modelo, en cuatro líneas.** Es todo lo que necesita el backend:
+
+```python
+from src.ml_model_registry import cargar_modelo, columnas_de_entrada
+modelo = cargar_modelo(conn, 'crystallinity_v4_hts_full')
+X = df.reindex(columns=columnas_de_entrada(conn, 'crystallinity_v4_hts_full'))
+pred, proba = modelo.predict(X), modelo.predict_proba(X)
+```
+
+El pipeline lleva dentro su propia imputación y su codificación de categóricas, así que
+acepta huecos y texto sin preprocesado externo. Lo que **no** perdona es que falte una
+columna del contrato.
+
+---
+
+## Despliegue del modelo en la web
+
+### `scripts/ddl_ml_deployment_slot.sql` + `modelo_desplegado()` + `scripts/build_model_scorecard.py`
+
+**El problema.** El registro de modelos sabía qué modelos existían, pero no cuál se estaba
+*sirviendo*. Esa información vivía escrita a mano en dos sitios: el slug dentro de
+`scripts/build_simulator_grid.py` (`MODEL_SLUG = "crystallinity_v3_hts_full"`) y las
+métricas dentro de un componente de React (`F1 macro 0.522`, recall `0.50 / 0.71 / 0.50`).
+
+Y falló, exactamente como estaba previsto que fallara: se entrenó el v4 —que corrige el
+error de unidades de factor 1000— y **la web siguió sirviendo el v3 sin que nada avisara**.
+No hay error posible que lo detecte, porque un modelo obsoleto no da error: da respuestas.
+La página se veía perfecta con las cifras y las predicciones del modelo equivocado.
+
+**La solución: la ranura de despliegue.** `ml_models` gana una columna `deployment_slot`:
+
+| Ranura | Qué modelo la ocupa | Dónde se usa |
+|---|---|---|
+| `primary` | `crystallinity_v4_hts_full` | El simulador de la web y la columna "Full model" del scorecard |
+| `actionable` | `crystallinity_v4_hts_actionable` | La columna "Actionable model" |
+| `NULL` | Registrado pero no servido | — |
+
+Tres reglas la protegen, y las tres impiden un despliegue por descuido:
+
+- **Índice único parcial**: no puede haber dos modelos en la misma ranura.
+- **`CHECK (deployment_slot IS NULL OR status = 'active')`**: marcar como `superseded` un
+  modelo que sigue desplegado **falla**. Eso obliga a *mover* el puntero al sustituirlo,
+  que es justo el paso que se olvidó con el v3.
+- **`is_deployed` pasa a ser `GENERATED ALWAYS AS (deployment_slot IS NOT NULL)`**: se
+  calcula de la ranura, así que no hay dos fuentes de verdad que puedan discrepar.
+
+La vista `v_ml_deployed` responde de un vistazo "qué se está sirviendo ahora mismo".
+
+**Cómo se consume desde el código.** `modelo_desplegado(conn, slot='primary')`, en
+`src/ml_model_registry.py`, devuelve el slug. Ningún generador vuelve a llevar un slug
+dentro.
+
+```python
+from src.ml_model_registry import cargar_modelo, columnas_de_entrada, modelo_desplegado
+slug = modelo_desplegado(conn)                       # 'crystallinity_v4_hts_full'
+X = df.reindex(columns=columnas_de_entrada(conn, slug))
+pred = cargar_modelo(conn, slug).predict(X)
+```
+
+**`scripts/build_model_scorecard.py`** escribe `web/src/data/model_scorecard.json` con las
+cifras de los dos modelos desplegados leídas de `ml_model_metrics`, y el componente
+`ModelScorecard.jsx` lo importa. En el JSON viajan **solo números**; los rótulos y las
+frases siguen en el componente, porque son contenido y corregir una frase no debe obligar
+a tocar Python.
+
+El clasificador trivial no se copia, **se deriva** de la distribución de clases: con la
+estrategia "responder siempre la mayoritaria", la exactitud es la fracción de esa clase, la
+exactitud equilibrada es `1/k`, el MCC es 0 por definición y el F1 macro es el de la clase
+mayoritaria dividido entre `k`. Sale 0,260, que es exactamente el 0,26 que estaba escrito a
+mano — comprobación de que la derivación es la correcta.
+
+### `scripts/register_class_metrics.py`
+
+Rellena el hueco que hacía falta para lo anterior: `ml_model_metrics` solo guardaba las
+cifras agregadas, y la web enseña además el **acierto por clase**, que es la lectura útil de
+una herramienta de cribado.
+
+```bash
+python scripts/register_class_metrics.py                       # comprueba, no escribe
+python scripts/register_class_metrics.py --registrar
+python scripts/register_class_metrics.py --slot actionable --registrar
+```
+
+Reconstruye el conjunto desde `ml_datasets.source_query`, lo reparte con el
+`StratifiedGroupKFold` y la semilla que guarda `ml_models.validation_scheme`, y **re-ajusta
+el pipeline en cada pliegue** (`clone`, no el objeto ya entrenado: usar el modelo ajustado
+sobre datos que vio al entrenar daría cifras optimistas).
+
+Antes de escribir nada contrasta el F1 macro recalculado con el registrado y aborta si se
+apartan más de `--tolerancia` (0,02 por defecto). Esa comprobación es la prueba práctica de
+que el registro cumple lo que promete: **ambos modelos v4 reprodujeron su F1 macro exacto**
+(0,517 y 0,393) a partir únicamente de lo guardado en la base, sin abrir el cuaderno.
+
+### Sacar un modelo nuevo: el procedimiento completo
+
+No es "sustituir un fichero". Son cuatro pasos, y ninguno toca código:
+
+```bash
+# 1. Mover el puntero (el modelo nuevo ya registrado y con status 'active')
+docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db -c \
+  "UPDATE ml_models SET deployment_slot = NULL  WHERE deployment_slot = 'primary';
+   UPDATE ml_models SET status = 'superseded'   WHERE model_slug = '<el viejo>';
+   UPDATE ml_models SET deployment_slot = 'primary' WHERE model_slug = '<el nuevo>';"
+
+# 2. Registrar sus métricas por clase
+python scripts/register_class_metrics.py --registrar
+
+# 3. Regenerar los dos artefactos de la web (siguen la ranura solos)
+python scripts/build_model_scorecard.py
+python scripts/build_simulator_grid.py
+
+# 4. Comprobar y reconstruir
+python scripts/check_model_serving.py       # -> LISTO PARA SERVIR
+cd web && npm run build
+```
+
+**Por qué la web no llama al modelo en vivo.** No hay backend: el simulador sirve una
+rejilla de predicciones precalculadas (`build_simulator_grid.py`). Eso tiene una ventaja
+además de la técnica —**nadie puede sondear el modelo** para reconstruir la química que
+aprendió— y un precio, que es que la rejilla cuantiza y hay que regenerarla al cambiar de
+modelo. El paso 3 es ese precio.

@@ -148,6 +148,10 @@ def registrar_modelo(conn, slug, display_name, task_type, algorithm, library,
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (model_slug) DO UPDATE SET
             display_name = EXCLUDED.display_name, hyperparameters = EXCLUDED.hyperparameters,
+            task_type = EXCLUDED.task_type, target_column = EXCLUDED.target_column,
+            target_classes = EXCLUDED.target_classes, question = EXCLUDED.question,
+            algorithm = EXCLUDED.algorithm, library = EXCLUDED.library,
+            python_version = EXCLUDED.python_version, platform = EXCLUDED.platform,
             preprocessing = EXCLUDED.preprocessing, validation_scheme = EXCLUDED.validation_scheme,
             random_seed = EXCLUDED.random_seed, source_notebook = EXCLUDED.source_notebook,
             git_commit = EXCLUDED.git_commit, library_versions = EXCLUDED.library_versions,
@@ -178,14 +182,23 @@ def registrar_modelo(conn, slug, display_name, task_type, algorithm, library,
 
     if features:
         cur.execute('DELETE FROM ml_model_features WHERE model_id = %s', (model_id,))
+        # La posicion importa: el pipeline exige las columnas en el mismo orden en
+        # que se entreno, y sin guardarla el consumidor tendria que adivinarla.
+        # Se toma del orden en que llegan las entradas en `features`.
+        posicion = 0
         for f in features:
+            papel = f.get('feature_role', 'input')
+            pos = None
+            if papel == 'input':
+                pos = posicion
+                posicion += 1
             cur.execute("""INSERT INTO ml_model_features
                            (model_id, feature_name, feature_role, feature_block,
-                            importance, exclusion_reason)
-                           VALUES (%s,%s,%s,%s,%s,%s)""",
-                        (model_id, f['feature_name'], f.get('feature_role', 'input'),
+                            importance, exclusion_reason, feature_position)
+                           VALUES (%s,%s,%s,%s,%s,%s,%s)""",
+                        (model_id, f['feature_name'], papel,
                          f.get('feature_block'), f.get('importance'),
-                         f.get('exclusion_reason')))
+                         f.get('exclusion_reason'), pos))
 
     if pipeline is not None:
         import joblib
@@ -262,6 +275,64 @@ def cargar_modelo(conn, slug, verificar_hash=True):
         pass
 
     return joblib.load(io.BytesIO(datos))
+
+
+def columnas_de_entrada(conn, slug):
+    """Las columnas que espera el modelo, EN EL ORDEN EN QUE SE ENTRENO.
+
+    Uselo siempre para construir el DataFrame de prediccion, en vez de escribir
+    la lista a mano en el servicio que consume el modelo. Un pipeline de
+    scikit-learn con las columnas cruzadas no siempre da error: si le llega un
+    array de numpy, predice con los valores en la casilla equivocada y devuelve
+    un resultado plausible y falso.
+
+        cols = columnas_de_entrada(conn, 'crystallinity_v4_hts_full')
+        X = df.reindex(columns=cols)         # KeyError si falta alguna
+        pred = cargar_modelo(conn, 'crystallinity_v4_hts_full').predict(X)
+    """
+    cur = conn.cursor()
+    cur.execute("""SELECT f.feature_name
+                     FROM ml_model_features f
+                     JOIN ml_models m USING (model_id)
+                    WHERE m.model_slug = %s
+                      AND f.feature_role = 'input'
+                      AND f.feature_position IS NOT NULL
+                    ORDER BY f.feature_position""", (slug,))
+    cols = [r[0] for r in cur.fetchall()]
+    if not cols:
+        raise ValueError(
+            'El modelo %r no tiene columnas de entrada con posicion registrada. '
+            'Aplique scripts/ddl_ml_model_features_position.sql y vuelva a '
+            'registrarlo, o rellene feature_position desde el pipeline guardado '
+            '(pipeline.feature_names_in_).' % slug)
+    return cols
+
+
+def modelo_desplegado(conn, slot='primary'):
+    """El slug del modelo que se esta sirviendo en esa ranura de despliegue.
+
+    Es la funcion que sustituye al slug escrito a mano dentro de cada generador.
+    Antes de existir, `build_simulator_grid.py` llevaba dentro
+    'crystallinity_v3_hts_full', y cuando se entreno el v4 --que corrige un
+    error de unidades de factor 1000-- la web siguio sirviendo el v3 sin que
+    nada fallara: un modelo obsoleto no da error, da respuestas.
+
+    Cambiar de modelo pasa a ser un UPDATE sobre `ml_models.deployment_slot`,
+    y los generadores lo siguen solos.
+
+        slug = modelo_desplegado(conn)               # el modelo completo
+        slug = modelo_desplegado(conn, 'actionable') # el de variables fijables
+    """
+    cur = conn.cursor()
+    cur.execute("""SELECT model_slug FROM ml_models
+                    WHERE deployment_slot = %s""", (slot,))
+    fila = cur.fetchone()
+    if fila is None:
+        raise LookupError(
+            'No hay ningun modelo desplegado en la ranura %r. Asignela con: '
+            "UPDATE ml_models SET deployment_slot = '%s' "
+            "WHERE model_slug = '<slug>';" % (slot, slot))
+    return fila[0]
 
 
 # ---------------------------------------------------------------------------
