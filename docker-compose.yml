@@ -4,7 +4,7 @@ services:
   n8n:
     build:
       context: .
-      dockerfile: Dockerfile.n8n
+      dockerfile: docker/Dockerfile.n8n
     container_name: alchemy_n8n
     restart: unless-stopped
     ports:
@@ -36,7 +36,7 @@ services:
   runners:
     build:
       context: .
-      dockerfile: Dockerfile.runners
+      dockerfile: docker/Dockerfile.runners
     container_name: alchemy_runners
     restart: unless-stopped
     environment:
