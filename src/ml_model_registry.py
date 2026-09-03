@@ -182,14 +182,23 @@ def registrar_modelo(conn, slug, display_name, task_type, algorithm, library,
 
     if features:
         cur.execute('DELETE FROM ml_model_features WHERE model_id = %s', (model_id,))
+        # La posicion importa: el pipeline exige las columnas en el mismo orden en
+        # que se entreno, y sin guardarla el consumidor tendria que adivinarla.
+        # Se toma del orden en que llegan las entradas en `features`.
+        posicion = 0
         for f in features:
+            papel = f.get('feature_role', 'input')
+            pos = None
+            if papel == 'input':
+                pos = posicion
+                posicion += 1
             cur.execute("""INSERT INTO ml_model_features
                            (model_id, feature_name, feature_role, feature_block,
-                            importance, exclusion_reason)
-                           VALUES (%s,%s,%s,%s,%s,%s)""",
-                        (model_id, f['feature_name'], f.get('feature_role', 'input'),
+                            importance, exclusion_reason, feature_position)
+                           VALUES (%s,%s,%s,%s,%s,%s,%s)""",
+                        (model_id, f['feature_name'], papel,
                          f.get('feature_block'), f.get('importance'),
-                         f.get('exclusion_reason')))
+                         f.get('exclusion_reason'), pos))
 
     if pipeline is not None:
         import joblib
@@ -266,6 +275,37 @@ def cargar_modelo(conn, slug, verificar_hash=True):
         pass
 
     return joblib.load(io.BytesIO(datos))
+
+
+def columnas_de_entrada(conn, slug):
+    """Las columnas que espera el modelo, EN EL ORDEN EN QUE SE ENTRENO.
+
+    Uselo siempre para construir el DataFrame de prediccion, en vez de escribir
+    la lista a mano en el servicio que consume el modelo. Un pipeline de
+    scikit-learn con las columnas cruzadas no siempre da error: si le llega un
+    array de numpy, predice con los valores en la casilla equivocada y devuelve
+    un resultado plausible y falso.
+
+        cols = columnas_de_entrada(conn, 'crystallinity_v4_hts_full')
+        X = df.reindex(columns=cols)         # KeyError si falta alguna
+        pred = cargar_modelo(conn, 'crystallinity_v4_hts_full').predict(X)
+    """
+    cur = conn.cursor()
+    cur.execute("""SELECT f.feature_name
+                     FROM ml_model_features f
+                     JOIN ml_models m USING (model_id)
+                    WHERE m.model_slug = %s
+                      AND f.feature_role = 'input'
+                      AND f.feature_position IS NOT NULL
+                    ORDER BY f.feature_position""", (slug,))
+    cols = [r[0] for r in cur.fetchall()]
+    if not cols:
+        raise ValueError(
+            'El modelo %r no tiene columnas de entrada con posicion registrada. '
+            'Aplique scripts/ddl_ml_model_features_position.sql y vuelva a '
+            'registrarlo, o rellene feature_position desde el pipeline guardado '
+            '(pipeline.feature_names_in_).' % slug)
+    return cols
 
 
 # ---------------------------------------------------------------------------

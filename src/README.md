@@ -1365,3 +1365,71 @@ práctica de todos modos— basta para cazar este fallo.
 `--diff` no sabe nada de ML. El `--registro` sí asume la convención de este proyecto (un
 DataFrame de resultados cuya primera fila es el modelo ganador, con columnas `F1 macro` y
 `MCC`), configurable con `--variable`.
+
+---
+
+### `scripts/ddl_ml_model_features_position.sql` + `v_ml_model_input_contract`
+
+Migración aditiva que añade `ml_model_features.feature_position` y una vista,
+`v_ml_model_input_contract`, con **las columnas de entrada de cada modelo en el orden
+exacto en que hay que pasárselas**.
+
+**El problema que resuelve, y por qué es de los peligrosos.** Un `Pipeline` de
+scikit-learn entrenado con un DataFrame recuerda los nombres de sus columnas pero exige
+recibirlas **en el mismo orden**. Las instrucciones de carga ya lo advertían; el orden, en
+cambio, no estaba escrito en ninguna parte: un `SELECT feature_name FROM ml_model_features`
+devuelve las filas en el orden que decida el planificador. Y el fallo no es ruidoso: si al
+modelo le llega un DataFrame con los nombres bien, algunas versiones lo reordenan solas; si
+le llega un array de numpy, **predice con los valores en la casilla equivocada y no lanza
+ningún error**. Radio iónico entrando por la casilla de la temperatura da una predicción
+perfectamente plausible y perfectamente falsa.
+
+`registrar_modelo()` guarda ahora la posición automáticamente, y `columnas_de_entrada(conn,
+slug)` la lee. Las posiciones de los cuatro modelos ya registrados se rellenaron desde
+`pipeline.feature_names_in_` del propio binario guardado — la única fuente que no puede
+equivocarse, porque es literalmente lo que el modelo espera.
+
+```sql
+-- lo que debe leer cualquier servicio que cargue un modelo del registro
+SELECT feature_position, feature_name
+  FROM v_ml_model_input_contract
+ WHERE model_slug = 'crystallinity_v4_hts_full'
+ ORDER BY feature_position;
+```
+
+---
+
+### `scripts/check_model_serving.py`
+
+Ensayo de despliegue. Hace exactamente lo que tendrá que hacer el backend y nada más:
+
+```bash
+python scripts/check_model_serving.py                              # el modelo activo
+python scripts/check_model_serving.py --slug crystallinity_v4_hts_actionable
+```
+
+1. Carga el binario desde `ml_model_artifacts` **verificando su SHA-256**.
+2. Lee el contrato de entrada de `v_ml_model_input_contract`, sin ninguna lista escrita a
+   mano en el código.
+3. Construye `X` con `reindex`, que falla ruidosamente si falta una columna.
+4. Predice, y comprueba que las clases devueltas son las de `target_classes` y que
+   `predict_proba` suma 1.
+5. Repite la predicción con las columnas al revés, como DataFrame y como array de numpy, y
+   enseña la diferencia. **Ese paso no es adorno**: es la demostración de por qué el
+   contrato vive en la base y no en el servicio.
+
+Código de salida 1 si algo no cuadra, así que sirve como comprobación previa al despliegue
+en cualquier automatismo. Estado a 2026-09-03: `LISTO PARA SERVIR` para los dos modelos v4.
+
+**Cómo se sirve el modelo, en cuatro líneas.** Es todo lo que necesita el backend:
+
+```python
+from src.ml_model_registry import cargar_modelo, columnas_de_entrada
+modelo = cargar_modelo(conn, 'crystallinity_v4_hts_full')
+X = df.reindex(columns=columnas_de_entrada(conn, 'crystallinity_v4_hts_full'))
+pred, proba = modelo.predict(X), modelo.predict_proba(X)
+```
+
+El pipeline lleva dentro su propia imputación y su codificación de categóricas, así que
+acepta huecos y texto sin preprocesado externo. Lo que **no** perdona es que falte una
+columna del contrato.
