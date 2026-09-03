@@ -183,7 +183,7 @@ export const MODELS = [
 
 /* Embudo verificado el 2026-09-01. Es contenido de la pantalla de EDA. */
 export const FUNNEL = [
-  { n: '2,167', label: 'Syntheses performed', why: '1,037 placeholder rows excluded' },
+  { n: '2,167', label: 'Syntheses performed', why: 'The starting point: every synthesis on record' },
   { n: '1,879', label: 'PXRD measurements', why: 'Not every synthesis reached the diffractometer' },
   { n: '1,877', label: 'Labeled diffractograms', why: 'Two left unlabeled' },
   { n: '1,611', label: 'Labeled HTS samples', why: 'Solvothermal and microwave runs excluded' },

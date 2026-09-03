@@ -160,12 +160,12 @@ export default function Eda() {
 
       {/* --- 2. El embudo --- */}
       <section>
-        <SectionTitle eyebrow="A worked example">From 3,204 rows to 1,516</SectionTitle>
+        <SectionTitle eyebrow="A worked example">From 2,167 syntheses to 1,516 rows</SectionTitle>
         <p className="mb-3 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          The database holds 3,204 synthesis rows. The model trained on 1,516. The gap is not waste:
-          <strong> every drop below is a deliberate exclusion with a stated reason</strong>, and the
-          point of showing them in order is that each one changes what the resulting model can honestly
-          claim to be about.
+          The laboratory performed <strong>2,167 syntheses</strong>. The model trained on 1,516 rows.
+          The gap is not waste: <strong>every drop below is a deliberate exclusion with a stated
+          reason</strong>, and the point of showing them in order is that each one changes what the
+          resulting model can honestly claim to be about.
         </p>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           Read it as the definition of the model&rsquo;s scope. By the last row the model is no longer
