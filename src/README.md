@@ -1579,3 +1579,35 @@ lógica acabarían divergiendo y la copia sería la que se quedara corta. Reuso:
 `--out <carpeta>` para dejarlo en otro sitio; el `Sanitizer` es de corpus, así
 que se alimenta con todos los cuadernos antes de escribir ninguno y `SMP-0001`
 significa lo mismo en los siete.
+
+
+### `scripts/build_rag_canvas.py`
+Saca los 36 nodos y las 48 conexiones del flujo `ALCheMy-RAG` a
+`web/public/data/rag_canvas.json`, agrupados en seis etapas, para que la
+pantalla 07 lo dibuje con el mismo componente que la 02. **La diferencia con
+`build_workflow_canvas.py` es el motivo por el que existe aparte**: aquel
+conserva las coordenadas exactas de n8n, y puede porque en el flujo de ingesta
+las areas son sticky notes que envuelven a sus nodos. El flujo RAG no tiene
+eso — sus dos notas grandes son banderolas — y al agrupar por etapas los marcos
+salen superpuestos, no por un fallo sino porque en el lienzo real hay nodos de
+etapas distintas compartiendo columna (`Discard Already Indexed` esta a 96
+unidades de `Embeddings`, con cajas de 190). Asi que aqui la posicion **se
+compone**: se conserva que nodos hay, como se llaman, de que tipo son y como se
+conectan, que es lo que un mapa de un flujo tiene que contar, y la pantalla dice
+al lado que las posiciones estan compuestas. Reuso: las etapas se declaran en
+`AREAS` como listas de columnas; el script se niega a dibujar si un nodo del
+export no esta declarado, si uno declarado no existe, o si dos marcos se pisan.
+
+### `scripts/build_schema_map.py`
+Lee la base y escribe `web/src/data/schema_map.json`: las 26 tablas agrupadas en
+siete familias, las 9 vistas, las 16 funciones del proyecto, y para cada objeto
+sus columnas, sus filas, su tamano y su `COMMENT` nativo. Alimenta la pantalla
+08. Problema que resuelve: cualquier cifra del esquema escrita a mano en el
+contenido de la web es mentira en cuanto haya una migracion — ya paso con la
+tabla del registro de modelos, que publicaba los v3 como activos cuando la web
+ya servia el v4. Aqui **no se escribe ningun hecho**: lo unico declarado es a
+que familia pertenece cada tabla, que es una decision de como contarlo. Las
+filas se cuentan con `count(*)` y no con la estimacion de `reltuples`, porque el
+numero se publica. Reuso: el script falla si aparece una tabla que no este ni en
+`FAMILIES` ni en `NOT_OURS`, asi que una tabla nueva no puede colarse sin que
+alguien decida donde va.
