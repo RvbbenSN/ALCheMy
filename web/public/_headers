@@ -1,0 +1,72 @@
+# Cabeceras HTTP que Cloudflare Pages anade a cada respuesta.
+#
+# El HTTPS, el certificado y la proteccion contra DDoS los pone Cloudflare solo.
+# Lo que NO pone solo es lo de este fichero: instrucciones al NAVEGADOR sobre
+# que tiene permitido hacer la pagina. Son la diferencia entre "la conexion va
+# cifrada" y "el sitio esta protegido", que no es lo mismo.
+
+/*
+  # --- Content-Security-Policy: la lista blanca de lo que puede cargar ---
+  #
+  # Es la cabecera que de verdad importa. Dice de donde puede venir cada tipo de
+  # recurso; todo lo que no este listado, el navegador lo bloquea. Si alguien
+  # consiguiera inyectar un <script> en la pagina, no se ejecutaria.
+  #
+  #   default-src 'self'      todo lo no especificado, solo desde este dominio
+  #   script-src              solo nuestro JS, mas UN script incrustado (ver abajo)
+  #   style-src               'unsafe-inline' es necesario: React aplica estilos
+  #                           con atributos style={{...}} en casi cada componente
+  #   font-src                las tipografias de Google que carga index.html
+  #   img-src data:           las figuras que van incrustadas como data URI
+  #   connect-src 'self'      la web todavia no llama a ninguna API externa; el
+  #                           dia que exista el FastAPI, se anade aqui su origen
+  #   frame-ancestors 'none'  nadie puede meter esta web dentro de un iframe
+  #                           (evita el clickjacking); sustituye a X-Frame-Options
+  #
+  # El hash 'sha256-bwD8...' autoriza el unico script incrustado que hay: el de
+  # index.html que aplica el tema guardado antes del primer pintado. Se autoriza
+  # por su huella exacta en vez de con 'unsafe-inline', que abriria la puerta a
+  # CUALQUIER script incrustado y dejaria la cabecera sin valor.
+  #
+  # OJO AL MANTENIMIENTO: si se toca ese script de index.html --aunque sea un
+  # espacio-- el hash deja de cuadrar y el navegador lo bloquea. El sintoma es
+  # leve (un destello de tema claro al recargar en modo oscuro) y el error sale
+  # en la consola del navegador. Para recalcularlo:
+  #
+  #   cd web && npm run build
+  #   python -c "import base64,hashlib,re,pathlib; \
+  #     h=pathlib.Path('dist/index.html').read_text(encoding='utf-8'); \
+  #     [print('sha256-'+base64.b64encode(hashlib.sha256(m.group(1).encode()).digest()).decode()) \
+  #      for m in re.finditer(r'<script(?![^>]*\ssrc=)[^>]*>(.*?)</script>', h, re.S)]"
+  #
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-bwD8ztzqRGb/2BKPl0b08ccPNL+aZS9/JVyMgBEaKzM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+  # No adivines el tipo de un fichero por su contenido: respeta lo que digo.
+  # Sin esto, un fichero subido como imagen podria acabar ejecutandose como JS.
+  X-Content-Type-Options: nosniff
+
+  # Al salir de la web hacia otro sitio, manda solo el dominio, nunca la ruta
+  # completa ni los parametros.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Apaga permisos del navegador que esta web no usa. Si algo intentara pedir la
+  # camara o la ubicacion, el navegador ni pregunta.
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()
+
+  # Exige HTTPS durante un ano, subdominios incluidos. El navegador ni siquiera
+  # intenta la conexion sin cifrar la proxima vez.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# --- Cache ---
+# Los ficheros de /assets llevan un hash en el nombre (index-CsNnSMGZ.js), asi
+# que un cambio produce un nombre NUEVO. Por eso se pueden cachear un ano sin
+# riesgo de servir una version vieja: `immutable` le dice al navegador que ni
+# se moleste en preguntar si ha cambiado.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Los datos generados desde la base de datos, en cambio, conservan su nombre
+# cuando se regeneran (al desplegar otro modelo, por ejemplo). Se revalidan cada
+# hora para que un modelo nuevo no tarde un ano en verse.
+/data/*
+  Cache-Control: public, max-age=3600, must-revalidate

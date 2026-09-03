@@ -79,3 +79,61 @@ Lo que aún no existe:
 - El glosario completo: `site.js` lleva una semilla de 13 términos que se generará desde la guía
   didáctica.
 - Diseño móvil. Se ha construido primero para escritorio, por decisión explícita.
+
+## Despliegue en Cloudflare Pages
+
+El sitio es **estático**: `npm run build` produce `dist/`, y eso es todo lo que se sirve. No
+hay servidor, ni base de datos, ni API detrás.
+
+### Los dos ficheros que hacen que funcione de verdad
+
+Viven en `public/`, así que Vite los copia a `dist/` tal cual. Cloudflare Pages los lee al
+desplegar; en local no hacen nada, y por eso es fácil olvidarse de ellos.
+
+| Fichero | Qué resuelve |
+|---|---|
+| `public/_redirects` | El **fallback de SPA**. Sin él, recargar en `/the-model` o abrir un enlace directo a una sección devuelve **404**: esas rutas las resuelve React en el navegador, en el servidor no existen. Falla justo con quien llega de fuera |
+| `public/_headers` | Las **cabeceras de seguridad**. Cloudflare pone el HTTPS y el anti-DDoS solo; lo que no pone solo es la política de contenido (CSP), que es la que impediría que un script inyectado llegara a ejecutarse |
+
+**Mantenimiento de la CSP.** Autoriza por *hash* el único script incrustado que hay —el de
+`index.html` que aplica el tema antes del primer pintado—, en vez de permitir scripts
+incrustados en general. Si se toca ese script, hay que recalcular el hash; el propio
+`_headers` lleva el comando en un comentario. El síntoma de olvidarlo es leve y visible: un
+destello de tema claro al recargar en oscuro, con un error en la consola del navegador.
+
+Y si algún día la web llama al FastAPI, hay que añadir su origen a `connect-src`. Mientras
+tanto, `connect-src 'self'` significa que la página no habla con nadie.
+
+### Conectar el repositorio (recomendado)
+
+En Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, autorizar el
+repositorio y configurar:
+
+| Campo | Valor |
+|---|---|
+| Framework preset | Vite |
+| Root directory | `web` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+
+A partir de ahí, cada `push` a `main` reconstruye y publica. **El repositorio manda**: el
+sitio se regenera entero desde el código en cada despliegue, así que cualquier cambio hecho
+en un editor visual sobre el sitio publicado —y no en estos ficheros— desaparece en el
+siguiente `push`, sin error y sin aviso.
+
+La alternativa es arrastrar la carpeta `dist/` a Pages (*Direct Upload*). Publica en un
+minuto y sirve para probar, pero cada actualización es un arrastre manual y se pierde la
+correspondencia entre lo publicado y un commit.
+
+### Los dos ficheros que NUNCA se editan a mano
+
+```
+src/data/model_scorecard.json      <- lo genera scripts/build_model_scorecard.py
+public/data/simulator_grid.json    <- lo genera scripts/build_simulator_grid.py
+```
+
+Salen del registro de modelos de la base de datos. Editarlos a mano —o dejar que lo haga un
+asistente -- devuelve la web al estado que se corrigió el 2026-09-03: cifras que ya no
+corresponden al modelo servido, sin que nada falle. Si hay que cambiarlos, se cambia el
+modelo desplegado y se vuelven a generar (ver `src/README.md`, "Despliegue del modelo en la
+web").

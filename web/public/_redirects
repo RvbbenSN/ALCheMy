@@ -1,0 +1,22 @@
+# Fallback de aplicacion de una sola pagina (SPA).
+#
+# Por que hace falta. La app usa `BrowserRouter`, asi que las rutas
+# (/the-model, /rag, /about...) las resuelve JavaScript en el navegador: en el
+# servidor NO existe ninguna carpeta que se llame /the-model. Mientras el
+# visitante navegue con los enlaces de la propia pagina, todo funciona, porque
+# nunca se le pide nada al servidor.
+#
+# Falla en los dos casos que mas importan, que son justo los de alguien que
+# llega de fuera:
+#   - recargar con F5 estando en una pestana que no sea la portada,
+#   - abrir un enlace directo a una seccion (lo que hace un reclutador al que
+#     le pasas https://.../the-model).
+# En ambos el navegador pide esa ruta al servidor, Cloudflare no encuentra
+# /the-model/index.html y devuelve un 404. La web parece rota justo cuando la
+# esta viendo quien no deberia verla rota.
+#
+# La regla de abajo dice: sirve index.html para cualquier ruta, con codigo 200
+# (no 301: no es una redireccion, es la misma pagina respondiendo). El
+# JavaScript arranca, lee la URL y pinta la pantalla correcta. El comodin `*` de
+# `main.jsx` se encarga de las rutas que no existan.
+/*    /index.html   200
