@@ -153,33 +153,26 @@ export const WORKFLOW_SECTIONS = [
   { n: 9, title: 'Governance — fallbacks, audit & errors', adds: 'audit_log with typed verdict, cause and result' },
 ]
 
-/* Registro de modelos. Valores reales de ml_models / ml_datasets. */
-export const MODELS = [
-  {
-    name: 'crystallinity_v3_hts_full',
-    algo: 'Random Forest',
-    f1: '0.522',
-    size: '5.5 MB',
-    status: 'ACTIVE',
-    note: 'HTS only. 1,516 rows across 68 groups.',
-  },
-  {
-    name: 'crystallinity_v3_hts_actionable',
-    algo: 'LightGBM',
-    f1: '0.413',
-    size: '1.6 MB',
-    status: 'ACTIVE',
-    note: 'Reduced feature set, servable in public.',
-  },
-  {
-    name: 'crystallinity_v2_mixed',
-    algo: 'Random Forest',
-    f1: '0.620',
-    size: '—',
-    status: 'INVALID',
-    note: 'Higher score, but it mixed HTS, ST and MW syntheses. Retired for synthesis bias.',
-  },
-]
+/* Registro de modelos.
+   Los HECHOS (algoritmo, F1, tamano, estado, filas) NO viven aqui: se leen de
+   src/data/model_scorecard.json, que genera scripts/build_model_scorecard.py
+   contra ml_models. Esta tabla estuvo escrita a mano y llego a publicar los dos
+   modelos v3 como ACTIVE cuando la web ya servia el v4 -- en la pantalla que
+   explica que existe un registro para no fiarse de la memoria.
+   Aqui solo queda la frase de cada modelo, que es texto y no dato. Un modelo
+   sin frase sale igualmente en la tabla, solo que sin glosa. */
+export const MODEL_NOTES = {
+  crystallinity_v4_hts_full:
+    'The reference model: is there predictive signal in this data at all? First version with the volume units corrected.',
+  crystallinity_v4_hts_actionable:
+    'Process and medium only. Answers the question the bench actually asks: given this chemistry, which conditions help?',
+  crystallinity_v3_hts_full:
+    'Same design, but trained before the volume-unit defect was found. Superseded, not wrong to have existed.',
+  crystallinity_v3_hts_actionable:
+    'The actionable model of the previous generation, kept for comparison.',
+  crystallinity_v2_mixed:
+    'The highest score on this table, and the reason the table exists. It mixed HTS, ST and microwave syntheses, so it was partly detecting the synthesis method. Marked invalid rather than deleted.',
+}
 
 /* Embudo re-derivado el 2026-09-03 de la consulta que el registro guarda para
    el conjunto crystallinity_v4_hts_2026_09_02 (ml_datasets.source_query): se le

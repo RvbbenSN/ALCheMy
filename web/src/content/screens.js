@@ -336,7 +336,7 @@ export const EDA_CORRELATION = {
   blankBody:
     'A white square in the map means the correlation **is not defined**, not that the value was lost. It happens when a variable has **no variance** in this subset: `reactor_volume_ml` is 2.5 mL in every single high-throughput synthesis, so its standard deviation is zero and every correlation involving it divides by zero.',
   blankConsequence:
-    'It also has a corollary worth stating, because it is the textbook case of the point made just above: since the reactor is always 2.5 mL, **`fill_fraction` is exactly `total_volume_ml / 2.5`**. The two columns are the same variable rescaled — perfect collinearity, verified across all 1,516 rows, not an approximation. Neither can be credited independently, and that is precisely why importance is read by block.',
+    'It also has a corollary worth stating, because it is the textbook case of the point made just above: since the reactor is always 2.5 mL, **`fill_fraction` is exactly `total_volume_ml / 2.5`**. The two columns are the same variable rescaled — perfect collinearity, verified across all 1,516 rows, not an approximation. Neither can be credited independently, which is one reason importance is read by block. The other is that this reading was acted on: **in v4 both `reactor_volume_ml` and `fill_fraction` are excluded from the model**, each with its reason recorded in the registry — zero variance for the first, perfect collinearity for the second. Finding it here is what made it removable there.',
   causation:
     '**Correlation is not causation**. These plots measure whether two things move together, nothing more. That temperature appears associated with crystallinity does not demonstrate that raising it causes crystallisation: they may share a common cause, or it may be a coincidence of this particular record. Establishing causation requires intervening — changing only the temperature and seeing what happens — which is precisely what the model suggests where to do, not what it proves.',
 }
@@ -449,9 +449,9 @@ export const MODEL_FINDINGS = [
   },
   {
     title: 'The actionable model drops further, and that answers the objection',
-    body: 'Without metal and linker chemistry the best model falls to about 0.41 with MCC near 0.13: above chance, but weak. In plain terms, most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
+    body: 'Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. In plain terms, most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
     caveat:
-      'This does not mean conditions are chemically unimportant. It means that in this data they were not varied enough for their effect to be learnable — about 13 temperatures and 9 reaction times across the whole record. The suspicion that the linker was acting as the directing variable was correct, and it is now measured.',
+      'This does not mean conditions are chemically unimportant. It means that in this data they were not varied enough for their effect to be learnable — 9 temperatures and 3 reaction times across the training set. The suspicion that the linker was acting as the directing variable was correct, and it is now measured.',
   },
   {
     title: 'Tree-based models now win',
@@ -475,7 +475,7 @@ export const MODEL_ERRORS = {
   amorphous:
     'For amorphous samples the behaviour is what you would hope: when it fails, it confuses "nothing" with "almost nothing", which in the diffractogram itself is a matter of degree and something two experts could disagree about. The severe error — calling an amorphous sample crystalline — is rare.',
   crystalline:
-    'For crystalline samples it is not. One in five crystalline samples is classified as amorphous, the most serious error available. That is not a clean ordinal pattern: it means the model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient ones, and being the most heterogeneous class — there are many ways to crystallise and only one way not to — it was the predictable outcome, but predictable does not stop it being the model\'s main weakness.',
+    'For crystalline samples it is not. Roughly one in six crystalline samples is classified as amorphous, the most serious error available. That is not a clean ordinal pattern: it means the model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient ones, and being the most heterogeneous class — there are many ways to crystallise and only one way not to — it was the predictable outcome, but predictable does not stop it being the model\'s main weakness.',
   usage:
     'For the intended use — ranking candidates and filling the next plate — this matters less than it appears: what is needed is for good candidates to rise in the ranking, not for the label to be exact. But it refutes any reading along the lines of "the model rarely makes a serious mistake". It makes a serious mistake on **22% of crystalline samples**, and that has to be accounted for.',
 }
@@ -515,17 +515,17 @@ export const MODEL_ASSESSMENT = {
     'The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31 — a real but moderate association. Two features of these results deserve to be stated plainly rather than left for the reader to infer.',
   points: [
     {
-      title: 'Half of the crystalline syntheses are not recovered',
-      body: 'Recall on the crystalline class is 0.50. Since the purpose of the tool is to shortlist promising conditions, this is the figure that governs its practical value, and it is a meaningful limitation. It is also the expected consequence of a class with 167 examples against 967 incipient ones, and of that class being the most heterogeneous: there are many ways for a framework to crystallise and only one way for it not to.',
+      title: 'Three quarters of the crystalline syntheses are not recovered',
+      body: 'Recall on the crystalline class is **0.25** under the grouped cross-validation, and that is the figure to quote: the purpose of the tool is to shortlist promising conditions, so this governs its practical value far more than the aggregate does. The confusion matrix above reads 0.53 for the same class because it is **one held-out split, not the five-fold average** — a single lucky set of plates flatters the smallest class, which is exactly why the cross-validated number is the one on record. Either way it is the expected consequence of a class with 167 examples against 967 incipient ones, and of that class being the most heterogeneous: there are many ways for a framework to crystallise and only one way for it not to.',
     },
     {
       title: 'The actionable model is close to the limit of what the data supports',
-      body: 'Restricted to process variables — the model that answers "given this chemistry, which conditions favour crystallisation?" — performance falls to a Matthews correlation of 0.13. That is above chance and it is not yet a basis for recommending conditions. Since this is the question the laboratory actually asks, it is the more important of the two results.',
+      body: 'Restricted to process variables — the model that answers "given this chemistry, which conditions favour crystallisation?" — performance falls to a macro F1 of 0.393 and a Matthews correlation of 0.095. That is above chance and it is not yet a basis for recommending conditions. Since this is the question the laboratory actually asks, it is the more important of the two results.',
     },
   ],
   cause: {
     title: 'The limit lies in the experimental record, not in the model',
-    body: 'Across five years the record contains roughly thirteen distinct target temperatures and nine reaction times, and these were varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate.',
+    body: 'Across five years the record contains 15 distinct target temperatures and 11 reaction times, and the subset the model was trained on is poorer still — **9 temperatures and 3 reaction times**. They were also varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate.',
     expectation:
       'Hyperparameter optimisation on this dataset can reasonably be expected to yield an improvement of 0.02 to 0.05 in macro F1. It is worth doing for methodological completeness; it is not a route to a materially better model.',
   },

@@ -1,4 +1,6 @@
-import { MODELS } from '../content/site.js'
+import { MODEL_NOTES } from '../content/site.js'
+/* Los hechos del registro los genera scripts/build_model_scorecard.py. */
+import SCORECARD from '../data/model_scorecard.json'
 import {
   MODEL_ASSESSMENT,
   MODEL_CHEMISTRY,
@@ -197,16 +199,21 @@ export default function Modeling() {
         <SectionTitle eyebrow="The registry">What was trained, and what survived</SectionTitle>
         <ScrollTable
           head={['Model', 'Algorithm', 'F1 macro', 'Size', 'Status']}
-          rows={MODELS.map((m) => [
+          rows={SCORECARD.registry.map((m) => [
             <span key={m.name}>
               <code><Rich>{m.name}</Rich></code>
               <br />
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em' }}><Rich>{m.note}</Rich></span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em' }}>
+                <Rich>{MODEL_NOTES[m.name] || m.note}</Rich>
+              </span>
             </span>,
             m.algo,
             m.f1,
             m.size,
-            <Badge key="s" tone={m.status === 'INVALID' ? 'amorphous' : 'pure'}>
+            // Tres estados, tres lecturas: vigente, retirado por otro mejor, y
+            // "no use estos resultados". Pintar SUPERSEDED igual que ACTIVE lo
+            // hacia parecer vigente.
+            <Badge key="s" tone={{ ACTIVE: 'pure', INVALID: 'amorphous' }[m.status] ?? 'neutral'}>
               <Rich>{m.status}</Rich>
             </Badge>,
           ])}
