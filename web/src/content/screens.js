@@ -382,17 +382,90 @@ export const MODEL_LINEUP = {
   intro:
     'Ten models are compared, not one. Not out of indecision: different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right. **Comparing is more honest than betting**.',
   tableHead: ['Model', 'What it assumes', 'Why it is here'],
-  tableRows: [
-    ['Baseline (majority class)', 'Nothing: always the most frequent class', 'The bar. Everything else must clear it'],
-    ['Logistic regression', 'A linear boundary', 'Interpretable reference; if it suffices, it wins'],
-    ['k-nearest neighbours', 'Similar samples share an outcome', 'Purely local, with no global model'],
-    ['Naive Bayes', 'Variables independent given the class', 'Its failure measures how much the correlation structure matters'],
-    ['SVM (RBF kernel)', 'A smooth non-linear boundary', 'Strong in medium dimension with few samples'],
-    ['Decision tree', 'Threshold cuts, one at a time', 'Interpretable; the basis of what follows'],
-    ['Random Forest', 'Many decorrelated trees', 'Robust, insensitive to hyperparameters'],
-    ['HistGradientBoosting', 'Sequential trees correcting each other', 'Handles missing values natively'],
-    ['LightGBM', 'Optimised boosting', 'The industry reference'],
-    ['XGBoost', 'Boosting with regularisation', 'Standard comparison'],
+  /* Cada fila se despliega: `detail` explica como funciona el modelo sin
+     formulas, y `code` es la linea real con la que se instancia en el cuaderno
+     06 -- con sus hiperparametros, no un ejemplo generico. */
+  models: [
+    {
+      name: 'Baseline (majority class)',
+      assumes: 'Nothing: always the most frequent class',
+      why: 'The bar. Everything else must clear it',
+      detail:
+        'It looks at no variable at all. It counts which class is commonest in the training data and answers that, every time. On this data it says INCIPIENT to everything and is right 64 % of the time — which is exactly why accuracy is a useless headline here. Its purpose is to give every other number a floor to be measured against.',
+      code: "DummyClassifier(strategy='most_frequent')",
+    },
+    {
+      name: 'Logistic regression',
+      assumes: 'A linear boundary',
+      why: 'Interpretable reference; if it suffices, it wins',
+      detail:
+        'Draws a straight dividing surface through the 39-dimensional space and reads each variable\u2019s weight as its pull towards one class or another. If a straight line were enough, this would be the answer to keep: you can read the coefficients and argue about the chemistry. It is here to find out whether the problem needs anything more complicated.',
+      code: "LogisticRegression(max_iter=2000, class_weight='balanced')",
+    },
+    {
+      name: 'k-nearest neighbours',
+      assumes: 'Similar samples share an outcome',
+      why: 'Purely local, with no global model',
+      detail:
+        'Builds no model. For a new synthesis it finds the fifteen most similar ones already on record and takes a vote. That makes it a direct test of a chemical intuition — that similar conditions give similar products — and it is unforgiving about badly scaled variables, which is part of what made it useful for spotting the unit defects.',
+      code: "KNeighborsClassifier(n_neighbors=15)",
+    },
+    {
+      name: 'Naive Bayes',
+      assumes: 'Variables independent given the class',
+      why: 'Its failure measures how much the correlation structure matters',
+      detail:
+        'Assumes every variable contributes independently, which in this data is plainly false: the electronegativity and the hardness of a cation are tied together by physics. It is on the list precisely so that assumption can fail visibly. It scores below the trivial baseline, and that gap is a measurement of how much the correlation structure matters.',
+      code: "GaussianNB()",
+    },
+    {
+      name: 'SVM (RBF kernel)',
+      assumes: 'A smooth non-linear boundary',
+      why: 'Strong in medium dimension with few samples',
+      detail:
+        'Bends the boundary instead of keeping it straight, and cares only about the samples nearest the frontier. That makes it strong when there are many variables and few rows, which is this problem exactly. The price is that its decisions cannot be read off as "this variable mattered".',
+      code: "SVC(kernel='rbf', probability=True, class_weight='balanced')",
+    },
+    {
+      name: 'Decision tree',
+      assumes: 'Threshold cuts, one at a time',
+      why: 'Interpretable; the basis of what follows',
+      detail:
+        'Asks a chain of yes/no questions about single thresholds — is the temperature above 130, is there carboxylic modulator — until it reaches a verdict. Alone it overfits badly, but it is the building block of the four models below it, and it is the only one whose reasoning you can read out loud.',
+      code: "DecisionTreeClassifier(max_depth=6, class_weight='balanced')",
+    },
+    {
+      name: 'Random Forest',
+      assumes: 'Many decorrelated trees',
+      why: 'Robust, insensitive to hyperparameters',
+      detail:
+        'Grows hundreds of trees, each on a random slice of the rows and the columns, and averages them. The randomness is the point: individual trees overfit in different directions and the errors cancel. It is the model actually deployed here, chosen for being the best performer that is also hard to break by tuning it wrong.',
+      code: "RandomForestClassifier(n_estimators=500, class_weight='balanced_subsample', random_state=42)",
+    },
+    {
+      name: 'HistGradientBoosting',
+      assumes: 'Sequential trees correcting each other',
+      why: 'Handles missing values natively',
+      detail:
+        'Instead of averaging independent trees, each new tree is fitted to the errors the previous ones left behind. It bins the variables first, which makes it fast, and it takes missing values without imputing them — relevant here, where a null pKa means "no carboxylic acid" rather than "unknown".',
+      code: "HistGradientBoostingClassifier(max_iter=300, random_state=42)",
+    },
+    {
+      name: 'LightGBM',
+      assumes: 'Optimised boosting',
+      why: 'The industry reference',
+      detail:
+        'The same idea as above with a different growth strategy: it extends whichever leaf reduces the error most, rather than growing level by level. Fast and usually at the top of tabular benchmarks, which is why it is the yardstick. It is the model serving the actionable half of this project.',
+      code: "LGBMClassifier(n_estimators=400, class_weight='balanced', random_state=42)",
+    },
+    {
+      name: 'XGBoost',
+      assumes: 'Boosting with regularisation',
+      why: 'Standard comparison',
+      detail:
+        'Boosting again, with an explicit penalty on tree complexity written into what it optimises. That extra brake is what usually separates it from LightGBM on small datasets, and with 1,516 rows this one qualifies as small.',
+      code: "XGBClassifier(n_estimators=400, max_depth=5, random_state=42)",
+    },
   ],
 }
 

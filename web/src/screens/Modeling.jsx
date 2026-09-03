@@ -76,7 +76,51 @@ export default function Modeling() {
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_LINEUP.intro}</Rich>
         </p>
-        <ScrollTable head={MODEL_LINEUP.tableHead} rows={MODEL_LINEUP.tableRows} />
+        {/* Cada modelo se despliega en su sitio. Un <details> nativo en vez
+            de estado en React: no hace falta, se puede abrir mas de uno a la
+            vez, y funciona con teclado y con Ctrl+F del navegador sin que
+            haya que programarlo. */}
+        <ol className="flex list-none flex-col gap-2 p-0">
+          {MODEL_LINEUP.models.map((m) => (
+            <li key={m.name}>
+              <details
+                className="rounded-[var(--radius-card)] px-4 py-3"
+                style={{
+                  border: 'var(--border-card) solid var(--surface-border)',
+                  background: 'var(--surface)',
+                }}
+              >
+                <summary className="cursor-pointer list-none">
+                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                      {m.name}
+                    </span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      {m.assumes}
+                    </span>
+                    <span className="ml-auto text-xs" style={{ color: 'var(--accent-primary)' }}>
+                      {m.why}
+                    </span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{m.detail}</Rich>
+                </p>
+                <pre
+                  className="mono mt-3 overflow-x-auto rounded-[var(--radius-badge)] p-3 text-xs"
+                  style={{
+                    background: 'var(--surface-elevated)',
+                    border: '2px solid var(--surface-border)',
+                    color: 'var(--text-primary)',
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {m.code}
+                </pre>
+              </details>
+            </li>
+          ))}
+        </ol>
         <div className="mt-6">
           <NotebookFigure
             src="nb06-09.png"
