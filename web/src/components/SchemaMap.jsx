@@ -38,13 +38,16 @@ const ICON = {
 
 /* Rejilla del diagrama, en unidades del viewBox. */
 const BOX = {
-  lab: { x: 355, y: 20, w: 290, h: 96 },
-  chem: { x: 20, y: 186, w: 250, h: 96 },
-  pxrd: { x: 730, y: 186, w: 250, h: 96 },
-  ml: { x: 355, y: 330, w: 290, h: 96 },
-  rag: { x: 20, y: 330, w: 250, h: 96 },
-  graph: { x: 730, y: 330, w: 250, h: 96 },
-  gov: { x: 20, y: 476, w: 960, h: 84 },
+  lab: { x: 350, y: 16, w: 300, h: 104 },
+  chem: { x: 14, y: 190, w: 270, h: 104 },
+  pxrd: { x: 716, y: 190, w: 270, h: 104 },
+  ml: { x: 350, y: 340, w: 300, h: 104 },
+  rag: { x: 14, y: 340, w: 270, h: 104 },
+  graph: { x: 716, y: 340, w: 270, h: 104 },
+  /* Antes ocupaba los 960 de ancho para tres lineas de texto, y hacia que el
+     resto pareciera una nota al pie. Mismo tamano que las demas, centrada
+     debajo, que es ademas donde encaja: recoge lo que hacen todas. */
+  gov: { x: 350, y: 492, w: 300, h: 104 },
 }
 
 /* from -> to, y si la base la obliga o no. `label` va sobre la flecha. */
@@ -105,7 +108,7 @@ export default function SchemaMap() {
         className="overflow-x-auto rounded-[var(--radius-card)] p-2"
         style={{ border: 'var(--border-card) solid var(--surface-border)', background: 'var(--surface-elevated)' }}
       >
-        <svg viewBox="0 0 1000 580" style={{ display: 'block', width: '100%', minWidth: 720 }} role="img"
+        <svg viewBox="0 0 1000 620" style={{ display: 'block', width: '100%', minWidth: 720 }} role="img"
              aria-label="Map of the seven table families in the database and how they feed each other">
           <defs>
             <marker id="sm-arrow" viewBox="0 0 10 10" refX="9" refY="5"
@@ -149,23 +152,30 @@ export default function SchemaMap() {
                   stroke={on ? 'var(--accent-primary)' : 'var(--surface-border)'}
                   strokeWidth={on ? 3 : 2}
                 />
-                <text x={b.x + 18} y={b.y + 32} style={{ fontSize: 17, fontFamily: 'var(--font-heading)' }}
+                <g transform={`translate(${b.x + 16}, ${b.y + 16})`}
+                   style={{ color: on ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
+                  {(() => {
+                    const Icon = ICON[f.key]
+                    return <Icon size={20} aria-hidden />
+                  })()}
+                </g>
+                <text x={b.x + 46} y={b.y + 32} style={{ fontSize: 17, fontFamily: 'var(--font-heading)' }}
                       fill="var(--text-primary)">
                   {f.title}
                 </text>
-                <text x={b.x + 18} y={b.y + 58} style={{ fontSize: 14 }} fill="var(--text-secondary)">
+                <text x={b.x + 18} y={b.y + 62} style={{ fontSize: 14 }} fill="var(--text-secondary)">
                   {f.tables.length} {f.tables.length === 1 ? 'table' : 'tables'}
                   {'  ·  '}
                   {f.totalRows.toLocaleString('en-GB')} rows
                 </text>
-                <text x={b.x + 18} y={b.y + 79} style={{ fontSize: 13 }} fill="var(--text-muted)">
+                <text x={b.x + 18} y={b.y + 84} style={{ fontSize: 13 }} fill="var(--text-muted)">
                   {kb(f.totalBytes)} on disk
                 </text>
               </g>
             )
           })}
 
-          <text x="500" y="574" textAnchor="middle" style={{ fontSize: 13 }} fill="var(--text-muted)">
+          <text x="500" y="614" textAnchor="middle" style={{ fontSize: 13 }} fill="var(--text-muted)">
             solid = foreign key enforced by the database   ·   dashed = a view or a script joins them
           </text>
         </svg>
@@ -207,8 +217,8 @@ export default function SchemaMap() {
         </ul>
 
         <p className="mt-5 text-xs" style={{ color: 'var(--text-muted)' }}>
-          Every description above is the table&rsquo;s own <code>COMMENT</code> in PostgreSQL, read
-          straight from the database — not a copy kept somewhere else that could drift from it.
+          Every description above is the table&rsquo;s own <code>COMMENT</code> inside PostgreSQL,
+          read straight from the database — not a copy kept elsewhere that could drift from it.
         </p>
       </div>
     </div>

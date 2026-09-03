@@ -1,15 +1,25 @@
-import { Badge, Card, Note, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
+import {
+  Bot,
+  BookOpenCheck,
+  FileCheck2,
+  GitMerge,
+  ScrollText,
+  Table2,
+} from 'lucide-react'
+import { Badge, Card, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import SchemaMap from '../components/SchemaMap.jsx'
 import SCHEMA from '../data/schema_map.json'
-import {
-  DB_BACKUP,
-  DB_BOUNDARY,
-  DB_DICTIONARY,
-  DB_HERO,
-  DB_HONEST,
-  DB_WHY,
-  VIEW_NOTES,
-} from '../content/database.js'
+import { DB_BOUNDARY, DB_HERO, DB_VIEWS, DB_WHY } from '../content/database.js'
+
+/* Un simbolo por razon. No son adornos: dicen de que clase de garantia habla
+   cada tarjeta antes de que el lector se meta en el texto. */
+const WHY_ICON = {
+  meaning: BookOpenCheck,
+  rules: FileCheck2,
+  lanes: GitMerge,
+  memory: ScrollText,
+  dictionary: Table2,
+}
 
 /* Las cifras de cabecera se derivan del mapa generado, no se escriben. Si
    manana hay una tabla mas, esta fila cambia sola. */
@@ -30,6 +40,12 @@ function headline(t) {
 
 export default function DatabaseScreen() {
   const stats = headline(SCHEMA.totals)
+  /* Las tablas que el agente puede leer a traves de sus funciones. Se derivan
+     del propio mapa para que la lista no se quede corta al crecer el esquema. */
+  const readable = SCHEMA.families
+    .filter((f) => ['lab', 'chem', 'pxrd', 'rag', 'graph'].includes(f.key))
+    .flatMap((f) => f.tables.map((t) => t.name))
+    .filter((n) => !n.endsWith('_test'))
 
   return (
     <div className="flex flex-col gap-16">
@@ -89,124 +105,122 @@ export default function DatabaseScreen() {
       {/* --- Por que una base de datos --- */}
       <section>
         <SectionTitle eyebrow="The case for it">{DB_WHY.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {DB_WHY.points.map(([t, b]) => (
-            <Card key={t}>
-              <h3 className="text-base">{t}</h3>
-              <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                <Rich>{b}</Rich>
-              </p>
-            </Card>
-          ))}
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {DB_WHY.cards.map((c) => {
+            const Icon = WHY_ICON[c.icon] ?? BookOpenCheck
+            return (
+              <Card key={c.head} className="h-full">
+                <span
+                  aria-hidden
+                  className="flex items-center justify-center rounded-full"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    border: '2.5px solid var(--accent-primary)',
+                    color: 'var(--accent-primary)',
+                  }}
+                >
+                  <Icon size={18} />
+                </span>
+                <h3 className="mt-3 text-base">{c.head}</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{c.body}</Rich>
+                </p>
+              </Card>
+            )
+          })}
         </div>
       </section>
 
-      {/* --- El diccionario --- */}
+      {/* --- La frontera del agente, como corchete --- */}
       <section>
-        <SectionTitle eyebrow="Documentation">{DB_DICTIONARY.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card accent>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_DICTIONARY.body}</Rich>
-            </p>
-          </Card>
-          <Card>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_DICTIONARY.why}</Rich>
-            </p>
-          </Card>
-        </div>
-        <Note>
-          <Rich>{DB_DICTIONARY.rule}</Rich>
-        </Note>
+        <SectionTitle eyebrow="The boundary">{DB_BOUNDARY.title}</SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          <Rich>{DB_BOUNDARY.body}</Rich>
+        </p>
+        <Card>
+          <div className="flex flex-wrap items-center gap-6 sm:flex-nowrap">
+            {/* El agente, grande, a la izquierda del corchete. */}
+            <div className="flex shrink-0 flex-col items-center gap-2">
+              <span
+                aria-hidden
+                className="flex items-center justify-center rounded-full"
+                style={{
+                  width: 86,
+                  height: 86,
+                  border: '3px solid var(--accent-primary)',
+                  color: 'var(--accent-primary)',
+                  background: 'var(--surface-elevated)',
+                }}
+              >
+                <Bot size={42} />
+              </span>
+              <span
+                className="text-xs uppercase tracking-wider"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                The agent
+              </span>
+            </div>
+
+            {/* El corchete, igual que el de las tecnicas de la 01. */}
+            <svg width="26" height="200" viewBox="0 0 26 200" aria-hidden className="shrink-0">
+              <path
+                d="M4 10 C 16 10, 16 10, 16 24 L16 92 C16 100, 18 100, 24 100 C18 100, 16 100, 16 108 L16 176 C16 190, 16 190, 4 190"
+                fill="none"
+                stroke="var(--surface-border)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+
+            <div className="min-w-0 flex-1">
+              <p className="mb-3 text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                {DB_BOUNDARY.bracketTitle}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {readable.map((t) => (
+                  <code
+                    key={t}
+                    className="rounded-[var(--radius-badge)] px-2.5 py-1 text-xs"
+                    style={{
+                      border: '1.5px solid var(--surface-border)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    {t}
+                  </code>
+                ))}
+              </div>
+              <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                Reached only through these {SCHEMA.functions.length} stored functions:
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {SCHEMA.functions.map((f) => (
+                  <code key={f} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {f}
+                  </code>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
       </section>
 
       {/* --- Las vistas --- */}
       <section>
-        <SectionTitle eyebrow="The surface">The views everything reads through</SectionTitle>
+        <SectionTitle eyebrow="The surface">{DB_VIEWS.title}</SectionTitle>
         <p className="mb-5 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          Nothing queries the raw tables directly if a view exists for it. A view is where a join
-          gets decided once instead of being re-invented in every script — and it is also the thing
-          that can be documented, versioned and pointed at.
+          <Rich>{DB_VIEWS.lead}</Rich>
         </p>
         <ScrollTable
           head={['View', 'Columns', 'What it is for']}
           rows={SCHEMA.views.map((v) => [
             <code key={v.name}>{v.name}</code>,
             String(v.columns),
-            <Rich key={v.name}>{VIEW_NOTES[v.name] || v.comment || '—'}</Rich>,
+            v.comment || '—',
           ])}
         />
-      </section>
-
-      {/* --- La frontera del agente --- */}
-      <section>
-        <SectionTitle eyebrow="The boundary">{DB_BOUNDARY.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card accent>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_BOUNDARY.body}</Rich>
-            </p>
-          </Card>
-          <Card>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_BOUNDARY.detail}</Rich>
-            </p>
-          </Card>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {SCHEMA.functions.map((f) => (
-            <code
-              key={f}
-              className="rounded-[var(--radius-badge)] px-2.5 py-1 text-xs"
-              style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-            >
-              {f}
-            </code>
-          ))}
-        </div>
-      </section>
-
-      {/* --- Copias de seguridad --- */}
-      <section>
-        <SectionTitle eyebrow="Durability">{DB_BACKUP.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card accent>
-            <h3 className="text-base">What cannot be recomputed</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_BACKUP.body}</Rich>
-            </p>
-          </Card>
-          <Card>
-            <h3 className="text-base">Event-driven, never scheduled</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_BACKUP.policy}</Rich>
-            </p>
-          </Card>
-          <Card>
-            <h3 className="text-base">Why the vectors are left out</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{DB_BACKUP.size}</Rich>
-            </p>
-          </Card>
-        </div>
-      </section>
-
-      {/* --- Lo que no esta limpio --- */}
-      <section>
-        <SectionTitle eyebrow="In the interest of honesty">{DB_HONEST.title}</SectionTitle>
-        <div className="flex flex-col gap-3">
-          {DB_HONEST.items.map(([t, b]) => (
-            <Card key={t}>
-              <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                {t}
-              </div>
-              <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                <Rich>{b}</Rich>
-              </p>
-            </Card>
-          ))}
-        </div>
       </section>
     </div>
   )

@@ -20,7 +20,7 @@
      "columns": 49,
      "rows": 2216,
      "bytes": 2490368,
-     "comment": "Tabla padre del proyecto: una fila por sintesis intentada, con la clave primaria sample_code. Reune el diseno teorico, los disolventes, la rampa termica y los moduladores de cinco anos de libretas de laboratorio. Se escribe por UPSERT desde el cuaderno 01, nunca por DELETE, para no borrar filas que haya creado n8n."
+     "comment": "Parent table of the project: one row per synthesis attempted, keyed on sample_code. Gathers the theoretical design, the solvents, the thermal ramp and the modulators from five years of laboratory notebooks. Written by UPSERT from notebook 01, never by DELETE, so it cannot erase rows created by the n8n workflow."
     },
     {
      "name": "characterization_measurements",
@@ -34,7 +34,7 @@
      "columns": 13,
      "rows": 6,
      "bytes": 4612096,
-     "comment": "Copia de pruebas de characterization_measurements, para ejercitar el pipeline de ingesta sin tocar datos reales. No forma parte del flujo de produccion."
+     "comment": "Test copy of characterization_measurements, used to exercise the ingestion pipeline without touching real data. Not part of the production flow."
     }
    ],
    "totalRows": 6148,
@@ -117,21 +117,21 @@
      "columns": 27,
      "rows": 5,
      "bytes": 106496,
-     "comment": "Un registro por modelo entrenado. Contiene la RECETA completa (datos, codigo, parametros, semilla, versiones); el binario vive aparte en ml_model_artifacts porque es lo unico regenerable si la receta esta completa."
+     "comment": "One record per trained model. Holds the complete RECIPE (data, code, parameters, seed, versions); the binary lives apart in ml_model_artifacts because it is the only part that can be regenerated when the recipe is complete."
     },
     {
      "name": "ml_datasets",
      "columns": 13,
      "rows": 3,
      "bytes": 81920,
-     "comment": "Instantanea de datos usada para entrenar. Guarda la consulta literal y su hash para que un cambio en los datos subyacentes sea detectable: dos modelos con la misma consulta pero distinto n_rows o class_distribution NO se entrenaron sobre lo mismo."
+     "comment": "Snapshot of the data used for training. Stores the literal query and its hash so that a change in the underlying data is detectable: two models sharing a query but differing in n_rows or class_distribution were NOT trained on the same thing."
     },
     {
      "name": "ml_model_features",
      "columns": 7,
      "rows": 174,
      "bytes": 106496,
-     "comment": "Que columnas entraron en cada modelo y con que papel. Registrar tambien las EXCLUIDAS con su motivo es lo que convierte una decision en una decision auditable."
+     "comment": "Which columns entered each model, and in what role. Recording the EXCLUDED ones with their reason is what turns a decision into an auditable decision."
     },
     {
      "name": "ml_model_metrics",
@@ -145,7 +145,7 @@
      "columns": 8,
      "rows": 4,
      "bytes": 26910720,
-     "comment": "El binario serializado, en su propia tabla para poder excluirlo de un volcado ligero sin perder el registro (mismo patron que los vectores de rag_chunks). Es la parte REGENERABLE si la receta de ml_models esta completa."
+     "comment": "The serialised binary, in its own table so a light dump can skip it without losing the registry entry (same pattern as the vectors in rag_chunks). It is the REGENERABLE part, provided the recipe in ml_models is complete."
     }
    ],
    "totalRows": 228,
@@ -191,14 +191,14 @@
      "columns": 7,
      "rows": 6506,
      "bytes": 3104768,
-     "comment": "Una fila por \"cosa que existe\" en el grafo de conocimiento: muestra, ligando, metal, modulador, medida, descriptor/KPI, paper, modelo de ML o prediccion de ML."
+     "comment": "One row per \"thing that exists\" in the knowledge graph: sample, ligand, metal, modulator, measurement, descriptor/KPI, paper, ML model or ML prediction."
     },
     {
      "name": "kg_edges",
      "columns": 9,
      "rows": 10906,
      "bytes": 4784128,
-     "comment": "Una fila por relacion entre dos nodos: SAMPLE-USES_LIGAND->LIGAND, SAMPLE-HAS_MEASUREMENT->MEASUREMENT, y en el futuro PAPER-SUPPORTS->DESCRIPTOR."
+     "comment": "One row per relation between two nodes: SAMPLE-USES_LIGAND->LIGAND, SAMPLE-HAS_MEASUREMENT->MEASUREMENT, and in future PAPER-SUPPORTS->DESCRIPTOR."
     }
    ],
    "totalRows": 17412,
@@ -214,7 +214,7 @@
      "columns": 10,
      "rows": 499,
      "bytes": 335872,
-     "comment": "La documentacion del esquema como filas consultables: una por columna de cada tabla y vista. Existe para que la aplicacion web y los agentes de IA lean el diccionario DESDE la base en vez de llevarlo escrito en el codigo. Su cobertura debe ser del 100 %: un diccionario incompleto no permite distinguir entre una columna sin documentar y una columna que no existe."
+     "comment": "The schema documentation as queryable rows: one per column of every table and view. It exists so the web application and the AI agents read the dictionary FROM the database instead of carrying it hard-coded. Coverage must be 100 %: an incomplete dictionary cannot distinguish an undocumented column from a column that does not exist."
     },
     {
      "name": "audit_log",
@@ -265,27 +265,27 @@
   {
    "name": "v_agente_muestras",
    "columns": 7,
-   "comment": "Vista de solo lectura para el agente RAG. n_tecnicas es la etiqueta debil de interes experimental."
+   "comment": "Read-only view for the RAG agent. n_tecnicas is the weak label of experimental interest. Duplicate of v_agent_samples, kept only until callers are migrated."
   },
   {
    "name": "v_ml_deployed",
    "columns": 12,
-   "comment": "Los modelos que se estan sirviendo ahora mismo y con que papel. Una fila por ranura; si esta vacia, no hay nada desplegado."
+   "comment": "The models being served right now, and in which role. One row per deployment slot; if it is empty, nothing is deployed."
   },
   {
    "name": "v_ml_features",
    "columns": 49,
-   "comment": "Tabla de caracteristicas para ML (v3, 2026-09-02). Frente a la v2: unidades de volumen corregidas -- las disoluciones diluidas del Excel (HCl 0,6M, HCl 3M, HF 3M) estan en mL y no en uL, y su agua entra ahora en el balance --, mas tres columnas de disolvente recuperadas (AcOH glacial, H2PO4, NH4OH). El acido acetico glacial cuenta a la vez como disolvente y como modulador carboxilico."
+   "comment": "Feature table for machine learning (v3, 2026-09-02). Against v2: corrected volume units — the dilute stock solutions in the spreadsheet (HCl 0.6M, HCl 3M, HF 3M) are recorded in mL and not uL, and their water now enters the balance — plus three recovered solvent columns (glacial AcOH, H2PO4, NH4OH). Glacial acetic acid counts both as a solvent and as a carboxylic modulator."
   },
   {
    "name": "v_ml_model_input_contract",
    "columns": 7,
-   "comment": "Las columnas de entrada de cada modelo, en el orden exacto en que hay que pasarselas. Es lo que debe leer cualquier servicio que cargue un modelo del registro; no hardcodear la lista."
+   "comment": "The input columns of every model, in the exact order they must be supplied. This is what any service loading a model from the registry must read; do not hard-code the list."
   },
   {
    "name": "v_ml_model_registry",
    "columns": 18,
-   "comment": "El registro de modelos en forma legible, sin los binarios: que modelos hay, sobre que datos, con que resultado y si siguen siendo reproducibles."
+   "comment": "The model registry in readable form, without the binaries: which models exist, on what data, with what result, and whether they are still reproducible."
   },
   {
    "name": "v_pxrd_labels_full",
@@ -295,7 +295,7 @@
   {
    "name": "v_rag_biblioteca",
    "columns": 16,
-   "comment": "Catalogo del corpus con la cita bibliografica ya construida. Herramienta de solo lectura para el agente: evita que invente referencias."
+   "comment": "Corpus catalogue with the citation already assembled. Read-only tool for the agent so it never invents a reference. Duplicate of v_rag_library, kept only until callers are migrated."
   },
   {
    "name": "v_rag_library",
