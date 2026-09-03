@@ -107,8 +107,15 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
+      # Registra la conexion a la base la primera vez que arranca con un volumen
+      # nuevo. Sin esto, pgAdmin abre con el arbol "Servers" vacio y hay que dar
+      # de alta el servidor a mano, adivinando que el host es `postgres` y no
+      # `localhost`. La contrasena no va aqui: se escribe una vez y pgAdmin la
+      # guarda en su volumen.
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin-servers.json:/pgadmin4/servers.json:ro
     depends_on:
       - postgres
 
