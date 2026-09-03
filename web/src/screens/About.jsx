@@ -43,13 +43,17 @@ function BrandIcon({ name, size = 16 }) {
   )
 }
 
-function LinkButton({ href, icon: Icon, brand, children, primary = false, download = false }) {
+/* Antes el boton del CV llevaba `download`, que obliga al navegador a guardar
+   el fichero sin abrirlo. Suena bien y falla peor: algunos navegadores lo
+   bloquean en silencio o lo guardan donde el usuario no lo encuentra, y desde
+   fuera parece que el enlace no hace nada. Todos los enlaces abren ahora en una
+   pestana; el visor de PDF integrado ya trae su propio boton de guardar. */
+function LinkButton({ href, icon: Icon, brand, children, primary = false }) {
   return (
     <a
       href={href}
-      target={download ? undefined : '_blank'}
+      target="_blank"
       rel="noopener noreferrer"
-      download={download || undefined}
       className="inline-flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm no-underline"
       style={{
         border: `2.5px solid ${primary ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
@@ -167,7 +171,7 @@ export default function About() {
           ))}
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
-          <LinkButton href={SITE.cv} icon={Download} primary download>
+          <LinkButton href={SITE.cv} icon={Download} primary>
             Download CV
           </LinkButton>
           <LinkButton href={SITE.linkedin} icon={Contact}>
