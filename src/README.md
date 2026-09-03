@@ -1279,7 +1279,10 @@ disappear. The solvent breakdown then failed to add up to the recorded total vol
 **18 %** of the syntheses, and those rows were flagged as unknown composition — the single
 largest gap in the ML feature table. Nothing was missing from the record: **the dilution
 water was being thrown away by the code**. After the fix the breakdown is complete in
-**99.5 %** of rows (99.8 % of the ML training set).
+**99.5 %** of HTS syntheses, and **99.8 %** of the rows the model actually trains on.
+(Across all 2,152 syntheses, standard and microwave included, it is 99.1 % — the
+denominator is worth stating, because the three numbers otherwise read as if they
+disagreed.)
 
 **How it was found.** By a chemist's objection to a claim of mine. I had read RS1873's
 15 mL of reaction volume as evidence of a missing solvent record; the answer was "how can
