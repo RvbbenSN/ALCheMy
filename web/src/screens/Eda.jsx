@@ -162,10 +162,17 @@ export default function Eda() {
       <section>
         <SectionTitle eyebrow="A worked example">From 2,167 syntheses to 1,516 rows</SectionTitle>
         <p className="mb-3 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          The laboratory performed <strong>2,167 syntheses</strong>. The model trained on 1,516 rows.
-          The gap is not waste: <strong>every drop below is a deliberate exclusion with a stated
-          reason</strong>, and the point of showing them in order is that each one changes what the
-          resulting model can honestly claim to be about.
+          The laboratory performed <strong>2,167 syntheses</strong> and measured{' '}
+          <strong>1,879 diffractograms</strong>. The model trained on 1,516 rows. The gap is not
+          waste: <strong>every drop below is a deliberate exclusion with a stated reason</strong>,
+          and the point of showing them in order is that each one changes what the resulting model
+          can honestly claim to be about.
+        </p>
+        <p className="mb-3 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          The chain below counts <strong>rows of the feature table</strong>, not syntheses — which is
+          why it starts at 2,152 rather than 2,167. Each step removes exactly one filter from the
+          query the model registry stores for this dataset, so the last line is not an assertion:
+          it is the number the registry holds.
         </p>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           Read it as the definition of the model&rsquo;s scope. By the last row the model is no longer

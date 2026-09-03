@@ -224,7 +224,7 @@
   "titles": [
    "Missingness by column"
   ],
-  "bytes": 36529,
+  "bytes": 40576,
   "needsReview": false
  },
  {
@@ -245,7 +245,7 @@
   "titles": [
    "Distribution of the %d numeric features"
   ],
-  "bytes": 64960,
+  "bytes": 70619,
   "needsReview": false
  },
  {
@@ -253,9 +253,9 @@
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
   "section": "5.6 Correlación: dos preguntas distintas, y sólo una se suele dibujar",
   "titles": [
-   "(a) Feature-feature correlation  (lower triangle; upper is symmetric)"
+   "(a) Feature-feature correlation  (lower triangle; blank = zero variance)"
   ],
-  "bytes": 119393,
+  "bytes": 126774,
   "needsReview": false
  },
  {
@@ -263,10 +263,10 @@
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
   "section": "5.6 Correlación: dos preguntas distintas, y sólo una se suele dibujar",
   "titles": [
-   "(b) Association with the target — top 20 numeric features",
+   "(b) Association with the target - top 20 numeric features",
    "(c) Categorical features vs target"
   ],
-  "bytes": 53609,
+  "bytes": 55214,
   "needsReview": false
  },
  {
@@ -277,7 +277,7 @@
    "Feature distributions by outcome class",
    "%s   ($\\\\eta^2$=%.3f)"
   ],
-  "bytes": 51401,
+  "bytes": 51754,
   "needsReview": false
  },
  {
@@ -295,13 +295,13 @@
  {
   "file": "nb06-08.png",
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
-  "section": "Sobre cuántas dimensiones enseñar",
+  "section": "Cómo se construye, en tres pasos",
   "titles": [
    "(a) PC1-PC2  |  colour = class, marker = scaffold",
    "(b) Adding PC3",
    "(c) Information is spread, not concentrated"
   ],
-  "bytes": 152341,
+  "bytes": 148357,
   "needsReview": false
  },
  {
@@ -309,9 +309,9 @@
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
   "section": "8.1 Las métricas, y por qué la exactitud engaña aquí",
   "titles": [
-   "Model comparison — HTS syntheses only"
+   "Model comparison - HTS syntheses only, corrected units"
   ],
-  "bytes": 41678,
+  "bytes": 42948,
   "needsReview": false
  },
  {
@@ -319,19 +319,19 @@
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
   "section": "8.2 Qué dicen estos números",
   "titles": [
-   "Confusion matrix — %s, held-out plates"
+   "Confusion matrix - %s, held-out plates"
   ],
-  "bytes": 30978,
+  "bytes": 30586,
   "needsReview": false
  },
  {
   "file": "nb06-11.png",
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
-  "section": "8.3 Dónde se equivoca: los errores tienen sentido químico",
+  "section": "8.3 Dónde se equivoca: los errores tienen sentido químico, hasta cierto punto",
   "titles": [
-   "Permutation importance — coloured by chemical block"
+   "Permutation importance - coloured by chemical block"
   ],
-  "bytes": 44985,
+  "bytes": 45749,
   "needsReview": false
  },
  {
@@ -339,7 +339,7 @@
   "notebook": "06_Crystallinity_Prediction_ML_and_Synthesis_Optimization",
   "section": "8.4 Lectura química — por bloques, no variable a variable",
   "titles": [],
-  "bytes": 128007,
+  "bytes": 136493,
   "needsReview": false
  }
 ]

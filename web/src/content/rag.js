@@ -23,9 +23,9 @@ export const RAG_CORPUS = {
 export const RAG_MASKING = {
   intro:
     'Before any query leaves for an external model, unpublished ligand codes and proprietary formulas are substituted. The metal stays — it carries no trade secret. Toggle it and watch the question change.',
-  before: 'Does H6ttbmp form a crystalline framework with Zr at 130 °C in DMF?',
+  before: 'Does H4bdc-tt form a crystalline framework with Zr at 130 °C in DMF?',
   after: 'Does LIG_HASH_8F2 form a crystalline framework with Zr at 130 °C in DMF?',
-  footnote: 'The ligand code shown here is illustrative, not a real unpublished compound.',
+  footnote: 'The ligand code on the left is invented for this demonstration. Real unpublished ligands never appear on this site, which is the point the panel is making.',
 }
 
 export const RAG_SUGGESTED = [

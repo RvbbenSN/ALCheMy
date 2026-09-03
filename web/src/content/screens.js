@@ -140,7 +140,7 @@ export const EDA_INTRO = {
   found: [
     ['A confounder', 'One synthesis method had produced no amorphous samples at all — so the method itself predicted the answer'],
     ['Five kinds of gap', 'Nine per cent missing, from five unrelated causes, each needing a different fix'],
-    ['A 5.8 : 1 imbalance', 'Between the largest and smallest class, enough to make accuracy meaningless'],
+    ['A 6 : 1 imbalance', 'Between the largest and smallest class, enough to make accuracy meaningless'],
     ['Hidden structure', 'Rows that are not independent of one another, which makes a random split lie'],
   ],
 }
@@ -154,7 +154,7 @@ export const EDA_POPULATION = {
     'Two numbers in this screen can both be right and still disagree, because they count different things. It is worth fixing which is which before anything else.',
   rows: [
     ['2,152', 'The feature table', 'Every synthesis on record, including the methods the model does not use'],
-    ['1,786', 'Restricted to high-throughput', 'The universe the model works in, before requiring a label'],
+    ['1,810', 'Restricted to high-throughput', 'The universe the model works in, before requiring a label'],
     ['1,516', 'The training set', 'What actually trained the model: combinatorial synthesis, with an expert verdict'],
   ],
   note:
@@ -237,7 +237,7 @@ export const EDA_MISSING = {
   zeroBody:
     'The obvious objection is that a blank cell in the master spreadsheet means "none of that solvent", not "unknown". **And the pipeline agrees**: it reads every blank solvent column as zero, with an explicit `COALESCE(column, 0)`. The null appears afterwards, for a different reason.',
   zeroDetail:
-    'After turning every blank into a zero, the volumes are added up and compared with the total volume declared for that synthesis. In **431 of 452 flagged rows** the components are written down and simply do not reach the total. Sample RS1873 declares 15 mL of reaction and records 15 µL of water. Reading the rest as zeros there does not give "a synthesis without methanol": it gives **a synthesis without solvent**, which is impossible. Only 20 rows are the other case — a total with nothing itemised — and those are equally impossible for the same reason.',
+    'After turning every blank into a zero, the volumes are added up and compared with the total volume declared for that synthesis. In **431 of 452 flagged rows** the components are written down and simply do not reach the total. One row declares 15 mL of reaction and records 15 µL of water. Reading the rest as zeros there does not give "a synthesis without methanol": it gives **a synthesis without solvent**, which is impossible. Only 20 rows are the other case — a total with nothing itemised — and those are equally impossible for the same reason.',
   zeroRule:
     'So the flag does not distrust the chemist. It distrusts arithmetic that does not close: **a zero is a claim, a gap is not, and a model cannot tell them apart if it is handed a zero.**',
   lesson:
@@ -273,11 +273,14 @@ export const EDA_IMBALANCE = {
      una frase: son las tres clases de cristalinidad que etiqueto Ruben a mano. */
   intro:
     'The imbalance is **between the three crystallinity classes** — the verdict a human gave each diffractogram, and the thing the model has to predict. They are not equally common, and that is a property of the chemistry, not a sampling error: most attempts land somewhere in between.',
+  /* Recuentos tomados de ml_datasets.class_distribution para el conjunto
+     crystallinity_v4_hts_2026_09_02 (1.516 filas). No editar a mano: si cambian,
+     cambian ahi primero. */
   tableHead: ['Class', 'What it means', 'Samples', 'Share'],
   tableRows: [
-    ['Incipient', 'Broad reflections near a crystallisation boundary', '967', '64.1%'],
-    ['Amorphous', 'No reflections at all', '382', '25.3%'],
-    ['Crystalline', 'Sharp, well-ordered reflections', '160', '10.6%'],
+    ['Incipient', 'Broad reflections near a crystallisation boundary', '967', '63.8%'],
+    ['Amorphous', 'No reflections at all', '382', '25.2%'],
+    ['Crystalline', 'Sharp, well-ordered reflections', '167', '11.0%'],
   ],
   trivial:
     'That first row is the whole problem. A model that learns nothing — one that always answers **INCIPIENT** — is right 64% of the time. Reporting "64% accuracy" would sound like the model does something, when it would do nothing at all. This is why every metric on the next screen is compared against that floor rather than against zero.',
@@ -297,7 +300,7 @@ export const EDA_DISCRETE = {
     ['time_hours', '3', '24 · 48 · 72 h'],
   ],
   concentration:
-    'And they are not evenly used either: **816 of the syntheses sit at 150 °C** and 442 at 120 °C, so two settings cover more than four fifths of the record.',
+    'And they are not evenly used either: **710 of the syntheses sit at 150 °C** and 370 at 120 °C, so two settings out of nine cover seven tenths of the record.',
   why:
     'That is not a defect in the data. It reflects how combinatorial synthesis is actually designed — **fix a grid of conditions and sweep composition** — and a chemist filling a 24-well plate picks round numbers.',
   consequence:

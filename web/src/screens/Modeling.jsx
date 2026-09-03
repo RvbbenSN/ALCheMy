@@ -82,7 +82,7 @@ export default function Modeling() {
           />
         </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Every model that supports it carries balanced class weights, which offsets the 5.8:1 imbalance
+          Every model that supports it carries balanced class weights, which offsets the 6:1 imbalance
           by penalising errors on the minority classes more heavily.
         </p>
       </section>

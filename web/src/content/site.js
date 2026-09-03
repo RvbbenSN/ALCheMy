@@ -181,13 +181,17 @@ export const MODELS = [
   },
 ]
 
-/* Embudo verificado el 2026-09-01. Es contenido de la pantalla de EDA. */
+/* Embudo re-derivado el 2026-09-03 de la consulta que el registro guarda para
+   el conjunto crystallinity_v4_hts_2026_09_02 (ml_datasets.source_query): se le
+   quita un filtro cada vez y la cadena aterriza en las 1.516 filas registradas.
+   Los dos primeros escalones cuentan trabajo de laboratorio; del tercero en
+   adelante se cuentan filas de la tabla de rasgos, y el texto lo dice. */
 export const FUNNEL = [
-  { n: '2,167', label: 'Syntheses performed', why: 'The starting point: every synthesis on record' },
-  { n: '1,879', label: 'PXRD measurements', why: 'Not every synthesis reached the diffractometer' },
-  { n: '1,877', label: 'Labeled diffractograms', why: 'Two left unlabeled' },
-  { n: '1,611', label: 'Labeled HTS samples', why: 'Solvothermal and microwave runs excluded' },
-  { n: '1,516', label: 'Rows in training set v3', why: 'No tannic acid, no ml_include = NO' },
+  { n: '2,152', label: 'Rows in the feature table', why: 'Every synthesis the pipeline could turn into features' },
+  { n: '1,839', label: 'With a labelled diffractogram', why: 'The rest never reached the diffractometer, or nobody has judged them yet' },
+  { n: '1,723', label: 'Verdict usable', why: 'Drops SIN_MUESTRA and anything an expert marked ml_include = NO' },
+  { n: '1,540', label: 'Combinatorial only', why: 'Solvothermal and microwave runs excluded — the confounder above' },
+  { n: '1,516', label: 'Rows in training set v4', why: 'No tannic acid' },
 ]
 
 /* Glosario para los tooltips. Se generara desde la guia didactica

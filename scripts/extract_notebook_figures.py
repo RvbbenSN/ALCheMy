@@ -12,9 +12,13 @@ insertar filas duplicadas o borrar en cascada. Se leen, no se corren.
 Que produce
 -----------
 - `web/public/figures/<cuaderno>-<n>.png`  las imagenes tal cual
-- `web/public/figures/manifest.json`       indice con, para cada figura, el
+- `scripts/figure_manifest.json`           indice con, para cada figura, el
   titulo de la seccion en la que aparece y las primeras lineas del texto que la
   precede, para poder elegirlas y rotularlas sin abrir el cuaderno
+
+El indice NO va en `web/public/`: esa carpeta se copia entera al sitio
+construido y seria accesible por URL, y los titulos de seccion que el indice
+copia llevan codigos de muestra.
 
 Privacidad
 ----------
@@ -39,6 +43,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 NB_DIR = ROOT / "notebooks"
 OUT_DIR = ROOT / "web" / "public" / "figures"
+# Fuera de public/: ese arbol se sirve tal cual y el indice cita codigos de muestra.
+MANIFEST_PATH = ROOT / "scripts" / "figure_manifest.json"
 
 RE_SAMPLE = re.compile(r"\b(?:RSMix\d+|RSMIX\d+|RS\d+|LP\d+|IEF-\d+)\b")
 RE_LIGAND = re.compile(r"H6ttbmp|Et6ttbmp|H8ptp|Et8ptp", re.I)
@@ -91,7 +97,7 @@ def main() -> int:
                     }
                 )
 
-    (OUT_DIR / "manifest.json").write_text(
+    MANIFEST_PATH.write_text(
         json.dumps(manifest, indent=1, ensure_ascii=False), encoding="utf-8"
     )
 
