@@ -45,6 +45,7 @@ Uso
 from __future__ import annotations
 
 import base64
+import datetime as _dt
 import json
 import os
 import sys
@@ -60,7 +61,14 @@ sys.path.insert(0, str(ROOT))
 # entre a la web aunque no abra el simulador. Sirviendolo como fichero suelto,
 # se descarga solo cuando hace falta.
 OUT = ROOT / "web" / "public" / "data" / "simulator_grid.json"
-MODEL_SLUG = "crystallinity_v3_hts_full"
+
+# El modelo NO se nombra aqui. Se pregunta a la base cual ocupa la ranura de
+# despliegue 'primary' (ml_models.deployment_slot). Escribirlo a mano fue un
+# fallo real y silencioso: este fichero llevaba dentro 'crystallinity_v3_hts_full',
+# se entreno el v4 --que corrige un error de unidades de factor 1000-- y la web
+# siguio sirviendo predicciones del v3 sin que nada avisara. Un modelo obsoleto
+# no da error: da respuestas.
+MODEL_SLOT = "primary"
 MIN_SYNTHESES = 25  # metales con menos historico no entran: su mediana no es fiable
 
 # Los ejes que el usuario puede mover. Todos dentro del rango observado.
@@ -78,7 +86,12 @@ def connect():
     import psycopg2
     from dotenv import load_dotenv
 
-    load_dotenv(ROOT / ".env")
+    # Sube por los directorios padre buscando el .env: dentro de un worktree de
+    # git el fichero no esta, porque esta ignorado.
+    for base in [ROOT, *ROOT.parents]:
+        if (base / ".env").exists():
+            load_dotenv(base / ".env")
+            break
     return psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "localhost"),
         port=int(os.getenv("POSTGRES_PORT", 5432)),
@@ -90,22 +103,23 @@ def connect():
 
 def main() -> int:
     import pandas as pd
-    from src.ml_model_registry import cargar_modelo
+    from src.ml_model_registry import cargar_modelo, columnas_de_entrada, modelo_desplegado
 
     conn = connect()
-
     cur = conn.cursor()
-    cur.execute(
-        """SELECT f.feature_name FROM ml_model_features f
-             JOIN ml_models m ON m.model_id = f.model_id
-            WHERE m.model_slug = %s AND f.feature_role = 'input'""",
-        (MODEL_SLUG,),
-    )
-    features = [r[0] for r in cur.fetchall()]
-    print("modelo %s -> %d variables de entrada" % (MODEL_SLUG, len(features)))
+
+    model_slug = modelo_desplegado(conn, MODEL_SLOT)
+    # El contrato viene ORDENADO por feature_position, no en el orden en que la
+    # base devuelva las filas. Sin ORDER BY el orden no esta garantizado, y un
+    # pipeline con las columnas cruzadas no siempre falla: puede predecir con el
+    # radio ionico entrando por la casilla de la temperatura y devolver algo
+    # perfectamente plausible y perfectamente falso.
+    features = columnas_de_entrada(conn, model_slug)
+    print("ranura %r -> modelo %s (%d variables de entrada)"
+          % (MODEL_SLOT, model_slug, len(features)))
 
     df = pd.read_sql("SELECT * FROM v_ml_features WHERE synthesis_type = 'HTS'", conn)
-    modelo = cargar_modelo(conn, MODEL_SLUG)
+    modelo = cargar_modelo(conn, model_slug)
 
     # Orden de clases tal como lo aprendio el modelo, para no reordenar a ciegas.
     classes = list(getattr(modelo, "classes_", CLASSES_ORDER))
@@ -167,7 +181,10 @@ def main() -> int:
     q = np.clip(np.round(proba * 255), 0, 255).astype(np.uint8)
 
     payload = {
-        "model": MODEL_SLUG,
+        # Se sella con QUE modelo se calculo y cuando. Una rejilla sin esa marca
+        # es indistinguible de una generada con el modelo anterior.
+        "model": model_slug,
+        "generatedAt": _dt.date.today().isoformat(),
         "classes": CLASSES_ORDER,
         "metals": metals,
         "axes": {a: AXES[a] for a in axis_names},

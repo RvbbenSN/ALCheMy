@@ -308,6 +308,33 @@ def columnas_de_entrada(conn, slug):
     return cols
 
 
+def modelo_desplegado(conn, slot='primary'):
+    """El slug del modelo que se esta sirviendo en esa ranura de despliegue.
+
+    Es la funcion que sustituye al slug escrito a mano dentro de cada generador.
+    Antes de existir, `build_simulator_grid.py` llevaba dentro
+    'crystallinity_v3_hts_full', y cuando se entreno el v4 --que corrige un
+    error de unidades de factor 1000-- la web siguio sirviendo el v3 sin que
+    nada fallara: un modelo obsoleto no da error, da respuestas.
+
+    Cambiar de modelo pasa a ser un UPDATE sobre `ml_models.deployment_slot`,
+    y los generadores lo siguen solos.
+
+        slug = modelo_desplegado(conn)               # el modelo completo
+        slug = modelo_desplegado(conn, 'actionable') # el de variables fijables
+    """
+    cur = conn.cursor()
+    cur.execute("""SELECT model_slug FROM ml_models
+                    WHERE deployment_slot = %s""", (slot,))
+    fila = cur.fetchone()
+    if fila is None:
+        raise LookupError(
+            'No hay ningun modelo desplegado en la ranura %r. Asignela con: '
+            "UPDATE ml_models SET deployment_slot = '%s' "
+            "WHERE model_slug = '<slug>';" % (slot, slot))
+    return fila[0]
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------

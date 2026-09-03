@@ -1433,3 +1433,112 @@ pred, proba = modelo.predict(X), modelo.predict_proba(X)
 El pipeline lleva dentro su propia imputación y su codificación de categóricas, así que
 acepta huecos y texto sin preprocesado externo. Lo que **no** perdona es que falte una
 columna del contrato.
+
+---
+
+## Despliegue del modelo en la web
+
+### `scripts/ddl_ml_deployment_slot.sql` + `modelo_desplegado()` + `scripts/build_model_scorecard.py`
+
+**El problema.** El registro de modelos sabía qué modelos existían, pero no cuál se estaba
+*sirviendo*. Esa información vivía escrita a mano en dos sitios: el slug dentro de
+`scripts/build_simulator_grid.py` (`MODEL_SLUG = "crystallinity_v3_hts_full"`) y las
+métricas dentro de un componente de React (`F1 macro 0.522`, recall `0.50 / 0.71 / 0.50`).
+
+Y falló, exactamente como estaba previsto que fallara: se entrenó el v4 —que corrige el
+error de unidades de factor 1000— y **la web siguió sirviendo el v3 sin que nada avisara**.
+No hay error posible que lo detecte, porque un modelo obsoleto no da error: da respuestas.
+La página se veía perfecta con las cifras y las predicciones del modelo equivocado.
+
+**La solución: la ranura de despliegue.** `ml_models` gana una columna `deployment_slot`:
+
+| Ranura | Qué modelo la ocupa | Dónde se usa |
+|---|---|---|
+| `primary` | `crystallinity_v4_hts_full` | El simulador de la web y la columna "Full model" del scorecard |
+| `actionable` | `crystallinity_v4_hts_actionable` | La columna "Actionable model" |
+| `NULL` | Registrado pero no servido | — |
+
+Tres reglas la protegen, y las tres impiden un despliegue por descuido:
+
+- **Índice único parcial**: no puede haber dos modelos en la misma ranura.
+- **`CHECK (deployment_slot IS NULL OR status = 'active')`**: marcar como `superseded` un
+  modelo que sigue desplegado **falla**. Eso obliga a *mover* el puntero al sustituirlo,
+  que es justo el paso que se olvidó con el v3.
+- **`is_deployed` pasa a ser `GENERATED ALWAYS AS (deployment_slot IS NOT NULL)`**: se
+  calcula de la ranura, así que no hay dos fuentes de verdad que puedan discrepar.
+
+La vista `v_ml_deployed` responde de un vistazo "qué se está sirviendo ahora mismo".
+
+**Cómo se consume desde el código.** `modelo_desplegado(conn, slot='primary')`, en
+`src/ml_model_registry.py`, devuelve el slug. Ningún generador vuelve a llevar un slug
+dentro.
+
+```python
+from src.ml_model_registry import cargar_modelo, columnas_de_entrada, modelo_desplegado
+slug = modelo_desplegado(conn)                       # 'crystallinity_v4_hts_full'
+X = df.reindex(columns=columnas_de_entrada(conn, slug))
+pred = cargar_modelo(conn, slug).predict(X)
+```
+
+**`scripts/build_model_scorecard.py`** escribe `web/src/data/model_scorecard.json` con las
+cifras de los dos modelos desplegados leídas de `ml_model_metrics`, y el componente
+`ModelScorecard.jsx` lo importa. En el JSON viajan **solo números**; los rótulos y las
+frases siguen en el componente, porque son contenido y corregir una frase no debe obligar
+a tocar Python.
+
+El clasificador trivial no se copia, **se deriva** de la distribución de clases: con la
+estrategia "responder siempre la mayoritaria", la exactitud es la fracción de esa clase, la
+exactitud equilibrada es `1/k`, el MCC es 0 por definición y el F1 macro es el de la clase
+mayoritaria dividido entre `k`. Sale 0,260, que es exactamente el 0,26 que estaba escrito a
+mano — comprobación de que la derivación es la correcta.
+
+### `scripts/register_class_metrics.py`
+
+Rellena el hueco que hacía falta para lo anterior: `ml_model_metrics` solo guardaba las
+cifras agregadas, y la web enseña además el **acierto por clase**, que es la lectura útil de
+una herramienta de cribado.
+
+```bash
+python scripts/register_class_metrics.py                       # comprueba, no escribe
+python scripts/register_class_metrics.py --registrar
+python scripts/register_class_metrics.py --slot actionable --registrar
+```
+
+Reconstruye el conjunto desde `ml_datasets.source_query`, lo reparte con el
+`StratifiedGroupKFold` y la semilla que guarda `ml_models.validation_scheme`, y **re-ajusta
+el pipeline en cada pliegue** (`clone`, no el objeto ya entrenado: usar el modelo ajustado
+sobre datos que vio al entrenar daría cifras optimistas).
+
+Antes de escribir nada contrasta el F1 macro recalculado con el registrado y aborta si se
+apartan más de `--tolerancia` (0,02 por defecto). Esa comprobación es la prueba práctica de
+que el registro cumple lo que promete: **ambos modelos v4 reprodujeron su F1 macro exacto**
+(0,517 y 0,393) a partir únicamente de lo guardado en la base, sin abrir el cuaderno.
+
+### Sacar un modelo nuevo: el procedimiento completo
+
+No es "sustituir un fichero". Son cuatro pasos, y ninguno toca código:
+
+```bash
+# 1. Mover el puntero (el modelo nuevo ya registrado y con status 'active')
+docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db -c \
+  "UPDATE ml_models SET deployment_slot = NULL  WHERE deployment_slot = 'primary';
+   UPDATE ml_models SET status = 'superseded'   WHERE model_slug = '<el viejo>';
+   UPDATE ml_models SET deployment_slot = 'primary' WHERE model_slug = '<el nuevo>';"
+
+# 2. Registrar sus métricas por clase
+python scripts/register_class_metrics.py --registrar
+
+# 3. Regenerar los dos artefactos de la web (siguen la ranura solos)
+python scripts/build_model_scorecard.py
+python scripts/build_simulator_grid.py
+
+# 4. Comprobar y reconstruir
+python scripts/check_model_serving.py       # -> LISTO PARA SERVIR
+cd web && npm run build
+```
+
+**Por qué la web no llama al modelo en vivo.** No hay backend: el simulador sirve una
+rejilla de predicciones precalculadas (`build_simulator_grid.py`). Eso tiene una ventaja
+además de la técnica —**nadie puede sondear el modelo** para reconstruir la química que
+aprendió— y un precio, que es que la rejilla cuantiza y hay que regenerarla al cambiar de
+modelo. El paso 3 es ese precio.
