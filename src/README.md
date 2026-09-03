@@ -1611,3 +1611,49 @@ filas se cuentan con `count(*)` y no con la estimacion de `reltuples`, porque el
 numero se publica. Reuso: el script falla si aparece una tabla que no este ni en
 `FAMILIES` ni en `NOT_OURS`, asi que una tabla nueva no puede colarse sin que
 alguien decida donde va.
+
+### `scripts/build_knowledge_map.py`
+Dibuja el mapa de la pantalla 06: la salida del modelo desplegado sobre el plano
+temperatura x modulador, con las sintesis que existen encima. La metafora es de
+Ruben --el espacio de sintesis como un mapa a oscuras y el modelo como una
+brujula-- y la decision que importa fue no ilustrarla: se dibuja la rejilla real
+del simulador, no una recreacion. Lo que se propone es donde el modelo **duda**,
+medido por entropia, y no donde predice exito: un experimento en una casilla
+donde ya esta seguro confirma lo que sabia. Al dibujarlo salieron dos errores
+propios que una ilustracion habria escondido: los puntos no caian en la rejilla
+--el eje del modulador son siete valores redondos y el modulador real es
+continuo, asi que cada sintesis va ahora a su casilla mas cercana-- y la
+cobertura estaba contada sobre ternas (condicion, veredicto) en vez de casillas,
+lo que la inflaba del 29 % al 86 %. Reuso: las sintesis se leen con la consulta
+que el registro guarda para el conjunto del modelo, no con un filtro parecido
+escrito a mano, que dejaba entrar filas que el modelo nunca vio.
+
+### `scripts/build_graph_sample.py`
+Saca una vecindad del grafo de conocimiento para la pantalla 07. Problema que
+resuelve: el grafo tiene 6.506 nodos y dibujarlo entero da una maraña que decora
+sin informar -- y ademas no es lo que hace el agente, que camina unos pocos
+saltos desde un nodo. Se dibuja esa unidad, y a cada vecino se le anota su
+**grado**, que dice cuantas muestras mas cuelgan de el sin tener que dibujarlas:
+esa cifra es lo que convierte el dibujo en una respuesta. A dos saltos salian 160
+nodos y 149 eran muestras que comparten metal, porque el metal es un
+concentrador; de ahi que se quede en uno. Codigos de muestra y ligandos
+seudonimizados.
+
+### `scripts/build_prose_pages.py`
+Convierte la prosa revisada de los cuadernos (`handoff/gemini_back/`) en paginas
+de lectura bilingues junto a los cuadernos completos. Coexisten a proposito:
+`build_public_notebooks.py` publica el `.ipynb` entero --codigo, salidas y
+figuras, en el idioma en que se escribio, que en varios es una mezcla-- y eso
+sirve para auditar; estas paginas sirven para leer. Sustituye cada marca
+`> [FIGURA n de ...]` por la figura real, que ya paso por el saneado, y avisa en
+vez de publicar un texto que habla de una imagen que no esta.
+
+### `scripts/redact_video.py`
+Tapa con caja solida las regiones sensibles de los videos de las herramientas:
+ligandos sin publicar, codigos de muestra y la IP local. Reuso y aviso: las
+coordenadas son fijas porque se comprobo en fotogramas de varios momentos que la
+maquetacion no se mueve; si se regraba un video hay que volver a mirarlas. El
+primer intento uso crop+overlay encadenados y solo tapaba una de las cuatro
+regiones, porque cada eslabon reutilizaba la misma etiqueta como entrada del
+recorte y como base de la superposicion, y ffmpeg no duplica un flujo sin
+`split`. `drawbox` encadena con comas y ademas no deja nada reconstruible.

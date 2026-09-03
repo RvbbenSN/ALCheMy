@@ -1,0 +1,116 @@
+{
+ "center": "SAMPLE:IEF-22(Ni)",
+ "centerLabel": "SMP-001",
+ "hops": 1,
+ "nodes": [
+  {
+   "id": "SAMPLE:IEF-22(Ni)",
+   "type": "SAMPLE",
+   "label": "SMP-001",
+   "hop": 0,
+   "degree": 8
+  },
+  {
+   "id": "METAL:Ni",
+   "type": "METAL",
+   "label": "Ni",
+   "hop": 1,
+   "degree": 149
+  },
+  {
+   "id": "LIGAND:Pyrene",
+   "type": "LIGAND",
+   "label": "LIG-001",
+   "hop": 1,
+   "degree": 10
+  },
+  {
+   "id": "MEASUREMENT:IEF-22(Ni):ADSORPTION",
+   "type": "MEASUREMENT",
+   "label": "MEA-001",
+   "hop": 1,
+   "degree": 1
+  },
+  {
+   "id": "MEASUREMENT:IEF-22(Ni):SEM",
+   "type": "MEASUREMENT",
+   "label": "MEA-002",
+   "hop": 1,
+   "degree": 1
+  },
+  {
+   "id": "MEASUREMENT:IEF-22(Ni):UV_VIS",
+   "type": "MEASUREMENT",
+   "label": "MEA-003",
+   "hop": 1,
+   "degree": 1
+  },
+  {
+   "id": "MEASUREMENT:IEF-22(Ni):FESEM",
+   "type": "MEASUREMENT",
+   "label": "MEA-004",
+   "hop": 1,
+   "degree": 1
+  },
+  {
+   "id": "MEASUREMENT:IEF-22(Ni):TGA",
+   "type": "MEASUREMENT",
+   "label": "MEA-005",
+   "hop": 1,
+   "degree": 1
+  },
+  {
+   "id": "MEASUREMENT:IEF-22(Ni):FTIR",
+   "type": "MEASUREMENT",
+   "label": "MEA-006",
+   "hop": 1,
+   "degree": 1
+  }
+ ],
+ "edges": [
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "LIGAND:Pyrene",
+   "type": "USES_LIGAND"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "MEASUREMENT:IEF-22(Ni):ADSORPTION",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "MEASUREMENT:IEF-22(Ni):FESEM",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "MEASUREMENT:IEF-22(Ni):FTIR",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "MEASUREMENT:IEF-22(Ni):SEM",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "MEASUREMENT:IEF-22(Ni):TGA",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "MEASUREMENT:IEF-22(Ni):UV_VIS",
+   "type": "HAS_MEASUREMENT"
+  },
+  {
+   "from": "SAMPLE:IEF-22(Ni)",
+   "to": "METAL:Ni",
+   "type": "USES_METAL"
+  }
+ ],
+ "totals": {
+  "nodes": 6506,
+  "edges": 10906
+ }
+}

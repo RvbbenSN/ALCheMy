@@ -1,6 +1,7 @@
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
+import GraphSample from '../components/GraphSample.jsx'
 import {
   RAG_ACCESS,
   RAG_AREAS,
@@ -189,6 +190,19 @@ export default function Rag() {
         <Note>
           <Rich>{RAG_POWERS.boundary}</Rich>
         </Note>
+      </section>
+
+      {/* --- El grafo, que es lo que usan las dos ultimas herramientas --- */}
+      <section>
+        <SectionTitle eyebrow="Beyond vectors">The knowledge graph</SectionTitle>
+        <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          A vector search finds passages that <em>read</em> alike. It cannot answer{' '}
+          <em>what do these two samples have in common</em>, because that is a question about
+          relations rather than about text. So the same database also holds the record as a graph —
+          samples, metals, linkers, modulators and measurements as nodes, and what connects them as
+          edges. In PostgreSQL, with recursive queries, not in a separate graph database.
+        </p>
+        <GraphSample />
       </section>
 
       {/* --- Control de acceso --- */}
