@@ -5,6 +5,65 @@
 
 ---
 
+## Como esta organizado
+
+Dos mitades, y la regla es una sola: **si esta en `_lab/`, no se publica**.
+
+```
+ALCheMy/
+│
+├── _lab/                  PRIVADO — todo el material de trabajo
+│   ├── notebooks/           los .ipynb en crudo (llevan codigos y ligandos reales)
+│   ├── methodology/         bitacora, roadmaps, revisiones, tesis
+│   ├── design_system/       el diseño de la web: guia de estilo, iconos, assets
+│   ├── handoff/             lo que se manda a revisar fuera, ya saneado
+│   ├── scratch/             borradores
+│   └── backups/             volcados de la base
+│
+├── data/                  PRIVADO — el data lake. No esta en _lab/ porque
+│                          docker-compose lo monta como ./data en tres
+│                          contenedores; sacarlo de la raiz obliga a tocar
+│                          la pila.
+│
+├── src/                   los parsers, la ingesta, el RAG, el registro de modelos
+├── scripts/               herramientas y generadores
+│   └── sql/               init_db.sql · schema.sql (generado) · migrations/
+├── app/                   las dos herramientas Streamlit del laboratorio
+├── web/                   la aplicacion web (React + Vite)
+├── docs/                  documentacion publica
+├── n8n_workflows/         los flujos exportados
+├── docker/                los dos Dockerfile y la configuracion de los runners
+└── docker-compose.yml     el punto de entrada de la pila
+```
+
+### Lo que hay que respetar para que nada se rompa
+
+`docker-compose.yml` monta cuatro rutas del disco dentro de los contenedores.
+Mover cualquiera de ellas sin actualizar el compose deja la pila sin arrancar:
+
+| Ruta | Va a parar a |
+|---|---|
+| `./data` | `/home/node/data` en n8n y en los runners |
+| `./src` | `/home/node/src` en n8n |
+| `./n8n_workflows` | `/home/node/workflows` en n8n |
+| `./scripts/sql/init_db.sql` | el arranque de PostgreSQL |
+
+### Dos comprobadores antes de tocar o publicar
+
+```bash
+python scripts/verificar_proyecto.py      # ¿sigue todo en pie?
+python scripts/comprobar_privacidad.py    # ¿se puede publicar?
+```
+
+El primero mira lo que Docker monta, que el compose sea valido, que la base
+responda, que los ficheros de Python compilen y que la web construya. Se
+ejecuta **antes y despues** de mover cosas: lo que importa no es que salga todo
+verde, sino que salga lo mismo.
+
+El segundo mira que no haya nada de `_lab/`, `data/` ni `.env` preparado para
+un commit, y --lo que mas pasa-- que ningun fichero publicable lleve dentro un
+correo real, un codigo de muestra, un ligando sin publicar o una IP privada.
+
 ## 🎯 El problema
 
 Un laboratorio de síntesis de materiales genera datos que **no se parecen a los de una empresa**:
