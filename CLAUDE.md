@@ -31,7 +31,7 @@ docker compose up -d --build  # after editing Dockerfile.n8n
 ```
 
 - All credentials/ports come from `.env` (gitignored; the committed template lists the keys).
-- `scripts/init_db.sql` runs **only on first creation of the `postgres_data` volume**. Changing the DDL for an existing database means applying the delta by hand (pgAdmin or `docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db`), or destroying the volume and re-ingesting.
+- `scripts/sql/init_db.sql` runs **only on first creation of the `postgres_data` volume**. Changing the DDL for an existing database means applying the delta by hand (pgAdmin or `docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db`), or destroying the volume and re-ingesting.
 - `Dockerfile.n8n` bakes Python 3 + pandas/numpy into the n8n image so `executeCommand` nodes can call the repo's Python parsers directly.
 - Host `./data`, `./src`, `./n8n_workflows` are bind-mounted into the container at `/home/node/data`, `/home/node/src`, `/home/node/workflows`. **Paths inside n8n must be the container paths** (`/home/node/data/raw_datalake/...`), which is deliberate so local and cloud deployments are identical.
 
@@ -119,7 +119,7 @@ Formats handled: `.xrdml` (PANalytical XML, namespace-stripped, 2θ reconstructe
 
 `sample_code` is recovered by regex (`RS\d+|LP\d+|RSMix\d+|IEF-\d+`) from filename and embedded metadata, falling back to the literal `'UNKNOWN'` row. The ingestion script auto-creates placeholder `synthesis_experiments` rows for orphan codes so the FK never blocks a load — those placeholders carry dummy chemistry (Ni/Pyrene) and must be reconciled later.
 
-### Database schema (`scripts/init_db.sql`)
+### Database schema (`scripts/sql/init_db.sql`)
 
 - `synthesis_experiments` — parent, PK `sample_code`, ~50 columns in 6 documented sections (general/ISO-17025 audit, theoretical design, solvents, thermal ramp, modulators in mmol, weighings & yield). Every column carries a native SQL `COMMENT` so pgAdmin is self-documenting.
 - `characterization_measurements` — child, FK `sample_code ON DELETE CASCADE`, JSONB `data_json` + GIN index, `file_hash` MD5.

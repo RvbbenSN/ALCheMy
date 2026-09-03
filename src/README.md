@@ -288,7 +288,7 @@ count per column).
 
 ### `build_knowledge_graph.py`
 Builds/refreshes Phase 1 (deterministic, no LLM) of the knowledge graph:
-`kg_nodes`/`kg_edges` in Postgres (`scripts/init_db.sql`, Section 22). Reads
+`kg_nodes`/`kg_edges` in Postgres (`scripts/sql/init_db.sql`, Section 22). Reads
 `synthesis_experiments` (metal, ligand, the 10 modulator-in-mmol columns) and
 `characterization_measurements` (grouped by sample+technique, not one node
 per file — thousands of file-level nodes would make the graph unreadable for
@@ -439,7 +439,7 @@ written to `pxrd_labels` keyed on `file_hash`, not on `measurement_id`, because
 regenerates every id (it happened on 2026-08-25 and took 300 descriptor rows with
 it). A hash does not change, so labels outlive any rebuild; `measurement_id` is
 kept only as a convenience link with `ON DELETE SET NULL`, re-attachable by the
-query at the bottom of `scripts/ddl_pxrd_labels_v2.sql`.
+query at the bottom of `scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql`.
 
 Speed is the other design constraint. Streamlit re-runs the whole script on every
 interaction, so the connection is a cached resource, the ~1,870-row work queue is
@@ -503,7 +503,7 @@ Reuse: `--server.port` to run several instances; the sidebar filters by metal an
 linker so the corpus can be labelled in themed batches; every click is an
 autocommitted UPSERT, so closing the browser mid-session loses nothing.
 
-### `scripts/ddl_pxrd_labels_v2.sql`
+### `scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql`
 Rebuilds `pxrd_labels` with the hash-keyed design described above, plus the
 `v_pxrd_labels_full` view (labels joined to their synthesis conditions, with a
 `needs_relink` flag) and `data_dictionary` rows for every column. Idempotent
@@ -630,7 +630,7 @@ plain psycopg2 one and returns the blank on the standard grid;
 `amorphous_from_blank(x, y_grid, blank_grid)` returns the diffuse curve, the fraction and
 the scale factor, and is callable on its own for plotting. Pass `blank_grid=` to
 `extract_descriptors` or the v3.0 columns come back `None` rather than silently falling
-back to the superseded estimate. Schema delta in `scripts/ddl_pxrd_descriptors_v3.sql`
+back to the superseded estimate. Schema delta in `scripts/sql/migrations/2026-08-27_pxrd_descriptors_v3.sql`
 (additive; the v2.0 columns are kept, with their COMMENT amended to say they are
 superseded and why).
 
@@ -823,7 +823,7 @@ chemistry a physical descriptor recovers for free. See the roadmap's §2-4 for
 the full argument; the schema and every design decision are also documented
 inline as SQL `COMMENT`s and Python docstrings in the files below.
 
-### `scripts/ddl_ml_reference_tables.sql`
+### `scripts/sql/migrations/2026-08-28_ml_reference_tables.sql`
 
 **What it does.** Creates five objects: `element_properties` (one row per
 metal symbol), `ion_properties` (one row per (symbol, oxidation_state) — radius
@@ -842,7 +842,7 @@ chemically similar metals (Zr/Hf, or the four lanthanides with 2-5 samples
 each) instead of treating each one as an isolated, unrelated category.
 
 **How to reuse it.** Apply once with `docker exec -i alchemy_postgres psql -U
-alchemy_user -d alchemy_db < scripts/ddl_ml_reference_tables.sql` (checkpoint
+alchemy_user -d alchemy_db < scripts/sql/migrations/2026-08-28_ml_reference_tables.sql` (checkpoint
 first with `python scripts/backup_database.py` — it's a DDL migration).
 Idempotent-ish: `CREATE TABLE IF NOT EXISTS` and `CREATE OR REPLACE VIEW`, so
 re-running it after a small tweak is safe, but it will not pick up column
@@ -917,7 +917,7 @@ fed into a model as features themselves; that would reintroduce exactly the
 categorical-identifier problem this whole layer exists to avoid.
 
 
-### `scripts/fix_pxrd_labels_20260828.sql`
+### `scripts/sql/migrations/2026-08-28_fix_pxrd_labels.sql`
 One-off correction of four hand labels that were reviewed and found wrong
 (RS1164 / RS1567 / RS1568 -> INCIPIENTE / PICOS_ANCHOS, RS159 -> INCIPIENTE /
 HALO_DOMINANTE). Kept in the repository rather than run and forgotten, because
@@ -939,7 +939,7 @@ change.
 
 ### `src/apply_ml_label_review_2026_08.py`
 
-Same pattern as `scripts/fix_pxrd_labels_20260828.sql` above, in Python because
+Same pattern as `scripts/sql/migrations/2026-08-28_fix_pxrd_labels.sql` above, in Python because
 the plan (44 duplicate measurements, 70 AMORFO+oxide exclusions, 2 class
 overrides, 16 subtype assignments, 1 sample_code reassignment) is too big to
 type as one SQL statement without a transcription mistake somewhere. One-off,
@@ -1019,10 +1019,10 @@ rows and the code that produced them, in the same commit"*.
 
 ---
 
-### `scripts/ddl_ml_features_v2.sql`
+### `scripts/sql/migrations/2026-08-29_ml_features_v2.sql`
 
 Rebuild of the `v_ml_features` view after the expert review of notebook 06. Applies with
-`docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/ddl_ml_features_v2.sql`
+`docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/sql/migrations/2026-08-29_ml_features_v2.sql`
 (back up first — it is a migration). Note it uses `DROP VIEW` + `CREATE VIEW`, not
 `CREATE OR REPLACE`, because the latter cannot insert columns in the middle of the list.
 
@@ -1056,7 +1056,7 @@ stays self-documenting from inside the database.
 
 ---
 
-### `src/ml_model_registry.py` + `scripts/ddl_ml_model_registry.sql`
+### `src/ml_model_registry.py` + `scripts/sql/migrations/2026-08-29_ml_model_registry.sql`
 
 The model registry: save, query and retrieve trained models. Five tables plus a helper
 module and a small CLI.
@@ -1138,7 +1138,7 @@ no sense.
 
 ---
 
-### `src/sync_data_dictionary.py` + `scripts/ddl_data_dictionary_completion.sql`
+### `src/sync_data_dictionary.py` + `scripts/sql/migrations/2026-09-01_data_dictionary_completion.sql`
 
 Bring `data_dictionary` to **100% coverage** of every column of every table and view, and
 keep it there.
@@ -1321,7 +1321,7 @@ the database on 2,096 samples to within the stored rounding.
 
 ---
 
-### `scripts/ddl_ml_features_v3.sql`
+### `scripts/sql/migrations/2026-09-03_ml_features_v3.sql`
 
 Rebuild of `v_ml_features` on top of the corrected volumes. Same `DROP VIEW` + `CREATE VIEW`
 mechanics and the same "back up first" rule as v2. What it changes:
@@ -1390,7 +1390,7 @@ DataFrame de resultados cuya primera fila es el modelo ganador, con columnas `F1
 
 ---
 
-### `scripts/ddl_ml_model_features_position.sql` + `v_ml_model_input_contract`
+### `scripts/sql/migrations/2026-09-03_ml_model_features_position.sql` + `v_ml_model_input_contract`
 
 Migración aditiva que añade `ml_model_features.feature_position` y una vista,
 `v_ml_model_input_contract`, con **las columnas de entrada de cada modelo en el orden
@@ -1460,7 +1460,7 @@ columna del contrato.
 
 ## Despliegue del modelo en la web
 
-### `scripts/ddl_ml_deployment_slot.sql` + `modelo_desplegado()` + `scripts/build_model_scorecard.py`
+### `scripts/sql/migrations/2026-09-03_ml_deployment_slot.sql` + `modelo_desplegado()` + `scripts/build_model_scorecard.py`
 
 **El problema.** El registro de modelos sabía qué modelos existían, pero no cuál se estaba
 *sirviendo*. Esa información vivía escrita a mano en dos sitios: el slug dentro de

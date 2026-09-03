@@ -34,7 +34,7 @@ constraint it solves:
     writing. Any change that would silently alter how already-saved labels
     are interpreted (renaming a label_value, changing what a pill maps to)
     is a correctness risk, not just a UI tweak - double-check against
-    src/README.md and scripts/ddl_pxrd_labels_v2.sql before doing it.
+    src/README.md and scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql before doing it.
 
 WHAT IT IS FOR
 --------------
@@ -97,7 +97,7 @@ minutes and gigabytes, which is why the app never does that.
 HOW LABELS SURVIVE
 ------------------
 Labels are written keyed on `file_hash`, not on `measurement_id` - see
-scripts/ddl_pxrd_labels_v2.sql for the full reasoning. Short version: the
+scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql for the full reasoning. Short version: the
 measurements table gets wiped and re-ingested from time to time, which
 regenerates every measurement_id. Labels keyed on those ids would be destroyed.
 The file hash does not change, so labels survive.

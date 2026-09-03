@@ -25,7 +25,7 @@ ALCheMy convierte ese archivo disperso en una base de datos consultable, sin per
 | Componente | Estado |
 |---|---|
 | Stack en Docker Compose (n8n + PostgreSQL/pgvector + pgAdmin + sidecar de runners) | ✅ Funcionando |
-| Esquema relacional gobernado con comentarios SQL nativos | ✅ `scripts/init_db.sql` |
+| Esquema relacional gobernado con comentarios SQL nativos | ✅ `scripts/sql/init_db.sql` |
 | 7 parsers deterministas de formatos de instrumento | ✅ `src/parse_*.py` |
 | Workflow de ingesta con 4 puntos de entrada, control de duplicados y gobernanza | ✅ 66 nodos, `n8n_workflows/` |
 | Ejecución de Python real (pandas/numpy) desde n8n vía task runner externo | ✅ Verificado extremo a extremo |
@@ -176,7 +176,7 @@ python src/ingest_datalake_to_postgres.py
 python scripts/trigger_n8n_webhook.py -f <fichero> -t PXRD -s RS1883
 ```
 
-> `scripts/init_db.sql` se ejecuta **sólo en la primera creación del volumen** `postgres_data`. Cambiar el DDL sobre una base existente exige aplicar el delta a mano.
+> `scripts/sql/init_db.sql` se ejecuta **sólo en la primera creación del volumen** `postgres_data`. Cambiar el DDL sobre una base existente exige aplicar el delta a mano.
 
 ---
 
