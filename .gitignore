@@ -70,3 +70,7 @@ scratch/
 Conversacion con Claude*
 
 
+
+# Material de entrega a terceros (prosa saneada, prompts). Derivado y efimero:
+# se regenera con scripts/export_notebook_prose.py.
+handoff/

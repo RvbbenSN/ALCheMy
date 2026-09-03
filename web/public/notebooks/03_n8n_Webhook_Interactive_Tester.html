@@ -13128,7 +13128,7 @@ served, and none of the code here was re-executed to produce it.
 <main>
 <div class="border-box-sizing" id="notebook" tabindex="-1">
 <div class="container" id="notebook-container">
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=85fb4292"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=2782044c"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="%F0%9F%A7%AA-ALCheMy-%E2%80%94-Probador-Interactivo-del-Webhook-de-n8n">🧪 ALCheMy — Probador Interactivo del Webhook de n8n<a class="anchor-link" href="#%F0%9F%A7%AA-ALCheMy-%E2%80%94-Probador-Interactivo-del-Webhook-de-n8n">¶</a></h1><p>Este notebook tiene dos objetivos:</p>
 <ol>
@@ -13144,7 +13144,7 @@ served, and none of the code here was re-executed to produce it.
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=b6accb3d">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=123e10ab">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13189,7 +13189,7 @@ served, and none of the code here was re-executed to produce it.
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=aa2476cd"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=f9f11c5e"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="%F0%9F%A7%A9-Esqueleto-del-cliente-/-API-de-ingesta">🧩 Esqueleto del cliente / API de ingesta<a class="anchor-link" href="#%F0%9F%A7%A9-Esqueleto-del-cliente-/-API-de-ingesta">¶</a></h2><p><code>ALCheMyIngestionClient</code> envuelve el POST multipart al webhook de n8n. Es intencionadamente
 delgado: un solo metodo publico (<code>submit</code>), sin logica de negocio propia (esa vive en el
@@ -13199,7 +13199,7 @@ que se conservaria - solo cambiaria el transporte interno.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=e4fab932">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=972a524c">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13276,7 +13276,7 @@ que se conservaria - solo cambiaria el transporte interno.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=d86e245a">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=8a32fc6a">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13307,7 +13307,7 @@ que se conservaria - solo cambiaria el transporte interno.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=5383386e"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=eb7043a2"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%E2%9C%85-Parte-1-%E2%80%94-Happy-path-por-tecnica">✅ Parte 1 — Happy path por tecnica<a class="anchor-link" href="#%E2%9C%85-Parte-1-%E2%80%94-Happy-path-por-tecnica">¶</a></h2><p>Un caso por cada una de las 11 combinaciones tecnica+ruta soportadas: 6 parsers deterministas
@@ -13318,20 +13318,20 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=73e4021e"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=2a37ea54"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="PXRD-(.xrdml)">PXRD (.xrdml)<a class="anchor-link" href="#PXRD-(.xrdml)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=6ac84d49">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=36950cd1">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
 <div class="highlight hl-python"><pre><span></span><span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
     <span class="n">file_path</span><span class="o">=</span><span class="n">DATA_LAKE</span> <span class="o">/</span> <span class="s2">"PXRD"</span> <span class="o">/</span> <span class="s2">"24DRX0180-RS1883_CoPy.xrdml"</span><span class="p">,</span>
     <span class="n">technique</span><span class="o">=</span><span class="s2">"PXRD"</span><span class="p">,</span>
-    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0035"</span><span class="p">,</span>
+    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0036"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">run_case</span><span class="p">(</span><span class="s2">"Happy path - PXRD"</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">expect_status</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 </pre></div>
@@ -13339,20 +13339,20 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=75aad784"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=9a1e7d8c"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="VT-XRD-(.brml)">VT-XRD (.brml)<a class="anchor-link" href="#VT-XRD-(.brml)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=2437e49a">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=59f3ab93">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
 <div class="highlight hl-python"><pre><span></span><span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
     <span class="n">file_path</span><span class="o">=</span><span class="n">DATA_LAKE</span> <span class="o">/</span> <span class="s2">"VT-XRD"</span> <span class="o">/</span> <span class="s2">"24DRX0766-RSMix15_CoPyF2_1 Air100mlmin.brml"</span><span class="p">,</span>
     <span class="n">technique</span><span class="o">=</span><span class="s2">"VT-XRD"</span><span class="p">,</span>
-    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0045"</span><span class="p">,</span>
+    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0046"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">run_case</span><span class="p">(</span><span class="s2">"Happy path - VT-XRD"</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">expect_status</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 </pre></div>
@@ -13360,13 +13360,13 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=eb9edf8b"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=c6b3e764"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="TGA-(.txt)">TGA (.txt)<a class="anchor-link" href="#TGA-(.txt)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=1399dcdf">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=05212f28">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13381,13 +13381,13 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=c52863ef"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=c66ede44"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="FTIR-(.csv)">FTIR (.csv)<a class="anchor-link" href="#FTIR-(.csv)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=00e3d4f2">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=f5a60a84">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13402,20 +13402,20 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=cf739a97"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=5976ff04"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Adsorcion-/-BET-(.xls)">Adsorcion / BET (.xls)<a class="anchor-link" href="#Adsorcion-/-BET-(.xls)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=b1e1bc22">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=7ed3f30d">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
 <div class="highlight hl-python"><pre><span></span><span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-    <span class="n">file_path</span><span class="o">=</span><span class="n">DATA_LAKE</span> <span class="o">/</span> <span class="s2">"ADSORPTION"</span> <span class="o">/</span> <span class="s2">"20220425-22046-SMP-0042-Mg-Tria7-st2.XLS"</span><span class="p">,</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="n">DATA_LAKE</span> <span class="o">/</span> <span class="s2">"ADSORPTION"</span> <span class="o">/</span> <span class="s2">"20220425-22046-SMP-0043-Mg-Tria7-st2.XLS"</span><span class="p">,</span>
     <span class="n">technique</span><span class="o">=</span><span class="s2">"Adsorption"</span><span class="p">,</span>
-    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0042"</span><span class="p">,</span>
+    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0043"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">run_case</span><span class="p">(</span><span class="s2">"Happy path - Adsorcion"</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">expect_status</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 </pre></div>
@@ -13423,13 +13423,13 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=3eb64065"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=783bd01b"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="UV-Vis-(.asc)">UV-Vis (.asc)<a class="anchor-link" href="#UV-Vis-(.asc)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=a8494b4c">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=a286acac">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13444,7 +13444,7 @@ data lake, ajusta la ruta.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=bf37e69d"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=dadf9d97"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="SEM-(.jpg-+-.txt-Hitachi)">SEM (.jpg + .txt Hitachi)<a class="anchor-link" href="#SEM-(.jpg-+-.txt-Hitachi)">¶</a></h3><p>Sube la micrografia <strong>y</strong> su <code>.txt</code> companero. Entre los tres casos de microscopia quedan
 cubiertos los tres formatos reales de metadatos que existen en el data lake:</p>
@@ -13477,7 +13477,7 @@ cubiertos los tres formatos reales de metadatos que existen en el data lake:</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=a9f6188e">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=b614b7b4">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13493,7 +13493,7 @@ cubiertos los tres formatos reales de metadatos que existen en el data lake:</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=255af849"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=4594ca88"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="FESEM-(.bmp,-CON-metadatos-adjuntos)">FESEM (.bmp, CON metadatos adjuntos)<a class="anchor-link" href="#FESEM-(.bmp,-CON-metadatos-adjuntos)">¶</a></h3><p>Este es el caso que demuestra el campo nuevo: subimos la imagen JEOL (<code>.bmp</code>) <strong>y</strong> su <code>.txt</code>
 compañero a la vez via <code>instrument_metadata_file</code>. El parser determinista debe extraer
@@ -13501,7 +13501,7 @@ instrumento real (<code>JEOL 7900F</code>), aumento, voltaje, y las anotaciones 
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=fa1f2f43">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=38feafc9">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13517,14 +13517,14 @@ instrumento real (<code>JEOL 7900F</code>), aumento, voltaje, y las anotaciones 
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=b12ccde5"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=f3320329"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="TEM-(.jpg,-sin-sidecar---aumento-en-el-nombre-de-archivo)">TEM (.jpg, sin sidecar - aumento en el nombre de archivo)<a class="anchor-link" href="#TEM-(.jpg,-sin-sidecar---aumento-en-el-nombre-de-archivo)">¶</a></h3><p>TEM nunca trae <code>.txt</code>; el aumento se lee del propio nombre de archivo
 (<code>..._MAG_X3000_001.jpg</code>), no de un sidecar.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=a92647fd">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=5fe83a43">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13539,7 +13539,7 @@ instrumento real (<code>JEOL 7900F</code>), aumento, voltaje, y las anotaciones 
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=b3b36108"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=30ff635f"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="ICP-OES-(.pdf,-via-Agente-de-IA)">ICP-OES (.pdf, via Agente de IA)<a class="anchor-link" href="#ICP-OES-(.pdf,-via-Agente-de-IA)">¶</a></h3><p>Esta rama pasa por el agente de IA (Gemini) y el evaluador de confianza. Si la confianza
 declarada es &gt;= 85%% inserta directamente; si es menor, dispara el email de aprobacion L2
@@ -13547,7 +13547,7 @@ declarada es &gt;= 85%% inserta directamente; si es menor, dispara el email de a
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=64428348">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=ddab01c8">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13562,13 +13562,13 @@ declarada es &gt;= 85%% inserta directamente; si es menor, dispara el email de a
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=749cc5ce"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=1fe8d35b"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="EA-/-CHNS-(.pdf,-via-Agente-de-IA)">EA / CHNS (.pdf, via Agente de IA)<a class="anchor-link" href="#EA-/-CHNS-(.pdf,-via-Agente-de-IA)">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=e4082d48">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=f844de3a">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13583,7 +13583,7 @@ declarada es &gt;= 85%% inserta directamente; si es menor, dispara el email de a
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=9f4512a1"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=f283be40"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%F0%9F%A7%AF-Parte-2-%E2%80%94-Casuisticas-de-fallback">🧯 Parte 2 — Casuisticas de fallback<a class="anchor-link" href="#%F0%9F%A7%AF-Parte-2-%E2%80%94-Casuisticas-de-fallback">¶</a></h2><p>Cada fallback escribe en <code>audit_log</code> con <code>verdict/cause/result</code> tipados
@@ -13595,7 +13595,7 @@ de cobertura.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=b66f7929"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=ba225a61"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="1.-Email-no-autorizado-(whitelist)">1. Email no autorizado (whitelist)<a class="anchor-link" href="#1.-Email-no-autorizado-(whitelist)">¶</a></h3><p><code>Auto-Enroll Whitelist</code> auto-registra cualquier email nuevo como activo (self-enrollment de
 demo) - pero <strong>no</strong> reactiva un email que un admin haya desactivado explicitamente
@@ -13604,7 +13604,7 @@ fallback primero hay que bloquear un email a mano.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=fcd1ae31">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=801c1ce6">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13633,14 +13633,14 @@ fallback primero hay que bloquear un email a mano.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=c7e80101">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=d558c1a8">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
 <div class="highlight hl-python"><pre><span></span><span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
     <span class="n">file_path</span><span class="o">=</span><span class="n">DATA_LAKE</span> <span class="o">/</span> <span class="s2">"PXRD"</span> <span class="o">/</span> <span class="s2">"24DRX0180-RS1883_CoPy.xrdml"</span><span class="p">,</span>
     <span class="n">technique</span><span class="o">=</span><span class="s2">"PXRD"</span><span class="p">,</span>
-    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0035"</span><span class="p">,</span>
+    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0036"</span><span class="p">,</span>
     <span class="n">researcher_email</span><span class="o">=</span><span class="n">BLOCKED_EMAIL</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">run_case</span><span class="p">(</span><span class="s2">"Fallback - Email no autorizado"</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">expect_status</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">expect_cause_contains</span><span class="o">=</span><span class="s2">"UNAUTHORIZED_RESEARCHER_EMAIL"</span><span class="p">)</span>
@@ -13649,14 +13649,14 @@ fallback primero hay que bloquear un email a mano.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=e2790fe6"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=d2b524b5"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="2.-Tama%C3%B1o-de-archivo-excedido-(%3E-10-MB)">2. Tamaño de archivo excedido (&gt; 10 MB)<a class="anchor-link" href="#2.-Tama%C3%B1o-de-archivo-excedido-(%3E-10-MB)">¶</a></h3><p>Generamos un archivo sintetico de relleno en vez de depender de que exista uno real de mas
 de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=368a74ae">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=3ba2a5c5">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13677,21 +13677,21 @@ de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=eb689c14"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=49e73a56"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="3.-Medida-duplicada">3. Medida duplicada<a class="anchor-link" href="#3.-Medida-duplicada">¶</a></h3><p>Reenvia el mismo archivo PXRD del happy path (<strong>ejecuta primero la celda de PXRD de la Parte
 1</strong>, si no este caso no tendra nada de lo que ser duplicado).</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=52301577">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=714fc57d">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
 <div class="highlight hl-python"><pre><span></span><span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
     <span class="n">file_path</span><span class="o">=</span><span class="n">DATA_LAKE</span> <span class="o">/</span> <span class="s2">"PXRD"</span> <span class="o">/</span> <span class="s2">"24DRX0180-RS1883_CoPy.xrdml"</span><span class="p">,</span>
     <span class="n">technique</span><span class="o">=</span><span class="s2">"PXRD"</span><span class="p">,</span>
-    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0035"</span><span class="p">,</span>
+    <span class="n">sample_code</span><span class="o">=</span><span class="s2">"SMP-0036"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">run_case</span><span class="p">(</span><span class="s2">"Fallback - Duplicado"</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">expect_status</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">expect_cause_contains</span><span class="o">=</span><span class="s2">"DUPLICATE_MEASUREMENT_SKIPPED"</span><span class="p">)</span>
 </pre></div>
@@ -13699,14 +13699,14 @@ de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=fc293bef"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=1467af2f"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="4.-sample_code-ausente">4. sample_code ausente<a class="anchor-link" href="#4.-sample_code-ausente">¶</a></h3><p>No se envia <code>sample_code</code>, y el nombre de archivo no contiene ningun patron reconocible
 (<code>RS\d+</code>, <code>IEF-\d+</code>, <code>RSMix\d+</code>, <code>LP\d+</code>).</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=beb0f39b">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=83503ca6">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13721,13 +13721,13 @@ de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=7521aa18"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=1c0b621a"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="5.-Tecnica-no-reconocida">5. Tecnica no reconocida<a class="anchor-link" href="#5.-Tecnica-no-reconocida">¶</a></h3>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=3656bd80">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=84f5284f">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13742,14 +13742,14 @@ de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=3b00290c"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=644bf79c"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="6.-Extension-invalida-para-una-tecnica-determinista">6. Extension invalida para una tecnica determinista<a class="anchor-link" href="#6.-Extension-invalida-para-una-tecnica-determinista">¶</a></h3><p>Se declara <code>technique="PXRD"</code> pero se sube un <code>.csv</code> de FTIR - el router determinista
 (tecnica+extension) no tiene ninguna regla que lo acepte.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=9d1877c0">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=c3d0882b">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13764,13 +13764,13 @@ de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=1f806fc6"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=f55af22e"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="7.-Extension-invalida-para-una-tecnica-via-IA-(PDF)">7. Extension invalida para una tecnica via IA (PDF)<a class="anchor-link" href="#7.-Extension-invalida-para-una-tecnica-via-IA-(PDF)">¶</a></h3><p>Se declara <code>technique="ICP-OES"</code> pero se sube un <code>.xrdml</code> en vez de un <code>.pdf</code>.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=3fd401f2">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=0b258b8c">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13785,7 +13785,7 @@ de 10MB en el data lake.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=23d69980"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=313c3121"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="8.-Rechazo-humano-en-la-aprobacion-L2-(manual)">8. Rechazo humano en la aprobacion L2 (manual)<a class="anchor-link" href="#8.-Rechazo-humano-en-la-aprobacion-L2-(manual)">¶</a></h3><p>No se puede automatizar desde aqui: hay que dispararlo y luego pulsar <strong>Decline</strong> en el
 correo de aprobacion que llega a <code>researcher@hidden</code> (o a quien configures como
@@ -13803,7 +13803,7 @@ intentarlo con otro PDF, o reduce el <code>CONFIDENCE_THRESHOLD</code> temporalm
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=ec180579">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=4d2c5447">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13818,7 +13818,7 @@ intentarlo con otro PDF, o reduce el <code>CONFIDENCE_THRESHOLD</code> temporalm
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=2e8727cf"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=54632c47"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="9.-Timeout-de-aprobacion-(manual,-dependiente-del-tiempo)">9. Timeout de aprobacion (manual, dependiente del tiempo)<a class="anchor-link" href="#9.-Timeout-de-aprobacion-(manual,-dependiente-del-tiempo)">¶</a></h3><p>Mismo disparador que el caso anterior, pero esta vez <strong>no respondas al correo</strong>. Pasados
 5 minutos (<code>resumeAmount: 5</code> en el nodo <code>Send message and wait for response</code>), el flujo
@@ -13829,7 +13829,7 @@ No lo esperamos de forma bloqueante en una celda - revisa <code>audit_log</code>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=c4cf83b6">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=437d076f">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13844,7 +13844,7 @@ No lo esperamos de forma bloqueante en una celda - revisa <code>audit_log</code>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=da961e61"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=bfbd9a6c"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="10.-Fallo-del-agente-de-IA-(manual-/-con-manipulacion-de-entorno)">10. Fallo del agente de IA (manual / con manipulacion de entorno)<a class="anchor-link" href="#10.-Fallo-del-agente-de-IA-(manual-/-con-manipulacion-de-entorno)">¶</a></h3><p>Para forzar este fallback de forma fiable hay que romper deliberadamente la llamada al
 modelo, por ejemplo:</p>
@@ -13860,7 +13860,7 @@ notebook es mas invasivo de lo que conviene automatizar sin supervision directa.
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=82c4fdab">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=25f2d31c">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13875,14 +13875,14 @@ notebook es mas invasivo de lo que conviene automatizar sin supervision directa.
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=e49fe385"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=8d3c8683"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%F0%9F%94%8E-Verificacion-final-en-audit_log">🔎 Verificacion final en <code>audit_log</code><a class="anchor-link" href="#%F0%9F%94%8E-Verificacion-final-en-audit_log">¶</a></h2><p>Consulta rapida para revisar de un vistazo todo lo que este notebook acaba de generar.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=60851a73">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=3ea27d9f">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13907,7 +13907,7 @@ notebook es mas invasivo de lo que conviene automatizar sin supervision directa.
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=d705701f"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=2fab6e56"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%F0%9F%A4%96-Verificacion-automatizada-(todo-de-una-vez)">🤖 Verificacion automatizada (todo de una vez)<a class="anchor-link" href="#%F0%9F%A4%96-Verificacion-automatizada-(todo-de-una-vez)">¶</a></h2><p>Las celdas de arriba son para inspeccionar <strong>un</strong> caso concreto con calma. Para comprobar
@@ -13929,7 +13929,7 @@ arreglo para una tecnica rompia o tapaba otra sin que se notase.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered" id="cell-id=0590694d">
+<div class="cell border-box-sizing code_cell rendered" id="cell-id=4aed52d1">
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
@@ -13948,7 +13948,7 @@ arreglo para una tecnica rompia o tapaba otra sin que se notase.</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=37f4704e"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=4c23cecc"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%E2%9A%A0%EF%B8%8F-Limites-del-sandbox-de-Python-de-n8n-(aprendidos-a-base-de-golpes)">⚠️ Limites del sandbox de Python de n8n (aprendidos a base de golpes)<a class="anchor-link" href="#%E2%9A%A0%EF%B8%8F-Limites-del-sandbox-de-Python-de-n8n-(aprendidos-a-base-de-golpes)">¶</a></h2><p>Los nodos <strong>Code</strong> en Python no corren en un Python normal, sino en un sandbox que bloquea
@@ -13998,7 +13998,7 @@ python<span class="w"> </span>src/sync_parsers_to_n8n.py<span class="w">        
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=ac1df5a9"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=8aa247d9"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%F0%9F%A7%AA-La-rama-de-IA-(ICP-/-EA):-que-se-verifico-y-por-que-sigue-en-HITL">🧪 La rama de IA (ICP / EA): que se verifico y por que sigue en HITL<a class="anchor-link" href="#%F0%9F%A7%AA-La-rama-de-IA-(ICP-/-EA):-que-se-verifico-y-por-que-sigue-en-HITL">¶</a></h2><p>Esta rama llego a <strong>insertar quimica inventada</strong> en la base de datos, asi que conviene
@@ -14064,7 +14064,7 @@ peticion. Habra que decidir si esos informes se parten en una fila por muestra.<
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered" id="cell-id=bf85cb23"><div class="inner_cell">
+<div class="cell border-box-sizing text_cell rendered" id="cell-id=df0b29af"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <hr/>
 <h2 id="%E2%9B%94-Por-que-5-casos-no-se-pueden-verificar-ahora-mismo">⛔ Por que 5 casos no se pueden verificar ahora mismo<a class="anchor-link" href="#%E2%9B%94-Por-que-5-casos-no-se-pueden-verificar-ahora-mismo">¶</a></h2><p><code>SEM</code>, <code>FESEM</code>, <code>TEM</code>, <code>ICP-OES</code> y <code>EA</code> pasan por un agente de Gemini, y la cuenta

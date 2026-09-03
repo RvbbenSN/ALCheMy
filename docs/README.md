@@ -30,6 +30,28 @@ python scripts/build_public_notebooks.py            # genera el HTML saneado
 python scripts/build_public_notebooks.py --strip-images
 ```
 
+### Y una tercera salida: solo la prosa
+
+`build_public_notebooks.py` produce HTML de 6,6 MB porque lleva las 31 figuras
+incrustadas en base64. Eso está bien para leerlo en la web y fatal para
+cualquier otra cosa: no cabe cómodo en la ventana de un modelo, no se revisa a
+gusto y nadie lee un PNG. Para revisar, traducir o pulir **el texto**, hay una
+salida más ligera:
+
+```bash
+python scripts/export_notebook_prose.py       # -> handoff/notebook_prose/*.md
+```
+
+Saca únicamente las celdas de markdown, pasadas por **el mismo saneador** —lo
+importa, no lo reimplementa, para que las dos salidas no puedan divergir— y
+deja una marca `> [FIGURA n de <cuaderno>]` donde había una imagen, para que el
+texto no se quede hablando de algo que no está. Sin código y sin salidas de
+celda: 187 KB en total frente a 6,6 MB.
+
+Es lo único que se manda fuera del proyecto. `handoff/` está en `.gitignore`:
+es material derivado, se regenera con un comando, y no debe confundirse con
+algo versionado.
+
 ### Las dos reglas que sigue el generador
 
 **1. Los outputs filtran más que el código.** Un `.ipynb` guarda lo que imprimió cada celda:
@@ -43,7 +65,7 @@ ejecutado, en memoria, sin tocar el original.
 
 ### Qué sustituye, verificado
 
-En la última generación: **108 códigos de muestra**, **57 nombres de ligando**, 10 rutas absolutas
+En la última generación: **111 códigos de muestra**, **57 nombres de ligando**, 10 rutas absolutas
 y 3 correos. Comprobado sobre el HTML resultante que no queda ni un `RS…`/`LP…`/`IEF-…` real ni
 ninguno de los cuatro ligandos. Los metales se dejan visibles: no son secreto industrial.
 

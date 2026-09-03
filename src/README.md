@@ -1564,3 +1564,18 @@ rejilla de predicciones precalculadas (`build_simulator_grid.py`). Eso tiene una
 además de la técnica —**nadie puede sondear el modelo** para reconstruir la química que
 aprendió— y un precio, que es que la rejilla cuantiza y hay que regenerarla al cambiar de
 modelo. El paso 3 es ese precio.
+
+### `scripts/export_notebook_prose.py`
+Saca a Markdown **solo la prosa** de los siete cuadernos, ya seudonimizada, en
+`handoff/notebook_prose/`. Problema que resuelve: el texto de los cuadernos es
+lo que se quiere revisar o traducir, pero el `.ipynb` no puede salir del
+proyecto (lleva códigos de muestra y ligandos reales en las salidas de celda) y
+el HTML publicable sí está saneado pero pesa 6,6 MB por las figuras en base64.
+Esta salida son 187 KB de texto plano, sin una línea de código ni una salida de
+celda, con una marca `> [FIGURA n de <cuaderno>]` donde iba cada imagen.
+Reutiliza el `Sanitizer` de `build_public_notebooks.py` importándolo en vez de
+copiar sus expresiones regulares, que es la parte que importa: dos copias de esa
+lógica acabarían divergiendo y la copia sería la que se quedara corta. Reuso:
+`--out <carpeta>` para dejarlo en otro sitio; el `Sanitizer` es de corpus, así
+que se alimenta con todos los cuadernos antes de escribir ninguno y `SMP-0001`
+significa lo mismo en los siete.
