@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-09-03",
+ "generatedAt": "2026-09-04",
  "totals": {
   "tables": 26,
   "views": 9,
@@ -64,7 +64,7 @@
      "columns": 19,
      "rows": 6,
      "bytes": 32768,
-     "comment": "One row per linker code used in synthesis_experiments.linker. scaffold + protection_state are the two independent axes hidden inside the 6 linker names (roadmap SS1.3/SS4.2): H6ttbmp/Et6ttbmp are the same molecule as acid/ester, same for H8ptp/Et8ptp. Populated by src/build_linker_properties.py from hand-verified SMILES -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md for the one identification (H6ttbmp) that needs Ruben's confirmation."
+     "comment": "One row per linker code used in synthesis_experiments.linker. scaffold + protection_state are the two independent axes hidden inside the 6 linker names (roadmap SS1.3/SS4.2): LIG-x/LIG-x are the same molecule as acid/ester, same for LIG-x/LIG-x. Populated by src/build_linker_properties.py from hand-verified SMILES -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md for the one identification (LIG-x) that needs Ruben's confirmation."
     },
     {
      "name": "metal_source_oxidation_state",
@@ -219,7 +219,7 @@
     {
      "name": "audit_log",
      "columns": 10,
-     "rows": 182,
+     "rows": 194,
      "bytes": 131072,
      "comment": "Audit log table tracking all system actions, approvals, rejections, and execution metrics"
     },
@@ -252,7 +252,7 @@
      "comment": "One row per AI agent invocation (Gemini or local Ollama fallback), for cost/usage auditing - never trims to only successful calls."
     }
    ],
-   "totalRows": 706,
+   "totalRows": 718,
    "totalBytes": 688128
   }
  ],

@@ -46,7 +46,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-NB_DIR = ROOT / "notebooks"
+NB_DIR = ROOT / "_lab" / "notebooks"
 DEFAULT_OUT = ROOT / "_lab" / "handoff" / "notebook_prose"
 
 

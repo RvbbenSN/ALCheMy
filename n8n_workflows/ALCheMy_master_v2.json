@@ -166,7 +166,7 @@
             {
               "id": "aac48ff4-7a71-41d2-aa35-b503820cac34",
               "name": "researcher_email",
-              "value": "rubbenserrano@gmail.com",
+              "value": "researcher@example.org",
               "type": "string"
             },
             {
@@ -389,8 +389,8 @@
     {
       "parameters": {
         "operation": "sendAndWait",
-        "fromEmail": "rubbenserrano@gmail.com",
-        "toEmail": "={{ $json.approver || 'rubbenserrano@gmail.com' }}",
+        "fromEmail": "researcher@example.org",
+        "toEmail": "={{ $json.approver || 'researcher@example.org' }}",
         "subject": "={{ $json.approval_email_subject || '[ALCheMy L2 Approval] PDF Ingestion' }}",
         "message": "={{ $json.approval_email_body }}",
         "approvalOptions": {
@@ -541,7 +541,7 @@
     {
       "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\n  \"sample_code\": \"RS1234\",\n  \"measurement_technique\": \"ICP_OES\",\n  \"analyst_name\": \"Dr. Jane Doe\",\n  \"instrument_model\": \"ICP-OES Optima 8300\",\n  \"laboratory_name\": \"Central Materials Characterization Lab\",\n  \"report_date\": \"2024-03-15\",\n  \"elemental_ratios\": [\n    { \"element\": \"Ni\", \"value_wt_percent\": 12.34 }\n  ],\n  \"chns_averages\": [\n    { \"element\": \"C\", \"average_percent\": 40.12, \"std_dev_percent\": 0.21 }\n  ],\n  \"triplicate_runs\": [\n    { \"run_number\": 1, \"element\": \"C\", \"value_percent\": 40.05 }\n  ],\n  \"extraction_confidence\": 92,\n  \"reasoning\": \"Values read from the summary table on page 1.\"\n}"
+        "inputSchema": "{\n  \"sample_code\": \"SMP-0100\",\n  \"measurement_technique\": \"ICP_OES\",\n  \"analyst_name\": \"Dr. Jane Doe\",\n  \"instrument_model\": \"ICP-OES Optima 8300\",\n  \"laboratory_name\": \"Central Materials Characterization Lab\",\n  \"report_date\": \"2024-03-15\",\n  \"elemental_ratios\": [\n    { \"element\": \"Ni\", \"value_wt_percent\": 12.34 }\n  ],\n  \"chns_averages\": [\n    { \"element\": \"C\", \"average_percent\": 40.12, \"std_dev_percent\": 0.21 }\n  ],\n  \"triplicate_runs\": [\n    { \"run_number\": 1, \"element\": \"C\", \"value_percent\": 40.05 }\n  ],\n  \"extraction_confidence\": 92,\n  \"reasoning\": \"Values read from the summary table on page 1.\"\n}"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
@@ -831,8 +831,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "rubbenserrano@gmail.com",
-        "toEmail": "={{ $json.researcher_email || 'rubbenserrano@gmail.com' }}",
+        "fromEmail": "researcher@example.org",
+        "toEmail": "={{ $json.researcher_email || 'researcher@example.org' }}",
         "subject": "={{ 'ALCheMy - Measurement registered: ' + ($json.sample_code || 'UNKNOWN') + ' (' + ($json.technique || '') + ')' }}",
         "html": "={{ 'Hi ' + ($json.researcher_name || 'there') + ',<br><br>Your characterization measurement has been registered in the ALCheMy database.<br><br><b>Sample:</b> ' + ($json.sample_code || 'UNKNOWN') + '<br><b>Technique:</b> ' + ($json.technique || 'N/A') + '<br><b>Instrument:</b> ' + ($json.instrument_name || 'N/A') + '<br><b>File:</b> ' + ($json.file_name || 'N/A') + '<br><br>No action is needed on your side.<br><br>ALCheMy automated ingestion pipeline' }}",
         "options": {}
@@ -2415,8 +2415,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "rubbenserrano@gmail.com",
-        "toEmail": "={{ $json.researcher_email || 'rubbenserrano@gmail.com' }}",
+        "fromEmail": "researcher@example.org",
+        "toEmail": "={{ $json.researcher_email || 'researcher@example.org' }}",
         "subject": "=[ALCheMy Ingestion Rejected] File {{ $json.fileName || $binary.data_file?.fileName || $json.file_name }}",
         "html": "=Hi {{ $json.operator_name || 'Researcher' }},\nYour characterization measurement file for sample {{ $json.sample_code }} could not be processed.\nCause: {{ $json.cause }}\nTechnique: {{ $json.technique || 'N/A' }}",
         "options": {}
@@ -2933,8 +2933,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "rubbenserrano@gmail.com",
-        "toEmail": "={{ $('Merge - Restore After Sample Check').item.json.researcher_email || 'rubbenserrano@gmail.com' }}",
+        "fromEmail": "researcher@example.org",
+        "toEmail": "={{ $('Merge - Restore After Sample Check').item.json.researcher_email || 'researcher@example.org' }}",
         "subject": "={{ 'ALCheMy - Synthesis record missing for ' + $('Merge - Restore After Sample Check').item.json.sample_code }}",
         "html": "={{ 'Hi ' + ($('Merge - Restore After Sample Check').item.json.researcher_name || 'there') + ',<br><br>Your measurement was stored successfully, so nothing is lost - but sample <b>' + $('Merge - Restore After Sample Check').item.json.sample_code + '</b> had no synthesis record yet, so ALCheMy created a placeholder for it.<br><br>That placeholder carries <b>no chemistry at all</b> (metal, source and linker are all marked UNKNOWN) - it exists only so the measurement could be linked to something. Please complete the synthesis data for this sample so the record becomes usable.<br><br>Pending records can be listed with:<br><code>SELECT sample_code, synthesis_date FROM synthesis_experiments WHERE synthesis_type = \\'PENDING_RECORD\\';</code><br><br>ALCheMy automated ingestion pipeline' }}",
         "options": {}

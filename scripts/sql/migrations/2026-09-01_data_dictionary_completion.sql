@@ -431,7 +431,7 @@ INSERT INTO data_dictionary
 ('kg_edges','review_status','Review status','GOVERNANCE',NULL,'TEXT','CONFIRMED | PENDING | REJECTED','Deterministic edges are born CONFIRMED; LLM-inferred ones are born PENDING and need a human to confirm them.'),
 
 -- ==================== kg_nodes ====================
-('kg_nodes','node_id','Node ID','IDENTITY',NULL,'TEXT',NULL,'Readable key prefixed by type, e.g. SAMPLE:RS1884 or LIGAND:H2BDC. Readable on purpose, so a graph query can be understood without a lookup table.'),
+('kg_nodes','node_id','Node ID','IDENTITY',NULL,'TEXT',NULL,'Readable key prefixed by type, e.g. SAMPLE:SMP-0010 or LIGAND:H2BDC. Readable on purpose, so a graph query can be understood without a lookup table.'),
 ('kg_nodes','source_table','Source table','PROVENANCE',NULL,'TEXT',NULL,'Table the node came from when it maps to a real row, e.g. synthesis_experiments. NULL for nodes that are pure concepts.'),
 ('kg_nodes','properties','Properties','GOVERNANCE',NULL,'JSONB',NULL,'Extra metadata specific to the node type, e.g. n_files on a MEASUREMENT node.'),
 

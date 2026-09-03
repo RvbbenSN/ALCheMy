@@ -48,7 +48,7 @@ st.divider()
 col_f1, col_f2 = st.columns([2, 1])
 
 with col_f1:
-    search_q = st.text_input("🔍 Search Sample Code (e.g. RS61, RS102):", "")
+    search_q = st.text_input("🔍 Search Sample Code (e.g. SMP-0100, SMP-0100):", "")
 with col_f2:
     status_filter = st.selectbox(
         "Filter Extraction Status:", 

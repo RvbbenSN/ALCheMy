@@ -28,7 +28,7 @@ EXPECTED_DIM = 1024
 TEST_HASH = "00000000000000000000000000000000"
 
 # Deliberately built so the two halves of the search disagree:
-#  - chunk 3 is the only one that says "RS1884" but never says "porosity";
+#  - chunk 3 is the only one that says "SMP-0010" but never says "porosity";
 #  - chunk 1 talks about surface area without using the word "porosidad".
 # A vector-only search misses the sample code; a keyword-only search misses the
 # synonym. That is the whole argument for hybrid search, made concrete.
@@ -39,7 +39,7 @@ CHUNKS = [
     "El difractograma de rayos X en polvo muestra reflexiones intensas a bajo angulo, "
     "indicativas de una estructura cristalina de alta ordenacion a largo alcance.",
 
-    "La muestra RS1884 se sintetizo por via solvotermal a 120 grados durante 24 horas "
+    "La muestra SMP-0010 se sintetizo por via solvotermal a 120 grados durante 24 horas "
     "empleando acido formico como modulador de la cristalizacion.",
 
     "El analisis termogravimetrico revela una perdida de masa del 12 por ciento "
@@ -56,8 +56,8 @@ QUERIES = [
     ("porosidad del material",
      "sinonimo puro: la palabra 'porosidad' NO aparece en ningun trozo. "
      "Solo la busqueda semantica puede resolverlo."),
-    ("RS1884",
-     "codigo exacto: para los vectores RS1883 y RS1884 son casi identicos. "
+    ("SMP-0010",
+     "codigo exacto: para los vectores SMP-0011 y SMP-0010 son casi identicos. "
      "Solo la busqueda lexica lo distingue con seguridad."),
     ("estabilidad en agua del material poroso",
      "mezcla de ambas: aqui es donde el RRF suma consenso."),

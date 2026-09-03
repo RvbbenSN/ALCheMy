@@ -30,18 +30,18 @@ Three groups of synthesis rows where metal_center and metal_source (the salt
 formula) disagreed have all been corrected directly in synthesis_experiments,
 confirmed by Ruben against his lab notebook/presentations or by mass
 cross-check (see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md):
-   - Mg/Ni(NO3)2.6H2O (8 rows, RS352-355/377-380): metal_source ->
+   - Mg/Ni(NO3)2.6H2O (8 rows, SMP-0056-355/377-380): metal_source ->
      Mg(NO3)2.6H2O.
-   - Ti/HfCl4 (4 rows, RS1845-1848): metal_center -> Hf.
-   - RS253 (metal_center=Bi, metal_source read Mg(NO3)2.6H2O): Ruben confirmed
+   - Ti/HfCl4 (4 rows, SMP-0057-1848): metal_center -> Hf.
+   - SMP-0058 (metal_center=Bi, metal_source read Mg(NO3)2.6H2O): Ruben confirmed
      Bi "con total seguridad" but not the exact salt, so it was resolved by
-     mass, not by memory -- metal_mass_mg for RS253 (2.1828 mg at 0.0030 M,
+     mass, not by memory -- metal_mass_mg for SMP-0058 (2.1828 mg at 0.0030 M,
      1.5 mL) matches Bi(NO3)3.5H2O's molar mass (485.06 g/mol) to 4 sig figs
      (0.0045 mmol x 485.06 = 2.183 mg), and does not match BiCl3 (315.34
      g/mol) or BiClO (260.43 g/mol) at that same mmol. metal_source ->
      Bi(NO3)3.5H2O.
 None of these three are flagged as mismatches any more (see main() below).
-RS94, RS95 ('-'/'-') are confirmed blanks (organic/control samples, no
+SMP-0008, SMP-0009 ('-'/'-') are confirmed blanks (organic/control samples, no
 metal), so oxidation_state stays NULL by design, not by omission -- not a
 discrepancy to resolve.
 
@@ -128,7 +128,7 @@ MANUAL_OXIDATION_STATES = {
     'HfOCl2·8H2O':        ('Hf', 4),                               # hafnyl chloride
     'HfCl4':              ('Hf', 4),                               # also seen mislabelled under metal_center=Ti, see below
     'In(NO3)3·xH2O':      ('In', 3),
-    'In(NO3)2·3H2O':      ('In', 3),                               # RS1939: Ruben confirmed this precursor (2026-08-29);
+    'In(NO3)2·3H2O':      ('In', 3),                               # SMP-0059: Ruben confirmed this precursor (2026-08-29);
                                                                     # In is essentially always 3+ in solution, "2" read as a
                                                                     # transcription slip rather than a real In(II) reagent
     "La(OOCCH3)3·1,5H2O": ('La', 3),
@@ -143,7 +143,7 @@ MANUAL_OXIDATION_STATES = {
     'Y(NO3)3·6H2O':       ('Y', 3),
     'Zn(NO3)2.6H2O':      ('Zn', 2), 'Zn(NO3)2·6H2O': ('Zn', 2),
     'ZrCl4':              ('Zr', 4), 'ZrOCl2.8H2O':   ('Zr', 4),   # zirconyl chloride
-    '-':                  (None, None),                           # RS94, RS95: no metal recorded at all
+    '-':                  (None, None),                           # SMP-0008, SMP-0009: no metal recorded at all
     'UNKNOWN':            (None, None),                           # orphan placeholder rows, not real synthesis data
 }
 

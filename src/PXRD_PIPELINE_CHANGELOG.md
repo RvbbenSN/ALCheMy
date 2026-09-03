@@ -39,7 +39,7 @@ by construction) redrawn with Poisson noise:
 | 4 | 0,1 |
 | 5 | 0,0 |
 
-On RS1765, a pattern labelled AMORFO by hand, the detector reported 8 peaks, ~5 of them
+On SMP-0006, a pattern labelled AMORFO by hand, the detector reported 8 peaks, ~5 of them
 noise. Worse than the count: `two_theta_first_peak`, `d_max_angstrom`, the widths and
 `scherrer_size_nm` were all read off that set — an interplanar spacing computed from a
 noise spike and stored with the same face as a real one.
@@ -85,7 +85,7 @@ one minus that, counted the instrument's own background as crystalline material 
 value depended on how much background happened to sit under the pattern, which varies
 with exposure and mount.
 
-Found by the anatomy figure: its phase panel showed 9 % crystalline area for LP69 while
+Found by the anatomy figure: its phase panel showed 9 % crystalline area for SMP-0005 while
 the column read 0,757. Neither was miscalculated; they were measuring different things.
 
 **The fix.**

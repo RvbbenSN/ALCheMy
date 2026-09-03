@@ -60,7 +60,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-NB_DIR = ROOT / "notebooks"
+# Los .ipynb crudos viven en _lab/ porque llevan dentro codigos de muestra
+# y ligandos sin publicar. Lo que se publica es la salida de este script.
+NB_DIR = ROOT / "_lab" / "notebooks"
 # Se escriben dentro de web/public/ y no en docs/, para que la propia aplicacion
 # los sirva y pueda enlazarlos. Tenerlos en los dos sitios seria duplicar 6 MB
 # que se desincronizarian a la primera regeneracion.

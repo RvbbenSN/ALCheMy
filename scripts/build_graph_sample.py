@@ -118,9 +118,16 @@ def main() -> int:
     """, (list(saltos),))
     grados = dict(cur.fetchall())
 
+    # El id tambien se seudonimiza. Antes solo se cambiaba la etiqueta, asi que
+    # el dibujo enseñaba SMP-001 mientras el JSON que lo alimenta llevaba
+    # "SAMPLE:SMP-0100(Ni)" dentro. Un seudonimo que solo cubre lo que se ve no es
+    # un seudonimo.
+    def id_publico(nid, tipo):
+        return "%s:%s" % (tipo, etiqueta(nid, tipo, None))
+
     nodos = [
         {
-            "id": nid,
+            "id": id_publico(nid, tipo),
             "type": tipo,
             "label": etiqueta(nid, tipo, lab),
             "hop": saltos[nid],
@@ -128,11 +135,13 @@ def main() -> int:
         }
         for nid, tipo, lab in crudos
     ]
-    aristas = [{"from": a, "to": b, "type": t} for a, b, t in aristas_crudas]
+    tipo_de = {nid: tipo for nid, tipo, _ in crudos}
+    aristas = [{"from": id_publico(a, tipo_de[a]), "to": id_publico(b, tipo_de[b]), "type": t}
+               for a, b, t in aristas_crudas]
 
     salida = {
-        "center": centro,
-        "centerLabel": next(n["label"] for n in nodos if n["id"] == centro),
+        "center": id_publico(centro, tipo_de[centro]),
+        "centerLabel": alias.get(centro, centro),
         "hops": HOPS,
         "nodes": nodos,
         "edges": aristas,
@@ -148,7 +157,8 @@ def main() -> int:
     OUT.write_text(json.dumps(salida, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
     from collections import Counter
-    print("centro          : %s (grado %d) -> %s" % (centro, grado, salida["centerLabel"]))
+    print("centro          : grado %d -> %s (el codigo real no se escribe)"
+          % (grado, salida["centerLabel"]))
     print("vecindad a %d saltos: %d nodos, %d aristas" % (HOPS, len(nodos), len(aristas)))
     print("por tipo        : %s" % dict(Counter(n["type"] for n in nodos)))
     print("por relacion    : %s" % dict(Counter(e["type"] for e in aristas)))

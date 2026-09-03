@@ -38,9 +38,9 @@ for n8n's Python sandbox permanently blocking the bare `open` builtin.
 supply a `sample_code`, each parser recovers it from the file name with the
 regex `(RS\d+|LP\d+|RSMix\d+|IEF-\d+)`. That works for eight of the nine
 techniques, and fails silently for SEM: the Hitachi writes
-`RS3520000(x400).jpg`, which is image `0000` of sample `RS352`, with no
+`RS9990000(x400).jpg`, which is image `0000` of sample `RS999`, with no
 separator at all. `RS\d+` is greedy, so it swallowed the counter too and
-returned `RS10080032` — a sample that does not exist. The ingestion then
+returned `RS9990000` — a sample that does not exist. The ingestion then
 created a placeholder synthesis row for each invented code, and hung the
 micrograph off that ghost instead of the real sample. The damage measured on
 the live database was **988 phantom rows in `synthesis_experiments` and 1,009
@@ -296,7 +296,7 @@ no benefit `get_characterisation` doesn't already give), and UPSERTs the
 relations that already live in those columns but today can only be queried
 with a JOIN written for that specific question. Idempotent: safe to re-run
 any time after new syntheses or measurements land, never deletes anything.
-Problem solved: turns "what does RS1884 have in common with RS1902" from a
+Problem solved: turns "what does SMP-0010 have in common with SMP-0061" from a
 bespoke SQL query into a generic graph walk (`kg_neighbors()` /
 `agent_explore_graph` tool in the chat agent) that works for any pair of
 nodes, not just the one you thought to ask about in advance. See
@@ -674,7 +674,7 @@ funcion del modulo.
 
 v3.1 dividia el area difusa por el area TOTAL del barrido, que incluye el fondo
 instrumental. Dos consecuencias, las dos incorrectas: `crystalline_fraction_blank`, al
-definirse como 1 menos la fraccion, contaba ese fondo como cristalino - en LP69 el panel
+definirse como 1 menos la fraccion, contaba ese fondo como cristalino - en SMP-0005 el panel
 de fases de la figura de anatomia mostraba 9 % de area cristalina mientras la columna
 decia 0,757 - y el valor dependia de cuanto fondo instrumental hubiera debajo, que cambia
 con la exposicion y el montaje.
@@ -703,7 +703,7 @@ mejora real es en los subtipos, que bajo v3.1 se solapaban casi por completo:
 | CRISTALITO_PEQUENO | 0,242 | 0,608 |
 
 El cuaderno incluye ademas, en la seccion 10.0, una **figura de anatomia del vector**:
-los 29 descriptores senalados sobre un mismo difractograma incipiente (LP69, Ca+Et8ptp),
+los 29 descriptores senalados sobre un mismo difractograma incipiente (SMP-0005, Ca+Et8ptp),
 en cinco paneles - patron completo con las ventanas angulares y las capas de fase, zoom
 sobre una reflexion aislada para la anchura y Scherrer, composicion de fases en barras,
 concentracion de la intensidad, y el vector completo con sus valores reales agrupado por
@@ -721,7 +721,7 @@ un bulto.
 
 Medido por Monte Carlo -la parte suave de un barrido real, que por construccion no tiene
 ninguna reflexion, re-dibujada con ruido de Poisson-: **4,6 picos falsos por barrido a
-k = 3**, 0,1 a k = 4, 0 a k = 5. En RS1765, etiquetada AMORFO a mano, el detector
+k = 3**, 0,1 a k = 4, 0 a k = 5. En SMP-0006, etiquetada AMORFO a mano, el detector
 declaraba 8 picos y ~5 eran ruido. Y de ese conjunto salian tambien `two_theta_first_peak`,
 `d_max_angstrom`, las anchuras y Scherrer: un espaciado interplanar calculado sobre una
 espiga de ruido.
@@ -919,7 +919,7 @@ categorical-identifier problem this whole layer exists to avoid.
 
 ### `scripts/sql/migrations/2026-08-28_fix_pxrd_labels.sql`
 One-off correction of four hand labels that were reviewed and found wrong
-(RS1164 / RS1567 / RS1568 -> INCIPIENTE / PICOS_ANCHOS, RS159 -> INCIPIENTE /
+(SMP-0001 / SMP-0002 / SMP-0003 -> INCIPIENTE / PICOS_ANCHOS, SMP-0004 -> INCIPIENTE /
 HALO_DOMINANTE). Kept in the repository rather than run and forgotten, because
 `pxrd_labels` is the one table in this project that cannot be rebuilt from any
 file: every change to it needs an auditable record of what changed and why.
@@ -950,7 +950,7 @@ one by hand in `app/pxrd_explorer.py`'s "Revisión puntual para ML" filter
 (`Downloads/Revisión.txt`, 2026-08-30):
 
 - **43 sample_codes had more than one independently-labelled PXRD measurement**
-  (a 44th, RS1915, needed 3 exclusions instead of 1). Rather than delete the
+  (a 44th, SMP-0055, needed 3 exclusions instead of 1). Rather than delete the
   losing measurement's label — real human judgement, on a real file — the
   script writes a new `pxrd_labels` row with `label_type='ml_include'`,
   `label_value='NO'`, in exactly the shape `app/pxrd_labeler.py` already
@@ -962,7 +962,7 @@ one by hand in `app/pxrd_explorer.py`'s "Revisión puntual para ML" filter
   AMORFO class if kept — same `ml_include='NO'` mechanism, ids pulled live
   from the join, not hand-copied.
 - **One measurement filed under the wrong sample_code**: the file itself was
-  named `...RS1670-CaPy es RS1700..xrdml` — a note left at scan time. RS1700
+  named `...SMP-0013-CaPy es SMP-0012..xrdml` — a note left at scan time. SMP-0012
   had zero PXRD measurements of its own, so the fix is a real reassignment
   (`characterization_measurements.sample_code`, `pxrd_descriptors.sample_code`
   and `pxrd_labels.sample_code` all updated together — three denormalised
@@ -1032,7 +1032,7 @@ What it changes, and why each one is a real defect and not a preference:
   `def_ml` were missing, so the solvent fractions summed to 0.789 on average instead of 1.
 - **The liquid modulator counted as part of the medium** (`frac_modulator`), reconstructed
   from the millimoles by inverting notebook 01's formula. In many syntheses the modulator
-  *is* the solvent — RS1188 uses 1.35 mL of propionic acid out of 1.5 mL total.
+  *is* the solvent — SMP-0007 uses 1.35 mL of propionic acid out of 1.5 mL total.
 - **Fractions are NULL, not 0, when the breakdown does not account for the volume**
   (~18% of rows), with a `solvent_breakdown_complete` flag. Writing 0 asserts "there was
   no methanol"; the truth is "how much methanol was not recorded". Those are different
@@ -1048,7 +1048,7 @@ What it changes, and why each one is a real defect and not a preference:
 - **Precursor matching normalised** against a non-breaking space (U+00A0) in strings like
   `MgCl2 . 6H2O`, which cost 22 rows their oxidation state and ionic radius. Normalising
   the join beats adding typographic variants by hand — that is a race you do not win.
-- **Rows with `metal_center = '-'` excluded** (RS94, RS95): syntheses with no metal.
+- **Rows with `metal_center = '-'` excluded** (SMP-0008, SMP-0009): syntheses with no metal.
 
 The `data_dictionary` rows for the new columns are inserted by the same file, so the view
 stays self-documenting from inside the database.
@@ -1303,7 +1303,7 @@ water was being thrown away by the code**. After the fix the breakdown is comple
 denominator is worth stating, because the three numbers otherwise read as if they
 disagreed.)
 
-**How it was found.** By a chemist's objection to a claim of mine. I had read RS1873's
+**How it was found.** By a chemist's objection to a claim of mine. I had read SMP-0062's
 15 mL of reaction volume as evidence of a missing solvent record; the answer was "how can
 there be 15 µL of water?". Reading the Excel formula settled it: the volume closes exactly,
 and the units were the error. Verified by reproducing the stored `V total` in **2,162 of

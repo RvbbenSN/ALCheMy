@@ -80,7 +80,7 @@ Los siete parsers leen formatos que no tienen **nada** en común. Lo que sí es 
 
 ```python
 {
-  "sample_code": "RS1883", "technique": "PXRD", "measurement_tag": "as_synthesized",
+  "sample_code": "SMP-0100", "technique": "PXRD", "measurement_tag": "as_synthesized",
   "operator_name": ..., "instrument_name": ..., "file_name": ..., "raw_file_path": ...,
   "data_json": {
       "header_metadata": { ... ajustes reales del instrumento ... },
@@ -173,7 +173,7 @@ docker compose up -d          # n8n :5678 · PostgreSQL :5432 · pgAdmin :8080
 python src/ingest_datalake_to_postgres.py
 
 # Enviar un fichero al webhook de n8n
-python scripts/trigger_n8n_webhook.py -f <fichero> -t PXRD -s RS1883
+python scripts/trigger_n8n_webhook.py -f <fichero> -t PXRD -s SMP-0100
 ```
 
 > `scripts/sql/init_db.sql` se ejecuta **sólo en la primera creación del volumen** `postgres_data`. Cambiar el DDL sobre una base existente exige aplicar el delta a mano.

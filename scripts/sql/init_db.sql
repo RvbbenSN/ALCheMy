@@ -83,7 +83,7 @@ COMMENT ON COLUMN synthesis_experiments.h2o_total_ml IS 'Total homogenized water
 COMMENT ON COLUMN synthesis_experiments.hcl_active_mmol IS 'Total active HCl modulator in millimoles';
 COMMENT ON COLUMN synthesis_experiments.metal_center IS 'Primary metallic node element (Ni, Zr, Bi, Cu, Fe, Zn, Co, Ca, Mo, La)';
 COMMENT ON COLUMN synthesis_experiments.metal_source IS 'Chemical precursor salt (e.g. Ni(NO3)2·6H2O)';
-COMMENT ON COLUMN synthesis_experiments.linker IS 'Official primary organic ligand (H8ptp, Et8ptp, H6ttbmp, Et6ttbmp, Tannic acid, BTBSH3, PPV)';
+COMMENT ON COLUMN synthesis_experiments.linker IS 'Official primary organic ligand (LIG-x, LIG-x, LIG-x, LIG-x, Tannic acid, BTBSH3, PPV)';
 COMMENT ON COLUMN synthesis_experiments.lm_ratio IS 'Theoretical Ligand to Metal molar ratio (L/M)';
 COMMENT ON COLUMN synthesis_experiments.total_volume_ml IS 'Total reaction liquid volume (V_total)';
 COMMENT ON COLUMN synthesis_experiments.temp_target_c IS 'Maximum reaction temperature setpoint (°C)';
@@ -124,7 +124,7 @@ COMMENT ON COLUMN data_dictionary.table_name IS 'Tabla a la que pertenece la col
 -- 5. Populate Data Dictionary Entries
 INSERT INTO data_dictionary (column_name, full_name, section_name, unit, data_type, valid_categories, description)
 VALUES 
-('sample_code', 'Sample Code', 'GENERAL INFORMATION', 'None', 'VARCHAR(50)', 'Free text (RS1, RS102)', 'Unique sample identifier for the synthesis batch'),
+('sample_code', 'Sample Code', 'GENERAL INFORMATION', 'None', 'VARCHAR(50)', 'Free text (RS1, SMP-0100)', 'Unique sample identifier for the synthesis batch'),
 ('synthesis_date', 'Synthesis Date', 'GENERAL INFORMATION', 'Date', 'DATE', 'YYYY-MM-DD', 'Date when the experiment was performed'),
 ('synthesis_type', 'Synthesis Type', 'GENERAL INFORMATION', 'None', 'VARCHAR(50)', 'HTS, ST, MW, DT', 'Methodology used for the synthesis reaction (HTS: High-throughput; ST: Solvothermal; MW: Microwave; DT: Duran tube)'),
 ('researcher_name', 'Lead Researcher', 'GENERAL INFORMATION', 'Text', 'VARCHAR(100)', 'Free text (Default: Rubén S.N.)', 'Lead researcher responsible for experiment execution (ISO 17025 / GLP Compliance)'),
@@ -134,7 +134,7 @@ VALUES
 ('well_position', 'Well Position', 'GENERAL INFORMATION', 'Text', 'VARCHAR(3)', 'Free text (A1, B4) or N/A', 'Specific 24-well plate position (N/A for non-HTS)'),
 ('metal_center', 'Metal Center', 'GENERAL INFORMATION', 'Element', 'VARCHAR(3)', 'All Transition Metals & Semimetals (Ni, Zr, Bi, Cu, Fe, Zn, Co, Ca, Mo, La)', 'Primary metallic node element center'),
 ('metal_source', 'Metal Source Precursor', 'GENERAL INFORMATION', 'Formula', 'VARCHAR(100)', 'Ni(NO3)2·6H2O, Bi(NO3)3·5H2O, ZrCl4', 'Chemical precursor salt used as the metal source'),
-('linker', 'Organic Linker', 'GENERAL INFORMATION', 'Formula/Name', 'VARCHAR(100)', 'H8ptp, Et8ptp, H6ttbmp, Et6ttbmp, Tannic acid, BTBSH3, PPV', 'Official primary organic ligand building block'),
+('linker', 'Organic Linker', 'GENERAL INFORMATION', 'Formula/Name', 'VARCHAR(100)', 'LIG-x, LIG-x, LIG-x, LIG-x, Tannic acid, BTBSH3, PPV', 'Official primary organic ligand building block'),
 ('metal_conc_m', 'Theoretical Metal Concentration', 'THEORETICAL DESIGN', 'M (mol/L)', 'NUMERIC(4,3)', '> 0', 'Theoretical concentration of the metal in precursor solution'),
 ('lm_ratio', 'Target L/M Ratio', 'THEORETICAL DESIGN', 'mol/mol', 'NUMERIC(4,3)', '> 0', 'Theoretical Ligand to Metal molar ratio (L/M)'),
 ('metal_mass_mg', 'Target Metal Mass', 'THEORETICAL DESIGN', 'mg', 'NUMERIC(6,3)', '> 0', 'Theoretical target mass of metal precursor to weigh (Default: 10.63)'),
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS characterization_measurements (
     measurement_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     sample_code VARCHAR(50) NOT NULL REFERENCES synthesis_experiments(sample_code) ON DELETE CASCADE,
     researcher_name VARCHAR(100) DEFAULT 'Rubén S.N.', -- Principal researcher responsible for sample
-    researcher_email VARCHAR(255) DEFAULT 'rubbenserrano@gmail.com', -- Email address of responsible researcher
+    researcher_email VARCHAR(255) DEFAULT 'researcher@example.org'  -- marcador de posicion: este fichero se publica, -- Email address of responsible researcher
     technique VARCHAR(30) NOT NULL, -- 'PXRD', 'TGA', 'FTIR', 'UV-Vis', 'BET_N2', 'EA', 'ICP', 'SEM', 'SC-XRD', 'VTXRD'
     operator_name VARCHAR(100) DEFAULT 'Rubén S.N.', -- Equipment operator or facility technician
     measurement_tag VARCHAR(100) DEFAULT 'as_synthesized', -- 'as_synthesized', 'activated_150C', 'water_stability_24h'
@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS authorized_researchers (
 );
 
 INSERT INTO authorized_researchers (email, researcher_name, role, active)
-VALUES ('rubbenserrano@gmail.com', 'Rubén S.N.', 'lead_researcher', true)
+VALUES ('researcher@example.org', 'Rubén S.N.', 'lead_researcher', true)
 ON CONFLICT (email) DO NOTHING;
 
 COMMENT ON TABLE authorized_researchers IS 'Whitelist table storing authorized researchers and dynamic self-enrolled demo users';
@@ -352,7 +352,7 @@ CREATE INDEX IF NOT EXISTS idx_rag_chunks_document_id
     ON rag_chunks (document_id);
 
 -- 11.4 Busqueda hibrida con Reciprocal Rank Fusion (RRF)
---  Buscar solo por vector falla con codigos: RS1883 y RS1884 son casi el mismo
+--  Buscar solo por vector falla con codigos: SMP-0100 y SMP-0100 son casi el mismo
 --  vector y son muestras distintas. Buscar solo por palabras falla con
 --  sinonimos: "porosidad" no encuentra "area superficial BET".
 --  Se lanzan las dos busquedas y se fusionan por PUESTO, no por puntuacion
@@ -1743,7 +1743,7 @@ CREATE TABLE IF NOT EXISTS kg_nodes (
 CREATE INDEX IF NOT EXISTS idx_kg_nodes_type ON kg_nodes (node_type);
 
 COMMENT ON TABLE  kg_nodes             IS 'Una fila por "cosa que existe" en el grafo de conocimiento: muestra, ligando, metal, modulador, medida, descriptor/KPI, paper, modelo de ML o prediccion de ML.';
-COMMENT ON COLUMN kg_nodes.node_id     IS 'Clave legible con prefijo de tipo, p.ej. SAMPLE:RS1884, LIGAND:H2BDC, PAPER:123. No es un UUID a proposito: se puede escribir a mano al explorar el grafo.';
+COMMENT ON COLUMN kg_nodes.node_id     IS 'Clave legible con prefijo de tipo, p.ej. SAMPLE:SMP-0100, LIGAND:H2BDC, PAPER:123. No es un UUID a proposito: se puede escribir a mano al explorar el grafo.';
 COMMENT ON COLUMN kg_nodes.source_table IS 'Tabla de origen si el nodo viene de una fila real (p.ej. synthesis_experiments); NULL para nodos que solo existen como concepto (un ligando, un modulador).';
 COMMENT ON COLUMN kg_nodes.properties  IS 'Metadatos extra especificos del tipo de nodo (p.ej. n_files en un MEASUREMENT), para no tener que anadir columnas por cada tipo nuevo.';
 
@@ -1800,7 +1800,7 @@ BEGIN
 END;
 $func$;
 
-COMMENT ON FUNCTION kg_neighbors IS 'CTE recursiva: todo lo alcanzable desde un nodo en hasta p_max_hops saltos, sin distinguir direccion de la arista. Uso directo desde pgAdmin: SELECT * FROM kg_neighbors(''SAMPLE:RS1884'', 2);';
+COMMENT ON FUNCTION kg_neighbors IS 'CTE recursiva: todo lo alcanzable desde un nodo en hasta p_max_hops saltos, sin distinguir direccion de la arista. Uso directo desde pgAdmin: SELECT * FROM kg_neighbors(''SAMPLE:SMP-0100'', 2);';
 
 CREATE OR REPLACE FUNCTION agent_find_graph_node(
     p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
@@ -1826,7 +1826,7 @@ BEGIN
 END;
 $func$;
 
-COMMENT ON FUNCTION agent_find_graph_node IS 'Primer paso obligatorio antes de explore_graph: busca el node_id exacto (p.ej. SAMPLE:RS1884) a partir de un texto libre.';
+COMMENT ON FUNCTION agent_find_graph_node IS 'Primer paso obligatorio antes de explore_graph: busca el node_id exacto (p.ej. SAMPLE:SMP-0100) a partir de un texto libre.';
 
 CREATE OR REPLACE FUNCTION agent_explore_graph(
     p_actor TEXT DEFAULT NULL, p_session TEXT DEFAULT NULL,
@@ -1838,7 +1838,7 @@ DECLARE v_hops INTEGER := LEAST(GREATEST(COALESCE(p_hops, 2), 1), 3);
         v_limit INTEGER := agent_row_limit(p_limit); v_rows INTEGER;
 BEGIN
     IF p_node_id IS NULL OR NOT EXISTS (SELECT 1 FROM kg_nodes WHERE kg_nodes.node_id = p_node_id) THEN
-        RAISE EXCEPTION 'Unknown node_id: %. Call find_graph_node first to get a valid one (e.g. SAMPLE:RS1884).', p_node_id;
+        RAISE EXCEPTION 'Unknown node_id: %. Call find_graph_node first to get a valid one (e.g. SAMPLE:SMP-0100).', p_node_id;
     END IF;
 
     -- Sin LIMIT aqui, un nodo con mucha "fanout" (p.ej. METAL:Ca, con 538

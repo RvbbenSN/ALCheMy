@@ -13428,7 +13428,7 @@ rag_find_existing_document() checks, in order:
 <div class="input">
 <div class="inner_cell">
 <div class="input_area">
-<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Source ranking (rag_source_rank in scripts/init_db.sql):"</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Source ranking (rag_source_rank in scripts/sql/init_db.sql):"</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">rank</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"MANUAL"</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s2">"REFERENCE_MANAGER"</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="s2">"CROSSREF"</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s2">"PDF_HEURISTIC"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
@@ -13446,7 +13446,7 @@ rag_find_existing_document() checks, in order:
 <div class="output">
 <div class="output_area">
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Source ranking (rag_source_rank in scripts/init_db.sql):
+<pre>Source ranking (rag_source_rank in scripts/sql/init_db.sql):
   4  MANUAL
   3  REFERENCE_MANAGER
   2  CROSSREF

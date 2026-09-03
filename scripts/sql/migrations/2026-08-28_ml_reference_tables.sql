@@ -4,7 +4,7 @@
 -- =============================================================================
 -- WHAT THIS IS
 -- ------------
--- Five new objects that turn "Ni", "Ca", "H6ttbmp" into numbers a model can use,
+-- Five new objects that turn "Ni", "Ca", "LIG-x" into numbers a model can use,
 -- instead of one-hot columns per category. Full reasoning in the roadmap; the
 -- short version: with 21 metals (9 of them under 15 samples) and 6 linkers that
 -- are really 3 molecules x 2 protection states, one-hot throws away chemistry
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS linker_properties (
 );
 
 COMMENT ON TABLE linker_properties IS
-    'One row per linker code used in synthesis_experiments.linker. scaffold + protection_state are the two independent axes hidden inside the 6 linker names (roadmap SS1.3/SS4.2): H6ttbmp/Et6ttbmp are the same molecule as acid/ester, same for H8ptp/Et8ptp. Populated by src/build_linker_properties.py from hand-verified SMILES -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md for the one identification (H6ttbmp) that needs Ruben''s confirmation.';
+    'One row per linker code used in synthesis_experiments.linker. scaffold + protection_state are the two independent axes hidden inside the 6 linker names (roadmap SS1.3/SS4.2): LIG-x/LIG-x are the same molecule as acid/ester, same for LIG-x/LIG-x. Populated by src/build_linker_properties.py from hand-verified SMILES -- see methodology/PENDIENTE_ML_INPUTS_HUMANOS.md for the one identification (LIG-x) that needs Ruben''s confirmation.';
 COMMENT ON COLUMN linker_properties.max_donor_distance_a IS
     'Farthest distance between donor atoms in a UFF/MMFF-optimised 3D conformer. Proxy for linker "length", which drives pore size / accessible topology -- probably the single most informative linker descriptor (roadmap SS4.4).';
 

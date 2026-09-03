@@ -74,7 +74,7 @@ códigos tan pequeño se invierte por fuerza bruta en segundos, y entonces no pr
 
 ### ⚠️ Lo que el script NO puede sanear
 
-**Las figuras.** Un gráfico va incrustado como PNG en base64: si su título dice `RS1883`, eso son
+**Las figuras.** Un gráfico va incrustado como PNG en base64: si su título dice `SMP-0100`, eso son
 píxeles y ninguna expresión regular los alcanza. Hay **31 figuras** publicadas (19 en el cuaderno 05
 y 12 en el 06) que **siguen pendientes de revisión humana**. `--report` dice dónde están y
 `--strip-images` permite publicar sin ellas si hiciera falta.

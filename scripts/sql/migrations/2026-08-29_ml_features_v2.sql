@@ -14,7 +14,7 @@
 --
 -- 2. EL MODULADOR ES PARTE DEL MEDIO, NO SOLO UN ADITIVO. Al comprobar el
 --    punto 1 aparecio que el volumen seguia sin cuadrar. La causa no era un
---    fallo: en muchas sintesis el modulador liquido ES el disolvente. RS1188
+--    fallo: en muchas sintesis el modulador liquido ES el disolvente. SMP-0007
 --    lleva 17,91 mmol de acido propionico = 1,347 mL de 1,5 mL totales; con
 --    los 0,153 mL de agua, el volumen cuadra exacto. Tratar eso como "un
 --    aditivo" y no como composicion del medio era perder la mitad de la
@@ -60,7 +60,7 @@
 --    el join normaliza ambos lados. Deja 1 sin resolver, y ese es un 'UNKNOWN'
 --    literal: desconocido de verdad.
 --
--- 9. FILAS SIN METAL FUERA. RS94 y RS95 tienen metal_center = '-': sintesis sin
+-- 9. FILAS SIN METAL FUERA. SMP-0008 y SMP-0009 tienen metal_center = '-': sintesis sin
 --    metal registrado. Son basura, no un valor ausente que imputar.
 --
 -- APLICAR CON
@@ -200,7 +200,7 @@ LEFT JOIN ion_properties                ip  ON ip.symbol = mso.symbol
                                             AND ip.oxidation_state = mso.oxidation_state
                                             AND ip.coordination_number = 6
 WHERE v.synthesis_type NOT IN ('REFERENCE', 'PENDING_RECORD')
-  AND v.metal_center <> '-';     -- RS94 y RS95: sintesis sin metal registrado
+  AND v.metal_center <> '-';     -- SMP-0008 y SMP-0009: sintesis sin metal registrado
 
 COMMENT ON VIEW v_ml_features IS
     'Tabla de caracteristicas para ML, ensamblada en tiempo de consulta (v2, 2026-08-29). Frente a la v1: los seis disolventes en vez de cuatro, el volumen del modulador liquido contado como parte del medio (frac_modulator), fracciones a NULL cuando el desglose no explica el volumen (con bandera solvent_breakdown_complete), HF separado del HCl, acido metanosulfonico ya no se pierde, descriptores quimicos de modulador (pKa y logP medios ponderados), synthesis_type expuesto, emparejamiento de precursor normalizado frente al espacio duro U+00A0, y las filas sin metal fuera. metal_center/linker/hts_number/synthesis_date siguen siendo SOLO para agrupar en la validacion, nunca entradas del modelo.';
@@ -213,7 +213,7 @@ COMMENT ON VIEW v_ml_features IS
 INSERT INTO data_dictionary
     (table_name, column_name, full_name, section_name, unit, data_type, valid_categories, description) VALUES
 ('v_ml_features','frac_modulator','Modulator volume fraction','MEDIUM',NULL,'DOUBLE PRECISION',NULL,
- 'Fraccion del volumen total ocupada por los moduladores liquidos puros, reconstruida desde los mmol. En muchas sintesis el modulador ES el disolvente (p.ej. RS1188: 1,35 mL de acido propionico de 1,5 mL totales).'),
+ 'Fraccion del volumen total ocupada por los moduladores liquidos puros, reconstruida desde los mmol. En muchas sintesis el modulador ES el disolvente (p.ej. SMP-0007: 1,35 mL de acido propionico de 1,5 mL totales).'),
 ('v_ml_features','solvent_breakdown_complete','Solvent breakdown complete','QUALITY',NULL,'BOOLEAN',NULL,
  'FALSE cuando disolventes + moduladores no explican el volumen total (residuo > 5%): el historico registro el total pero no el reparto. Con FALSE, las fracciones son NULL en vez de 0, para no afirmar una ausencia que no consta.'),
 ('v_ml_features','mod_hf_mmol','HF modulator','MODULATOR','mmol','DOUBLE PRECISION',NULL,

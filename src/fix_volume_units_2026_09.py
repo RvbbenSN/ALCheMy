@@ -27,7 +27,7 @@ liquidos puros van en microlitros.
 El cuaderno 01 trataba TODA columna de aditivo como uL. Consecuencias:
 
   1. El agua que aportan las disoluciones diluidas se dividia entre 1000 y
-     desaparecia. RS1633: 10 mL de HCl 0,6M quedaron en 0,010 mL, y por eso el
+     desaparecia. SMP-0060: 10 mL de HCl 0,6M quedaron en 0,010 mL, y por eso el
      volumen de esa sintesis "no cuadraba". No faltaba un disolvente: se habia
      evaporado el agua de la dilucion.
   2. hcl_active_mmol y hf_active_mmol quedaban 1000 veces por debajo en las
@@ -51,7 +51,7 @@ de nombre repetido), y actualiza en synthesis_experiments unicamente:
     hcl_active_mmol, hf_active_mmol, koh_active_mmol, tfa_mmol
 
 Deliberadamente NO se re-ejecuta la ingesta completa del cuaderno 01: eso
-sobrescribiria las correcciones quimicas hechas a mano (metal_source de RS253,
+sobrescribiria las correcciones quimicas hechas a mano (metal_source de SMP-0058,
 las 6 discrepancias metal/precursor), que no estan en el Excel.
 
     python src/fix_volume_units_2026_09.py --dry-run    (por defecto)

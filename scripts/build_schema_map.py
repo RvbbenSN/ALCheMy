@@ -31,6 +31,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -127,8 +128,18 @@ def main() -> int:
          WHERE n.nspname = 'public' AND c.relkind IN ('r', 'v')
          ORDER BY c.relname
     """)
+    # Los COMMENT se publican tal cual en la pantalla 08, y alguno enumera los
+    # ligandos sin publicar. Se sanea aqui, igual que hace build_schema_sql.py
+    # con el volcado del esquema: la base los conserva, la web no los ve.
+    LIGANDOS = re.compile(r"\b(H8ptp|Et8ptp|H6ttbmp|Et6ttbmp)\b")
+    MUESTRAS = re.compile(r"\b(RSMix\d+|RS\d{2,}|LP\d+|IEF-\d+)\b")
+
+    def limpio(txt):
+        txt = LIGANDOS.sub("LIG-x", txt or "")
+        return MUESTRAS.sub("SMP-0001", txt)
+
     objetos = {r[0]: {"name": r[0], "kind": r[1], "columns": r[2],
-                      "bytes": r[3], "comment": r[4] or ""} for r in cur.fetchall()}
+                      "bytes": r[3], "comment": limpio(r[4])} for r in cur.fetchall()}
 
     # Funciones del proyecto. Las de pgvector y demas extensiones se quedan
     # fuera: no las escribio nadie aqui y contarlas inflaria la cifra.

@@ -21,7 +21,7 @@
 --     4                  0.1
 --     5                  0.0
 --
--- On RS1765, a pattern Ruben labelled AMORFO, the detector reported 8 peaks; ~5
+-- On SMP-0006, a pattern Ruben labelled AMORFO, the detector reported 8 peaks; ~5
 -- of them were noise. Worse than the count: `two_theta_first_peak`, `d_max`,
 -- the widths and Scherrer were all read off that set, i.e. a d-spacing measured
 -- on a noise spike.

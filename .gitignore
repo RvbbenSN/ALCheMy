@@ -77,3 +77,8 @@ Conversacion con Claude*
 # si esta en _lab/, no se publica.
 # --------------------------------------------------------------------------
 _lab/
+
+# Indice de trabajo para elegir y rotular figuras. Lo genera
+# extract_notebook_figures.py, cita titulos de seccion tal cual --y algunos
+# llevan un codigo de muestra dentro-- y no lo lee nada del sitio.
+scripts/figure_manifest.json

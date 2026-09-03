@@ -15306,7 +15306,7 @@ absoluto, porque pandas las renombra a <code>.1</code> al estar repetido el nomb
 <p><strong>Lo que NO estaba mal:</strong> los moduladores orgánicos puros (fórmico, acético, propiónico,
 TFA, tríflico, trietilamina, metanosulfónico) <strong>sí</strong> están en µL, así que la corrección
 anterior sobre ellos sigue siendo válida.</p>
-<p><strong>El arreglo</strong>, en <code>src/fix_volume_units_2026_09.py</code> y <code>scripts/ddl_ml_features_v3.sql</code>:
+<p><strong>El arreglo</strong>, en <code>src/fix_volume_units_2026_09.py</code> y <code>scripts/sql/migrations/2026-09-03_ml_features_v3.sql</code>:
 recalcular cada columna en su unidad correcta, recuperar las tres columnas perdidas y
 sumar las duplicadas. El ácido acético glacial cuenta <strong>a la vez</strong> como disolvente y como
 modulador carboxílico, porque es las dos cosas.</p>
@@ -16754,7 +16754,7 @@ vigente. Silenciosamente equivocado, que es la peor clase de error.</p>
 | <strong>5. Las versiones</strong> | scikit-learn cambia valores por defecto sin avisar |
 | <strong>6. El binario</strong> | Sólo tendrías que reentrenar. Es comodidad, no esencia |</p>
 </blockquote>
-<h3 id="9.2-El-registro-de-modelos">9.2 El registro de modelos<a class="anchor-link" href="#9.2-El-registro-de-modelos">¶</a></h3><p>De ahí salen las cinco tablas de <code>scripts/ddl_ml_model_registry.sql</code>:</p>
+<h3 id="9.2-El-registro-de-modelos">9.2 El registro de modelos<a class="anchor-link" href="#9.2-El-registro-de-modelos">¶</a></h3><p>De ahí salen las cinco tablas de <code>scripts/sql/migrations/2026-08-29_ml_model_registry.sql</code>:</p>
 <table>
 <thead>
 <tr>
@@ -16842,7 +16842,7 @@ deriva de §5.8 probablemente dará un número peor.</p>
     <span class="n">n_rows</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">n_features</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_groups</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">groups</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span>
     <span class="n">target_column</span><span class="o">=</span><span class="s1">'ml_class'</span><span class="p">,</span>
     <span class="n">class_distribution</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">'ml_class'</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
-    <span class="n">feature_source</span><span class="o">=</span><span class="s1">'v_ml_features v3 (scripts/ddl_ml_features_v3.sql)'</span><span class="p">,</span>
+    <span class="n">feature_source</span><span class="o">=</span><span class="s1">'v_ml_features v3 (scripts/sql/migrations/2026-09-03_ml_features_v3.sql)'</span><span class="p">,</span>
     <span class="n">filters_human</span><span class="o">=</span><span class="p">(</span><span class="s1">'Solo sintesis en combinatoria (HTS); sin acido tanico; sin medidas '</span>
                    <span class="s1">'marcadas ml_include=NO; MEZCLA contada como CRISTALINO.'</span><span class="p">),</span>
     <span class="n">known_caveats</span><span class="o">=</span><span class="p">(</span>

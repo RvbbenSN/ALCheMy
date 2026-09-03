@@ -439,7 +439,7 @@ cuenta el proyecto entero sin una palabra.
 *PXRD*, *BET*, *TGA*.
 
 **Privacidad:** ⚠️ Aquí no se nombra **ningún ligando concreto no publicado**. Se puede hablar de
-metales y de familias genéricas. El caso IEF-8 sí es citable: está publicado en *Chemistry of
+metales y de familias genéricas. El caso SMP-0100 sí es citable: está publicado en *Chemistry of
 Materials* 2023.
 
 ---
@@ -751,7 +751,7 @@ necesita reescritura, solo maquetación.
 
 Contiene: formación (BSc 2015-2020, MSc 2020-2021, PhD *cum laude* con Mención Internacional,
 diciembre 2025, UCM), la etapa en el IMDEA Energy / APMU bajo la Dra. Patricia Horcajada, el
-desarrollo del **IEF-8** (fosfonato de Cu que supera al benchmark industrial MIL-125(Ti)-NH₂ en
+desarrollo del **SMP-0100** (fosfonato de Cu que supera al benchmark industrial MIL-125(Ti)-NH₂ en
 producción de hidrógeno verde, *Chem. Mater.* 2023, IF 7.2/Q1), la estancia de 14 semanas en la
 University of Glasgow con el Prof. Pablo Docampo (*ACS Omega* 2025) y el hallazgo inesperado de
 comportamiento memristivo, y los méritos: >2.000 experimentos, 12 estructuras cristalinas resueltas,

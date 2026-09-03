@@ -9,7 +9,7 @@
 -- the instrumental background. Two consequences, both wrong:
 --
 --   * `crystalline_fraction_blank`, defined as 1 - the fraction, counted the instrument
---     background as crystalline. On LP69 the phase panel of the anatomy figure showed
+--     background as crystalline. On SMP-0005 the phase panel of the anatomy figure showed
 --     9% crystalline area while the column read 0.757.
 --   * The value depended on how much instrumental background happened to sit under the
 --     pattern, which varies with exposure time and mount - so it was less comparable

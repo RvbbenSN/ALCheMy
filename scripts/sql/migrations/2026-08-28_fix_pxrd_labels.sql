@@ -5,19 +5,19 @@
 -- Ruben, revisando el etiquetado, encontro cuatro patrones marcados AMORFO que en
 -- realidad estan a medio cristalizar:
 --
---   RS1164, RS1567, RS1568  ->  INCIPIENTE / PICOS_ANCHOS
---   RS159                   ->  INCIPIENTE / HALO_DOMINANTE
+--   SMP-0001, SMP-0002, SMP-0003  ->  INCIPIENTE / PICOS_ANCHOS
+--   SMP-0004                   ->  INCIPIENTE / HALO_DOMINANTE
 --
 -- Los descriptores respaldan la correccion. Mediana de la clase AMORFO:
 -- amorphous_fraction_blank 0,882 con 0 picos. Estas cuatro:
 --
 --   muestra   picos   frac. amorfa   fwhm
---   RS1164      10        0,044      0,415   <- por debajo incluso de CRISTALINO
---   RS1567      16        0,430      0,203
---   RS1568      18        0,262      0,160
---   RS159        4        0,786      0,287   <- la mas difusa: halo dominante
+--   SMP-0001      10        0,044      0,415   <- por debajo incluso de CRISTALINO
+--   SMP-0002      16        0,430      0,203
+--   SMP-0003      18        0,262      0,160
+--   SMP-0004        4        0,786      0,287   <- la mas difusa: halo dominante
 --
--- Ninguna se parece a un patron amorfo. RS1164 tiene ademas la FWHM mas ancha de
+-- Ninguna se parece a un patron amorfo. SMP-0001 tiene ademas la FWHM mas ancha de
 -- las cuatro, que es literalmente lo que dice su subtipo.
 --
 -- POR QUE ESTE FICHERO NO ESCRIBE NINGUN IDENTIFICADOR A MANO
@@ -50,7 +50,7 @@ UPDATE pxrd_labels
                || 'Corregida 2026-08-28 en revision: estaba AMORFO.',
        updated_at = now()
  WHERE label_type = 'crystallinity_class'
-   AND sample_code IN ('RS1164', 'RS1567', 'RS1568', 'RS159')
+   AND sample_code IN ('SMP-0001', 'SMP-0002', 'SMP-0003', 'SMP-0004')
    AND label_value = 'AMORFO';
 
 -- --------------------------------------------------------------------------
@@ -71,10 +71,10 @@ SELECT c.file_hash,
        now(),
        now()
   FROM pxrd_labels c
-  JOIN (VALUES ('RS1164', 'PICOS_ANCHOS'),
-               ('RS1567', 'PICOS_ANCHOS'),
-               ('RS1568', 'PICOS_ANCHOS'),
-               ('RS159',  'HALO_DOMINANTE')) AS s(code, subtype)
+  JOIN (VALUES ('SMP-0001', 'PICOS_ANCHOS'),
+               ('SMP-0002', 'PICOS_ANCHOS'),
+               ('SMP-0003', 'PICOS_ANCHOS'),
+               ('SMP-0004',  'HALO_DOMINANTE')) AS s(code, subtype)
     ON s.code = c.sample_code
  WHERE c.label_type = 'crystallinity_class'
 ON CONFLICT (file_hash, label_type) DO UPDATE SET
