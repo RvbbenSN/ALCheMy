@@ -148,6 +148,10 @@ def registrar_modelo(conn, slug, display_name, task_type, algorithm, library,
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (model_slug) DO UPDATE SET
             display_name = EXCLUDED.display_name, hyperparameters = EXCLUDED.hyperparameters,
+            task_type = EXCLUDED.task_type, target_column = EXCLUDED.target_column,
+            target_classes = EXCLUDED.target_classes, question = EXCLUDED.question,
+            algorithm = EXCLUDED.algorithm, library = EXCLUDED.library,
+            python_version = EXCLUDED.python_version, platform = EXCLUDED.platform,
             preprocessing = EXCLUDED.preprocessing, validation_scheme = EXCLUDED.validation_scheme,
             random_seed = EXCLUDED.random_seed, source_notebook = EXCLUDED.source_notebook,
             git_commit = EXCLUDED.git_commit, library_versions = EXCLUDED.library_versions,

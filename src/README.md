@@ -1252,3 +1252,116 @@ y verificar el resultado con una batería de expresiones regulares antes de publ
 para cualquier otra vista previa de datos privados que haga falta en la web. La verificación
 importa tanto como la sustitución: es lo que caza un código de muestra escondido dentro de un
 nombre de fichero.
+
+---
+
+### `src/fix_volume_units_2026_09.py`
+
+One-off data correction, already run, kept for the audit trail. It rewrites
+`h2o_total_ml`, `hcl_active_mmol` and `hf_active_mmol` for 2,153 rows of
+`synthesis_experiments`.
+
+**The problem it solves.** Notebook 01 assumed that *every* additive column of the master
+Excel was in microlitres. Three of them are not. The proof is in the spreadsheet's own
+`V total` formula:
+
+```
+V total = SUM(Q:AB) + SUM(AE:AU)/1000
+```
+
+The `/1000` is applied to the **second** block only, which means the first one — where
+`HCl (0,6M)`, `HCl (3M)` and `HF (3M)` live — is in **millilitres**. That matches bench
+practice: those are *dilute* solutions, dosed in mL, and they act as **solvent**; the
+concentrated ones and the neat liquids go in µL.
+
+**Why it mattered.** Dividing the dilute solutions by 1000 made the water they contribute
+disappear. The solvent breakdown then failed to add up to the recorded total volume in
+**18 %** of the syntheses, and those rows were flagged as unknown composition — the single
+largest gap in the ML feature table. Nothing was missing from the record: **the dilution
+water was being thrown away by the code**. After the fix the breakdown is complete in
+**99.5 %** of rows (99.8 % of the ML training set).
+
+**How it was found.** By a chemist's objection to a claim of mine. I had read RS1873's
+15 mL of reaction volume as evidence of a missing solvent record; the answer was "how can
+there be 15 µL of water?". Reading the Excel formula settled it: the volume closes exactly,
+and the units were the error. Verified by reproducing the stored `V total` in **2,162 of
+2,172 rows (99.54 %)**.
+
+**Design notes.** It reads the sheet **by column index**, not by name, because the header
+row repeats names (`HF (3M)` and `TFA` each appear twice, once per unit block) and pandas
+renames the duplicates. It replicates notebook 01's `desambiguar()` so sample codes line up.
+It deliberately does **not** re-run the full ingestion: that would overwrite chemistry
+reconciled by hand in the database.
+
+Notebook 01 is fixed in the same commit — the three columns are mapped to `*_ml`, the two
+duplicated µL columns are picked up, and the corrected notebook was checked to reproduce
+the database on 2,096 samples to within the stored rounding.
+
+---
+
+### `scripts/ddl_ml_features_v3.sql`
+
+Rebuild of `v_ml_features` on top of the corrected volumes. Same `DROP VIEW` + `CREATE VIEW`
+mechanics and the same "back up first" rule as v2. What it changes:
+
+- **Glacial acetic acid counts twice, on purpose**: as a solvent (it is one) and as a
+  carboxylic modulator (`× 17.4855` mmol/mL). Leaving it out of either place misstated the
+  medium.
+- **`solvent_breakdown_complete` uses `abs(residual_frac) <= 0.05`.** The first draft bounded
+  the residual on one side only, so rows whose components *exceeded* the recorded total
+  passed the check. A negative residual is exactly as inconsistent as a positive one.
+- **`frac_h2po4` and `frac_nh4oh` are exposed.** Without them, syntheses whose whole volume
+  is phosphoric acid appeared to have fractions summing to zero.
+
+Verification after applying: the ten fractions sum to mean 0.9997 (min 0.9536, max 1.0001)
+over 1,513 of 1,516 training rows.
+
+---
+
+### `scripts/audit_model_reproducibility.py`
+
+Comprueba que un cuaderno de modelado **dice la verdad**. Dos preguntas distintas, las dos
+importantes:
+
+```bash
+# ¿las salidas guardadas son las que ese código produce hoy?
+python scripts/audit_model_reproducibility.py notebooks/06_...ipynb --diff
+
+# ¿las métricas de ml_model_metrics coinciden con las de re-entrenar?
+python scripts/audit_model_reproducibility.py notebooks/06_...ipynb --registro \
+    --slug crystallinity_v4_hts_full --slug crystallinity_v4_hts_actionable
+```
+
+Sin argumentos de modo hace las dos. Devuelve código de salida 1 si algo no cuadra, así que
+se puede encadenar o meter en un hook.
+
+**El problema que resuelve, y no es hipotético.** Un cuaderno ejecutado guarda sus salidas
+*dentro* del `.ipynb`. Si después cambia el código, la vista o los datos, esas salidas
+siguen ahí, con el mismo aspecto de siempre — y el texto en prosa que las interpreta,
+también. **Un cuaderno cuyas cifras ya no se reproducen miente sin avisar.**
+
+**Cómo se descubrió que hacía falta.** Auditando el modelo v4 de cristalinidad
+(2026-09-03), este procedimiento detectó que el cuaderno 06 mostraba F1 = 0,511 y una
+importancia por bloques **negativa** para el medio, mientras que una ejecución limpia del
+mismo código daba **0,517** y todos los bloques **positivos**. Toda la lectura química de
+§8.4 —"arreglar el dato no lo convirtió en señal", "19 de 39 variables aportan ruido"— se
+apoyaba en unos números que ya no salían. Se re-ejecutó el cuaderno entero y se reescribió
+el texto. De paso salieron dos defectos del registro de modelos: las importancias por
+variable nunca llegaban a guardarse, y el `ON CONFLICT` de `registrar_modelo()` no
+actualizaba `algorithm` ni `library`, de modo que re-registrar un slug dejaba el algoritmo
+antiguo junto al binario nuevo. Los dos están corregidos.
+
+**Cómo funciona.** Ejecuta las celdas de código en un único espacio de nombres (como haría
+un kernel), capturando el `stdout` de cada una, y lo compara línea a línea con lo guardado.
+Se detiene en la última celda que menciona `permutation_importance` —para no volver a
+escribir en la base— o donde diga `--hasta`.
+
+**Limitación honesta.** Compara sólo la salida **impresa**: no las tablas que Jupyter
+muestra como resultado de la última expresión, ni las figuras. Es una red de seguridad, no
+una prueba formal. Aun así, con que el cuaderno imprima sus cifras clave —que es buena
+práctica de todos modos— basta para cazar este fallo.
+
+**Reutilizable** en cualquier cuaderno del proyecto que imprima resultados: el
+`--diff` no sabe nada de ML. El `--registro` sí asume la convención de este proyecto (un
+DataFrame de resultados cuya primera fila es el modelo ganador, con columnas `F1 macro` y
+`MCC`), configurable con `--variable`.
