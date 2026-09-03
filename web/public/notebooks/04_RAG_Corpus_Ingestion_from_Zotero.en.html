@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 RAG Corpus Ingestion from Zotero</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">English</span><a href="./04_RAG_Corpus_Ingestion_from_Zotero.es.html">Español</a><a class="back" href="/">&larr; Back to the site</a></div>
+<div class="banner"><strong>Reading copy.</strong> This is the narrative of the notebook, edited for reading and translated — not the executable notebook, which is published separately with its code and outputs. Sample identifiers and unpublished ligand names are pseudonymised. Every figure below was produced by the notebook itself; none of the code was re-executed to build this page.</div>
+<h1>🗂️ Notebook 04: RAG Corpus Ingestion — Folder Drop and Zotero Library</h1>
+<h3>📌 Objectives:</h3>
+<ol>
+<li><strong>Document the two ingestion lanes</strong> feeding <code>rag_documents</code> and <code>rag_chunks</code>: dropping files into a watched directory, and ingesting directly from a local Zotero reference-manager library.</li>
+<li><strong>Demonstrate the multi-stage deduplication hierarchy</strong> (binary MD5 → DOI → normalised header hash) and illustrate why a binary MD5 hash is insufficient once a publisher watermark has been appended during re-downloading.</li>
+<li><strong>Establish the source-provenance ranking</strong> that prevents low-confidence metadata (inferred heuristically from PDF text) from overwriting authoritative bibliographic sources (Crossref API records or human-curated Zotero entries).</li>
+<li><strong>Document the chunking and embedding protocol</strong>, detailing a real operational failure and its resolution (NUL bytes originating from corrupted PDF font tables) and explaining why the processing pipeline is fully resumable.</li>
+<li><strong>Verify end-to-end performance</strong> by executing a hybrid retrieval query against the production corpus.</li>
+</ol>
+<h3>Source Code</h3>
+<p>This notebook narrates and invokes the production scripts without reimplementing their core logic:</p>
+<ul>
+<li><code>src/rag_catalog_corpus.py</code> — Catalogues documents into <code>rag_documents</code> (via watched folders and Zotero library access).</li>
+<li><code>src/rag_zotero.py</code> — Reads a local Zotero <code>zotero.sqlite</code> database and <code>storage/</code> directory in a strictly read-only mode.</li>
+<li><code>src/rag_ingest_chunks.py</code> — Splits catalogued document text into chunks and generates dense vector embeddings using a local Ollama instance (<code>bge-m3</code>).</li>
+<li><code>src/rag_query.py</code> — Executes the CLI hybrid search function (<code>rag_hybrid_search()</code>).</li>
+<li><code>src/rag_smoke_test.py</code> — Performs an automated, self-cleaning end-to-end retrieval health check.</li>
+</ul>
+<p>All SQL queries presented below are strictly <strong>read-only</strong> against the live database; no cell in this notebook writes to <code>rag_documents</code> or <code>rag_chunks</code>.</p>
+<h2>📦 Step 1: Imports and Connection</h2>
+<h2>🗃️ Step 2: Reading a Zotero Library without Write Access</h2>
+<p><code>src/rag_zotero.py</code> accesses the <code>zotero.sqlite</code> SQLite database and the associated <code>storage/</code> directory maintained on disk by a desktop Zotero installation. Two critical safety measures are implemented:</p>
+<ul>
+<li><strong>The SQLite database is copied to a temporary file prior to opening.</strong> Desktop Zotero acquires an exclusive file lock while running, causing direct read operations against the active database to fail.</li>
+<li><strong>Two text sources are evaluated in hierarchical order:</strong> the original PDF file stored on disk (which also provides page and embedded image counts), falling back to Zotero's internal <code>.zotero-ft-cache</code> text extraction cache (retaining the plain text extracted during the last instance the PDF resided on disk). In this library, the majority of records had their bibliographic metadata synchronised without local PDF storage; without the secondary text cache fallback, most items would have been unusable.</li>
+</ul>
+<h3>Excluded Collections Rationale</h3>
+<p>A personal Zotero database rarely focuses exclusively on the thematic domain of a specific RAG corpus. The laboratory library examined here also hosted a dental systematic review and a fitness archive, neither of which belongs within a materials chemistry RAG system. The exclusion filter is defined within <code>src/rag_catalog_corpus.py</code> as <code>EXCLUDED_COLLECTIONS_DEFAULT</code>.</p>
+<h2>🧬 Step 3: The Multi-Stage Deduplication Hierarchy</h2>
+<p>A file's binary MD5 hash provides an exact fingerprint of its <strong>raw byte stream</strong>, but a poor fingerprint of the <strong>scientific paper</strong> it encapsulates. Academic publishers routinely append dynamic download watermarks (stamping download timestamps, IP addresses, and user identifiers) onto each page of a PDF. Consequently, an identical article downloaded from two separate sources—such as a publisher portal and an academic collaborator—yields two divergent files with distinct binary hashes.</p>
+<p>This behaviour was demonstrated experimentally: adding an arbitrary watermark to a publication within this corpus altered both the binary MD5 hash <strong>and</strong> the MD5 hash of the extracted plain text, because the watermark text is embedded directly within the PDF body and propagates into downstream text extraction.</p>
+<h2>🏷️ Step 4: Cataloguing &amp; Source-Provenance Ranking</h2>
+<p><code>src/rag_catalog_corpus.py</code> extracts document titles, author lists, publication years, journal venues, and DOIs, committing a single record per document into <code>rag_documents</code>. Two distinct ingestion lanes populate this table:</p>
+<ul>
+<li><strong>Watched Folder Lane</strong>: Dropping a PDF, DOCX, TXT, or MD file into <code>data/rag_corpus/{public,internal}/</code>. Metadata is inferred from document text and optionally enriched via the public Crossref API (only DOIs of files located within the <code>public/</code> directory are ever transmitted to external endpoints).</li>
+<li><strong>Zotero Library Lane</strong>: <code>zotero_records()</code> ingests records from the local library as described above, treating the metadata as human-curated.</li>
+</ul>
+<p>An operational regression occurred here: executing a secondary ingestion pass over an already-catalogued PDF (omitting the <code>--crossref</code> flag) parsed only a single author from the PDF internal metadata (where publishers often record only the corresponding author). A simple <code>COALESCE</code> statement allowed this single-author record to overwrite the complete, nine-author list previously obtained from Crossref. To resolve this, <code>rag_source_rank()</code> enforces an explicit provenance hierarchy: a lower-ranked metadata source is barred from overwriting data provided by a higher-ranked source.</p>
+<h2>✂️ Step 5: Chunking &amp; Vector Embedding</h2>
+<p><code>src/rag_ingest_chunks.py</code> iterates over catalogued documents, partitioning each text into overlapping chunks (<code>chunkSize 1200 / overlap 250</code>, representing ≈20% overlap; dense technical prose demands higher overlap ratios than general literature to prevent boundary truncations from destroying scientific context across adjacent chunks). Each chunk is embedded using a local Ollama instance (<code>bge-m3</code>, yielding 1024-dimensional dense vectors) and written to <code>rag_chunks</code>.</p>
+<p>During an initial overnight batch run across 947 documents, three records failed with the following database exception:</p>
+<pre><code>A string literal cannot contain NUL (0x00) characters.
+</code></pre>
+<p>Certain PDF text extraction engines emit NUL control bytes when encountering corrupted font encoding tables, which PostgreSQL strictly rejects within <code>TEXT</code> columns. The parser was updated to sanitize NUL bytes and standard C0 control characters prior to chunking. Because the pipeline is designed to be resumable—processing exclusively <code>WHERE n_chunks = 0</code>—re-executing the batch script after deploying the patch processed only the 3 failed documents rather than recomputing all 947.</p>
+<h2>🔍 Step 6: End-to-End Verification via Hybrid Search</h2>
+<p><code>src/rag_query.py</code> executes the identical hybrid retrieval function (<code>rag_hybrid_search()</code>, combining dense vector similarity with lexical <code>tsvector</code> matching fused via Reciprocal Rank Fusion) utilised by the n8n agent's <code>search_documentation</code> tool. It deliberately avoids calling an LLM: if the target passage is absent from the ranked retrieval set, no downstream generative model could synthesise a grounded answer. Decoupling retrieval from generation isolates document retrieval failures from generative hallucination.</p>
+<h2>📊 Step 7: Corpus Processing Funnel</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Processing Stage</th>
+  <th style="text-align:left">Document Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Total items in Zotero library (including standalone notes, web pages, and annotations)</td>
+  <td style="text-align:left">5,554</td>
+</tr>
+<tr>
+  <td style="text-align:left">Journal articles identified</td>
+  <td style="text-align:left">1,631</td>
+</tr>
+<tr>
+  <td style="text-align:left">Indexable records associated with a registered PDF attachment</td>
+  <td style="text-align:left">1,711</td>
+</tr>
+<tr>
+  <td style="text-align:left">Records with extractable text available (from local PDF or <code>.zotero-ft-cache</code>)</td>
+  <td style="text-align:left">1,066</td>
+</tr>
+<tr>
+  <td style="text-align:left">Retention after filtering out non-chemistry collections (dentistry, fitness)</td>
+  <td style="text-align:left">960</td>
+</tr>
+<tr>
+  <td style="text-align:left">Catalogued successfully into <code>rag_documents</code></td>
+  <td style="text-align:left">958</td>
+</tr>
+<tr>
+  <td style="text-align:left">Eligible for vector embedding (2 scanned laboratory notebooks lack OCR text)</td>
+  <td style="text-align:left"><strong>956</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The final tally of 956 documents represents an intentional, curated corpus resulting from filtering non-chemical topics and unparsed image files. The two scanned laboratory notebooks were explicitly flagged with <code>needs_ocr = TRUE</code> rather than silently generating zero chunks. They are reserved for future transcription via multimodal vision models strictly for textual indexing, never for automated numerical extraction into <code>synthesis_experiments</code>.</p>
+
+</div></body></html>

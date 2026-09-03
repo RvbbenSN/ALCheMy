@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 RAG Corpus Ingestion from Zotero</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./04_RAG_Corpus_Ingestion_from_Zotero.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>🗂️ Cuaderno 04: Ingesta del corpus RAG — Carpeta supervisada y biblioteca Zotero</h1>
+<h3>📌 Objetivos:</h3>
+<ol>
+<li><strong>Documentar las dos vías de ingesta</strong> que alimentan las tablas <code>rag_documents</code> y <code>rag_chunks</code>: la incorporación de ficheros mediante una carpeta supervisada y la lectura directa desde una biblioteca local del gestor bibliográfico Zotero.</li>
+<li><strong>Exponer la jerarquía de desduplicación progresiva</strong> (MD5 binario → DOI → hash normalizado de encabezados) y justificar por qué un hash MD5 convencional resulta insuficiente cuando un PDF se descarga de nuevo con marcas de agua del editor.</li>
+<li><strong>Establecer la ordenación por procedencia de fuentes</strong>, impidiendo que una fuente de metadatos de baja fiabilidad (inferida del texto del PDF) sobrescriba a una fuente autorizada (registros de Crossref o entradas curadas manualmente en Zotero).</li>
+<li><strong>Describir el proceso de división en fragmentos (<em>chunking</em>) y generación de incrustaciones vectoriales (<em>embeddings</em>)</strong>, detallando un fallo operativo real y su resolución (caracteres de control NUL procedentes de tablas de fuentes tipográficas corruptas en PDFs) y justificando la capacidad de reanudación del proceso.</li>
+<li><strong>Comprobar el funcionamiento de extremo a extremo</strong> mediante una consulta real de búsqueda híbrida sobre el corpus en producción.</li>
+</ol>
+<h3>Código fuente</h3>
+<p>Este cuaderno describe e invoca los scripts en producción, sin duplicar su implementación interna:</p>
+<ul>
+<li><code>src/rag_catalog_corpus.py</code> — Cataloga los documentos en <code>rag_documents</code> (canal de carpeta supervisada y canal de Zotero).</li>
+<li><code>src/rag_zotero.py</code> — Lee de manera estrictamente no destructiva la base de datos <code>zotero.sqlite</code> y el directorio <code>storage/</code> de Zotero.</li>
+<li><code>src/rag_ingest_chunks.py</code> — Divide el texto catalogado en fragmentos y calcula sus vectores de incrustación mediante una instancia local de Ollama (<code>bge-m3</code>).</li>
+<li><code>src/rag_query.py</code> — Ejecuta la búsqueda híbrida desde la línea de comandos (<code>rag_hybrid_search()</code>).</li>
+<li><code>src/rag_smoke_test.py</code> — Ejecuta una prueba de humo autolimpiable para verificar el estado de la infraestructura de recuperación.</li>
+</ul>
+<p>Todas las consultas SQL presentadas a continuación son de <strong>solo lectura</strong> contra la base de datos de producción; ninguna celda de este cuaderno realiza operaciones de escritura sobre <code>rag_documents</code> ni sobre <code>rag_chunks</code>.</p>
+<h2>📦 Paso 1: Importación de dependencias y conexión</h2>
+<h2>🗃️ Paso 2: Lectura de una biblioteca Zotero en modo estrictamente de solo lectura</h2>
+<p>El script <code>src/rag_zotero.py</code> accede a la base de datos <code>zotero.sqlite</code> y al directorio <code>storage/</code> gestionados localmente por la aplicación Zotero. Se implementan dos medidas de seguridad esenciales:</p>
+<ul>
+<li><strong>Copia de seguridad temporal previa a la apertura:</strong> La base de datos se duplica en un fichero temporal antes de ser leída. La aplicación de escritorio Zotero mantiene un bloqueo exclusivo mientras se encuentra abierta, por lo que una lectura directa sobre el fichero activo puede fallar de forma abrupta.</li>
+<li><strong>Jerarquía de recuperación textual en dos niveles:</strong> Se prioriza la extracción directa del archivo PDF almacenado en disco (que permite además contabilizar páginas e imágenes). En su defecto, se recurre al fichero auxiliar de caché <code>.zotero-ft-cache</code>, que conserva el texto plano extraído por Zotero la última vez que el PDF residió físicamente en el disco. En la biblioteca analizada, gran parte de las referencias mantenía sus metadatos sincronizados pero carecía del PDF local; sin este segundo nivel de recuperación, la mayoría de los registros habrían resultado inaccesibles.</li>
+</ul>
+<h3>Criterio de exclusión de colecciones</h3>
+<p>Una biblioteca personal de Zotero raramente abarca únicamente la temática del corpus de trabajo. La biblioteca utilizada contenía además una revisión sistemática odontológica y una carpeta sobre entrenamiento físico, materias ajenas a un sistema RAG de química de materiales. La lista de exclusión se formaliza en <code>src/rag_catalog_corpus.py</code> bajo la constante <code>EXCLUDED_COLLECTIONS_DEFAULT</code>.</p>
+<h2>🧬 Paso 3: La jerarquía de desduplicación progresiva</h2>
+<p>El hash MD5 de un fichero constituye una huella digital exacta de su <strong>secuencia de bytes</strong>, pero resulta poco representativo del <strong>artículo científico</strong> subyacente. Las editoriales suelen estampar marcas de agua dinámicas (fecha de descarga, identificador de usuario) en cada página del PDF. Por tanto, un mismo artículo descargado en dos ocasiones —por ejemplo, desde el portal de la revista y a través de un colaborador— genera dos ficheros dispares con sumas criptográficas diferentes.</p>
+<p>Este comportamiento se validó empíricamente: al estampar una marca de agua sobre un artículo de este corpus, variaron simultáneamente el hash MD5 binario <strong>y</strong> el hash MD5 del texto plano extraído, dado que la marca se incrusta como texto literal en el PDF y se propaga a la capa de extracción.</p>
+<h2>🏷️ Paso 4: Catalogación y jerarquía por procedencia de fuentes</h2>
+<p>El script <code>src/rag_catalog_corpus.py</code> extrae el título, los autores, el año, la revista y el DOI, registrando una fila por documento en <code>rag_documents</code>. Dos vías independientes alimentan esta tabla:</p>
+<ul>
+<li><strong>Canal de carpeta supervisada</strong>: Depósito de ficheros PDF, DOCX, TXT o MD en <code>data/rag_corpus/{public,internal}/</code>. Los metadatos se infieren del fichero y se enriquecen opcionalmente mediante la API pública de Crossref (únicamente se transmiten al exterior los DOI correspondientes a documentos ubicados en <code>public/</code>).</li>
+<li><strong>Canal de biblioteca Zotero</strong>: La función <code>zotero_records()</code> lee la biblioteca según el protocolo expuesto, considerando sus metadatos como curados por un usuario humano.</li>
+</ul>
+<p>En este punto se identificó un error operativo: una segunda pasada de ingesta sobre un PDF ya catalogado (sin la opción <code>--crossref</code>) releyó el fichero y extrajo únicamente el autor principal recogido en los metadatos internos del PDF (donde las editoriales a menudo solo registran al autor de correspondencia). Una instrucción <code>COALESCE</code> elemental provocó que dicho autor individual sobrescribiese la lista completa de nueve autores recuperada previamente de Crossref. La resolución se articuló mediante <code>rag_source_rank()</code>, asegurando que una fuente de menor jerarquía no pueda sobrescribir los valores aportados por una de mayor nivel.</p>
+<h2>✂️ Paso 5: Fragmentación (<em>chunking</em>) y cálculo de incrustaciones vectoriales (<em>embeddings</em>)</h2>
+<p>El script <code>src/rag_ingest_chunks.py</code> procesa secuencialmente los documentos catalogados, dividiéndolos en fragmentos solapados (<code>chunkSize 1200 / overlap 250</code>, aproximadamente un 20 % de solapamiento; la prosa técnica densa exige mayor margen de solapamiento que la literatura general para evitar que la división en los límites de fragmento fracture el contexto científico). Cada fragmento se vectoriza mediante el modelo local en Ollama (<code>bge-m3</code>, con dimensión de 1024) y se inserta en <code>rag_chunks</code>.</p>
+<p>Durante una ejecución nocturna por lotes sobre 947 documentos, tres registros arrojaron la siguiente excepción en base de datos:</p>
+<pre><code>A string literal cannot contain NUL (0x00) characters.
+</code></pre>
+<p>Determinados motores de extracción de texto en PDF generan bytes NUL cuando procesan tablas tipográficas corruptas, y PostgreSQL no admite dicho carácter dentro de columnas de tipo <code>TEXT</code>. La corrección implementada depura los caracteres NUL y los caracteres de control C0 con anterioridad a la fragmentación. Gracias a que el diseño es reanudable por definición —operando exclusivamente sobre registros <code>WHERE n_chunks = 0</code>—, la reejecución posterior a la corrección procesó únicamente los 3 documentos fallidos, sin necesidad de recomputar los 947 originales.</p>
+<h2>🔍 Paso 6: Verificación de extremo a extremo mediante consulta híbrida real</h2>
+<p>El script <code>src/rag_query.py</code> ejecuta la misma búsqueda híbrida (<code>rag_hybrid_search()</code>, combinando similitud vectorial densa con búsqueda léxica sobre <code>tsvector</code>, integradas mediante <em>Reciprocal Rank Fusion</em>) que utiliza la herramienta <code>search_documentation</code> del agente en n8n. Esta utilidad no tiene acoplado ningún modelo de lenguaje: si el pasaje documental adecuado no figura en la lista clasificada de resultados, ningún modelo generativo posterior podría formular una respuesta fidedigna. Esta separación permite aislar fallos de recuperación de posibles alucinaciones en la fase de síntesis.</p>
+<h2>📊 Paso 7: Embudo del proceso de ingesta</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Etapa del proceso</th>
+  <th style="text-align:left">Recuento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Elementos totales en la biblioteca Zotero (incluyendo notas, páginas web y anotaciones)</td>
+  <td style="text-align:left">5.554</td>
+</tr>
+<tr>
+  <td style="text-align:left">Artículos de revista identificados</td>
+  <td style="text-align:left">1.631</td>
+</tr>
+<tr>
+  <td style="text-align:left">Registros indexables con archivo PDF adjunto registrado</td>
+  <td style="text-align:left">1.711</td>
+</tr>
+<tr>
+  <td style="text-align:left">Registros con texto extraíble disponible (vía PDF local o <code>.zotero-ft-cache</code>)</td>
+  <td style="text-align:left">1.066</td>
+</tr>
+<tr>
+  <td style="text-align:left">Tras excluir colecciones ajenas a química (odontología, entrenamiento físico)</td>
+  <td style="text-align:left">960</td>
+</tr>
+<tr>
+  <td style="text-align:left">Catalogados con éxito en <code>rag_documents</code></td>
+  <td style="text-align:left">958</td>
+</tr>
+<tr>
+  <td style="text-align:left">Aptos para vectorización (2 cuadernos de laboratorio escaneados carecen de texto digitalizable)</td>
+  <td style="text-align:left"><strong>956</strong></td>
+</tr>
+</tbody>
+</table>
+<p>La cifra final de 956 documentos responde a un corpus deliberadamente filtrado tras excluir temáticas no afines y documentos sin texto estructurado. Los dos cuadernos de laboratorio escaneados se clasificaron con la etiqueta <code>needs_ocr = TRUE</code> en lugar de generar de forma inadvertida cero fragmentos. Quedan reservados para una futura transcripción mediante modelos de visión artificial orientada exclusivamente a indexación documental, nunca para la extracción desatendida de cifras numéricas hacia <code>synthesis_experiments</code>.</p>
+<h2>DUDAS</h2>
+<ul>
+<li>En la tabla del embudo (Paso 7), la cifra pasa de 960 documentos tras exclusión temática a 958 catalogados en <code>rag_documents</code>. El texto no detalla la causa de la pérdida de esos 2 registros intermedios (posibles registros duplicados por DOI o ficheros ilegibles/corruptos).</li>
+<li>En la misma tabla, los elementos indexables con PDF adjunto (1.711) superan a los artículos de revista (1.631), lo cual concuerda con la presencia de tipologías documentales adicionales (tesis, capítulos de libro o actas de congresos) que también contaban con fichero adjunto.</li>
+</ul>
+
+</div></body></html>

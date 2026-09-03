@@ -229,19 +229,6 @@ export const EDA_MISSING = {
       '**NULL, not 0**',
     ],
   ],
-  /* La objecion natural de quien llevo el Excel, y por que no aplica. El texto
-     anterior decia "el registro guardo el total pero no el desglose", que solo
-     describe 20 de las 452 filas; en las otras 431 el desglose SI esta y lo que
-     pasa es que no cuadra. */
-  zeroTitle: 'An empty cell does read as zero — that is not what the null is about',
-  zeroBody:
-    'The obvious objection is that a blank cell in the master spreadsheet means "none of that solvent", not "unknown". **And the pipeline agrees**: it reads every blank solvent column as zero, with an explicit `COALESCE(column, 0)`. The null appears afterwards, for a different reason.',
-  zeroDetail:
-    'After turning every blank into a zero, the volumes are added up and compared with the total volume declared for that synthesis. In **431 of 452 flagged rows** the components are written down and simply do not reach the total. One row declares 15 mL of reaction and records 15 µL of water. Reading the rest as zeros there does not give "a synthesis without methanol": it gives **a synthesis without solvent**, which is impossible. Only 20 rows are the other case — a total with nothing itemised — and those are equally impossible for the same reason.',
-  zeroRule:
-    'So the flag does not distrust the chemist. It distrusts arithmetic that does not close: **a zero is a claim, a gap is not, and a model cannot tell them apart if it is handed a zero.**',
-  lesson:
-    'That is the underlying lesson of the whole table. Telling a model "this synthesis contained no methanol" when the truth is "the record of what it contained is incomplete" is feeding it a falsehood dressed as data.',
 }
 
 /* De donde salen las dos columnas de modulador que el lector va a preguntar,
@@ -253,8 +240,6 @@ export const EDA_MODULATORS = {
   fix:
     'So they were **grouped by chemical role** — carboxylic, strong acid, HF, base, fluorinated — and summed. To avoid losing the chemistry that the sum discards, two extra columns carry the **mean pKa and mean logP of the acids present, weighted by how much of each was added**.',
   formula: 'mod_carbox_mean_pka = (3.75·formic + 4.76·acetic + 4.87·propionic) / total carboxylic mmol',
-  consequence:
-    'Which explains the gap directly: when a synthesis carries no carboxylic modulator the denominator is zero and the mean does not exist. That is 70% of the training set, and the correspondence is exact — **not one row** has a null pKa while carrying carboxylic acid.',
   caveats: [
     {
       title: '"Carboxylic" here means "weak carboxylic"',
@@ -413,7 +398,12 @@ export const MODEL_LINEUP = {
 
 export const MODEL_VALIDATION = {
   title: 'Validation grouped by plate',
-  body: 'Stratified group k-fold with five folds does two things at once. The grouping guarantees that no plate appears in both training and test — without it the model would pass by recognising the plate instead of the chemistry. The stratification keeps the class proportions in every fold, so no fold ends up with almost no crystalline samples.',
+  setup:
+    'These syntheses were not done one at a time. High-throughput screening runs them in **plates of 24 wells** — one block, one oven, one thermal programme, 24 compositions swept in parallel. The training set is **1,516 syntheses across 68 plates**, so a plate is not an administrative label: it is a batch of samples that shared a reactor, a day, a solvent bottle and an operator.',
+  body:
+    'That is why the split is grouped by plate. **Stratified group k-fold with five folds** keeps every plate entirely inside one fold, so no plate is ever in training and test at once. Without it the model can score well by recognising which plate a sample came from — the shared batch conditions — instead of learning any chemistry. The stratification then keeps the class proportions even, so no fold ends up with almost no crystalline samples.',
+  consequence:
+    'It costs performance and it is worth it. A random split would report a higher number for a model that had learned less.',
 }
 
 export const MODEL_TWO = {
@@ -516,11 +506,19 @@ export const MODEL_ASSESSMENT = {
   points: [
     {
       title: 'Three quarters of the crystalline syntheses are not recovered',
-      body: 'Recall on the crystalline class is **0.25** under the grouped cross-validation, and that is the figure to quote: the purpose of the tool is to shortlist promising conditions, so this governs its practical value far more than the aggregate does. The confusion matrix above reads 0.53 for the same class because it is **one held-out split, not the five-fold average** — a single lucky set of plates flatters the smallest class, which is exactly why the cross-validated number is the one on record. Either way it is the expected consequence of a class with 167 examples against 967 incipient ones, and of that class being the most heterogeneous: there are many ways for a framework to crystallise and only one way for it not to.',
+      bullets: [
+        'Recall on the crystalline class is **0.25** under the grouped cross-validation. That is the figure to quote: the tool exists to shortlist promising conditions, so it governs practical value far more than the aggregate does.',
+        'The confusion matrix above reads **0.53** for the same class — because it is one held-out split, not the five-fold average. A lucky set of plates flatters the smallest class.',
+        'Cause: **167 crystalline examples against 967 incipient**, and the crystalline class is the most heterogeneous. There are many ways for a framework to crystallise and only one way for it not to.',
+      ],
     },
     {
-      title: 'The actionable model is close to the limit of what the data supports',
-      body: 'Restricted to process variables — the model that answers "given this chemistry, which conditions favour crystallisation?" — performance falls to a macro F1 of 0.393 and a Matthews correlation of 0.095. That is above chance and it is not yet a basis for recommending conditions. Since this is the question the laboratory actually asks, it is the more important of the two results.',
+      title: 'The actionable model sits close to the limit of the data',
+      bullets: [
+        'Stripped of metal and linker chemistry, macro F1 falls to **0.393** and MCC to **0.095**.',
+        'Above chance — and not yet a basis for recommending conditions.',
+        'This is the question the laboratory actually asks, so it is the more important of the two results.',
+      ],
     },
   ],
   cause: {
@@ -532,10 +530,30 @@ export const MODEL_ASSESSMENT = {
   next: {
     title: 'What would improve it, in order of expected return',
     items: [
-      'A designed sweep of temperature, time and modulator at fine resolution within a single metal-linker system. This addresses the confounding directly and amounts to one or two high-throughput plates — by a wide margin the most efficient intervention available.',
-      'More crystalline examples. With 167 in the training set, the minority class is the binding constraint on every metric reported above.',
-      'Completion of the solvent breakdown for the 18% of records that lack it. That block currently scores as noise under permutation importance, and its true contribution cannot be assessed until the medium is recorded completely.',
-      'Revisiting the target once more data exists. A continuous crystallinity index may carry more information than a three-way class, although the three classes remain the judgement the bench actually recorded.',
+      {
+        icon: 'sweep',
+        head: 'One designed sweep',
+        cost: '1–2 plates',
+        body: 'Vary temperature, time and modulator finely **within a single metal-linker system**. It attacks the confounding head-on and costs one or two plates — by a wide margin the most efficient intervention available.',
+      },
+      {
+        icon: 'minority',
+        head: 'More crystalline examples',
+        cost: 'bench time',
+        body: 'With **167** in the training set, the minority class is the binding constraint on every metric above. Nothing algorithmic gets around it.',
+      },
+      {
+        icon: 'record',
+        head: 'Finish the solvent record',
+        cost: 'no experiments',
+        body: '**18 %** of rows lack the breakdown, and that block currently scores as noise. Its real contribution cannot even be measured until the medium is written down completely.',
+      },
+      {
+        icon: 'target',
+        head: 'Revisit the target',
+        cost: 'later',
+        body: 'A continuous crystallinity index may carry more than a three-way class — though the three classes remain the judgement the bench actually recorded.',
+      },
     ],
   },
   closing:

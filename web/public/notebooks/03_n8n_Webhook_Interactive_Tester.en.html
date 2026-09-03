@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 n8n Webhook Interactive Tester</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">English</span><a href="./03_n8n_Webhook_Interactive_Tester.es.html">Español</a><a class="back" href="/">&larr; Back to the site</a></div>
+<div class="banner"><strong>Reading copy.</strong> This is the narrative of the notebook, edited for reading and translated — not the executable notebook, which is published separately with its code and outputs. Sample identifiers and unpublished ligand names are pseudonymised. Every figure below was produced by the notebook itself; none of the code was re-executed to build this page.</div>
+<h1>🧪 ALCheMy — Interactive n8n Webhook Tester</h1>
+<p>This notebook pursues two main objectives:</p>
+<ol>
+<li><strong>Test all pipeline ingestion scenarios:</strong> A &quot;happy path&quot; case for each of the 9 deterministic and microscopy techniques plus the 2 AI-driven (PDF) techniques, alongside every fallback mechanism (unauthorised email, file size exceeded, duplicate entry, missing <code>sample_code</code>, unrecognised technique, invalid file extension, human L2 rejection, approval timeout, and AI agent extraction failure).</li>
+<li><strong>Define the skeleton of a Python client</strong> (<code>ALCheMyIngestionClient</code>) for the ingestion webhook. This establishes the interface for a production API: while it currently communicates over HTTP directly with n8n, the endpoint contract (<code>submit(file_path, technique, sample_code, ...)</code>) is identical to what a future FastAPI wrapper or backend service would expose.</li>
+</ol>
+<h2>⚠️ Prerequisites</h2>
+<ul>
+<li><code>docker compose up -d</code> must be active (running n8n, task runners, and PostgreSQL).</li>
+<li>The <strong>ALCheMy</strong> workflow must be <strong>active</strong> in n8n, with the <code>Webhook</code> node <strong>enabled</strong>. If you followed this setup session, it is already enabled (it was previously disabled by default). If it is disabled in the editor, this notebook will cease to receive responses in <code>mode=&quot;prod&quot;</code>.</li>
+<li>Refresh (F5) your n8n browser tab prior to execution to avoid executing an out-of-sync workflow version.</li>
+<li>Install required dependencies: <code>pip install requests psycopg2-binary python-dotenv</code>.</li>
+</ul>
+<h2>🧩 Ingestion Client Skeleton &amp; API Wrapper</h2>
+<p><code>ALCheMyIngestionClient</code> wraps the multipart POST request directed to the n8n webhook. It is intentionally lean: it exposes a single public method (<code>submit</code>), containing no intrinsic business logic (which resides within the n8n workflow). Should a dedicated API layer (e.g. FastAPI) be deployed in front of n8n in the future—for genuine authentication, rate limiting, or pre-validation—the <code>submit(...)</code> contract will remain unchanged; only the underlying transport layer will change.</p>
+<hr />
+<h2>✅ Part 1 — Happy Path by Analytical Technique</h2>
+<p>One test case is executed for each of the 11 supported technique-and-route combinations: 6 classic deterministic parsers, 3 microscopy parsers (SEM, FESEM, TEM; with FESEM demonstrating the optional instrument metadata field), and 2 AI-driven document parsers for PDF reports (ICP-OES and EA).</p>
+<p>Each cell expects an HTTP 200 response with <code>status: success</code>. If a raw data file has been renamed within the Data Lake, update the file path accordingly.</p>
+<h3>PXRD (.xrdml)</h3>
+<h3>VT-XRD (.brml)</h3>
+<h3>TGA (.txt)</h3>
+<h3>FTIR (.csv)</h3>
+<h3>Adsorption / BET (.xls)</h3>
+<h3>UV-Vis (.asc)</h3>
+<h3>SEM (.jpg + .txt Hitachi sidecar)</h3>
+<p>Uploads the micrograph image <strong>alongside</strong> its accompanying <code>.txt</code> metadata file. The three microscopy test cases cover the three distinct metadata formats present in the Data Lake:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Case</th>
+  <th style="text-align:left">Sidecar Format</th>
+  <th style="text-align:left">Magnification Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>SEM</strong></td>
+  <td style="text-align:left">Hitachi INI (<code>[SemImageFile]</code>, <code>Key=Value</code>)</td>
+  <td style="text-align:left">Read from sidecar file</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>FESEM</strong></td>
+  <td style="text-align:left">JEOL (<code>$CM_MAG</code>, <code>$$SM_WD</code>...)</td>
+  <td style="text-align:left">Read from sidecar file</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>TEM</strong></td>
+  <td style="text-align:left">No sidecar file</td>
+  <td style="text-align:left">Extracted from filename (<code>_MAG_X3000_</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3>FESEM (.bmp, with attached metadata)</h3>
+<p>This test case validates the optional metadata input: the JEOL micrograph image (<code>.bmp</code>) is uploaded <strong>concurrently</strong> with its <code>.txt</code> metadata sidecar via <code>instrument_metadata_file</code>. The deterministic parser extracts the instrument name (<code>JEOL 7900F</code>), magnification, accelerating voltage, and operator cursor annotations.</p>
+<h3>TEM (.jpg, without sidecar; magnification embedded in filename)</h3>
+<p>TEM acquisitions never include a <code>.txt</code> sidecar. Magnification is parsed directly from the filename structure (<code>..._MAG_X3000_001.jpg</code>).</p>
+<h3>ICP-OES (.pdf, via AI Agent)</h3>
+<p>This branch executes via the Gemini AI agent and the confidence evaluator. If declared confidence clears the configured threshold, the record is inserted directly into the database. If confidence falls below 85%, an L2 approval email is dispatched (see Part 2 for human rejection and timeout workflows).</p>
+<h3>EA / CHNS (.pdf, via AI Agent)</h3>
+<hr />
+<h2>🧯 Part 2 — Fallback &amp; Error-Handling Scenarios</h2>
+<p>Each fallback event logs an entry into <code>audit_log</code> with typed <code>verdict</code>, <code>cause</code>, and <code>result</code> fields (governed by <code>workflows/error_payloads_matrix.csv</code>). The first 7 scenarios are fully automated from within this notebook; the remaining 3 (human rejection, approval timeout, and AI agent failure) require human interaction or temporal delays. These are documented systematically rather than simulated arbitrarily, as mocking them would present a misleading sense of test coverage.</p>
+<h3>1. Unauthorised Email (Whitelist Verification)</h3>
+<p><code>Auto-Enroll Whitelist</code> automatically registers any new incoming email address as active (demonstration self-enrolment). However, it does <strong>not</strong> reactivate an address explicitly disabled by an administrator (<code>ON CONFLICT ... DO UPDATE SET last_seen = ...</code> leaves <code>active</code> untouched). Consequently, to test this fallback mechanism, an email address must first be deactivated manually.</p>
+<h3>2. File Size Exceeded (&gt; 10 MB)</h3>
+<p>A synthetic padding file is generated programmatically rather than relying on the presence of an authentic file exceeding 10 MB in the Data Lake.</p>
+<h3>3. Duplicate Measurement Ingestion</h3>
+<p>Re-submits the identical PXRD file used in the happy path test (<strong>run the Part 1 PXRD cell first</strong>, otherwise there will be no existing record to trigger a duplicate collision).</p>
+<h3>4. Missing sample_code</h3>
+<p>No <code>sample_code</code> is supplied, and the filename contains no recognisable sample naming pattern (<code>RS\d+</code>, <code>IEF-\d+</code>, <code>RSMix\d+</code>, <code>LP\d+</code>).</p>
+<h3>5. Unrecognised Analytical Technique</h3>
+<h3>6. Invalid File Extension for Deterministic Technique</h3>
+<p><code>technique=&quot;PXRD&quot;</code> is declared, but an FTIR <code>.csv</code> file is uploaded. The deterministic technique-extension routing table contains no matching rule to accept this payload.</p>
+<h3>7. Invalid File Extension for AI Document Extraction (PDF)</h3>
+<p><code>technique=&quot;ICP-OES&quot;</code> is declared, but an <code>.xrdml</code> file is submitted instead of a <code>.pdf</code>.</p>
+<h3>8. Human Rejection during L2 Approval (Manual Inspection)</h3>
+<p>This test cannot be automated programmatically: it must be triggered manually, followed by clicking <strong>Decline</strong> in the approval notification email sent to <code>researcher@hidden</code> (or the configured <code>researcher_email</code> recipient).</p>
+<ol>
+<li>Execute the cell below to trigger an AI document extraction.</li>
+<li>If the agent's confidence score evaluates to below 85%, an approval email containing <strong>Approve</strong> and <strong>Disapprove</strong> actions will be dispatched.</li>
+<li>Click <strong>Disapprove</strong>. The workflow should log the event into <code>audit_log</code> with the cause <code>REJECTED_BY_RESEARCHER</code> and abort database insertion.</li>
+<li>If confidence evaluates to above 85%, no approval prompt will trigger. Retry with an alternative PDF report, or temporarily lower <code>CONFIDENCE_THRESHOLD</code> within the <code>Confidence Evaluator</code> node specifically for this test.</li>
+</ol>
+<h3>9. Approval Timeout (Time-Dependent Manual Verification)</h3>
+<p>Triggered identically to the scenario above, but <strong>do not respond to the email notification</strong>. After 5 minutes have elapsed (<code>resumeAmount: 5</code> in the <code>Send message and wait for response</code> node), the workflow automatically diverts to the error branch, recording the cause <code>APPROVAL_TIMEOUT_OR_ERROR</code>. Rather than blocking execution within the notebook, inspect <code>audit_log</code> after 5 minutes:</p>
+<pre><code class="language-sql">SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 5;
+</code></pre>
+<h3>10. AI Agent Extraction Failure (Environment Manipulation)</h3>
+<p>To force this fallback reliably, break the upstream LLM API call deliberately:</p>
+<ol>
+<li>In <code>.env</code>, set <code>GEMINI_API_KEY</code> to an invalid string (backup the authentic key beforehand).</li>
+<li>Execute <code>docker compose restart n8n</code>.</li>
+<li>Run the cell below using any PDF or image payload.</li>
+<li>The endpoint should return HTTP 400 with cause <code>AI_AGENT_EXTRACTION_FAILED</code>, recorded in <code>audit_log</code>.</li>
+<li>Restore the authentic <code>GEMINI_API_KEY</code> and restart the n8n container once more.</li>
+</ol>
+<p>This process is not automated within the notebook, as mutating <code>.env</code> variables and restarting infrastructure containers programmatically carries operational risks.</p>
+<hr />
+<h2>🔎 Final Verification in <code>audit_log</code></h2>
+<p>Run this quick SQL query to inspect the complete log of test events generated across this session.</p>
+<hr />
+<h2>🤖 Automated End-to-End Test Suite</h2>
+<p>The individual cells above facilitate granular inspection of isolated test cases. To confirm overall pipeline health comprehensively, an automated test script executes all 9 happy paths and 7 automated fallbacks simultaneously. Furthermore, it verifies that the resulting record landed in <code>characterization_measurements</code> with the complete metadata payload extracted by the parser (rather than merely checking for an HTTP 200 response):</p>
+<pre><code class="language-bash">python src/verify_webhook_pipeline.py                # complete test suite
+python src/verify_webhook_pipeline.py --happy        # happy paths only
+python src/verify_webhook_pipeline.py --fallbacks    # fallback paths only
+python src/verify_webhook_pipeline.py --only PXRD    # isolated single technique
+python src/verify_webhook_pipeline.py --table characterization_measurements  # target canonical table
+</code></pre>
+<p>The cell below passes <code>MEASUREMENTS_TABLE</code> (defined in the first cell of the notebook) to the verification script automatically. Adjust that variable to test against the canonical production table instead of the staging table.</p>
+<p>This test suite exists because the pipeline presents multiple independent failure surfaces (the n8n Python sandbox environment, multipart binary handling, technique-and-extension routing tables, and PostgreSQL foreign key constraints). Manual testing allows regressions to escape unnoticed: fixing an issue for one technique can silently disable or corrupt another.</p>
+<hr />
+<h2>⚠️ Constraints of the n8n Python Sandbox (Empirical Laboratory Findings)</h2>
+<p>Python <strong>Code</strong> nodes in n8n do not execute within a standard CPython interpreter. Instead, they run within a restricted sandbox that intercepts and blocks standard operations without transparent warnings. All behaviours below have been validated empirically against the active runtime environment:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Operation</th>
+  <th style="text-align:left">Observed Error</th>
+  <th style="text-align:left">Recommended Workaround</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Bare <code>open</code> is prohibited</td>
+  <td style="text-align:left"><code>name 'open' is not defined</code></td>
+  <td style="text-align:left">Insert <code>import io; open = io.open</code> at top of node</td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>open(...)</code> in <strong>text mode</strong> (<code>'r'</code>) is broken</td>
+  <td style="text-align:left"><code>'NoneType' object is not callable</code></td>
+  <td style="text-align:left">Read in binary mode (<code>'rb'</code>) and decode manually via <code>.decode(...)</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>getattr</code> and <code>type</code> are prohibited</td>
+  <td style="text-align:left"><code>name 'getattr' is not defined</code></td>
+  <td style="text-align:left">Avoid their use; rely on <code>try/except</code> blocks and inspect <code>str(e)</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Binaries arrive as pointers rather than payloads</td>
+  <td style="text-align:left"><code>base64.b64decode</code> produces corrupt bytes</td>
+  <td style="text-align:left">Pre-convert binary inputs via a <code>Move Binary Data</code> node (<code>keepAsBase64</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, an architectural quirk of the <strong>Webhook node</strong> must be noted: it re-indexes <em>all</em> uploaded files under a uniform naming convention (<code>data_file0</code>, <code>data_file1</code>...), disregarding the original multipart form field names. Consequently, metadata <code>.txt</code> sidecars arrive as <code>data_file1</code> and must be renamed explicitly within <code>Normalize Webhook Body</code>.</p>
+<p>Maintenance note: parser implementations exist in <strong>two locations</strong> (in standalone <code>src/parse_*.py</code> files and embedded directly inside n8n Code nodes). Synchronising them manually is error-prone and caused microscopy parsers in n8n to lag behind JEOL support for several months. To synchronise them deterministically:</p>
+<pre><code class="language-bash">python src/sync_parsers_to_n8n.py --dry-run   # inspect divergence
+python src/sync_parsers_to_n8n.py             # push updates from src/ to n8n
+</code></pre>
+<hr />
+<h2>🧪 The AI Extraction Pipeline (ICP / EA): Experimental Validation &amp; HITL Rationale</h2>
+<p>This document extraction branch previously <strong>inserted fabricated chemical data</strong> into the production database. It is therefore essential to record the root cause of the incident and the verification measures implemented.</p>
+<h3>The Failure Incident</h3>
+<p>When processing analytical report <code>24AQ0245</code> (ICP quantification of Fe, Ni, and P), the AI agent returned the following payload with an auto-assigned <strong>confidence score of 95%</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Field</th>
+  <th style="text-align:left">Source PDF Report Content</th>
+  <th style="text-align:left">AI Agent Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Analyst</td>
+  <td style="text-align:left">Laura Garcia Firgaira</td>
+  <td style="text-align:left"><code>John Doe</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Date</td>
+  <td style="text-align:left">17/06/2024</td>
+  <td style="text-align:left"><code>2023-10-26</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Quantified Elements</td>
+  <td style="text-align:left">Fe, Ni, P</td>
+  <td style="text-align:left">Ni, Fe, <strong>Co, Mg, Ca</strong> (omitting P)</td>
+</tr>
+<tr>
+  <td style="text-align:left">Ni Concentration</td>
+  <td style="text-align:left">10.8 ± 0.5</td>
+  <td style="text-align:left">25.12</td>
+</tr>
+</tbody>
+</table>
+<p>None of these values appeared within the source document: the model fabricated the entire payload based on the filename and the system prompt.</p>
+<h3>Root Cause Analysis</h3>
+<p>The PDF binary <strong>never reached the model</strong>. The <code>passthroughBinaryPdfs</code> configuration parameter in the agent node forwards only binaries explicitly tagged as PDF, whereas the file arrived labelled as <code>application/octet-stream</code> (the fallback MIME type assigned by HTTP clients when an extension is unrecognised). Bereft of input document content, the model hallucinated from the only context available: the prompt instructions. <code>Normalize Webhook Body</code> now enforces correct <code>mimeType</code> resolution dynamically based on the verified file extension.</p>
+<h3>Key Engineering Takeaway</h3>
+<p><strong>The 85% confidence threshold provided zero protection.</strong> Because the AI model self-evaluates its confidence, an ungrounded hallucination produces an equally ungrounded confidence score: the agent assigned 95% confidence to completely fabricated numbers. A safeguard that relies on the very system it is designed to audit is fundamentally ineffective. The failure was detected solely by cross-referencing model output against the authentic PDF document.</p>
+<h3>Current Status</h3>
+<p>Extraction now operates reliably: processing that identical report currently yields <code>Laura Garcia Firgaira</code>, <code>CENTRAL RESEARCH LABORATORIES</code>, <code>Ni 10.8 ± 0.5</code>, and <code>P 21.4 ± 1.1</code>, matching the source report exactly.</p>
+<p>Nevertheless, <strong>autonomous L4 database insertion remains deliberately disabled</strong>: both branches of the <code>If - Needs Human Approval?</code> node route to human email verification, ensuring no PDF data enters the database without direct operator oversight. Prior to re-enabling autonomous ingestion, extraction fidelity must be verified across multiple authentic analytical reports (to date, only one report has been fully validated; evaluation of the second was suspended when free Gemini API credits were depleted), after which the FALSE output of the <code>If</code> node may be reconnected to <code>DB Update</code>.</p>
+<h3>Data Modelling Consideration</h3>
+<p>A single PDF report can report analyses for <strong>multiple distinct samples</strong> (for example, the ICP document covers both <code>SMP-0012</code> and <code>SMP-0015</code>). However, the database ingestion inserts a single record mapped to the solitary <code>sample_code</code> passed in the HTTP request. An architectural decision is required to establish whether multi-sample documents should be decomposed into separate database records.</p>
+<hr />
+<h2>⛔ Temporary Verification Blockers: Depleted AI Credits</h2>
+<p><code>SEM</code>, <code>FESEM</code>, <code>TEM</code>, <code>ICP-OES</code>, and <code>EA</code> pipelines interact with a Gemini model agent. Testing is currently suspended due to depleted API credit:</p>
+<pre><code>HTTP 429 - &quot;Your prepayment credits are depleted.
+            Please go to AI Studio to manage your project and billing.&quot;
+</code></pre>
+<p>This condition <strong>will not resolve spontaneously</strong>. It is critical to distinguish between the three distinct HTTP 429 error messages encountered during development:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Error Message</th>
+  <th style="text-align:left">Meaning</th>
+  <th style="text-align:left">Resolution Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><code>The service is receiving too many requests from you</code></td>
+  <td style="text-align:left">Per-minute concurrency rate limit</td>
+  <td style="text-align:left">Resolves automatically within seconds</td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>You exceeded your current quota</code></td>
+  <td style="text-align:left">Tier-specific plan limit reached</td>
+  <td style="text-align:left">Depends on billing tier reset schedule</td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>Your prepayment credits are depleted</code></td>
+  <td style="text-align:left"><strong>Prepaid API balance exhausted</strong></td>
+  <td style="text-align:left"><strong>Requires manual credit top-up</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Validation status for these 5 techniques prior to credit exhaustion:</p>
+<ul>
+<li><strong>SEM / FESEM / TEM</strong>: All three workflows executed end-to-end (inserting valid database records with accurate metadata extracted for Hitachi, JEOL, and filename conventions) across three consecutive test runs. Deterministic components are fully verified; only qualitative natural-language image description is blocked.</li>
+<li><strong>ICP-OES</strong>: Validated against an authentic PDF report on one occasion, achieving exact correspondence.</li>
+<li><strong>EA</strong>: This technique <strong>has never been verified</strong> under the corrected <code>mimeType</code> workflow. It must be prioritized as soon as API credit is restored.</li>
+</ul>
+<h3>Resuming Validation after Credit Top-Up</h3>
+<pre><code class="language-bash">python src/verify_webhook_pipeline.py          # execute all 18 test cases
+</code></pre>
+<p>Once extraction accuracy is confirmed across several analytical reports, the <strong>FALSE</strong> output of <code>If - Needs Human Approval?</code> can be reconnected to <code>DB Update</code> to re-enable autonomous L4 ingestion. Until then, it remains disconnected by design.</p>
+
+</div></body></html>

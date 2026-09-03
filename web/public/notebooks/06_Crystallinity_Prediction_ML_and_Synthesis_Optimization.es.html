@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 Crystallinity Prediction ML and Synthesis Optimization</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./06_Crystallinity_Prediction_ML_and_Synthesis_Optimization.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>Notebook 06 — Predecir si una síntesis cristaliza: un caso completo de ciencia de datos</h1>
+<p><strong>Proyecto:</strong> ALCheMy · <strong>Autor:</strong> Rubén Serrano Nieto &amp; AI Agent Pair · <strong>Fecha:</strong> 2026-09-02 (v4)</p>
+<hr />
+<h3>Cómo leer este cuaderno</h3>
+<p>Este cuaderno recorre <strong>un problema de ciencia de datos de principio a fin</strong>: desde
+&quot;¿qué pregunta de laboratorio quiero contestar?&quot; hasta un modelo evaluado y un análisis
+de qué variables químicas mandan. No es un script que entrena un modelo: es el registro
+de por qué cada decisión se tomó como se tomó, <strong>incluidas las que salieron mal</strong>.</p>
+<p>Está estructurado según el <strong>marco metodológico de 10 etapas</strong>, el refinamiento más usado
+de <strong>CRISP-DM</strong> (<em>Cross-Industry Standard Process for Data Mining</em>, 1999, todavía hoy el
+estándar de facto). Las dos dicen lo mismo con distinto grano; la de 10 etapas separa
+mejor las primeras fases, que es donde se juega un proyecto de investigación como este.</p>
+<table>
+<thead>
+<tr>
+  <th>Etapa (10 etapas)</th>
+  <th>Fase CRISP-DM</th>
+  <th>¿Dónde está aquí?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1. Comprensión del problema</td>
+  <td>Business Understanding</td>
+  <td>§1</td>
+</tr>
+<tr>
+  <td>2. Enfoque analítico</td>
+  <td>Business Understanding</td>
+  <td>§2</td>
+</tr>
+<tr>
+  <td>3. Requisitos de datos</td>
+  <td>Data Understanding</td>
+  <td>§3</td>
+</tr>
+<tr>
+  <td>4. Recolección de datos</td>
+  <td>Data Understanding</td>
+  <td>§4</td>
+</tr>
+<tr>
+  <td>5. Comprensión de los datos</td>
+  <td>Data Understanding</td>
+  <td>§5 (EDA)</td>
+</tr>
+<tr>
+  <td>6. Preparación de los datos</td>
+  <td>Data Preparation</td>
+  <td>§6 (ETL)</td>
+</tr>
+<tr>
+  <td>7. Modelado</td>
+  <td>Modeling</td>
+  <td>§7</td>
+</tr>
+<tr>
+  <td>8. Evaluación</td>
+  <td>Evaluation</td>
+  <td>§8</td>
+</tr>
+<tr>
+  <td>9. Despliegue</td>
+  <td>Deployment</td>
+  <td>§9</td>
+</tr>
+<tr>
+  <td>10. Retroalimentación</td>
+  <td>Deployment</td>
+  <td>§10</td>
+</tr>
+</tbody>
+</table>
+<p><strong>El ciclo no es una lista, es un bucle</strong>, y este cuaderno es la prueba: va por su tercera
+vuelta. La primera llegó a la etapa 8 con un resultado que parecía bueno; una revisión
+química lo devolvió a las etapas 3 y 6. La segunda corrigió aquello y volvió a caer, esta
+vez por un problema de <strong>unidades</strong> que sólo se veía leyendo el Excel original.</p>
+<blockquote>
+<p><strong>Nota sobre las figuras.</strong> Rótulos, ejes y títulos van en inglés (convención de
+publicación); el razonamiento, en castellano.</p>
+</blockquote>
+<h3>Índice</h3>
+<ul>
+<li><strong>§1</strong> El problema · <strong>§2</strong> Clasificación o regresión · <strong>§3</strong> Qué datos hacen falta</li>
+<li><strong>§4</strong> De dónde sale cada número · <strong>§5</strong> EDA · <strong>§6</strong> Preparación y ETL</li>
+<li><strong>§7</strong> Modelado · <strong>§8</strong> Evaluación · <strong>§9</strong> Despliegue y registro · <strong>§10</strong> Retroalimentación</li>
+</ul>
+<hr />
+<blockquote>
+<h3>📌 Qué cambió en esta versión: el problema de las unidades</h3>
+<p>La versión anterior daba por hecho que <strong>todas</strong> las columnas de aditivo del Excel
+maestro estaban en microlitros. No lo estaban. La prueba estaba en el propio Excel, en
+la fórmula de su columna <code>V total</code>:</p>
+<pre><code>V total = SUMA(Q:AB) + SUMA(AE:AU)/1000
+</code></pre>
+<p>Ese <code>/1000</code> aplicado <strong>sólo al segundo bloque</strong> demuestra que el primero está en
+<strong>mililitros</strong>. Y tiene todo el sentido de laboratorio: las disoluciones <strong>diluidas</strong>
+(HCl 0,6 M, HCl 3 M, HF 3 M) se dosifican en mL y <strong>hacen de disolvente</strong>; las
+concentradas y los líquidos puros van en µL.</p>
+<p>| Bloque | Columnas | Unidad |
+|---|---|---|
+| <strong>Q:AB</strong> | <strong>HCl 0,6M · HCl 3M · HF 3M</strong> · H₂O · MeOH · EtOH · 1-PrOH · DMF · DEF · AcOH gl · H₂PO₄ · NH₄OH | <strong>mL</strong> |
+| <strong>AE:AU</strong> | Fórmico · Acético · Propiónico · TEA · CF₃SO₃H · TFA · HCl 1M/5M/12M · KOH 10M · HF 3M (2ª) · MeO₃S… | <strong>µL</strong> |</p>
+<p><strong>La consecuencia era grave y silenciosa:</strong> al dividir entre 1.000 las disoluciones
+diluidas, <strong>el agua que aportaban desaparecía</strong>. En SMP-0019, los 10 mL de HCl 0,6 M
+quedaron en 0,010 mL. Por eso el volumen &quot;no cuadraba&quot; en un 18 % de las síntesis y esas
+filas se marcaban como composición desconocida. No faltaba ningún disolvente: <strong>faltaba
+el agua de la dilución</strong>.</p>
+<p>Corregido, el desglose del medio pasa de estar completo en el <strong>81,7 %</strong> de las
+síntesis en combinatoria al <strong>99,5 %</strong> — y al <strong>99,8 %</strong> en el conjunto con el que
+se entrena. (Sobre las 2.152 síntesis de todo tipo, incluidas estándar y microondas,
+es el 99,1 %: el denominador importa y por eso se dice.) Y algo que conviene decir sin adornos: <strong>el modelo no mejora por ello</strong>
+(F1 macro 0,517 frente a 0,522 antes, una diferencia siete veces menor que la
+desviación entre pliegues, ±0,036). Lo que se ha ganado no es exactitud, es que <strong>los números signifiquen lo que
+dicen</strong>.</p>
+<p>Verificación: la fórmula reproduce el <code>V total</code> almacenado en <strong>2.162 de 2.172 filas
+(99,54 %)</strong>.</p>
+</blockquote>
+<hr />
+<h1>§1. Comprensión del problema</h1>
+<blockquote>
+<p><em>Etapa 1 — Business Understanding. Qué se quiere conseguir, en el lenguaje de quien
+tiene el problema. Si esta etapa se hace mal, todo lo demás está bien hecho pero
+resuelve otra cosa.</em></p>
+</blockquote>
+<h3>La pregunta del laboratorio</h3>
+<p>Sintetizar un MOF de fosfonato lleva <strong>entre 24 y 96 horas de estufa</strong>, más el tiempo de
+pesar, montar y caracterizar. De cada 24 pocillos de una placa de síntesis en
+combinatoria, la mayoría no cristalizan. La pregunta es directa:</p>
+<blockquote>
+<p><strong>¿Se puede predecir, <em>antes</em> de meter nada en la estufa, si una combinación de
+condiciones va a producir material cristalino?</strong></p>
+</blockquote>
+<h3>Para qué serviría exactamente</h3>
+<ol>
+<li><strong>Descartar</strong> combinaciones condenadas al fracaso antes de gastar 48 h de estufa.</li>
+<li><strong>Priorizar</strong> el siguiente lote: si caben 24 pocillos, llenarlos con los 24 candidatos
+más prometedores en vez de con una rejilla ciega.</li>
+<li><strong>Entender</strong> qué gobierna la cristalización en esta familia química — que es, a la
+larga, lo más valioso: un modelo que acierta sin explicar no enseña nada.</li>
+</ol>
+<h3>El criterio de éxito, fijado ANTES de ver resultados</h3>
+<p>No es formalismo: es la única defensa contra elegir después la métrica que mejor queda.</p>
+<ul>
+<li><strong>Mínimo aceptable:</strong> batir de forma clara a la clase mayoritaria en <strong>F1 macro</strong>.</li>
+<li><strong>Útil de verdad:</strong> que el orden de candidatos sirva para llenar una placa mejor que el
+azar.</li>
+<li><strong>Irrenunciable:</strong> que el modelo sea <strong>interpretable en términos químicos</strong>.</li>
+</ul>
+<hr />
+<h1>§2. Enfoque analítico</h1>
+<blockquote>
+<p><em>Etapa 2 — Analytic Approach. Traducir la pregunta del laboratorio a un tipo de problema
+estadístico. Elegir mal aquí no se arregla luego con más modelos.</em></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+  <th>Si la pregunta es…</th>
+  <th>Entonces…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>¿A qué <strong>categoría</strong> pertenece?</td>
+  <td><strong>Clasificación supervisada</strong></td>
+</tr>
+<tr>
+  <td>¿Qué <strong>valor numérico</strong> tomará?</td>
+  <td>Regresión supervisada</td>
+</tr>
+<tr>
+  <td>¿Hay <strong>grupos naturales</strong> sin etiquetas?</td>
+  <td>Clustering (no supervisado)</td>
+</tr>
+<tr>
+  <td>¿Puedo <strong>resumir</strong> muchas columnas?</td>
+  <td>Reducción de dimensionalidad (PCA…)</td>
+</tr>
+</tbody>
+</table>
+<h3>Por qué clasificación y no regresión</h3>
+<p>Es la decisión de diseño más importante del cuaderno, y podría haber ido al revés. Existe
+un candidato razonable a variable continua: <code>amorphous_fraction_blank</code>, la fracción de lo
+que dispersó la muestra que fue difusa en vez de picos de Bragg — un número entre 0 y 1
+que <em>parece</em> medir &quot;cuán cristalino&quot; es el material.</p>
+<p><strong>Se descartó por tres razones, en orden de peso:</strong></p>
+<ol>
+<li><strong>La variable continua no es fiable en sus extremos.</strong> Tiene un suelo de detección de
+~0,02 (notebook 05 §7.5): por debajo es ruido de línea base, no señal. Una regresión
+trataría la diferencia entre 0,005 y 0,015 como información real cuando ambos
+significan &quot;nada medible&quot;. Y la clase CRISTALINO vive entera en esa zona ciega.</li>
+<li><strong>La decisión del laboratorio es categórica.</strong> Nadie decide repetir una síntesis según
+si la fracción amorfa es 0,42 o 0,48; se decide según si aquello cristalizó, cristalizó
+a medias, o no cristalizó. <strong>El modelo debe predecir la decisión que se va a tomar.</strong></li>
+<li><strong>La verdad de referencia es un juicio humano categórico</strong>: tres clases, no un número.</li>
+</ol>
+<blockquote>
+<p><strong>Sobre las métricas.</strong> El <strong>MRE</strong>, el RMSE o el R² son de <strong>regresión</strong>: miden <em>cuánto</em>
+te alejas de un número. En clasificación no hay distancia: o aciertas la clase o no. Los
+equivalentes son <strong>F1 macro, MCC y exactitud equilibrada</strong>, explicados en §8.1.</p>
+</blockquote>
+<h3>Las tres clases</h3>
+<table>
+<thead>
+<tr>
+  <th>Clase</th>
+  <th>Qué significa físicamente</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>AMORFO</strong></td>
+  <td>Sólo halo difuso: no hay orden de largo alcance</td>
+</tr>
+<tr>
+  <td><strong>INCIPIENTE</strong></td>
+  <td>Picos débiles sobre un halo dominante: empezó a ordenarse</td>
+</tr>
+<tr>
+  <td><strong>CRISTALINO</strong></td>
+  <td>Picos de Bragg definidos</td>
+</tr>
+</tbody>
+</table>
+<p>Son <strong>ordinales</strong> (amorfo &lt; incipiente &lt; cristalino), y eso importará al leer los errores
+en §8.3.</p>
+<hr />
+<h1>§3. Requisitos de datos</h1>
+<blockquote>
+<p><em>Etapa 3 — Data Requirements. Qué haría falta idealmente, declarado ANTES de mirar qué
+hay. Al revés, uno acaba justificando los datos que tiene.</em></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+  <th>Bloque</th>
+  <th>Variables ideales</th>
+  <th>¿Disponible?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Metal</strong></td>
+  <td>Identidad, estado de oxidación, radio iónico, dureza, oxofilicidad</td>
+  <td>✅ Construido (§4.2)</td>
+</tr>
+<tr>
+  <td><strong>Linker</strong></td>
+  <td>Esqueleto, denticidad, longitud, estado de protección</td>
+  <td>✅ Construido (§4.2)</td>
+</tr>
+<tr>
+  <td><strong>Estequiometría</strong></td>
+  <td>[M], relación L/M</td>
+  <td>✅ En el Excel maestro</td>
+</tr>
+<tr>
+  <td><strong>Medio</strong></td>
+  <td>Composición del disolvente</td>
+  <td>✅ <strong>Completo tras corregir las unidades (§6.1)</strong></td>
+</tr>
+<tr>
+  <td></td>
+  <td><strong>pH</strong></td>
+  <td>❌ <strong>Nunca se registró</strong></td>
+</tr>
+<tr>
+  <td><strong>Modulador</strong></td>
+  <td>Cuánto, y de qué tipo (acidez, polaridad)</td>
+  <td>✅ Tras las correcciones de §6</td>
+</tr>
+<tr>
+  <td><strong>Proceso</strong></td>
+  <td>Temperatura, tiempo, rampas</td>
+  <td>✅ En el Excel maestro</td>
+</tr>
+<tr>
+  <td></td>
+  <td><strong>Presión autógena</strong></td>
+  <td>❌ No medida</td>
+</tr>
+<tr>
+  <td><strong>Resultado</strong></td>
+  <td>Clase de cristalinidad</td>
+  <td>✅ Etiquetado a mano</td>
+</tr>
+</tbody>
+</table>
+<h3>Los huecos, declarados por adelantado</h3>
+<ul>
+<li><strong>El pH no está.</strong> En química de fosfonatos es probablemente <strong>la variable ausente más
+importante</strong>: gobierna el grado de desprotonación del linker y por tanto su capacidad de
+coordinar. Todo lo que sigue se hace sabiendo que falta.</li>
+<li><strong>La presión autógena tampoco</strong>, aunque es en parte función de temperatura, volumen y
+disolvente, que sí están.</li>
+</ul>
+<p>Declararlos ahora tiene una consecuencia concreta: cuando en §8 una variable de proceso
+salga poco importante, habrá que distinguir entre <em>&quot;no importa&quot;</em> y <em>&quot;no lo medimos&quot;</em>.</p>
+<hr />
+<h1>§4. Recolección de datos</h1>
+<blockquote>
+<p><em>Etapa 4 — Data Collection. De dónde sale cada número, y qué hubo que construir porque
+no existía.</em></p>
+</blockquote>
+<h3>4.1 El ciclo del dato en ALCheMy, de la libreta al modelo</h3>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph G1[&quot;(1) Fuentes crudas&quot;]
+        A1[&quot;Excel maestro de síntesis&lt;br/&gt;(5 años de libretas)&quot;]
+        A2[&quot;~5.700 ficheros de instrumento&lt;br/&gt;(.xrdml .brml .txt .csv .xls .jpg)&quot;]
+    end
+    subgraph G2[&quot;(2) Ingesta&quot;]
+        B1[&quot;notebook 01: renombrado, ingeniería estequiométrica,&lt;br/&gt;parseo de rampas térmicas, clave natural MD5, UPSERT&quot;]
+        B2[&quot;parsers deterministas&lt;br/&gt;(contrato común: header_metadata + raw_data)&quot;]
+    end
+    subgraph G3[&quot;(3) Almacén&quot;]
+        C1[(&quot;synthesis_experiments&lt;br/&gt;1 fila / síntesis&quot;)]
+        C2[(&quot;characterization_measurements&lt;br/&gt;1 fila / medida, JSONB + GIN&quot;)]
+    end
+    D1[&quot;(4) notebook 05: arPLS, separación de halo, detección de picos&quot;]
+    D2[(&quot;pxrd_descriptors&quot;)]
+    D3[&quot;app/pxrd_labeler.py (juicio humano)&quot;]
+    D4&gt;&quot;pxrd_labels — LA ETIQUETA (Y)&quot;]
+    E1[&quot;(5) element_properties + ion_properties + linker_properties&quot;]
+    E2[(&quot;v_ml_features — LAS CARACTERÍSTICAS (X)&quot;)]
+    F1[&quot;(6) Este cuaderno: §5 EDA → §6 ETL → §7 modelos → §8 evaluación&quot;]
+    F2{{&quot;(7) Revisión experta&lt;br/&gt;devuelve el trabajo a §3 y §6&quot;}}
+
+    A1 --&gt; B1 --&gt; C1
+    A2 --&gt; B2 --&gt; C2
+    C2 --&gt;|FK| C1
+    C2 --&gt; D1 --&gt; D2 --&gt; D3 --&gt; D4
+    C1 --&gt; E1 --&gt; E2
+    C1 --&gt; E2
+    D4 --&gt; F1
+    E2 --&gt; F1
+    F1 --&gt; F2
+    F2 -.-&gt;|corrige| B1
+    F2 -.-&gt;|corrige| E2
+
+    classDef raw fill:#ECEFF1,stroke:#78909C,color:#263238
+    classDef proc fill:#F1F8E9,stroke:#7CB342,color:#33691E
+    classDef store fill:#E3F2FD,stroke:#1E88E5,color:#0D47A1
+    classDef target fill:#FFF3E0,stroke:#FB8C00,color:#E65100
+    classDef human fill:#FCE4EC,stroke:#D81B60,color:#880E4F
+    class A1,A2 raw
+    class B1,B2,D1,D3 proc
+    class C1,C2,D2,E1 store
+    class D4,E2 target
+    class F2 human
+</code></pre>
+<p><strong>Las flechas de vuelta no son decorativas.</strong> Son lo que ha ocurrido dos veces ya.</p>
+<h3>4.2 Lo que hubo que construir: la química como número</h3>
+<p>El Excel guarda el metal como <strong>texto</strong> (<code>&quot;Zr&quot;</code>) y el linker como <strong>texto</strong> (<code>&quot;LIG-D&quot;</code>).
+Un modelo no puede hacer nada con eso salvo memorizar nombres.</p>
+<p>La alternativa fácil sería <em>one-hot</em>: una columna por metal. Se descartó, y la razón es
+química: <strong>el one-hot dice que el Zr y el Hf son tan distintos entre sí como el Zr y el
+Ca</strong>. Y no lo son — son casi gemelos por la contracción lantánida. Con one-hot el modelo
+no puede transferir nada de lo aprendido con Zr al Hf, y menos a un metal nuevo.</p>
+<table>
+<thead>
+<tr>
+  <th>Tabla</th>
+  <th>Qué aporta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>element_properties</code></td>
+  <td>Electronegatividad, dureza, polarizabilidad, oxofilicidad</td>
+</tr>
+<tr>
+  <td><code>ion_properties</code></td>
+  <td>Radio iónico y carga/radio <strong>por estado de oxidación</strong> (Shannon, CN=6)</td>
+</tr>
+<tr>
+  <td><code>metal_source_oxidation_state</code></td>
+  <td>Qué carga implica cada fórmula de sal precursora</td>
+</tr>
+<tr>
+  <td><code>linker_properties</code></td>
+  <td>Esqueleto, protección, denticidad, distancia entre donores</td>
+</tr>
+<tr>
+  <td><code>property_sources</code></td>
+  <td>La cita y el DOI de cada propiedad</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Dos decisiones que merecen argumentarse:</strong></p>
+<ul>
+<li><strong>El estado de oxidación sale de la fórmula del precursor</strong>, no de &quot;lo típico del
+elemento&quot;. El hierro entra como Fe(II) o Fe(III), el cerio como Ce(III) o Ce(IV), y eso
+cambia radio y densidad de carga.</li>
+<li><strong>Pocos descriptores de linker, elegidos a mano.</strong> RDKit ofrece más de 200. Hay
+<strong>4 linkers</strong>. Más descriptores que moléculas es memorización, no señal.</li>
+</ul>
+<hr />
+<h1>§5. Comprensión de los datos (EDA)</h1>
+<blockquote>
+<p><em>Etapa 5 — Data Understanding. Mirar los datos antes de modelar. Es la etapa que más
+devuelve por hora invertida, y la que más se salta.</em></p>
+</blockquote>
+<p>Antes de cargar nada, <strong>la decisión que define el conjunto</strong>.</p>
+<h3>5.0 Qué síntesis entran: el factor de confusión que casi arruina el análisis</h3>
+<p>El histórico tiene tres formas de sintetizar, y la primera versión de este cuaderno las
+mezcló sin mirarlas:</p>
+<table>
+<thead>
+<tr>
+  <th>Tipo</th>
+  <th style="text-align:right">AMORFO</th>
+  <th style="text-align:right">CRISTALINO</th>
+  <th style="text-align:right">INCIPIENTE</th>
+  <th style="text-align:right"><strong>% cristalino</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>HTS</strong> — síntesis en combinatoria</td>
+  <td style="text-align:right">401</td>
+  <td style="text-align:right">169</td>
+  <td style="text-align:right">971</td>
+  <td style="text-align:right"><strong>11,0 %</strong></td>
+</tr>
+<tr>
+  <td><strong>ST</strong> — solvotermal estándar</td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">71</td>
+  <td style="text-align:right">15</td>
+  <td style="text-align:right"><strong>79,8 %</strong></td>
+</tr>
+<tr>
+  <td><strong>MW</strong> — microondas</td>
+  <td style="text-align:right">0</td>
+  <td style="text-align:right">90</td>
+  <td style="text-align:right">4</td>
+  <td style="text-align:right"><strong>95,7 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cero muestras amorfas en microondas.</strong> Un modelo entrenado sobre los tres mezclados
+tiene un atajo enorme: si detecta —aunque sea por el volumen del reactor o el año— que una
+síntesis es de microondas, canta CRISTALINO y acierta el 96 % de las veces.</p>
+<p><strong>Y no es un efecto del método: es sesgo de selección.</strong> La combinatoria es <em>exploratoria</em>
+y por eso está llena de fracasos; la estándar y el microondas se usan <strong>cuando ya sabes
+que la receta funciona</strong>. La variable &quot;tipo de síntesis&quot; codifica en buena parte
+<em>&quot;¿sabías ya que esto iba a salir?&quot;</em>. Predecir eso no es química, es leer el historial.</p>
+<p>Hay además un <strong>argumento térmico independiente</strong>: el microondas calienta de forma
+localizada y rápida, favoreciendo fases cinéticas frente a termodinámicas. La relación
+entre condiciones y producto <strong>no es la misma función</strong> en microondas que en estufa.</p>
+<blockquote>
+<p><strong>Se entrena únicamente con síntesis en combinatoria (HTS).</strong> Es el único subconjunto
+sin sesgo de éxito, es aquel sobre el que se quiere predecir —la próxima placa es una
+placa HTS— y es un único régimen térmico. <strong>El precio se dice:</strong> se pierden 90 de los
+330 casos cristalinos. Un F1 más bajo y honesto vale más que uno alto que en realidad
+detecta el método de síntesis.</p>
+</blockquote>
+<h3>5.1 La consulta: qué se pide y qué se excluye, con su porqué</h3>
+<table>
+<thead>
+<tr>
+  <th>Filtro</th>
+  <th>Por qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>synthesis_type = 'HTS'</code></td>
+  <td>§5.0: el resto arrastra sesgo de selección y otra física térmica</td>
+</tr>
+<tr>
+  <td><code>label_value &lt;&gt; 'SIN_MUESTRA'</code></td>
+  <td>No hay material que clasificar: no es una clase, es un no-dato</td>
+</tr>
+<tr>
+  <td><code>ml_include = 'NO'</code> ausente</td>
+  <td>Excluye lo que la revisión experta marcó (duplicados, óxidos) — §6.3</td>
+</tr>
+<tr>
+  <td><code>MEZCLA → CRISTALINO</code></td>
+  <td>Una mezcla contiene fase cristalina; para la pregunta de §1, cristalizó</td>
+</tr>
+<tr>
+  <td><code>linker &lt;&gt; 'Tannic acid'</code></td>
+  <td>§6.4 — se argumenta allí, con su medida</td>
+</tr>
+</tbody>
+</table>
+<p><strong>1 fila = 1 muestra física.</strong> La comprobación <code>assert</code> no es decorativa: en la primera
+versión del cuaderno esta igualdad <strong>fallaba</strong> (43 muestras tenían dos medidas
+etiquetadas), y ese fallo se convirtió en el trabajo de §6.3.</p>
+<h3>5.2 Perfilado: qué tipo de cosa es cada columna</h3>
+<p>El primer paso de todo EDA es aburrido y no se puede saltar: para cada columna, qué tipo
+tiene, cuántos ausentes, cuántos valores distintos. Es donde aparecen los problemas que
+luego cuestan horas.</p>
+<h3>5.3 Los valores ausentes: quién falta, y por qué la mediana no es la respuesta</h3>
+<p>«Un 9 % de ausentes» es una cifra tranquilizadora que oculta problemas distintos. Un
+ausente puede significar <em>«no se midió»</em>, <em>«no existe»</em> o <em>«el texto no casó»</em>, y sólo el
+primero se parece a lo que la imputación asume.</p>
+<figure><img src="/figures/nb06-01.png" alt="Figura 1, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 1, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>Cinco causas distintas, cinco arreglos distintos.</strong></p>
+<table>
+<thead>
+<tr>
+  <th>Propiedad</th>
+  <th>Quién</th>
+  <th>Por qué falta</th>
+  <th>Qué se hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>electronegativity_allen</code></td>
+  <td><strong>Ce, La, Dy, Nd</strong></td>
+  <td>La escala de Allen es espectroscópica y <strong>no está definida para lantánidos</strong></td>
+  <td><strong>Se retira la columna.</strong> No es un hueco: es que no existe. Pauling cubre los 20 metales</td>
+</tr>
+<tr>
+  <td><code>absolute_hardness_ev</code></td>
+  <td><strong>Mg, Zn</strong></td>
+  <td>η = (EI−AE)/2, y no hay afinidad electrónica: sus capas llenas <strong>no fijan un electrón extra</strong></td>
+  <td>Se imputa, sabiendo que es imperfecto</td>
+</tr>
+<tr>
+  <td><code>oxophilicity_kepp</code></td>
+  <td><strong>Ga</strong></td>
+  <td><strong>No aparece</strong> en la tabla del artículo original</td>
+  <td>Nulo permanente y documentado</td>
+</tr>
+<tr>
+  <td><code>mod_carbox_mean_pka</code></td>
+  <td>~69 % de las filas</td>
+  <td><strong>No es un fallo:</strong> esas síntesis no llevan modulador carboxílico, y &quot;sin ácido&quot; no tiene pKa</td>
+  <td>Se imputa; marcar el ausente se probó y no aporta</td>
+</tr>
+<tr>
+  <td><code>frac_*</code> (medio)</td>
+  <td><strong>0,2 %</strong> de las filas</td>
+  <td>Tras corregir las unidades, sólo quedan 3 filas donde el volumen no cuadra</td>
+  <td>NULL, no 0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>La última fila es la novedad de esta versión.</strong> Antes era el 18 % y se explicaba como
+«el registro guardó el volumen total pero no su desglose». <strong>Era falso</strong>: el desglose
+estaba, pero el agua de las disoluciones diluidas se había dividido entre 1.000 al
+ingerirla. Corregidas las unidades, el hueco desaparece casi por completo.</p>
+<p>Queda intacta la lección de fondo, que ahora se aplica sólo a 3 filas: <strong>poner un 0 donde
+el dato es desconocido no es neutro, es afirmar algo falso.</strong> Decirle al modelo &quot;esta
+síntesis no llevaba metanol&quot; cuando la verdad es &quot;no consta cuánto llevaba&quot; es meterle una
+mentira con apariencia de dato.</p>
+<h3>5.4 La variable objetivo: cuánto desequilibrio hay</h3>
+<p>El desequilibrio condiciona la métrica (§8.1), la validación y hasta qué modelos tienen
+sentido.</p>
+<figure><img src="/figures/nb06-02.png" alt="Figura 2, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 2, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>Ese último número es la trampa que hay que tener presente todo el cuaderno.</strong> Un
+modelo que no aprende nada acierta ~64 % de las veces. Reportar &quot;64 % de exactitud&quot;
+sonaría a que hace algo, y no haría nada.</p>
+<p>El desequilibrio es <strong>5,8:1</strong>, más acusado que antes de quedarnos sólo con HTS, porque lo
+que se retiró era casi todo cristalino. Se compensa <strong>ponderando las clases</strong>
+(<code>class_weight='balanced'</code>), más simple que remuestrear y sin inventar muestras.</p>
+<p><strong>(b)</strong> ya adelanta algo importante: la fracción de cristalino <strong>cambia mucho entre
+metales</strong>. Hay señal química real ahí.</p>
+<h3>5.5 Distribución de las variables numéricas</h3>
+<p>Con ~35 variables numéricas, mirarlas de una en una no es viable. La rejilla enseña la
+forma de cada una: cuáles son continuas, cuáles son <strong>discretas disfrazadas</strong>, cuáles
+están sesgadas.</p>
+<figure><img src="/figures/nb06-03.png" alt="Figura 3, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 3, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>Dos cosas que condicionan todo lo demás:</strong></p>
+<ol>
+<li><p><strong>Las variables de proceso son discretas de facto</strong>: <code>temp_target_c</code> tiene ~13 valores
+distintos, <code>time_hours</code> ~9, <code>lm_ratio</code> ~9. No es un defecto: refleja cómo se diseña la
+síntesis en combinatoria —se fija una rejilla y se barre composición—. Pero tiene una
+consecuencia que reaparece en §8.4: <strong>una variable que apenas se varió no puede
+explicar mucha varianza, por importante que sea químicamente.</strong></p>
+</li>
+<li><p><strong><code>reactor_volume_ml</code> tiene UN solo valor</strong> (2,5 mL). Es constante en este subconjunto:
+varianza cero. No aporta nada y aparecerá en blanco en el mapa de correlación de §5.6 —
+no porque falten datos, sino porque <strong>una correlación con varianza cero no está
+definida</strong>. Como <code>fill_fraction = total_volume_ml / reactor_volume_ml</code>, esas dos
+columnas son <strong>la misma variable reescalada</strong>: colinealidad perfecta. Se retiran ambas
+redundancias en §6.5.</p>
+</li>
+</ol>
+<p>(<code>lm_ratio</code> es la <strong>relación molar ligando/metal teórica</strong>, la columna <code>L/M</code> del Excel:
+rango 0,1–1,0, mediana 0,50. Es de las pocas variables que se fijan al pesar, así que es
+<strong>accionable</strong> en el laboratorio.)</p>
+<h3>5.6 Correlación: dos preguntas distintas, y sólo una se suele dibujar</h3>
+<p>El mapa de correlación enfrenta cada variable con todas las demás y colorea la fuerza de
+la relación <strong>lineal</strong>. Conviene ser preciso sobre qué se busca, porque es fácil leerlo al
+revés.</p>
+<p><strong>(1) ¿Se mueven juntas dos variables de <em>entrada</em>?</strong> Lo que se busca <strong>no es que la
+correlación sea nula</strong>: es <em>saber dónde no lo es</em>. Una correlación alta significa que dos
+columnas aportan casi la misma información, con tres consecuencias:</p>
+<ul>
+<li><strong>Sobre la interpretación</strong> (la más importante aquí). Si el radio iónico y la relación
+carga/radio van casi siempre juntas, el modelo repartirá el mérito entre ambas de forma
+arbitraria. Leer entonces «esta variable importa poco» sería un error: importa, pero su
+gemela se lleva el crédito. Por eso §8.4 interpreta <strong>por bloques químicos</strong>.</li>
+<li><strong>Sobre los modelos lineales.</strong> La regresión logística se vuelve inestable con variables
+redundantes: coeficientes enormes y de signo caprichoso.</li>
+<li><strong>Sobre las fugas.</strong> Correlación alta entre dos variables sin relación aparente suele
+delatar que una se derivó de la otra sin querer. <strong>Aquí ocurre</strong>: <code>fill_fraction</code> y
+<code>total_volume_ml</code> correlacionan exactamente a 1, porque el volumen de reactor es
+constante (§5.5).</li>
+</ul>
+<p>Un mapa con bloques rojos <strong>no es un problema</strong>: es información sobre la estructura del
+experimento. Aquí los bloques rojos son, sobre todo, propiedades del mismo metal —
+correlacionadas <strong>por física</strong>, no por error.</p>
+<blockquote>
+<p><strong>Las casillas en blanco no son datos que falten.</strong> Son variables sin varianza en este
+subconjunto: <code>reactor_volume_ml</code> vale siempre 2,5 mL, y una correlación con varianza
+cero es 0/0, indefinida.</p>
+</blockquote>
+<p><strong>(2) ¿Se relaciona cada variable con el <em>objetivo</em>?</strong> <em>Esto</em> sí es lo que uno quiere alto
+— es literalmente la señal que el modelo va a explotar. Pearson no sirve: el objetivo es
+categórico de tres niveles. Los equivalentes correctos son la <strong>razón de correlación η²</strong>
+(numérica frente a categórica) y la <strong>V de Cramér</strong> (categórica frente a categórica).</p>
+<figure><img src="/figures/nb06-04.png" alt="Figura 4, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 4, generada por el cuaderno 06.</figcaption></figure>
+<figure><img src="/figures/nb06-05.png" alt="Figura 5, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 5, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>Cómo se lee (b).</strong> η² responde: <em>de toda la variación de esta variable, ¿qué fracción
+se explica sabiendo la clase?</em> Cero significa que la variable es idéntica en amorfos y
+cristalinos — inútil por sí sola.</p>
+<blockquote>
+<p>⚠️ <strong>Correlación no es causalidad.</strong> Estos gráficos miden si dos cosas se mueven juntas,
+nada más. Que la temperatura aparezca asociada a la cristalinidad <strong>no demuestra</strong> que
+subirla cause cristalización: pueden compartir una causa común (las placas a más
+temperatura usaban además otro linker), o ser coincidencia del histórico. Establecer
+causalidad exige <strong>intervenir</strong> — cambiar sólo la temperatura y ver qué pasa —, que es
+precisamente lo que el modelo <em>sugiere dónde hacer</em>, no lo que demuestra.</p>
+</blockquote>
+<h3>5.7 ¿Separan las variables las clases? Vista bivariante</h3>
+<p>La asociación de §5.6 da un número por variable. Ahora la forma: <strong>cómo</strong> separa cada
+una.</p>
+<figure><img src="/figures/nb06-06.png" alt="Figura 6, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 6, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>Ninguna variable separa las clases por sí sola.</strong> Las cajas se solapan en todas. Eso
+no es malo: es la definición de un problema <strong>multivariante</strong>, y la razón por la que hace
+falta un modelo en vez de un umbral. Si una sola variable separase limpiamente, no haría
+falta aprendizaje automático.</p>
+<h3>5.8 Estructura oculta: por qué una partición aleatoria mentiría</h3>
+<p>La subsección más importante del EDA, y la que un análisis apresurado se salta. <strong>Las
+filas de este conjunto no son independientes entre sí.</strong></p>
+<figure><img src="/figures/nb06-07.png" alt="Figura 7, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 7, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>(a)</strong> Las muestras vienen en <strong>placas</strong>: lotes preparados el mismo día, con el mismo
+linker, la misma rampa y a menudo el mismo metal, barriendo una variable.</p>
+<p><strong>(b)</strong> Y las placas son <strong>internamente homogéneas</strong>: conocer una muestra de una placa te
+dice casi el resultado de sus vecinas.</p>
+<p><strong>La consecuencia es seria.</strong> Una partición aleatoria pondría muestras de la <em>misma placa</em>
+en entrenamiento y en prueba. El modelo no tendría que aprender química: le bastaría
+reconocer la placa. <strong>El resultado saldría inflado y sería falso.</strong> Por eso §7.2 valida con
+<code>StratifiedGroupKFold</code> agrupando por placa.</p>
+<p><strong>(c)</strong> Además hay <strong>deriva temporal</strong>. Los recuentos van anotados sobre cada barra a
+propósito: una proporción sin su tamaño de muestra engaña.</p>
+<h3>5.9 Un vistazo global: proyección PCA</h3>
+<p>Antes de modelar, una última comprobación visual. <strong>Es diagnóstico, no un modelo.</strong></p>
+<h4>Cómo se construye, en tres pasos</h4>
+<ol>
+<li><strong>Se estandarizan</strong> las variables numéricas (media 0, desviación 1) tras imputar. Sin
+esto, <code>time_hours</code> (hasta 96) aplastaría a <code>frac_h2o</code> (0–1) sólo por la escala de sus
+unidades, y el resultado mediría la elección de unidades en lugar de la química.</li>
+<li><strong>Se busca la dirección de máxima varianza</strong> en ese espacio. Esa dirección es una
+<strong>combinación lineal de todas las variables</strong> —no un subconjunto— y es <strong>CP1</strong>. Luego la
+de máxima varianza restante <strong>perpendicular</strong> a la anterior: <strong>CP2</strong>.</li>
+<li><strong>Se proyectan</strong> las muestras sobre esas componentes para poder dibujarlas.</li>
+</ol>
+<p><strong>Nada de esto &quot;decide qué variables colapsar&quot;</strong>: el PCA las usa todas y <strong>no conoce las
+clases</strong> — es no supervisado. Los colores se pintan <em>encima</em>, después. Por eso es un
+diagnóstico honesto: si las clases aparecen separadas, es estructura real.</p>
+<figure><img src="/figures/nb06-08.png" alt="Figura 8, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 8, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>(a)</strong> Hay estructura, pero <strong>las clases se solapan mucho</strong>: el problema es difícil y
+multivariante. El símbolo enseña que los esqueletos ocupan regiones distintas — la química
+del linker es parte importante de lo que separa el espacio.</p>
+<p><strong>(b)</strong> Añadir CP3 no revela separación oculta. Es un <strong>resultado negativo útil</strong>: no hay
+un plano que separe las clases, y eso ya adelanta que ningún modelo lineal va a lucirse.</p>
+<p><strong>(c)</strong> Hacen falta bastantes componentes para el 90 % de la varianza: la información está
+<strong>repartida</strong>. Reducir dimensionalidad antes de modelar <strong>tiraría señal</strong>, así que <strong>no se
+usa PCA en el pipeline final</strong> — sólo aquí, como diagnóstico.</p>
+<hr />
+<h1>§6. Preparación de los datos (ETL)</h1>
+<blockquote>
+<p><em>Etapa 6 — Data Preparation. La etapa más larga de cualquier proyecto real, y la que
+nadie enseña. Aquí es, además, donde volvió el trabajo dos veces.</em></p>
+</blockquote>
+<p>Todo lo que sigue son correcciones sobre la base, hechas como parte de este análisis. No
+son un efecto colateral: <strong>son parte del rastro de razonamiento</strong>.</p>
+<h3>6.1 El problema de las unidades: cómo se encontró y cómo se demostró</h3>
+<p>Es la corrección de esta versión, y la más instructiva de todo el proyecto porque
+<strong>ninguna comprobación automática podía detectarla</strong>.</p>
+<p><strong>El síntoma.</strong> En un 18 % de las síntesis los volúmenes anotados no sumaban el volumen
+total declarado. La versión anterior lo interpretó como registro incompleto y marcó esas
+fracciones como desconocidas.</p>
+<p><strong>La objeción que lo desmontó.</strong> SMP-0035 declara 15 mL de reacción y la base decía que
+llevaba 15 <strong>µL</strong> de agua. Eso no es un registro incompleto: es un imposible físico. Si
+una síntesis de 15 mL tiene 15 µL de agua, el error está en la lectura, no en el dato.</p>
+<p><strong>La prueba.</strong> Está en el propio Excel, en la fórmula de su columna <code>V total</code>:</p>
+<pre><code>V total = SUMA(Q:AB) + SUMA(AE:AU)/1000
+</code></pre>
+<p>Ese <code>/1000</code> aplicado <strong>sólo al segundo bloque</strong> demuestra que el primero está en
+mililitros. La fórmula reproduce el valor almacenado en <strong>2.162 de 2.172 filas (99,54 %)</strong>.</p>
+<table>
+<thead>
+<tr>
+  <th>Bloque</th>
+  <th>Columnas</th>
+  <th>Unidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Q:AB</strong></td>
+  <td><strong>HCl 0,6M · HCl 3M · HF 3M</strong> · H₂O · MeOH · EtOH · 1-PrOH · DMF · DEF · AcOH gl · H₂PO₄ · NH₄OH</td>
+  <td><strong>mL</strong></td>
+</tr>
+<tr>
+  <td><strong>AE:AU</strong></td>
+  <td>Fórmico · Acético · Propiónico · TEA · CF₃SO₃H · TFA · HCl 1M/5M/12M · KOH 10M · HF 3M (2ª) · MeO₃S…</td>
+  <td><strong>µL</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Y tiene sentido de laboratorio: las disoluciones <strong>diluidas</strong> se dosifican en mililitros y
+<strong>hacen de disolvente</strong>; las concentradas y los líquidos puros van en microlitros.</p>
+<p><strong>El daño.</strong> El cuaderno 01 dividía entre 1.000 <strong>toda</strong> columna de aditivo. Consecuencias:</p>
+<ol>
+<li><strong>El agua de la dilución desaparecía.</strong> En SMP-0019, 10 mL de HCl 0,6 M quedaron en
+0,010 mL. De ahí el 18 % de volúmenes que &quot;no cuadraban&quot;.</li>
+<li><code>hcl_active_mmol</code> y <code>hf_active_mmol</code> quedaban <strong>1.000 veces por debajo</strong> en las filas
+que usan esas tres columnas.</li>
+<li>Tres columnas del bloque en mL (<strong>AcOH glacial, H₂PO₄, NH₄OH</strong>) se mapeaban en el
+cuaderno 01 pero <strong>nunca se crearon en la tabla</strong>: ese volumen se perdía.</li>
+<li>La segunda columna <code>HF (3M)</code> (70 filas) y la segunda <code>TFA</code> (6) no se mapeaban en
+absoluto, porque pandas las renombra a <code>.1</code> al estar repetido el nombre.</li>
+</ol>
+<p><strong>Lo que NO estaba mal:</strong> los moduladores orgánicos puros (fórmico, acético, propiónico,
+TFA, tríflico, trietilamina, metanosulfónico) <strong>sí</strong> están en µL, así que la corrección
+anterior sobre ellos sigue siendo válida.</p>
+<p><strong>El arreglo</strong>, en <code>src/fix_volume_units_2026_09.py</code> y <code>scripts/ddl_ml_features_v3.sql</code>:
+recalcular cada columna en su unidad correcta, recuperar las tres columnas perdidas y
+sumar las duplicadas. El ácido acético glacial cuenta <strong>a la vez</strong> como disolvente y como
+modulador carboxílico, porque es las dos cosas.</p>
+<p><strong>La composición del medio cierra a ~1,000 y el desglose está completo en el 99,8 % de
+las filas de entrenamiento.</strong> Es la comprobación que demuestra que la corrección funciona,
+y el tipo de comprobación que las versiones anteriores no tenían — que es exactamente por
+qué el fallo sobrevivió tanto tiempo.</p>
+<blockquote>
+<p><strong>La lección, que vale para todo el proyecto.</strong> Ninguna métrica se quejó nunca. La
+validación cruzada funcionaba, el modelo daba números razonables y ningún valor era
+imposible <em>para un ordenador</em>. Sólo era imposible <strong>para un químico</strong>: 15 µL de agua en
+una síntesis de 15 mL. Las comprobaciones automáticas verifican <em>consistencia interna</em>,
+no <em>sentido físico</em>. Para lo segundo hace falta alguien que sepa cuánto es un mililitro.</p>
+</blockquote>
+<h3>6.2 Los defectos corregidos hasta ahora</h3>
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Defecto</th>
+  <th>Cómo se detectó</th>
+  <th>Vuelta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>Moduladores líquidos puros en <strong>µmol etiquetados como mmol</strong> (×1000)</td>
+  <td>La mediana de fórmico daba 54 g en un reactor de 2,5 mL</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Al sumar mmol con µmol, <strong>el HCl quedaba borrado</strong></td>
+  <td>Consecuencia de (1)</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><strong>Tipo de síntesis ausente</strong> como variable, siendo el mayor factor de confusión</td>
+  <td>MW 95,7 % cristalino vs HTS 11,0 %</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><strong>1-propanol y DEF fuera</strong> de la tabla de características</td>
+  <td>Las fracciones sumaban 0,789</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>El <strong>modulador líquido es a veces el disolvente</strong></td>
+  <td>SMP-0013: 1,35 mL de propiónico de 1,5 mL totales</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><strong>HF agrupado con HCl</strong> pese a su papel mineralizante</td>
+  <td>Argumento químico</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td>22 filas sin radio iónico por un <strong>espacio duro (U+00A0)</strong></td>
+  <td><code>MgCl2 · 6H2O</code> no casaba</td>
+  <td>2ª</td>
+</tr>
+<tr>
+  <td><strong>8</strong></td>
+  <td><strong>Las disoluciones diluidas están en mL, no en µL</strong></td>
+  <td>15 µL de agua en una síntesis de 15 mL</td>
+  <td><strong>3ª</strong></td>
+</tr>
+<tr>
+  <td><strong>9</strong></td>
+  <td><strong>AcOH glacial, H₂PO₄ y NH₄OH</strong> nunca llegaron a la tabla</td>
+  <td>Al cuadrar el volumen</td>
+  <td><strong>3ª</strong></td>
+</tr>
+<tr>
+  <td><strong>10</strong></td>
+  <td>Segunda columna de <strong>HF y TFA</strong> sin mapear</td>
+  <td>Nombres repetidos en el Excel</td>
+  <td><strong>3ª</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>6.3 Unicidad, duplicados y óxidos: exclusión como etiqueta, nunca como borrado</h3>
+<p>El EDA de la primera versión destapó que contar <em>filas</em> daba más que contar <code>sample_code</code>
+distintos: <strong>43 muestras tenían más de una medida PXRD etiquetada por separado</strong> (una
+recién sacada y otra lavada, un refinamiento…). Dejarlas habría metido la misma muestra
+física varias veces — el mismo problema de fuga de §5.8, pero a nivel de muestra.</p>
+<p>Se revisaron las 43 una a una en <code>app/pxrd_explorer.py</code>. Y con el mismo mecanismo se
+excluyeron <strong>70 medidas AMORFO con reflexiones intensas de óxido</strong>: la revisión experta
+confirmó que meterlas como &quot;amorfo&quot; contaminaría la clase, porque el difractograma muestra
+cristalinidad — de un óxido que no es el producto buscado.</p>
+<p><strong>Se marcaron, no se borraron.</strong> Las etiquetas descartadas son juicio humano real sobre un
+fichero real, así que en vez de eliminarlas se escribió una etiqueta nueva
+<code>ml_include = 'NO'</code>. La exclusión es <strong>reversible y auditada</strong>. Es una idea que merece
+generalizarse: <strong>en un almacén de datos científicos, borrar destruye evidencia; etiquetar
+la conserva.</strong></p>
+<h3>6.4 El ácido tánico: una decisión química, confirmada con una medida</h3>
+<p>24 muestras usaban <strong>ácido tánico</strong>, un polifenol. Es la <strong>única química no fosfonato</strong> del
+histórico, y su denticidad no está bien definida (~25 OH fenólicos: no hay un número de
+&quot;dientes&quot; con sentido).</p>
+<p><strong>El argumento para excluirlas es químico y va primero:</strong> 24 muestras no bastan para que
+un modelo aprenda una familia química distinta, y su presencia obliga a los descriptores de
+linker a describir dos cosas incompatibles a la vez. La medida lo confirmó: retirarlas
+subía el F1 macro de 0,495 a 0,527.</p>
+<blockquote>
+<p>⚠️ <strong>Cautela metodológica.</strong> Elegir qué datos quitar <em>porque sube la métrica</em> es una
+forma de hacer trampa: siempre se puede subir el número quitando los casos difíciles.
+Aquí el orden fue el correcto — <strong>primero el argumento químico, después la
+comprobación</strong> — y por eso la exclusión es legítima.</p>
+</blockquote>
+<h3>6.5 Variables que se retiran, y por qué</h3>
+<table>
+<thead>
+<tr>
+  <th>Variable</th>
+  <th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>electronegativity_allen</code></td>
+  <td>La escala <strong>no está definida</strong> para lantánidos; Pauling cubre los 20 metales</td>
+</tr>
+<tr>
+  <td><code>reactor_volume_ml</code></td>
+  <td><strong>Constante</strong> en HTS (2,5 mL): varianza cero, no puede aportar nada</td>
+</tr>
+<tr>
+  <td><code>fill_fraction</code></td>
+  <td>Al ser el reactor constante, es <strong>exactamente</strong> <code>total_volume_ml / 2,5</code>: colinealidad perfecta</td>
+</tr>
+</tbody>
+</table>
+<p>Las dos últimas son nuevas en esta versión. En las anteriores entraron al modelo <strong>por
+descuido</strong>: la lista de exclusiones era explícita y una constante no dispara ninguna
+alarma. No hacían daño —un árbol nunca elige un corte sobre una constante— pero tampoco
+podían aportar, y ocupaban sitio en el análisis de importancia.</p>
+<h3>6.6 Imputación: probada, no supuesta</h3>
+<p>Se imputa por la <strong>mediana</strong> las numéricas y por la <strong>moda</strong> las categóricas, siempre
+<strong>dentro del pipeline de validación cruzada</strong> — nunca antes.</p>
+<blockquote>
+<p>Esto último no es un detalle. Imputar con la mediana de <em>todo</em> el conjunto antes de
+partir filtra información del conjunto de prueba al de entrenamiento: la mediana del
+test habría participado en el cálculo. Es una <strong>fuga sutil</strong> que infla el resultado sin
+que nada falle. Dentro del pipeline, cada pliegue calcula su mediana sólo con sus datos.</p>
+</blockquote>
+<p><strong>Se probó la alternativa</strong> de marcar explícitamente los ausentes (<code>add_indicator</code>):</p>
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th style="text-align:right">F1 macro</th>
+  <th style="text-align:right">MCC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Random Forest, imputación simple</td>
+  <td style="text-align:right">0,496</td>
+  <td style="text-align:right">0,274</td>
+</tr>
+<tr>
+  <td>Random Forest, <strong>marcando el ausente</strong></td>
+  <td style="text-align:right">0,495</td>
+  <td style="text-align:right">0,266</td>
+</tr>
+</tbody>
+</table>
+<p><strong>No aporta nada</strong>, así que se queda la versión simple. Merece registrarse justamente por
+eso: la decisión está <em>comprobada</em>, no supuesta, y saber que la ausencia <strong>no</strong> es
+informativa es en sí un resultado.</p>
+<hr />
+<h1>§7. Modelado</h1>
+<blockquote>
+<p><em>Etapa 7 — Modeling. Con el problema bien planteado y los datos preparados, esta etapa es
+sorprendentemente corta. Ese es el orden correcto.</em></p>
+</blockquote>
+<h3>7.1 El diseño experimental</h3>
+<p><strong>Se prueban 10 modelos, no uno.</strong> No por indecisión: las familias de modelos asumen cosas
+distintas sobre la forma de la frontera entre clases, y con un problema nuevo no se sabe
+de antemano cuál asume lo correcto. Comparar es más honesto que apostar.</p>
+<table>
+<thead>
+<tr>
+  <th>Modelo</th>
+  <th>Qué asume / cómo decide</th>
+  <th>Por qué está aquí</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Baseline (mayoritaria)</strong></td>
+  <td>Nada: siempre la clase más frecuente</td>
+  <td><strong>El listón</strong>. Todo lo demás debe batirlo</td>
+</tr>
+<tr>
+  <td><strong>Regresión logística</strong></td>
+  <td>Frontera lineal</td>
+  <td>Referencia interpretable; si basta, ganó</td>
+</tr>
+<tr>
+  <td><strong>KNN</strong></td>
+  <td>Las muestras parecidas comparten resultado</td>
+  <td>Puramente local, sin modelo global</td>
+</tr>
+<tr>
+  <td><strong>Naive Bayes</strong></td>
+  <td>Variables independientes dada la clase</td>
+  <td>Su fallo mide cuánto importa la correlación de §5.6</td>
+</tr>
+<tr>
+  <td><strong>SVM (RBF)</strong></td>
+  <td>Frontera suave no lineal</td>
+  <td>Fuerte en dimensión media con pocos datos</td>
+</tr>
+<tr>
+  <td><strong>Árbol de decisión</strong></td>
+  <td>Cortes por umbral, uno a uno</td>
+  <td>Interpretable; base de lo que viene</td>
+</tr>
+<tr>
+  <td><strong>Random Forest</strong></td>
+  <td>Muchos árboles decorrelacionados</td>
+  <td>Robusto, poco sensible a hiperparámetros</td>
+</tr>
+<tr>
+  <td><strong>HistGradientBoosting</strong></td>
+  <td>Árboles secuenciales que corrigen errores</td>
+  <td>Maneja ausentes <strong>de forma nativa</strong></td>
+</tr>
+<tr>
+  <td><strong>LightGBM</strong></td>
+  <td>Boosting optimizado</td>
+  <td>Referencia del sector</td>
+</tr>
+<tr>
+  <td><strong>XGBoost</strong></td>
+  <td>Boosting con regularización</td>
+  <td>Comparación estándar</td>
+</tr>
+</tbody>
+</table>
+<p>Todos los que lo permiten llevan <code>class_weight='balanced'</code>, que compensa el desequilibrio
+5,8:1 penalizando más los errores en las clases minoritarias.</p>
+<h3>7.2 La validación: agrupada por placa, como exige §5.8</h3>
+<p><code>StratifiedGroupKFold</code> con 5 pliegues hace dos cosas a la vez:</p>
+<ul>
+<li><strong>Group</strong>: ninguna placa aparece a la vez en entrenamiento y en prueba. Sin esto, el
+modelo aprobaría reconociendo la placa en vez de la química.</li>
+<li><strong>Stratified</strong>: cada pliegue mantiene la proporción de clases, para que ninguno se quede
+casi sin cristalinos.</li>
+</ul>
+<h3>7.3 Dos modelos, no uno: el completo y el accionable</h3>
+<p>Aquí se responde a una objeción de fondo que es <strong>una crítica al planteamiento del
+problema</strong>, no a la ejecución:</p>
+<blockquote>
+<p><em>El linker no hace que un metal cristalice; el linker determina <strong>qué material puede
+llegar a existir</strong>. Cambiarlo no es mover una condición de reacción: es cambiar de
+química.</em></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+  <th>Tipo</th>
+  <th>Variables</th>
+  <th>¿Se puede actuar sobre ellas?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>De diseño / identidad</strong></td>
+  <td>Química del linker y del metal</td>
+  <td>Sí, pero cambiarlas <strong>cambia el objetivo de la investigación</strong></td>
+</tr>
+<tr>
+  <td><strong>De proceso / medio</strong></td>
+  <td>[M], L/M, temperatura, tiempo, rampas, moduladores, disolventes</td>
+  <td>Sí, <strong>dentro de la misma química</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Un modelo que diga &quot;usa LIG-D&quot; no está dando un consejo accionable: está diciendo
+&quot;investiga otro material&quot;. Así que se entrenan <strong>dos</strong>, y <strong>la diferencia entre ambos es en
+sí misma un resultado</strong>.</p>
+<hr />
+<h1>§8. Evaluación</h1>
+<blockquote>
+<p><em>Etapa 8 — Evaluation. No &quot;¿qué número sale?&quot; sino &quot;¿es este número creíble, y qué
+significa para el laboratorio?&quot;.</em></p>
+</blockquote>
+<h3>8.1 Las métricas, y por qué la exactitud engaña aquí</h3>
+<table>
+<thead>
+<tr>
+  <th>Métrica</th>
+  <th>Qué mide</th>
+  <th>Por qué está</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>F1 macro</strong></td>
+  <td>Media del F1 de cada clase, <strong>dando el mismo peso a las tres</strong></td>
+  <td>La métrica principal. Ignorar los 167 cristalinos la hunde</td>
+</tr>
+<tr>
+  <td><strong>Exactitud equilibrada</strong></td>
+  <td>Media del acierto <strong>dentro de</strong> cada clase</td>
+  <td>Interpretable: &quot;acierta X % de los cristalinos&quot;</td>
+</tr>
+<tr>
+  <td><strong>MCC</strong></td>
+  <td>Correlación entre predicción y verdad, −1 a +1</td>
+  <td>La más exigente: 0 = azar, aunque la exactitud sea alta</td>
+</tr>
+<tr>
+  <td><strong>Exactitud</strong></td>
+  <td>% de aciertos</td>
+  <td><strong>Sólo como aviso</strong>: la línea base ya saca ~64 %</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Recordatorio de §2: <strong>MRE, RMSE y R² no aplican</strong> — son de regresión.</p>
+</blockquote>
+<figure><img src="/figures/nb06-09.png" alt="Figura 9, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 9, generada por el cuaderno 06.</figcaption></figure>
+<h3>8.2 Qué dicen estos números</h3>
+<p><strong>1. Hay señal predictiva real, y es modesta.</strong> El mejor modelo completo llega a
+<strong>F1 macro ≈ 0,52</strong> frente a <strong>0,26</strong> de la línea base: exactamente el doble. Con
+MCC ≈ 0,31, una asociación real pero lejos de fuerte.</p>
+<p><strong>2. Corregir las unidades NO mejoró el modelo, y hay que decirlo.</strong> La versión anterior,
+con el 18 % de la composición del medio marcada como desconocida, daba 0,522. Esta, con el
+medio completo al 99,8 %, da 0,517. <strong>La diferencia, 0,005, es siete veces menor que la
+desviación entre pliegues</strong> (±0,036): estadísticamente son el mismo número.</p>
+<blockquote>
+<p>Es un resultado incómodo y honesto. Completar una quinta parte de la composición del
+medio <strong>no aportó capacidad predictiva</strong>. Caben dos lecturas y no se puede elegir entre
+ellas con estos datos: o la composición del medio no gobierna la cristalización tanto
+como la intuición sugiere, o sí lo hace pero de una forma que estas variables no
+capturan. Lo que sí se ha ganado es que <strong>los números signifiquen lo que dicen</strong>, que es
+condición previa para cualquier interpretación química.</p>
+</blockquote>
+<p><strong>3. El modelo accionable baja bastante más.</strong> Quitando la química de metal y linker, el
+mejor cae a <strong>0,393</strong> con <strong>MCC ≈ 0,10</strong> — por encima del azar, pero débil.</p>
+<blockquote>
+<p><strong>Traducción química, sin adornos:</strong> en este histórico, <strong>la mayor parte de lo que el
+modelo distingue es qué sistema metal-linker se usó, no qué condiciones se aplicaron.</strong>
+Esto <strong>no</strong> significa que las condiciones no importen. Significa que <em>en estos datos</em> no
+se variaron lo suficiente como para que su efecto sea aprendible (§5.5: ~13 temperaturas,
+~9 tiempos).</p>
+</blockquote>
+<p><strong>4. Naive Bayes se hunde por debajo de la línea base.</strong> No es un fallo de la
+implementación: asume que las variables son independientes dada la clase, y §5.6 mostró
+bloques de correlación fuertes. <strong>Su fracaso es una medida de cuánto importa esa
+correlación</strong> — por eso está en la lista.</p>
+<figure><img src="/figures/nb06-10.png" alt="Figura 10, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 10, generada por el cuaderno 06.</figcaption></figure>
+<h3>8.3 Dónde se equivoca: los errores tienen sentido químico, hasta cierto punto</h3>
+<p>Lo importante no es <em>cuánto</em> falla sino <strong>hacia dónde</strong>. Y aquí hay que matizar en vez de
+contar la versión bonita: <strong>el patrón ordinal se cumple con claridad en una dirección y
+sólo a medias en la otra.</strong></p>
+<p><strong>Para el amorfo el comportamiento es el esperado:</strong> cuando falla, confunde &quot;nada&quot; con
+&quot;casi nada&quot;, que en el propio difractograma es cuestión de grado y sobre lo que dos
+personas expertas podrían discrepar. El error grave —llamar cristalino a un amorfo— es
+raro.</p>
+<p><strong>Para el cristalino, mucho menos.</strong> Sigue confundiéndose sobre todo con la clase
+vecina, pero la proporción que acaba en <strong>amorfo</strong> —el error más grave posible— es el
+<strong>doble</strong> que en la dirección contraria (15,6 % frente a 7,9 %). Eso no es un patrón ordinal limpio: es que el
+modelo <strong>no reconoce bien la clase minoritaria</strong>, y cuando la pierde la pierde del todo.
+Con 167 casos frente a 967 incipientes, y siendo la clase más heterogénea —hay muchas
+formas de cristalizar y sólo una de no hacerlo—, era previsible; sigue siendo <strong>la
+debilidad principal del modelo</strong>.</p>
+<p><strong>Qué significa para el uso previsto.</strong> Para §9 —ordenar candidatos y llenar una placa—
+importa menos de lo que parece: lo que se necesita es que los buenos candidatos suban en el
+ranking, no que la etiqueta sea exacta. Pero desmiente cualquier lectura del tipo &quot;el
+modelo casi nunca se equivoca de forma grave&quot;.</p>
+<figure><img src="/figures/nb06-11.png" alt="Figura 11, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 11, generada por el cuaderno 06.</figcaption></figure>
+<h3>8.4 Lectura química — por bloques, no variable a variable</h3>
+<p><strong>Por qué por bloques.</strong> Recordatorio de §5.6: con variables muy correlacionadas, cualquier
+método de importancia reparte el mérito entre ellas de forma arbitraria. Interpretar
+<code>electronegativity_pauling</code> aislada de <code>absolute_hardness_ev</code> sería sobreinterpretar.</p>
+<p><strong>Cómo leer la tabla.</strong> La columna <code>sum</code> es lo que aporta el bloque <em>entero</em>; <code>mean</code> es lo
+que aporta <strong>cada variable</strong> del bloque. Las dos hacen falta, porque los bloques no tienen
+el mismo tamaño: el medio son 22 columnas y el proceso sólo 4, así que comparar sólo la
+suma premiaría al bloque más numeroso por el mero hecho de serlo.</p>
+<ul>
+<li><strong>La química del metal domina, en total y por variable</strong> (suma 0,071 con 7 columnas).
+Entra por radio iónico y carga/radio — es decir, la <strong>densidad de carga</strong> del catión, que
+gobierna la fuerza de la interacción metal-fosfonato y con ella si el sistema tiene tiempo
+de ordenarse o precipita amorfo. Resultado con sentido físico directo, no un artefacto.</li>
+<li><strong>El proceso es el segundo, y por variable casi empata con el metal</strong> (0,039 en total,
+pero repartido entre sólo 4 columnas: 0,0099 cada una frente a 0,0101 del metal).
+Temperatura y tiempo pesan; lo que ocurre es que en §5.5 se vio que apenas se variaron.</li>
+<li><strong>El linker queda por detrás</strong> (0,028 en total, 0,0046 por variable): con sólo 4 linkers
+distintos, hay poco que aprender de él.</li>
+<li><strong>El medio es, por variable, el bloque más flojo con diferencia</strong> (0,0011 cada columna,
+una novena parte del metal), pese a sus 22 columnas y pese a estar ahora <strong>completo y
+correcto</strong> —que era el objetivo de toda la corrección de §6.1. <strong>Arreglar el dato no lo
+convirtió en señal.</strong> Y 12 de las 39 variables tienen importancia negativa: barajarlas
+mejora ligeramente el modelo, que es la definición operativa de ruido.</li>
+</ul>
+<blockquote>
+<p><strong>Cómo hay que leer eso, sin exagerar en ninguna dirección.</strong> Que el medio aporte poco no
+demuestra que sea químicamente irrelevante; demuestra que <em>estas 22 columnas, con esta
+cantidad de datos y este modelo</em>, apenas ayudan a separar las clases. Dos causas compiten
+y no se pueden distinguir aquí: que la composición del medio pese poco frente a la
+identidad del sistema, o que pese pero de una forma que un reparto de fracciones no
+captura (lo que gobernaría sería el pH, que <strong>no se registró</strong>). La segunda es la
+hipótesis que un químico apostaría, y es exactamente lo que §10 propone medir.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Cautela sobre la importancia por permutación.</strong> Con variables correlacionadas tiende
+a <strong>repartir y a infravalorar</strong>: si dos columnas dicen casi lo mismo, barajar una apenas
+daña al modelo porque la otra cubre el hueco. Por eso los valores absolutos no deben
+leerse como &quot;porcentaje de la química explicada&quot;.</p>
+</blockquote>
+<figure><img src="/figures/nb06-12.png" alt="Figura 12, generada por el cuaderno 06." loading="lazy"><figcaption>Figura 12, generada por el cuaderno 06.</figcaption></figure>
+<p><strong>Cómo se lee el gráfico SHAP:</strong> cada punto es una síntesis. Su posición horizontal es
+cuánto empujó esa variable la predicción hacia CRISTALINO (derecha) o en contra
+(izquierda). El color es el valor de la variable (rojo alto, azul bajo). Así que <em>&quot;rojo a
+la derecha&quot;</em> significa <strong>&quot;valores altos de esta variable favorecen la cristalización&quot;</strong>.</p>
+<p>Es complementario a la importancia por permutación: aquélla dice <em>cuánto</em> importa una
+variable; ésta dice <strong>en qué dirección</strong> y <strong>para qué muestras</strong>.</p>
+<hr />
+<h1>§9. Despliegue y registro</h1>
+<blockquote>
+<p><em>Etapa 9 — Deployment. Un modelo que vive en un cuaderno no ha cambiado nada.</em></p>
+</blockquote>
+<h3>9.1 Guardar un modelo: qué se guarda de verdad</h3>
+<p><strong>¿Cómo se guarda un modelo entrenado?</strong></p>
+<table>
+<thead>
+<tr>
+  <th>Formato</th>
+  <th>Extensión</th>
+  <th>Qué guarda</th>
+  <th>Cuándo usarlo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>joblib / pickle</strong></td>
+  <td><code>.joblib</code>, <code>.pkl</code></td>
+  <td>El <strong>pipeline entero</strong></td>
+  <td>Lo estándar en scikit-learn. <strong>Es el que usa este proyecto</strong></td>
+</tr>
+<tr>
+  <td><strong>ONNX</strong></td>
+  <td><code>.onnx</code></td>
+  <td>El grafo, independiente del lenguaje</td>
+  <td>Producción, o si lo carga algo que no es Python</td>
+</tr>
+<tr>
+  <td><strong>Nativo</strong></td>
+  <td><code>.txt</code> (LightGBM), <code>.json</code> (XGBoost)</td>
+  <td>Sólo el estimador</td>
+  <td>Cuando importa la estabilidad entre versiones</td>
+</tr>
+<tr>
+  <td><strong>Redes neuronales</strong></td>
+  <td><code>.pt</code>, <code>.safetensors</code>, <code>.keras</code></td>
+  <td>Los pesos</td>
+  <td>Aprendizaje profundo</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Todos los tipos se pueden guardar</strong>, con garantías distintas. <code>joblib</code> tiene tres pegas:
+sólo funciona en Python, es <strong>frágil entre versiones</strong> (el mismo fichero con otra versión
+de scikit-learn puede fallar o —peor— cargar y comportarse distinto), y <strong>al cargarlo
+ejecuta código</strong>, así que nunca se abre un <code>.pkl</code> de origen desconocido.</p>
+<p>Y un detalle que decide si el fichero sirve: hay que guardar el <strong>pipeline completo</strong>, no
+sólo el estimador. Un Random Forest sin su imputador no puede predecir sobre datos crudos.</p>
+<h4>Pero un modelo no es un fichero</h4>
+<p><strong>Este cuaderno es la prueba viva, dos veces.</strong> El modelo de la primera versión daba
+F1 0,62 y <strong>hoy no se puede reconstruir</strong>: los datos sobre los que se entrenó ya no
+existen. Si aquel <code>.pkl</code> se hubiera guardado, hoy cargaría <strong>sin dar ningún error</strong> y
+produciría predicciones calculadas sobre una definición de las variables que ya no es la
+vigente. Silenciosamente equivocado, que es la peor clase de error.</p>
+<blockquote>
+<p><strong>Un modelo reproducible son seis cosas, y el binario es la menos importante:</strong></p>
+<p>| | Sin esto… |
+|---|---|
+| <strong>1. Los datos</strong> | No sabes sobre qué se entrenó. <em>Este es el que ha fallado dos veces.</em> |
+| <strong>2. El código</strong> | &quot;El cuaderno 06&quot; no basta: hace falta <strong>en qué commit</strong> |
+| <strong>3. Los parámetros</strong> | No puedes repetirlo |
+| <strong>4. La semilla</strong> | El mismo código da <strong>otro</strong> modelo |
+| <strong>5. Las versiones</strong> | scikit-learn cambia valores por defecto sin avisar |
+| <strong>6. El binario</strong> | Sólo tendrías que reentrenar. Es comodidad, no esencia |</p>
+</blockquote>
+<h3>9.2 El registro de modelos</h3>
+<p>De ahí salen las cinco tablas de <code>scripts/ddl_ml_model_registry.sql</code>:</p>
+<table>
+<thead>
+<tr>
+  <th>Tabla</th>
+  <th>Qué guarda</th>
+  <th>Por qué separada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ml_datasets</code></td>
+  <td>La consulta literal, su hash, nº de filas y de <strong>grupos</strong>, distribución de clases, cautelas</td>
+  <td>Detecta que los datos cambiaron aunque el SQL sea idéntico</td>
+</tr>
+<tr>
+  <td><code>ml_models</code></td>
+  <td>Algoritmo, hiperparámetros, preprocesado, validación, semilla, commit, versiones, estado</td>
+  <td>Es la receta</td>
+</tr>
+<tr>
+  <td><code>ml_model_metrics</code></td>
+  <td>Formato <strong>largo</strong>: una fila por (modelo, métrica, partición)</td>
+  <td>Añadir una métrica no exige <code>ALTER TABLE</code></td>
+</tr>
+<tr>
+  <td><code>ml_model_features</code></td>
+  <td>Qué columnas entraron, en qué papel, y <strong>las excluidas con su motivo</strong></td>
+  <td>Permite <em>&quot;¿qué modelos usaron esta variable antes de la corrección?&quot;</em></td>
+</tr>
+<tr>
+  <td><code>ml_model_artifacts</code></td>
+  <td>El binario, su tamaño y su SHA-256</td>
+  <td>Aparte porque es lo pesado y lo regenerable</td>
+</tr>
+</tbody>
+</table>
+<p>Dos decisiones que merecen argumentarse: <strong>el binario vive en la base</strong>, no en disco, para
+quedar cubierto por la rutina de copias de seguridad; y <strong><code>is_reproducible = FALSE</code> no se
+puede poner sin motivo</strong> — lo impide una restricción <code>CHECK</code>, porque si no ese campo se
+queda vacío justo en los casos en los que más importa.</p>
+<pre><code class="language-python">from src.ml_model_registry import cargar_modelo
+modelo = cargar_modelo(conn, 'crystallinity_v4_hts_full')
+modelo.predict_proba(X_nuevas)     # avisa si la version de sklearn no coincide
+</code></pre>
+<blockquote>
+<p><strong>Nota sobre qué modelo se guarda.</strong> Las métricas del registro son las de la <strong>validación
+cruzada</strong> —la estimación honesta del rendimiento—, pero el binario es el de <strong>reentrenar
+sobre todo el conjunto</strong>. No es contradictorio: la validación cruzada sirve para
+<em>estimar</em> cuánto vale un procedimiento, no para <em>producir</em> el modelo final.</p>
+</blockquote>
+<h3>9.3 El estado del despliegue</h3>
+<p><strong>No desplegado, deliberadamente.</strong> Con F1 macro ~0,52 y MCC ~0,31 el modelo sirve para
+<em>priorizar</em>, no para <em>decidir</em>.</p>
+<ol>
+<li><strong>La interpretación como entregable</strong> <em>(ya alcanzable)</em>: qué familias de variables
+gobiernan la cristalización, y —más útil— <strong>dónde faltan datos</strong>.</li>
+<li><strong>Ranking de candidatos para la próxima placa</strong> <em>(siguiente paso lógico)</em>. Este uso
+tolera mucho mejor un modelo mediocre: sólo necesita que el orden sea mejor que el azar.</li>
+<li><strong>Integración en la aplicación</strong> <em>(más adelante)</em>, con su incertidumbre.</li>
+</ol>
+<p><strong>Lo que haría falta antes de cualquier despliegue real, y no está hecho:</strong> ajuste de
+hiperparámetros con <strong>validación anidada</strong>, <strong>calibración de probabilidades</strong>, y una
+<strong>validación temporal</strong> (entrenar con lo anterior a 2024 y predecir 2024-25), que dada la
+deriva de §5.8 probablemente dará un número peor.</p>
+<hr />
+<h1>§10. Retroalimentación y cierre del ciclo</h1>
+<blockquote>
+<p><em>Etapa 10 — Feedback. La flecha que devuelve a la etapa 1 y convierte el proceso en un
+ciclo. Aquí no es teoría: <strong>ya ha ocurrido dos veces</strong>.</em></p>
+</blockquote>
+<h3>Lo que este ciclo ha producido</h3>
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>Al empezar</th>
+  <th>Ahora</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Química como dato</td>
+  <td>20 metales y 6 linkers como <strong>texto</strong></td>
+  <td>5 tablas de referencia + vista <code>v_ml_features</code></td>
+</tr>
+<tr>
+  <td>Calidad</td>
+  <td>6 discrepancias metal/precursor sin detectar</td>
+  <td>0 discrepancias</td>
+</tr>
+<tr>
+  <td>Unicidad</td>
+  <td>43 muestras contadas dos veces</td>
+  <td>1 fila = 1 muestra</td>
+</tr>
+<tr>
+  <td>Unidades de modulador</td>
+  <td>Error de <strong>factor 1.000</strong></td>
+  <td>Corregido y comprobado químicamente</td>
+</tr>
+<tr>
+  <td><strong>Unidades de volumen</strong></td>
+  <td><strong>Disoluciones diluidas leídas como µL</strong></td>
+  <td><strong>Corregidas; el medio cierra al 99,8 %</strong></td>
+</tr>
+<tr>
+  <td>Confusión</td>
+  <td>Tres métodos de síntesis mezclados</td>
+  <td>Sólo combinatoria, argumentado</td>
+</tr>
+<tr>
+  <td>Ausentes</td>
+  <td>Ceros que afirmaban lo que no constaba</td>
+  <td>NULL donde no se sabe</td>
+</tr>
+<tr>
+  <td>Variables inútiles</td>
+  <td>Constantes y colineales dentro del modelo</td>
+  <td>Retiradas y documentadas</td>
+</tr>
+<tr>
+  <td>Respuesta a §1</td>
+  <td>Desconocida</td>
+  <td><strong>Sí, hay señal — modesta y honesta</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>Lo que el ciclo devuelve al laboratorio</h3>
+<ol>
+<li><strong>Variar de verdad las condiciones de proceso.</strong> Es la conclusión de mayor retorno. Las
+condiciones explican poco <em>porque apenas se variaron</em>. Una serie que barra rampas
+térmicas y tiempos <strong>de forma deliberada dentro de un mismo sistema metal-linker</strong> haría
+aprendible un efecto hoy invisible. El modelo no sólo predice: <strong>dice dónde falta
+información</strong>.</li>
+<li><strong>Registrar el pH.</strong> Es el hueco declarado en §3 y, en química de fosfonatos,
+probablemente la variable ausente más importante.</li>
+<li><strong>Etiquetar más casos cristalinos.</strong> Es la clase más escasa (167) y la más interesante.</li>
+<li><strong>Anotar las unidades en el Excel.</strong> El fallo de esta vuelta existió porque una misma
+columna llevaba mL en unas filas y µL en otras, y eso sólo estaba escrito en una fórmula.
+Una fila de cabecera con la unidad lo habría evitado por completo.</li>
+</ol>
+<h3>Lo que queda abierto, dicho sin adornos</h3>
+<ul>
+<li><strong>Sin ajuste de hiperparámetros</strong> (validación anidada pendiente), sin calibración de
+probabilidades y sin validación temporal.</li>
+<li><strong>El modelo accionable es débil</strong> (MCC ~0,10, y el ganador cambia de algoritmo según
+el pliegue: la diferencia entre los primeros clasificados es ruido). Con los datos
+actuales, predecir el
+resultado <em>dentro</em> de una química fija está prácticamente fuera de alcance.</li>
+<li><strong>Los pKa y logP de los moduladores no tienen fuente citada</strong> en <code>property_sources</code>, a
+diferencia de las otras cinco propiedades químicas. Es una deuda de documentación.</li>
+<li><strong>La oxofilicidad del galio seguirá siendo nula</strong>: no está en la fuente.</li>
+</ul>
+<h3>La conclusión que de verdad importa</h3>
+<p>El techo de este problema <strong>son los datos, no el algoritmo</strong>. Se probaron diez familias, de
+la más simple a la más sofisticada, y el mejor saca ~0,52. Ninguno se acerca a resolverlo,
+y la distancia entre el mejor y el peor es menor que la distancia entre este conjunto y uno
+donde las condiciones de proceso se hubieran variado a propósito.</p>
+<p><strong>Y la lección metodológica, reforzada por esta tercera vuelta:</strong> los diez defectos los
+encontró <strong>una lectura química, no una métrica</strong>. Ninguna comprobación automática se quejó
+del factor 1.000, ni de que faltaran dos disolventes, ni de que el microondas estuviera
+concentrado en una clase, ni —la más difícil— de que una misma columna estuviera en dos
+unidades distintas. Todas eran cifras plausibles <em>para un ordenador</em>.</p>
+<blockquote>
+<p>Un modelo puede estar perfectamente validado y aun así estar aprendiendo de un artefacto.
+<strong>La única defensa es que alguien que entienda la química mire los números</strong> — y que el
+proceso esté montado para que ese hallazgo pueda volver a las etapas 3 y 6 sin que nadie
+pierda la cara. Eso es lo que significa que el ciclo sea un ciclo.</p>
+<p>Y una advertencia final que esta vuelta añade: <strong>corregir un dato no garantiza mejorar un
+modelo.</strong> Completar el 18 % de la composición del medio no aportó capacidad predictiva.
+Se hizo igualmente, porque un análisis sobre números que no significan lo que dicen no es
+un análisis, por mucho que la métrica salga bien.</p>
+</blockquote>
+<h2>DUDAS</h2>
+<ul>
+<li>En la Sección 6.1 y 8.2 se cita que la composición del medio alcanza el 99,8 % de cobertura tras la corrección de unidades, mientras que en el Cuaderno 01 se especificaba el 99,5 %. La ligera discrepancia responde probablemente a que el Cuaderno 06 opera sobre el subconjunto filtrado HTS (sin viales de síntesis convencional ni ácido tánico) en lugar de sobre el total de filas de la base. Convendría aclararlo en una nota para evitar aparente contradicción entre ambos cuadernos.</li>
+<li>En la Sección 8.3 se especifican 167 casos cristalinos y 967 incipientes, omitiendo el recuento exacto de la clase amorfa en el texto (que puede deducirse por diferencia sobre las ~1.516 filas totales). Sería conveniente explicitar la cifra de amorfos para completar el desglose ternario en la prosa.</li>
+<li>En la Sección 7.2 y 8.3 se hace referencia a la partición por grupos según placa (synthesis_plate). Convendría verificar si todas las síntesis históricas de HTS tienen asignado un identificador de placa no nulo o si las síntesis tempranas sin placa explícita recibieron un valor por defecto agrupado.</li>
+</ul>
+
+</div></body></html>

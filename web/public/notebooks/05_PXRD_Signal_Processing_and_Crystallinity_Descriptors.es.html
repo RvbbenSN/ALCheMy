@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 PXRD Signal Processing and Crystallinity Descriptors</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./05_PXRD_Signal_Processing_and_Crystallinity_Descriptors.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>Notebook 05 — Del difractograma crudo a números que un químico puede leer</h1>
+<p>Un difractograma es una <strong>curva</strong>. Una curva no se puede ordenar, ni filtrar, ni
+correlacionar, ni meter en un modelo. La pregunta <em>&quot;enséñame las síntesis con celda
+grande y cristalinidad baja&quot;</em> no es una pregunta que la base de datos pueda contestar
+mientras la información viva en forma de curva.</p>
+<p>Este cuaderno construye el puente: convierte cada difractograma en <strong>una fila de
+números</strong>, y justifica cada uno de esos números con los datos reales del laboratorio.</p>
+<h3>Cómo leer este cuaderno</h3>
+<ul>
+<li><strong>No se abre ni un solo fichero del disco.</strong> Todo sale de PostgreSQL con <code>SELECT</code>.
+La base de datos es la fuente de verdad; los ficheros crudos bailan entre carpetas
+y no son reproducibles.</li>
+<li><strong>Todo el cálculo vive en <code>src/pxrd_descriptors.py</code>.</strong> El cuaderno lo importa, no lo
+reimplementa. Así el lote de 1.800 medidas y estas figuras usan exactamente el mismo
+código, y no existe la posibilidad de que expliquemos una cosa y ejecutemos otra.</li>
+<li><strong>Los textos van en español, las figuras en inglés.</strong> Las figuras están pensadas para
+poder salir tal cual en una publicación o en la app.</li>
+<li><strong>Cada decisión se mide, no se opina.</strong> Cuando aparece un número —un corte angular,
+una λ, un umbral— viene acompañado del experimento que lo eligió.</li>
+</ul>
+<h3>Índice</h3>
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Sección</th>
+  <th>Qué resuelve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>Conexión y utilidades</td>
+  <td>El andamiaje mínimo</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Qué hay en la base de datos</td>
+  <td>Con qué contamos realmente</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Por qué hace falta tratar la señal</td>
+  <td>Dos incompatibilidades: rejilla y escala</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><strong>Dónde empieza de verdad la muestra</strong></td>
+  <td>El corte a 5°: el haz directo no es señal</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>Anatomía: tres capas superpuestas</td>
+  <td>Qué se tira y qué se mide</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>Calibración de λ</td>
+  <td>El único parámetro libre, medido contra patrones</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td>Separar halo de picos</td>
+  <td>Por anchura; y las dos correcciones de ruido</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td>Detección de picos con Poisson</td>
+  <td>Un umbral que se calibra solo</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td>El caso difícil: picos sobre un halo</td>
+  <td>Fe + fosfonato de pireno</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><strong>El vector completo, descriptor a descriptor</strong></td>
+  <td>Las líneas de código, una a una</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td>Validación contra blanco y patrón</td>
+  <td>¿Miente el pipeline?</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td>Escribir en <code>pxrd_descriptors</code></td>
+  <td>El lote</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td>Qué dicen los datos</td>
+  <td>Estadística del corpus</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td>Buenas prácticas</td>
+  <td>Lo que conviene no repetir</td>
+</tr>
+</tbody>
+</table>
+<h1>1. Conexión y utilidades</h1>
+<p>Tres piezas: <code>sql()</code> para consultar, <code>cargar_curva()</code> para traer un difractograma ya
+puesto sobre la rejilla común, y un estilo de figuras compartido.</p>
+<p><code>cargar_curva()</code> hace algo que merece atención: los puntos de la rejilla que caen
+<strong>fuera del rango que el equipo midió de verdad se descartan</strong>, nunca se interpolan.
+Interpolar ahí sería inventar cuentas en ángulos que el difractómetro no visitó. La
+diferencia entre &quot;no hay señal&quot; y &quot;no se miró&quot; tiene que sobrevivir a todo el proceso.</p>
+<h1>2. Qué hay en la base de datos</h1>
+<p>Antes de procesar nada conviene saber con qué se cuenta. Dos cosas importan: <strong>cuántas
+medidas</strong> y <strong>de qué tipo</strong>. La distinción entre muestra y referencia no es cosmética:
+las referencias son las <strong>reglas</strong> con las que se calibra todo lo demás.</p>
+<p>Las cuatro familias, y para qué sirve cada una:</p>
+<table>
+<thead>
+<tr>
+  <th><code>measurement_tag</code></th>
+  <th>Qué es</th>
+  <th>Para qué se usa aquí</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>as_synthesized</code></td>
+  <td>Las muestras del laboratorio</td>
+  <td>Es el corpus a describir</td>
+</tr>
+<tr>
+  <td><code>reference_blank</code></td>
+  <td><strong>Portamuestras vacío</strong></td>
+  <td>Dice qué mide el equipo cuando no hay nada. Es la regla de &quot;cero&quot;</td>
+</tr>
+<tr>
+  <td><code>reference_standard</code></td>
+  <td>Patrón del instrumento</td>
+  <td>Da la resolución instrumental: la anchura mínima posible de un pico</td>
+</tr>
+<tr>
+  <td><code>reference_precursor</code></td>
+  <td>Sales metálicas y ligandos libres</td>
+  <td>Materiales de partida, sin celda tipo MOF: sirven para distinguir señal de instrumento</td>
+</tr>
+<tr>
+  <td><code>simulated_scxrd</code></td>
+  <td>Patrones calculados desde estructuras propias resueltas por monocristal</td>
+  <td>Comparación para el triaje de novedad</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Por qué el blanco y el patrón son imprescindibles y no un lujo.</strong> Un tratamiento de
+señal tiene parámetros libres. Elegirlos &quot;porque en el paper viene así&quot; es una
+opinión. Elegirlos midiendo contra una muestra de la que <strong>se sabe la respuesta</strong>
+—el portamuestras vacío no difracta; el patrón difracta con anchura conocida— es una
+calibración. Todo lo que hace la sección 6 depende de que estas dos medidas existan.</p>
+</blockquote>
+<h1>3. Por qué hace falta tratar la señal</h1>
+<p>Dos difractogramas del mismo material pueden ser numéricamente incomparables por
+motivos que no tienen nada que ver con la química. Hay dos incompatibilidades y las dos
+se ven en los datos reales.</p>
+<h2>3.1 Primera incompatibilidad: cada medida trae su propia rejilla</h2>
+<figure><img src="/figures/nb05-01.png" alt="Figura 1, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 1, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> Tres histogramas, uno por cada cosa que cambia de una medida a otra:
+dónde empieza el barrido, dónde termina y con qué paso avanza. Ninguno es un valor
+único. El eje vertical va en escala logarítmica en (a) y (c) porque hay un valor
+dominante y varios minoritarios: en escala lineal los minoritarios serían invisibles,
+y son justamente los que rompen las comparaciones.</p>
+<p><strong>Por qué esto obliga a una rejilla común.</strong> Restar dos curvas punto a punto exige que
+el punto <em>i</em> de una y el punto <em>i</em> de la otra sean el mismo ángulo. Si una avanza de
+0,0131° y otra de 0,0263°, eso no se cumple. La solución es interpolar todas sobre una
+<strong>rejilla canónica</strong> —aquí de 0,02°, más fina que el pico más estrecho que el equipo
+resuelve, así que no se pierde nada— y <strong>recortar cada curva a su propio rango medido</strong>.</p>
+<blockquote>
+<p><strong>La estadística implicada.</strong> Interpolar linealmente entre dos puntos medidos es una
+estimación razonable <em>dentro</em> del rango: la señal es continua y el paso es fino.
+Extrapolar <em>fuera</em> del rango no lo es, porque no hay ninguna medida que restrinja el
+valor. Por eso <code>resample_to_grid</code> devuelve una máscara <code>valido</code> en vez de rellenar
+con ceros: un cero es una afirmación (&quot;aquí no difracta&quot;), y no la hemos medido.</p>
+</blockquote>
+<h2>3.2 Segunda incompatibilidad: la escala de cuentas</h2>
+<p>Un barrido rápido de cribado y un barrido largo para Rietveld pueden diferir en un
+factor 30 en número de cuentas. <strong>Las dos curvas pueden ser del mismo material.</strong></p>
+<figure><img src="/figures/nb05-02.png" alt="Figura 2, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 2, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> En (a) la curva roja parece plana. No es que el material sea peor: es
+que está dibujada en el eje de la azul, que tiene 33 veces más cuentas. En (b), tras
+dividir cada curva por su propia área, las dos se superponen. <strong>La forma es la
+información; la altura absoluta es cuánto tiempo estuvo el detector contando.</strong></p>
+<blockquote>
+<p><strong>Y aquí está la razón profunda por la que la normalización va PRIMERO.</strong> El
+algoritmo de línea base que se usa en la sección 6 tiene un parámetro, λ, que
+controla la rigidez de la línea base <strong>en relación al tamaño de los números que está
+ajustando</strong>. Aplicado a cuentas brutas, el mismo λ se comporta como una línea muy
+rígida en un barrido de 200 cuentas y como una muy blanda en uno de 20.000. Las dos
+curvas de arriba se procesarían de forma distinta por un motivo sin ningún contenido
+físico. Normalizando primero, un único λ significa lo mismo para las 1.883 medidas.</p>
+</blockquote>
+<h1>4. Dónde empieza de verdad la muestra: el corte a bajo ángulo</h1>
+<p>Esta sección decide un número —dónde empieza la rejilla— y ese número mueve la
+cristalinidad de <strong>todo el corpus</strong>. Merece medirse con cuidado.</p>
+<h2>4.1 El problema físico</h2>
+<p>A ángulos muy bajos, el detector está casi enfrentado a la fuente. Lo que registra ahí
+no es difracción de la muestra, es <strong>el haz directo y su dispersión por el aire y por
+las rendijas</strong>: fotones que llegan sin haber interaccionado con los planos cristalinos.
+Es una cola que decae rápido y que está presente <strong>midas lo que midas</strong>, incluido el
+portamuestras vacío.</p>
+<p>Si esa cola entra en el procesado, el filtro que busca componentes anchas la
+interpretará como un halo amorfo enorme pegado al inicio del rango. El resultado es una
+cristalinidad artificialmente baja y una &quot;celda grande&quot; que no existe.</p>
+<p>La pregunta no es <em>si</em> hay que cortar, sino <strong>dónde</strong>. Tres pruebas independientes.</p>
+<h2>4.2 Prueba 1: la mediana de 200 muestras al azar</h2>
+<p>Si una subida a bajo ángulo aparece en la <strong>mediana de 200 materiales químicamente
+distintos</strong>, no puede ser una reflexión: ningún conjunto de 200 materiales diferentes
+comparte una reflexión. Solo el instrumento es común a los 200.</p>
+<p>Cada curva se divide antes por su propio nivel en 20–45°, que es zona sin estructura
+en casi todas, para que la comparación sea de forma y no de intensidad.</p>
+<figure><img src="/figures/nb05-03.png" alt="Figura 3, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 3, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> En (a), la mediana de 200 muestras vale <strong>3,6 veces</strong> su propio nivel de
+fondo a 3,0° y baja monótonamente hasta quedarse en 1,3 hacia <strong>4,4°</strong>. La banda gris es
+el rango intercuartílico: no es que unas pocas muestras tengan la cola, la tienen
+todas. En (b), los <strong>11 precursores</strong> —sales metálicas y ligandos libres, materiales
+que no tienen ninguna celda del tamaño de un MOF— muestran exactamente la misma cola,
+entre 3,7 y 15,5 veces a 3,0–3,5°, de vuelta a ~1 hacia 4,5–5,0°.</p>
+<p><strong>Prueba 3, la que cierra el asunto.</strong> El blanco y el patrón del instrumento se
+midieron empezando en <strong>5,0066°</strong>. Por debajo de 5° <strong>no existe ninguna referencia</strong>
+con la que contrastar el tratamiento. Procesar una región que ninguna regla cubre no es
+medir, es suponer.</p>
+<p><strong>Decisión: la rejilla empieza en 5,0°</strong>, el primer ángulo que a la vez (a) deja atrás
+la cola con margen y (b) está cubierto por el blanco y el patrón.</p>
+<h2>4.3 Lo que cuesta este corte, dicho abiertamente</h2>
+<p>La ley de Bragg, $d = \lambda / (2\sin\theta)$, convierte el corte angular en un
+<strong>límite de tamaño</strong>: a 5° 2θ con radiación Cu Kα₁ corresponde d = 17,66 Å.</p>
+<p>Espaciados mayores existen —en esta familia los núcleos grandes de los ligandos dan
+celdas grandes— pero <strong>este difractómetro no los ve</strong>. Eso no es una elección de
+procesado, es la ventana del equipo. Lo importante es que el dato no mienta sobre ello:
+por eso <code>pxrd_descriptors</code> guarda una columna <code>d_max_saturated</code> que marca las muestras
+cuya primera reflexión cae justo en el corte, donde <code>d_max_angstrom</code> es una <strong>cota
+inferior</strong> y no una medida.</p>
+<figure><img src="/figures/nb05-04.png" alt="Figura 4, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 4, generada por el cuaderno 05.</figcaption></figure>
+<blockquote>
+<p><strong>Nota sobre la ventana de &quot;celda grande&quot; (15°, no 10°).</strong> La línea naranja marca
+dónde se cuentan las reflexiones que indican celda grande. Estos son <strong>P-MOFs</strong>,
+MOFs de fosfonato: densos, con poca porosidad accesible, pero con celdas grandes
+porque los ligandos llevan núcleos voluminosos y la unidad asimétrica es grande y de
+baja simetría. Sus reflexiones más características e intensas caen habitualmente
+<strong>entre 10 y 15°</strong>, así que una ventana de 10° dejaba fuera la mitad de la región
+diagnóstica.</p>
+<p>Y una precisión de vocabulario que importa: muchas reflexiones a bajo ángulo indican
+<strong>celda grande</strong>, y celda grande sugiere un armazón <strong>potencialmente poroso</strong>. En
+esta familia, celda grande viene del tamaño del ligando, no necesariamente de que
+haya canales accesibles. Quien decide si hay porosidad de verdad es la adsorción de
+gases, no el difractograma.</p>
+</blockquote>
+<h1>5. Anatomía de un difractograma: tres capas superpuestas</h1>
+<p>Un difractograma no es una cosa, son <strong>tres sumadas</strong>, y cada una pide un trato
+distinto:</p>
+<table>
+<thead>
+<tr>
+  <th>Capa</th>
+  <th>Qué es físicamente</th>
+  <th>Qué se hace con ella</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Fondo instrumental</strong></td>
+  <td>Aire, portamuestras, ruido del detector</td>
+  <td><strong>Se tira.</strong> No dice nada del material</td>
+</tr>
+<tr>
+  <td><strong>Halo amorfo</strong></td>
+  <td>Dispersión difusa de la fracción desordenada</td>
+  <td><strong>Se mide.</strong> Es literalmente &quot;hay esta cantidad de material sin ordenar&quot;</td>
+</tr>
+<tr>
+  <td><strong>Picos de Bragg</strong></td>
+  <td>Reflexiones de los planos cristalinos</td>
+  <td><strong>Se mide.</strong> Es la fase cristalina</td>
+</tr>
+</tbody>
+</table>
+<p>El error clásico es tratar las dos primeras como una sola cosa llamada &quot;fondo&quot; y
+quitarlas juntas. Al hacerlo se destruye la cuantificación del rendimiento de
+cristalización —el halo <em>es</em> el dato— y además desaparecen las reflexiones débiles que
+asoman justo por encima del halo, que son precisamente las de las muestras dudosas.</p>
+<figure><img src="/figures/nb05-05.png" alt="Figura 5, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 5, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> Arriba, la curva gris es la medida y la banda marrón lo que aporta el
+instrumento: una curva suave, monótona, sin ninguna estructura. Abajo, lo que queda al
+restarla, separado en sus dos componentes: la joroba naranja —ancha, con centro y
+anchura propios— y las reflexiones azules, estrechas.</p>
+<p>La cristalinidad se define sobre <strong>áreas</strong>, no sobre alturas:</p>
+<p>$$X_c = \frac{A_{\text{cristalina}}}{A_{\text{cristalina}} + A_{\text{amorfa}}}$$</p>
+<blockquote>
+<p><strong>Por qué áreas y no alturas.</strong> Medir la altura de un pico desde cero cuenta dos
+veces el halo que hay debajo, como si fuera cristalino. El sesgo es hacia arriba y es
+<strong>mayor cuanto más halo hay</strong>, es decir, justo en las muestras marginales, que son
+las interesantes. Con áreas, cada fotón se asigna a una capa y a una sola.</p>
+</blockquote>
+<h1>6. Calibración de λ: el único parámetro libre</h1>
+<h2>6.1 Qué hace arPLS, sin fórmulas</h2>
+<p><strong>arPLS</strong> (<em>Asymmetrically Reweighted Penalized Least Squares</em>, Baek et al., <em>Analyst</em>
+140 (2015) 250) ajusta una curva suave por debajo de los datos. La imagen mental: metes
+un alambre por debajo del difractograma y lo empujas hacia arriba hasta que toca el
+suelo de la curva. <strong>λ es lo rígido que es ese alambre.</strong></p>
+<ul>
+<li><strong>λ pequeño</strong> → alambre blando: se dobla mucho, se mete por todos los huecos y acaba
+<strong>abrazando la joroba amorfa</strong>. Al restarlo, borras el halo.</li>
+<li><strong>λ grande</strong> → alambre casi recto: no puede seguir la caída del fondo instrumental y
+<strong>deja fondo sin quitar</strong>.</li>
+</ul>
+<p>Lo de <em>&quot;reponderado asimétricamente&quot;</em> es el truco que lo hace funcionar. Después de
+cada pasada, los puntos que quedan <strong>por encima</strong> del alambre —los picos— reciben un
+peso casi nulo, para que el alambre deje de perseguirlos. Formalmente el peso de cada
+punto se calcula con una función logística sobre la desviación del residuo negativo:</p>
+<p>$$w_i = \frac{1}{1 + \exp!\left(\dfrac{2,(d_i - (2\sigma^- - \mu^-))}{\sigma^-}\right)}$$</p>
+<p>donde $\mu^-$ y $\sigma^-$ son la media y la desviación típica de los residuos
+<strong>negativos</strong> (los puntos que caen por debajo del ajuste). Usar solo los negativos es
+la clave: son los que no contienen picos, así que estiman el ruido del fondo sin
+contaminarse. Por eso arPLS encuentra el <strong>suelo</strong> del espectro y no su promedio.</p>
+<h2>6.2 Calibrar no es elegir: es medir contra tres reglas</h2>
+<table>
+<thead>
+<tr>
+  <th>Patrón</th>
+  <th>Pregunta</th>
+  <th>Qué significa fallar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Blanco</strong> (portamuestras vacío)</td>
+  <td>Tras corregir, ¿queda algo? Debería quedar ≈ nada</td>
+  <td>λ demasiado <strong>alto</strong>: deja fondo</td>
+</tr>
+<tr>
+  <td><strong>Muestra amorfa</strong></td>
+  <td>¿Sigue estando la joroba?</td>
+  <td>λ demasiado <strong>bajo</strong>: se la ha comido</td>
+</tr>
+<tr>
+  <td><strong>Muestra cristalina</strong></td>
+  <td>¿Los picos siguen igual de estrechos?</td>
+  <td>λ está deformando la FWHM</td>
+</tr>
+</tbody>
+</table>
+<p>Las tres medidas salen de la base de datos. El blanco y la muestra cristalina son
+reales; la amorfa es una muestra del corpus con halo evidente.</p>
+<figure><img src="/figures/nb05-06.png" alt="Figura 6, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 6, generada por el cuaderno 05.</figcaption></figure>
+<figure><img src="/figures/nb05-07.png" alt="Figura 7, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 7, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> Los tres criterios se leen a la vez:</p>
+<ul>
+<li><strong>(a)</strong> El residuo del blanco crece a partir de λ = 10⁷: la línea base se vuelve tan
+rígida que ya no puede seguir la caída del fondo y <strong>deja fondo sin quitar</strong>.</li>
+<li><strong>(b)</strong> El área del halo se derrumba por debajo de λ ≈ 10⁴: la línea base se dobla y
+<strong>se come la joroba</strong>. En la figura inferior izquierda se ve directamente: el alambre
+marrón sube y abraza la joroba, y la cristalinidad de una muestra amorfa se dispara.</li>
+<li><strong>(c)</strong> La anchura de los picos del patrón es plana en casi todo el rango, así que
+este criterio no discrimina: sirve como <strong>control negativo</strong>, confirma que ninguna λ
+razonable está deformando los picos.</li>
+</ul>
+<p><strong>λ = 10⁶</strong> es el codo: el último valor antes de que el residuo del blanco empiece a
+dispararse, y ya con el halo prácticamente recuperado del todo.</p>
+<blockquote>
+<p><strong>La estadística implicada.</strong> Esto es un barrido de un solo parámetro con tres
+funciones objetivo que tiran en direcciones opuestas. No hay un óptimo matemático
+único: hay una <strong>meseta</strong> donde ninguno de los tres criterios está roto, y se elige el
+centro de la meseta porque es el punto más robusto frente a que una muestra futura se
+comporte algo distinto. Elegir el borde de la meseta funcionaría hoy y fallaría con la
+primera medida atípica.</p>
+<p>Y por eso <code>pxrd_descriptors</code> guarda <code>baseline_lambda</code> en <strong>cada fila</strong>: si algún día
+se recalibra, esa columna es lo único que permitirá saber qué filas son comparables
+entre sí.</p>
+</blockquote>
+<h1>7. Separación del halo amorfo: tres métodos y por qué solo uno funciona</h1>
+<h2>7.0 Qué hay que separar, y con qué vocabulario</h2>
+<p>Tras la sección 6 cada difractograma está en la rejilla común, normalizado por área y con
+su línea base arPLS calculada. Quedan definidas tres curvas que se usan con <strong>estos
+mismos nombres</strong> durante todo el resto del cuaderno:</p>
+<table>
+<thead>
+<tr>
+  <th>Nombre</th>
+  <th>Símbolo</th>
+  <th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Curva medida</strong></td>
+  <td>$I(2\theta)$</td>
+  <td>El difractograma normalizado</td>
+</tr>
+<tr>
+  <td><strong>Línea base arPLS</strong></td>
+  <td>$B(2\theta)$</td>
+  <td>Lo que arPLS identifica como fondo</td>
+</tr>
+<tr>
+  <td><strong>Señal neta</strong></td>
+  <td>$N = I - B$</td>
+  <td>Lo que queda por encima del fondo</td>
+</tr>
+</tbody>
+</table>
+<p>El objetivo de esta sección es <strong>descomponer el fondo $B$</strong>, porque contiene dos cosas
+físicamente distintas sumadas:</p>
+<p>$$B(2\theta) = \underbrace{A(2\theta)}<em>{\text{difusión de la muestra}} + \underbrace{E(2\theta)}</em>{\text{instrumento}}$$</p>
+<ul>
+<li>$E$ — <strong>instrumento</strong>: dispersión del aire, portamuestras, ruido del detector. No dice
+nada del material.</li>
+<li>$A$ — <strong>difusión de la muestra</strong>: lo que dispersa el sólido sin difractar. Es la
+medida de <strong>cuánto material no está cristalizado</strong>, y es el número que buscamos.</li>
+</ul>
+<p>Separar $A$ de $E$ es el problema central del cuaderno. Se prueban <strong>tres métodos</strong>, en
+orden histórico, porque los dos primeros fallan de formas que enseñan algo:</p>
+<table>
+<thead>
+<tr>
+  <th>Método</th>
+  <th>Idea</th>
+  <th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>7.1</strong> Segunda pasada de arPLS</td>
+  <td>Un arPLS más blando sobre $N$ da el halo</td>
+  <td>Falla: devuelve cero siempre</td>
+</tr>
+<tr>
+  <td><strong>7.2</strong> Filtro por anchura</td>
+  <td>El halo es ancho, los picos estrechos</td>
+  <td>Falla: inventa halo bajo los picos</td>
+</tr>
+<tr>
+  <td><strong>7.3</strong> Resta del blanco</td>
+  <td>$A = B - E$, con $E$ medido</td>
+  <td><strong>Funciona</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Los tres se aplican a los <strong>mismos tres ejemplos</strong> —uno amorfo, uno incipiente y uno
+cristalino, etiquetados a mano— para que la comparación sea directa.</p>
+<h2>7.0.1 Los tres ejemplos de referencia</h2>
+<p>Se fijan aquí y se reutilizan en todas las figuras de la sección. Están elegidos por dos
+criterios: cubrir la rejilla 5–50° casi entera, y ser el caso <strong>mediano</strong> de su clase
+según las etiquetas —no el más vistoso, que sería elegir el resultado.</p>
+<figure><img src="/figures/nb05-08.png" alt="Figura 8, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 8, generada por el cuaderno 05.</figcaption></figure>
+<h2>7.1 Método 1: segunda pasada de arPLS</h2>
+<p><strong>La idea.</strong> Si una pasada rígida de arPLS encuentra el fondo instrumental $E$, una
+segunda pasada más blanda sobre la señal neta $N$ debería encontrar el halo $A$, que
+también es una curva suave y ancha.</p>
+<p><strong>Por qué no puede funcionar.</strong> arPLS es un estimador de <strong>suelo</strong>: por construcción
+busca la envolvente inferior de los datos. La señal neta $N = I - B$ ya tiene el suelo
+en cero, porque restarle $B$ es exactamente lo que la ha bajado hasta ahí. Pedirle a
+arPLS el suelo de una curva cuyo suelo ya es cero devuelve <strong>cero</strong>.</p>
+<p>El fallo es <strong>silencioso</strong>: no lanza ninguna excepción, devuelve una curva plana
+perfectamente plausible. La consecuencia es que el área amorfa sale 0 y <strong>todas las
+muestras se reportan como 100 % cristalinas</strong>, incluidas las que a ojo son vidrio.</p>
+<figure><img src="/figures/nb05-09.png" alt="Figura 9, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 9, generada por el cuaderno 05.</figcaption></figure>
+<h2>7.2 Método 2: filtro selectivo en anchura</h2>
+<p><strong>La idea.</strong> Una reflexión de Bragg es estrecha (FWHM 0,1–0,3°) y un halo amorfo es
+ancho (5–15°). Una <strong>mediana móvil</strong> con una ventana de 3° —diez veces más ancha que
+cualquier pico— debería pasar por encima de lo estrecho y dejar pasar lo ancho.</p>
+<p>La mediana de una ventana es el valor que deja la mitad de los puntos por debajo. Si los
+puntos que pertenecen a picos son <strong>minoría</strong> dentro de la ventana, la mediana cae sobre
+el fondo y los ignora.</p>
+<p><strong>Esa condición es la que hay que comprobar, y es la que falla.</strong></p>
+<figure><img src="/figures/nb05-10.png" alt="Figura 10, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 10, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>El resultado no es creíble.</strong> A la muestra <strong>cristalina</strong> —reflexiones agudas, sin
+ninguna joroba visible— el método le asigna aproximadamente la mitad del patrón como
+amorfo. La banda naranja aparece <strong>por debajo de los picos</strong>, siguiendo su contorno.</p>
+<p>La comprobación decisiva es directa: si hubiera un halo bajo los picos, la señal <strong>entre
+pico y pico</strong> no podría bajar a cero. Se mide.</p>
+<p><strong>El mecanismo del fallo.</strong> Las dos primeras columnas lo dicen todo: en las muestras
+con picos, la señal entre reflexiones es <strong>cero</strong>, y aun así el método reporta halo allí.
+La tercera lo explica: contando las faldas, <strong>los picos ocupan cerca de la mitad del
+eje</strong>. Dentro de una ventana de 3° centrada en un racimo de reflexiones, los puntos
+elevados dejan de ser minoría, y la mediana se apoya en las faldas en lugar de en los
+valles. La última columna confirma de dónde sale el área: de <strong>debajo de los picos</strong>.</p>
+<p>La premisa era correcta —los picos son estrechos— pero la condición que el filtro
+necesita es otra: <em>que los picos sean minoría dentro de la ventana</em>. Nadie la comprobó.</p>
+<blockquote>
+<p><strong>Regla general.</strong> Una hipótesis correcta cuya condición de validez no se comprueba es
+indistinguible de una hipótesis falsa. Cuando un método asume algo sobre los datos, hay
+que <strong>medir esa suposición</strong>.</p>
+</blockquote>
+<h3>Dos parches que no arreglan el método</h3>
+<table>
+<thead>
+<tr>
+  <th>Parche</th>
+  <th>Idea</th>
+  <th>Resultado medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Enmascarar los picos e interpolar por debajo</td>
+  <td>Quitar las faldas del cálculo</td>
+  <td>Con la máscara ancha necesaria (±0,5°), la muestra <strong>amorfa</strong> cae de 0,95 a 0,42: se come halos reales</td>
+</tr>
+<tr>
+  <td>Bajar el percentil (mediana → p10)</td>
+  <td>Seguir los valles, no las faldas</td>
+  <td>Arregla la cristalina (0,04) pero deja la amorfa en 0,15</td>
+</tr>
+</tbody>
+</table>
+<p>Ninguno cumple el criterio de aceptación correcto: <strong>un arreglo tiene que funcionar en el
+caso que falla sin romper el que ya iba bien</strong>. Método descartado.</p>
+<h2>7.3 Método 3: restar el instrumento medido</h2>
+<p>Los dos métodos anteriores intentan reconocer el halo <strong>por su forma</strong> —suave, ancho—
+dentro de la propia curva. Este no supone nada sobre la forma: mide el instrumento por
+separado y lo resta.</p>
+<h3>El razonamiento</h3>
+<p>arPLS retira el fondo completo, que es la suma de las dos contribuciones:</p>
+<p>$$B = A + E$$</p>
+<p>El <strong>portamuestras vacío</strong> es una medida directa de $E$: mismo difractómetro, mismos
+ajustes, sin muestra dentro. Por tanto:</p>
+<p>$$\boxed{A = B - E}$$</p>
+<h3>La comprobación que lo justifica</h3>
+<p>Este método solo tiene sentido si el instrumento aporta un fondo <strong>sin estructura</strong>. Si
+la aportara, restarlo eliminaría también parte de la información de la muestra. Se
+comprueba midiendo cuánto se curva cada línea base respecto a una recta que une sus
+extremos.</p>
+<p>La línea base del portamuestras vacío es recta dentro del ruido. <strong>El instrumento no
+aporta curvatura</strong>, luego toda la que aparece en una muestra real pertenece a la muestra
+— y es justo la que arPLS estaba descartando como fondo.</p>
+<p>Esto también explica el fallo del método 1: en las muestras amorfas, arPLS <strong>ya se había
+llevado el halo</strong> en la primera pasada, porque una joroba de 5–15° es lo bastante suave
+para que un estimador de línea base la tome por línea base. Por eso la segunda pasada no
+encontraba nada: no quedaba nada que encontrar.</p>
+<blockquote>
+<p>Es la misma trampa que en FTIR al ajustar línea base y borrar sin querer una banda
+ancha real. La herramienta hace lo que promete; el error es pedirle que distinga dos
+cosas que ella no sabe que son distintas.</p>
+</blockquote>
+<h3>La escala del blanco</h3>
+<p>El blanco y la muestra no se contaron el mismo tiempo por paso, y el dato no aparece en
+ninguna cabecera <code>.xrdml</code> revisada, así que sus cuentas no son directamente restables.
+Se igualan por un factor $k$ ajustado <strong>por encima de 45°</strong>, donde la difusión propia de
+la muestra ya ha decaído en gran medida:</p>
+<p>$$k = \frac{\mathrm{mediana},[B(2\theta &gt; 45^\circ)]}{\mathrm{mediana},[E(2\theta &gt; 45^\circ)]}
+\qquad\qquad A = \max(B - k,E,; 0)$$</p>
+<p>Se usa la <strong>mediana</strong> y no la media porque si quedara alguna reflexión en esa ventana la
+media se iría detrás de ella.</p>
+<h3>El blanco se suaviza antes de restarlo</h3>
+<p>El portamuestras vacío es un barrido de pocas cuentas (mediana ~80), así que su ruido
+relativo es grande. Al escalarlo hacia arriba, ese ruido se amplifica y contamina el
+resultado: restar una curva ruidosa de una línea base suave da una diferencia ruidosa.</p>
+<p>Los dos lados de la resta tienen que describir el mismo tipo de objeto —un fondo suave—,
+así que <strong>$E$ es la línea base arPLS del blanco</strong>, no sus cuentas crudas.</p>
+<h3>El denominador: lo que dispersó la muestra</h3>
+<p>Falta decidir entre qué se divide $A$ para convertirla en fracción. Dividir por el área
+<strong>total</strong> del barrido metería el fondo instrumental en el denominador, y entonces
+$1 - A$ contaría ese fondo como si fuera cristalino. El denominador con sentido físico es
+todo lo que dispersó <strong>la muestra</strong>:</p>
+<p>$$A_{\text{frac}} = \frac{\int A}{\int A + \int (I - B)}$$</p>
+<p>Así el número responde a <em>de lo que dispersó esta muestra, cuánto no fue Bragg</em>, su
+complemento es genuinamente la fracción cristalina, y ninguno de los dos depende de
+cuánto fondo instrumental hubiera debajo — que varía con la exposición y el montaje.</p>
+<h3>El método, aplicado a los tres ejemplos</h3>
+<p>La figura muestra las cuatro curvas que intervienen: la medida $I$, la línea base $B$, el
+instrumento escalado $k,E$, y en naranja el área entre las dos últimas, que es $A$.</p>
+<figure><img src="/figures/nb05-11.png" alt="Figura 11, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 11, generada por el cuaderno 05.</figcaption></figure>
+<h2>7.4 Validación: contraste contra 1.881 patrones etiquetados a mano</h2>
+<p>Los tres métodos anteriores se han juzgado hasta ahora por coherencia interna. Eso no
+basta: el método 2 era internamente coherente y estaba midiendo faldas de pico.</p>
+<p>La prueba que decide es externa. Un químico clasificó 1.881 difractogramas en tres
+clases mirándolos, <strong>sin intervención del algoritmo</strong>. Si el descriptor mide lo que dice
+medir, tiene que ordenarlos igual.</p>
+<figure><img src="/figures/nb05-12.png" alt="Figura 12, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 12, generada por el cuaderno 05.</figcaption></figure>
+<p>El método 3 separa las clases; el método 2 las comprime en la parte alta de la escala,
+donde incluso las muestras cristalinas aparecen como medio amorfas.</p>
+<h3>La prueba fina: los subtipos de incipiente</h3>
+<p>Las tres clases gruesas las separaría cualquier descriptor que cuente picos. La prueba
+exigente son los subtipos, que distinguen <strong>tres formas distintas de estar a medio
+cristalizar</strong> y que el algoritmo no ha visto nunca:</p>
+<table>
+<thead>
+<tr>
+  <th>Subtipo</th>
+  <th>Qué describe</th>
+  <th>$A$ esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>HALO_DOMINANTE</code></td>
+  <td>Manda el halo, con reflexiones encima</td>
+  <td>El más alto</td>
+</tr>
+<tr>
+  <td><code>PICOS_ANCHOS</code></td>
+  <td>Hay picos, pero ensanchados</td>
+  <td>Intermedio</td>
+</tr>
+<tr>
+  <td><code>CRISTALITO_PEQUENO</code></td>
+  <td>Cristalino, con dominios pequeños</td>
+  <td>El más bajo</td>
+</tr>
+</tbody>
+</table>
+<h2>7.5 Qué mide realmente este número, y qué no</h2>
+<p>El descriptor cuantifica <strong>la fracción del patrón que no es difracción de Bragg</strong>. Dentro
+de esa fracción hay material amorfo, pero también:</p>
+<table>
+<thead>
+<tr>
+  <th>Contribución</th>
+  <th>Origen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Material amorfo</td>
+  <td>Orden de corto alcance, máximos difusos anchos</td>
+</tr>
+<tr>
+  <td>Dispersión difusa térmica y por defectos</td>
+  <td>Presente <strong>incluso en un cristal perfecto</strong>, crece con el ángulo</td>
+</tr>
+<tr>
+  <td>Portamuestras o soporte</td>
+  <td>Vidrio y PMMA dan joroba ancha propia</td>
+</tr>
+<tr>
+  <td>Dispersión del aire</td>
+  <td>Camino óptico</td>
+</tr>
+<tr>
+  <td>Fluorescencia</td>
+  <td>El <strong>Fe bajo radiación de Cu</strong> es un caso relevante en este laboratorio</td>
+</tr>
+</tbody>
+</table>
+<p>Todas se cuentan juntas, deliberadamente, porque todas son &quot;no cristalino&quot;. La
+consecuencia práctica hay que tenerla presente al leer la columna:</p>
+<blockquote>
+<p>El descriptor mide <strong>cuánto de este patrón no es difracción de Bragg</strong>, no cuánto
+material amorfo hay en el vial.</p>
+</blockquote>
+<h3>La demostración: el patrón de silicio</h3>
+<p>El patrón del laboratorio es <strong>silicio NIST 640</strong>, identificado por sus reflexiones a
+28,44 / 47,30 / 56,12°. Es tan cristalino como puede serlo una muestra. Su valor de $A$
+es la mejor ilustración de lo anterior.</p>
+<figure><img src="/figures/nb05-13.png" alt="Figura 13, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 13, generada por el cuaderno 05.</figcaption></figure>
+<p>El silicio no tiene <strong>ninguna</strong> reflexión por debajo de 28°, y ahí es donde está casi
+todo su exceso difuso. No es silicio amorfo: es el <strong>soporte</strong> sobre el que va el polvo,
+que el portamuestras vacío no lleva.</p>
+<p>Es decir, la resta supone que la muestra estaba montada igual que el blanco, y cuando esa
+condición no se cumple el número lo refleja. <strong>Dentro de un corpus montado de la misma
+forma la comparación es honesta; fuera de esa condición, no.</strong></p>
+<p>Y de ahí la limitación que conviene declarar antes de usar estos números en cualquier
+sitio: una fracción cristalina de PXRD <strong>sin patrón interno</strong> es comparativa dentro de un
+corpus, <strong>nunca un porcentaje absoluto</strong>.</p>
+<h3>El suelo del método: por debajo de 0,02 el número no mide amorfo</h3>
+<p>Hay un último límite, y salió de usar el explorador interactivo: <strong>la línea base arPLS se
+mete un poco en la base de los picos</strong>. Como es un buscador de <em>suelos</em>, en el arranque de
+una reflexión no sabe distinguir entre &quot;aquí empieza un pico&quot; y &quot;aquí el fondo sube&quot;, así
+que se sube ligeramente por el flanco. Todo lo que se sube se contabiliza después como
+difuso, es decir, <strong>infla la fracción amorfa</strong>.</p>
+<p>Se puede medir con un patrón del que se conozca la respuesta: fondo instrumental real (el
+blanco, suavizado) más gaussianas de <strong>área conocida</strong>. Cualquier cosa que la línea base
+suba por encima del fondo es área de pico mal atribuida.</p>
+<table>
+<thead>
+<tr>
+  <th>FWHM de los picos</th>
+  <th>Área de pico que absorbe la línea base</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>0,10 – 1,00°</td>
+  <td><strong>0,1 – 0,3 %</strong></td>
+</tr>
+<tr>
+  <td>1,50°</td>
+  <td>1,4 %</td>
+</tr>
+<tr>
+  <td>2,50°</td>
+  <td><strong>25 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Sobre un patrón sintético <strong>sin nada amorfo</strong>, el pipeline declara entre <strong>0,006 y 0,018</strong>
+en lugar de 0.</p>
+<p><strong>Dos lecturas, y las dos importan.</strong></p>
+<p>La tranquilizadora: para las anchuras que este corpus tiene de verdad el efecto es
+despreciable. La FWHM mediana está entre 0,16 y 0,24° según la clase, el percentil 90 no
+pasa de 0,57°, y <strong>ninguna medida del corpus supera 1°</strong> — el detector, además, descarta
+por diseño todo lo más ancho de 1,2°, porque a esa anchura ya no es una reflexión. El
+régimen donde arPLS empieza a confundirse de verdad (FWHM &gt; 1,5°) no se alcanza aquí.</p>
+<p>La que hay que tener presente: <strong>el método tiene un suelo de detección de ~0,02</strong>. Por
+debajo de ese valor, <code>amorphous_fraction_blank</code> no distingue material amorfo real del área
+de pico que la línea base se comió.</p>
+<p>Y eso reinterpreta un número que ya hemos visto varias veces. La mediana de la clase
+CRISTALINO es <strong>0,011</strong> — prácticamente el suelo. No significa que esas muestras tengan un
+1 % de amorfo: significa que <strong>no tienen amorfo medible</strong>. Un modelo que trate ese 0,011
+como una cantidad estará aprendiendo el artefacto, no la química.</p>
+<blockquote>
+<p>Es el mismo principio que la sección entera: <strong>un descriptor sin su límite de detección
+es un número sin unidades</strong>. Saber cuándo un valor deja de significar algo es parte de la
+medida, no una nota al pie.</p>
+</blockquote>
+<h1>8. Detección de picos con estadística de Poisson</h1>
+<h2>8.1 Por qué no vale un umbral fijo</h2>
+<p>Detectar rayos X es <strong>contar fotones</strong>. Contar sucesos independientes y raros en un
+intervalo fijo sigue la <strong>distribución de Poisson</strong>, cuya propiedad definitoria es que
+la varianza es igual a la media:</p>
+<p>$$P(k;\mu) = \frac{\mu^{k}e^{-\mu}}{k!}, \qquad \operatorname{Var}(k)=\mu
+;\Longrightarrow; \sigma = \sqrt{\mu}$$</p>
+<p>Es decir: <strong>el ruido es la raíz cuadrada de la señal</strong>, no una fracción de ella.</p>
+<table>
+<thead>
+<tr>
+  <th>Medida</th>
+  <th>Cuentas</th>
+  <th>Ruido esperado σ</th>
+  <th>Ruido relativo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Barrido largo</td>
+  <td>10.000</td>
+  <td>√10.000 = <strong>100</strong></td>
+  <td>1 %</td>
+</tr>
+<tr>
+  <td>Barrido rápido</td>
+  <td>100</td>
+  <td>√100 = <strong>10</strong></td>
+  <td>10 %</td>
+</tr>
+</tbody>
+</table>
+<p>Un umbral único —&quot;cuenta como pico todo lo que suba de 50&quot;— <strong>ahogaría los picos reales
+del barrido rápido</strong> y <strong>aceptaría ruido del largo</strong>. Por eso el umbral se define como
+$k\sqrt{\text{cuentas}}$: se calibra solo con cada medida.</p>
+<p><strong>Qué significa elegir k.</strong> Para μ grande, Poisson se aproxima bien por una normal, así
+que k es el número de desviaciones típicas y se traduce en una probabilidad de falso
+positivo: k = 3 deja fuera el 99,73 % del ruido, k = 5 el 99,9999 %.</p>
+<p>Hasta aquí, el razonamiento estándar. Y hasta la versión 3.2 de este pipeline el umbral
+era k = 3, con ese argumento. <strong>Estaba mal</strong>, y la sección siguiente explica por qué.</p>
+<h2>8.2 Tres sigma es el nivel para <em>un</em> contraste, no para buscar en todo un barrido</h2>
+<p>El 99,73 % de k = 3 es la probabilidad de que <strong>un punto concreto</strong> supere el umbral por
+azar. Pero detectar picos no es un contraste: es una <strong>búsqueda</strong> a lo largo de todo el
+patrón. El detector examina cada bulto candidato, y con 2.250 puntos y una separación
+mínima de 0,2° hay unas</p>
+<p>$$n_{\text{eff}} = \frac{2250\ \text{puntos}}{9\ \text{puntos/}0{,}2^\circ} \approx 250$$</p>
+<p>oportunidades independientes de que el ruido fabrique un bulto. Si cada una falla el
+0,27 % de las veces, se esperan ≈ 0,7 picos falsos por barrido solo por probar muchas
+veces. Es el mismo error que cometería quien lanza 250 monedas, encuentra una racha de
+ocho caras y concluye que esa moneda está trucada.</p>
+<p><strong>Es el problema de las comparaciones múltiples</strong>, y tiene una corrección clásica. Para
+que el número <em>esperado</em> de falsos en todo el barrido no pase de α, cada contraste
+individual debe correrse al nivel α/n_eff — la <strong>corrección de Bonferroni</strong>:</p>
+<p>$$z = \Phi^{-1}!\left(1 - \frac{\alpha}{2,n_{\text{eff}}}\right)$$</p>
+<p>Falta un segundo término. Lo que se compara con el umbral no es la altura de un punto
+sino su <strong>prominencia</strong>: la altura de un máximo <em>sobre el mínimo vecino</em>. Es una
+<strong>diferencia</strong> de dos cantidades ruidosas, así que arrastra el ruido de dos puntos, que
+es $\sqrt{2}$ veces el de uno. Juntando ambos:</p>
+<p>$$\boxed{;k = \sqrt{2};\Phi^{-1}!\left(1 - \frac{\alpha}{2,n_{\text{eff}}}\right);}$$</p>
+<p>Con α = 0,05 falsos esperados por barrido, esto da <strong>k ≈ 5,1–5,2</strong> en los barridos de
+este laboratorio.</p>
+<h3>Por qué esto sí es comparable entre muestras</h3>
+<p>Aquí está lo importante, y es contraintuitivo: <strong>k ya no es el mismo número para todas
+las medidas</strong>. Un barrido más largo tiene más oportunidades de fallar, así que se le
+exige un listón más alto.</p>
+<p>Eso <em>parece</em> romper la comparabilidad, y es justo al revés. Lo que se mantiene fijo no
+es el umbral sino la <strong>tasa de error</strong>: cada medida, larga o corta, se juzga con el
+mismo número esperado de picos falsos. Un k fijo haría lo contrario — daría a los
+barridos largos más falsos positivos que a los cortos, y el recuento de picos dependería
+de cuánto duró la medida además de de la muestra.</p>
+<p>Y no es un ajuste a mano: es una fórmula, se calcula sola para cada barrido, y queda
+guardada en <code>peak_sigma_k</code> para que cualquiera pueda ver qué umbral se aplicó.</p>
+<p><strong>Ahora, ¿por qué creerse la fórmula?</strong> Porque se puede medir.</p>
+<figure><img src="/figures/nb05-14.png" alt="Figura 14, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 14, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> Cada punto es un barrido real: en horizontal las cuentas medias en la
+zona de ángulo alto, en vertical el ruido medido ahí mismo. La línea roja <strong>no es un
+ajuste</strong>, es la predicción teórica σ = √μ dibujada encima. Los puntos la siguen a lo
+largo de dos órdenes de magnitud.</p>
+<p>Esto justifica todo lo que viene después: el umbral de detección no es un número
+elegido a mano, se deduce de que el detector cuenta fotones.</p>
+<p><em>(Detalle de método: el ruido se estima con la desviación típica de las <strong>diferencias</strong>
+entre puntos consecutivos, dividida por √2. Restar puntos consecutivos elimina
+cualquier deriva lenta del fondo y deja solo la fluctuación punto a punto; el √2 corrige
+que la resta de dos variables independientes duplica la varianza.)</em></p>
+<h3>La prueba: contar picos donde por construcción no hay ninguno</h3>
+<p>El argumento anterior es teórico. La forma de contrastarlo sin discutir es fabricar un
+difractograma del que se <strong>sabe</strong> que no tiene ni una sola reflexión, y ver cuántas
+encuentra el detector.</p>
+<p>Se construye así: se toma una medida real, se le quita todo lo estrecho y se deja solo
+su <strong>parte suave</strong> —la línea base arPLS más el halo—, que por construcción no contiene
+ninguna reflexión. A esa curva suave se le vuelve a poner ruido de conteo con
+<code>np.random.poisson</code>. El resultado es un barrido con exactamente el ruido del instrumento
+y <strong>cero</strong> picos. Cualquier cosa que el detector declare ahí es, por definición, falsa.</p>
+<p>Es un <em>bootstrap paramétrico</em>: en vez de suponer cómo se comporta el ruido, se le
+pregunta al propio instrumento.</p>
+<p><strong>Lo que sale.</strong> A k = 3 el detector declara varios picos por barrido en un patrón que
+no tiene ninguno. La k que da la fórmula cae justo donde la simulación pone el recuento
+en cero — y las dos se obtuvieron por caminos independientes.</p>
+<h3>El efecto sobre el corpus etiquetado</h3>
+<p>Una corrección solo vale si arregla lo que estaba mal <strong>sin romper lo que ya funcionaba</strong>.
+Aplicada a los 1.852 patrones etiquetados a mano:</p>
+<table>
+<thead>
+<tr>
+  <th>Clase</th>
+  <th>n</th>
+  <th>Mediana de picos, k = 3</th>
+  <th>Mediana, k calibrada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>AMORFO</td>
+  <td>486</td>
+  <td><strong>2,0</strong></td>
+  <td><strong>0,0</strong></td>
+</tr>
+<tr>
+  <td>INCIPIENTE</td>
+  <td>1.011</td>
+  <td>15,0</td>
+  <td>8,0</td>
+</tr>
+<tr>
+  <td>CRISTALINO</td>
+  <td>355</td>
+  <td>22,0</td>
+  <td><strong>19,0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Y la proporción de muestras a las que se atribuyen <strong>tres o más reflexiones</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th>Clase</th>
+  <th>k = 3</th>
+  <th>k calibrada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>AMORFO</td>
+  <td>0,47</td>
+  <td><strong>0,11</strong></td>
+</tr>
+<tr>
+  <td>CRISTALINO</td>
+  <td>0,99</td>
+  <td><strong>0,98</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Casi la mitad de los patrones que se etiquetaron como amorfos tenían tres o más
+&quot;reflexiones&quot; que eran ruido. Al corregir, esa proporción baja a una novena parte
+mientras el extremo cristalino no se mueve: la corrección <strong>quita ruido, no señal</strong>.</p>
+<h3>Lo que esto arreglaba de verdad</h3>
+<p>El recuento era lo de menos. De ese conjunto de picos salen también
+<code>two_theta_first_peak</code>, <code>d_max_angstrom</code>, las anchuras y <code>scherrer_size_nm</code>. En una
+muestra amorfa, el &quot;primer pico&quot; era una espiga de ruido — y de ella se calculaba, vía
+la ley de Bragg, un <strong>espaciado interplanar</strong> que se guardaba en la base de datos con la
+misma cara de seriedad que el de un cristal. Un modelo entrenado sobre esa columna
+habría aprendido la geometría del ruido.</p>
+<p>Desde v3.3 todos los descriptores de pico se leen del conjunto calibrado. <code>n_peaks_k3</code>
+se conserva, pero cambia de papel: ya no es &quot;el recuento sensible&quot; sino el término de
+comparación. <strong>La distancia entre los dos recuentos es en sí misma informativa</strong> —
+muchos picos a 3σ y ninguno al umbral calibrado es la firma de un patrón amorfo ruidoso;
+que los dos coincidan es la firma de uno genuinamente cristalino.</p>
+<figure><img src="/figures/nb05-15.png" alt="Figura 15, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 15, generada por el cuaderno 05.</figcaption></figure>
+<h1>9. Casos parcialmente cristalizados: reflexiones sobre halo</h1>
+<p>La sección 7 comparó los tres métodos en un ejemplo de cada clase. Esta aplica el método
+elegido al caso que más cuesta: <strong>muestras a medio cristalizar</strong>, con reflexiones nítidas
+montadas sobre una joroba ancha. Es el difractograma típico de una síntesis incompleta, y
+donde una separación mal hecha inventa cristalinidad.</p>
+<p><strong>Cómo se eligen los ejemplos.</strong> No a ojo. En una versión anterior de este cuaderno se
+escogieron por criterio visual y salieron mal: eran muestras bastante cristalinas con
+poco halo, lo contrario de lo que la sección ilustra. Elegir el ejemplo que uno cree
+representativo es decidir la conclusión de antemano.</p>
+<p>Ahora los elige una consulta sobre las etiquetas: subtipo <code>HALO_DOMINANTE</code>, ordenados por
+cuánto sobresale el halo del ruido de conteo. El criterio es numérico y reproducible.</p>
+<figure><img src="/figures/nb05-16.png" alt="Figura 16, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 16, generada por el cuaderno 05.</figcaption></figure>
+<p>Las tres son <strong>fosfonato de triazina (LIG-C)</strong> con metales distintos, lo que ya dice
+algo por sí solo sobre qué familia cristaliza peor.</p>
+<p>En los tres casos el halo queda claramente por encima del ruido y las reflexiones se
+detectan igualmente: la resta del blanco no compite con la detección de picos, porque
+actúa sobre la línea base y no sobre la señal neta.</p>
+<h1>10. El vector completo, descriptor a descriptor</h1>
+<p>Aquí no se da nada por obvio. Para <strong>cada</strong> descriptor: qué significa, <strong>la línea de
+código exacta</strong> que lo produce, y qué habría que vigilar al usarlo. Todas las variables
+que aparecen (<code>x</code>, <code>neto</code>, <code>halo</code>, <code>cristalino</code>, <code>picos</code>, <code>sigma</code>) son las que devuelve
+<code>extract_descriptors</code>, así que se puede reproducir cualquiera a mano.</p>
+<p>Se calcula una vez el vector de una muestra de referencia y se va desmontando.</p>
+<h3>Recordatorio: los cuatro grupos de descriptores</h3>
+<p>Antes de entrar uno a uno, el mapa completo. Cada fila del vector pertenece a uno de
+estos cuatro grupos, y las secciones 10.1 a 10.4 los recorren en este orden:</p>
+<table>
+<thead>
+<tr>
+  <th>Grupo</th>
+  <th>Cuántos</th>
+  <th>Qué responde</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Trazabilidad</strong></td>
+  <td>5</td>
+  <td>Con qué versión y qué parámetros se calculó esta fila</td>
+</tr>
+<tr>
+  <td><strong>Geometría de los picos</strong></td>
+  <td>8</td>
+  <td>Cuántas reflexiones, dónde, cómo de anchas, qué tamaño de cristalito</td>
+</tr>
+<tr>
+  <td><strong>Composición de fases</strong></td>
+  <td>10</td>
+  <td>Cuánto es cristalino y cuánto difuso, y con qué método</td>
+</tr>
+<tr>
+  <td><strong>Descriptores globales</strong></td>
+  <td>3</td>
+  <td>Magnitudes que no necesitan detectar ningún pico</td>
+</tr>
+</tbody>
+</table>
+<h2>10.0 Anatomía del vector: dónde vive cada descriptor</h2>
+<p>Antes de derivar los descriptores uno a uno conviene verlos <strong>todos a la vez sobre un
+difractograma real</strong>. La figura siguiente marca sobre la misma muestra cada magnitud que
+el pipeline extrae, para que al leer la tabla de la base de datos se sepa a qué parte de
+la curva corresponde cada columna.</p>
+<p><strong>La muestra elegida es SMP-0008</strong> (Ca + LIG-B), etiquetada <code>INCIPIENTE</code>. Es el caso que
+reúne todo lo que hay que señalar: 35 reflexiones bien definidas, un halo difuso a 16,5
+veces el ruido de conteo, y cobertura completa de la rejilla 5–50°. En una muestra
+cristalina no habría halo que marcar; en una amorfa no habría picos.</p>
+<p>La figura tiene cuatro paneles, y cada uno agrupa los descriptores que se leen de la
+misma parte de la señal.</p>
+<figure><img src="/figures/nb05-17.png" alt="Figura 17, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 17, generada por el cuaderno 05.</figcaption></figure>
+<h3>Cómo leer la figura</h3>
+<p><strong>Panel (a) — la curva completa.</strong> Todo lo que se puede señalar directamente sobre el
+difractograma. Las bandas grises marcan las dos ventanas angulares que el pipeline usa: la
+de bajo ángulo (5–15°), donde caen las reflexiones de celda grande características de los
+P-MOF, y la de escalado del blanco (&gt;45°). Las capas de color son la descomposición: gris
+el instrumento $kE$, naranja el difuso $A$, y lo que queda por encima es cristalino.</p>
+<p><strong>Panel (b) — la anchura.</strong> Un solo pico ampliado. La anchura a media altura es lo único
+que hace falta medir para llegar al tamaño de cristalito por Scherrer. Cuanto más estrecho
+el pico, mayor el dominio cristalino.</p>
+<p><strong>Panel (c) — la composición.</strong> Las tres áreas integradas, en porcentaje del total. Es el
+resultado de toda la sección 7 condensado en una barra.</p>
+<p><strong>Panel (d) — la concentración de intensidad.</strong> Cuántos puntos de los 2.250 acumulan la
+mitad de la intensidad total. En un patrón muy cristalino son unas decenas —toda la señal
+está en los picos—; en uno amorfo son cientos. La entropía espectral es la medida formal
+de eso mismo.</p>
+<p><strong>Panel (e) — el vector completo</strong>, con el valor real de esta medida en cada columna,
+agrupado por familia.</p>
+<h3>Tabla de referencia: los 29 descriptores</h3>
+<table>
+<thead>
+<tr>
+  <th>Grupo</th>
+  <th>Descriptor</th>
+  <th>Unidad</th>
+  <th>Dónde se ve</th>
+  <th>Qué responde</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Trazabilidad</strong></td>
+  <td><code>pipeline_version</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Con qué versión del código se calculó</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>baseline_method</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Qué estimador de línea base</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>baseline_lambda</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Rigidez de arPLS</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>broad_width_deg</code></td>
+  <td>grados</td>
+  <td>—</td>
+  <td>Ventana del filtro por anchura (método 2)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>peak_sigma_k</code></td>
+  <td>σ</td>
+  <td>(a), leyenda</td>
+  <td>Umbral aplicado, derivado de la longitud del barrido</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>blank_scale_factor</code></td>
+  <td>—</td>
+  <td>(a), banda azul</td>
+  <td>Factor $k$ que iguala el blanco a esta medida</td>
+</tr>
+<tr>
+  <td><strong>Geometría de los picos</strong></td>
+  <td><code>n_peaks</code></td>
+  <td>conteo</td>
+  <td>(a), triángulos</td>
+  <td>Cuántas reflexiones reales (umbral calibrado)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>n_peaks_k3</code></td>
+  <td>conteo</td>
+  <td>—</td>
+  <td>El mismo detector a 3σ, como término de comparación</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>n_peaks_below_15deg</code></td>
+  <td>conteo</td>
+  <td>(a), banda gris</td>
+  <td>Reflexiones de celda grande</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>two_theta_first_peak</code></td>
+  <td>grados</td>
+  <td>(a), flecha roja</td>
+  <td>Dónde empieza la difracción</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>d_max_angstrom</code></td>
+  <td>Å</td>
+  <td>(a), flecha roja</td>
+  <td>Mayor espaciado observado, vía Bragg</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>d_max_saturated</code></td>
+  <td>bool</td>
+  <td>—</td>
+  <td>Si esa primera reflexión toca el corte de 5°</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>fwhm_median_deg</code></td>
+  <td>grados</td>
+  <td>(b)</td>
+  <td>Anchura típica de reflexión</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>fwhm_min_deg</code></td>
+  <td>grados</td>
+  <td>(b)</td>
+  <td>La reflexión más estrecha</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>scherrer_size_nm</code></td>
+  <td>nm</td>
+  <td>(b)</td>
+  <td>Tamaño de dominio cristalino</td>
+</tr>
+<tr>
+  <td><strong>Composición de fases</strong></td>
+  <td><code>amorphous_fraction_blank</code></td>
+  <td>fracción</td>
+  <td>(a) naranja, (c)</td>
+  <td>Cuánto no es difracción de Bragg</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystalline_fraction_blank</code></td>
+  <td>fracción</td>
+  <td>(c)</td>
+  <td>Su complemento</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystalline_fraction</code></td>
+  <td>fracción</td>
+  <td>—</td>
+  <td>Estimación v2.0, superada (§7.2)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystalline_area</code></td>
+  <td>a.u.</td>
+  <td>(c)</td>
+  <td>Área difractada, sin normalizar por el total</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>amorphous_area</code></td>
+  <td>a.u.</td>
+  <td>(c)</td>
+  <td>Área difusa</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>amorphous_hump_center</code></td>
+  <td>grados</td>
+  <td>(a), línea discontinua</td>
+  <td>Dónde está el halo</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>amorphous_hump_fwhm</code></td>
+  <td>grados</td>
+  <td>(a)</td>
+  <td>Cómo de ancho</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>frac_intensity_below_15deg</code></td>
+  <td>fracción</td>
+  <td>(a), banda gris</td>
+  <td>Peso de la región de celda grande</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>signal_snr_area</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Si los descriptores de pico son fiables</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystallinity_reliable</code></td>
+  <td>bool</td>
+  <td>—</td>
+  <td>Bandera derivada del anterior</td>
+</tr>
+<tr>
+  <td><strong>Globales</strong></td>
+  <td><code>peak_to_background_ratio</code></td>
+  <td>—</td>
+  <td>(d)</td>
+  <td>Contraste pico/fondo</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>spectral_entropy</code></td>
+  <td>bits</td>
+  <td>(d)</td>
+  <td>Cómo de repartida está la intensidad</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>snr_global</code></td>
+  <td>—</td>
+  <td>(a), flecha verde</td>
+  <td>Pico máximo en unidades de ruido</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>raw_counts_max</code></td>
+  <td>cuentas</td>
+  <td>(a), flecha verde</td>
+  <td>Cuentas del pico más alto, sin normalizar</td>
+</tr>
+</tbody>
+</table>
+<p>Los descriptores marcados con «—» en <em>Dónde se ve</em> no son rasgos de la curva sino
+<strong>metadatos del cálculo</strong> o <strong>banderas derivadas</strong>: no hay nada que señalar en el
+difractograma porque describen cómo se procesó, no qué se midió. Están en la tabla por la
+misma razón que se anota el número de lote de un reactivo.</p>
+<h3>El recorrido completo, de la curva al vector</h3>
+<pre><code class="language-mermaid">flowchart TD
+    X([&quot;.xrdml — unos miles de puntos, rejilla propia&quot;])
+    S0[&quot;[0] resample_to_grid&quot;]
+    S1[&quot;[1] normalize_by_area&quot;]
+    S2[&quot;[2] arpls_baseline&quot;]
+    S3a[&quot;[3a] amorphous_from_blank — A = B − kE&quot;]
+    S3b[&quot;[3b] N = I − B — señal neta&quot;]
+    S4[&quot;[4] poisson_noise_level&quot;]
+    S5[&quot;[5] detect_peaks_poisson&quot;]
+    S6[&quot;[6] extract_descriptors&quot;]
+    OUT[(&quot;pxrd_descriptors — una fila por medida&quot;)]
+
+    X --&gt; S0
+    S0 --&gt;|&quot;rejilla común 5–50°, paso 0,02 (2.250 puntos)&quot;| S1
+    S1 --&gt;|&quot;área total = 1, medidas comparables entre sí&quot;| S2
+    S2 --&gt;|&quot;B, el fondo completo (instrumento + difuso)&quot;| S3a
+    S2 --&gt; S3b
+    S3b --&gt;|&quot;σ = √cuentas&quot;| S4
+    S4 --&gt;|&quot;picos por encima de k·σ&quot;| S5
+    S3a --&gt; S6
+    S5 --&gt; S6
+    S6 --&gt;|&quot;29 números: 6 de trazabilidad, 9 de geometría, 10 de fases, 4 globales&quot;| OUT
+
+    classDef src fill:#E3F2FD,stroke:#1E88E5,color:#0D47A1
+    classDef proc fill:#F1F8E9,stroke:#7CB342,color:#33691E
+    classDef out fill:#FFF3E0,stroke:#FB8C00,color:#E65100
+    class X src
+    class S0,S1,S2,S3a,S3b,S4,S5,S6 proc
+    class OUT out
+</code></pre>
+<p>Cada flecha es una decisión que las secciones 4 a 9 justifican: por qué la rejilla empieza
+en 5°, por qué se normaliza antes de ajustar la línea base, por qué el umbral es $k\sigma$
+y no un número fijo, y por qué $A$ se mide contra el blanco y no por anchura.</p>
+<h2>10.1 Trazabilidad — 5 columnas que parecen burocracia y no lo son</h2>
+<p>Guardan <strong>con qué reglas</strong> se calculó la fila. Cuando dentro de tres meses se recalculen
+los descriptores con otra λ, estas columnas son lo único que permitirá saber qué filas
+son comparables entre sí. Sin ellas tendrías una tabla con dos generaciones de números
+mezclados y ninguna forma de distinguirlos. Es el mismo principio que el <code>audit_log</code>.</p>
+<h2>10.2 Geometría de los picos — 8 descriptores</h2>
+<h3><code>n_peaks</code> y <code>n_peaks_k3</code> — cuántas reflexiones hay</h3>
+<pre><code class="language-python">k = peak_k_sigma(len(x), puntos_de_separacion_minima)   # ~5,1-5,2 aqui
+picos, anchuras = detect_peaks_poisson(x, estrecho, sigma, k_sigma=k)
+picos_k3, _     = detect_peaks_poisson(x, estrecho, sigma, k_sigma=3.0)
+n_peaks    = len(picos)
+n_peaks_k3 = len(picos_k3)
+</code></pre>
+<p>El descriptor más directo: <strong>cuántas reflexiones distingue el patrón</strong>. <code>n_peaks</code> es la
+respuesta, al umbral corregido por comparaciones múltiples de §8.2; de este conjunto —no
+del de 3σ— salen todos los descriptores de pico que vienen a continuación.</p>
+<p><code>n_peaks_k3</code> se guarda al lado a propósito, pero <strong>no como recuento alternativo</strong>: por sí
+solo sobreestima gravemente, y atribuye tres o más reflexiones al 47 % de los patrones
+que están etiquetados como amorfos. Su valor está en <strong>la distancia entre los dos</strong>:
+muchos picos a 3σ y ninguno al umbral calibrado es la firma de un patrón amorfo con
+ruido; que ambos coincidan es la de uno genuinamente cristalino.</p>
+<p>Ojo con dos cosas al usarlo como característica de un modelo: depende del <strong>tiempo de
+conteo</strong> (un barrido largo resuelve picos que uno rápido no) y satura en patrones muy
+poblados, donde picos solapados se cuentan como uno.</p>
+<h3><code>two_theta_first_peak</code> — dónde empieza a difractar</h3>
+<pre><code class="language-python">two_theta_first_peak = float(x[picos[0]])     # find_peaks los devuelve ordenados
+</code></pre>
+<p>La posición de la primera reflexión. En un armazón, cuanto más grande es la celda, más
+bajo aparece el primer pico. Es el descriptor de partida para el siguiente.</p>
+<h3><code>d_max_angstrom</code> y <code>d_max_saturated</code> — el tamaño de celda</h3>
+<pre><code class="language-python">theta_rad = np.radians(two_theta_first_peak / 2.0)
+d_max_angstrom = WAVELENGTH_CU_KA1 / (2.0 * np.sin(theta_rad))       # ley de Bragg
+d_max_saturated = two_theta_first_peak &lt;= LOW_ANGLE_CUTOFF_DEG + 0.10
+</code></pre>
+<p>Bragg convertido en tamaño. Es <strong>el descriptor más discriminante entre familias de
+MOF</strong>, porque el espaciado mayor es esencialmente el tamaño de la celda.</p>
+<p><code>d_max_saturated</code> protege de un error silencioso: si la primera reflexión cae justo en
+el corte de 5°, el valor es una <strong>cota inferior</strong>, no una medida. Sin esta bandera un
+modelo aprendería el límite del instrumento y lo confundiría con química.</p>
+<h3><code>fwhm_median_deg</code> y <code>fwhm_min_deg</code> — cómo de estrechos son</h3>
+<pre><code class="language-python">fwhm_median_deg = float(np.median(anchuras))   # tipico del patron, robusto a un outlier
+fwhm_min_deg    = float(np.min(anchuras))      # el mejor pico: cota superior de calidad
+</code></pre>
+<p>La mediana describe el patrón entero; el mínimo describe <strong>el mejor pico</strong>, que es una
+cota superior de la calidad cristalina alcanzada. Se guardan los dos porque una muestra
+con un pico excelente y muchos anchos no es lo mismo que una uniformemente mediocre.</p>
+<h3><code>scherrer_size_nm</code> — tamaño de cristalito</h3>
+<pre><code class="language-python">beta_rad = np.radians(float(anchuras[0]))
+scherrer_size_nm = (0.9 * (WAVELENGTH_CU_KA1 * 0.1)) / (beta_rad * np.cos(theta_rad))
+</code></pre>
+<p>Ecuación de Scherrer: $D = K\lambda/(\beta\cos\theta)$, con K = 0,9, el factor de forma
+convencional que se empareja con la <strong>FWHM</strong> (no con la anchura integral: son
+convenciones distintas y mezclarlas introduce un sesgo del orden del 10 %). La longitud
+de onda se pasa de Å a nm multiplicando por 0,1 para que el resultado salga en nm.</p>
+<p><strong>Advertencia obligada:</strong> Scherrer atribuye <em>toda</em> el ensanchamiento al tamaño de
+cristalito, ignorando la microdeformación y la contribución del propio instrumento. En
+esta familia de materiales debe leerse como un <strong>índice comparativo entre muestras
+medidas en el mismo equipo</strong>, no como un tamaño absoluto. Ese es precisamente el papel
+del <code>reference_standard</code>: da la anchura instrumental por debajo de la cual no se puede
+bajar.</p>
+<h2>10.3 Composición de fases — 10 descriptores</h2>
+<h3><code>crystalline_area</code>, <code>amorphous_area</code>, <code>crystalline_fraction</code></h3>
+<pre><code class="language-python">crystalline_area     = integrate(cristalino, x)    # regla del trapecio
+amorphous_area       = integrate(halo, x)
+crystalline_fraction = crystalline_area / (crystalline_area + amorphous_area)
+</code></pre>
+<p>El corazón del cuaderno. <code>integrate</code> es la regla del trapecio: aproxima el área
+sumando trapecios entre puntos consecutivos. Con paso de 0,02° y curvas suaves, el error
+es despreciable.</p>
+<p><strong>Las dos áreas se guardan además de la fracción.</strong> La fracción es adimensional y pierde
+la escala; las áreas conservan cuánta señal había. Dos muestras con $X_c$ = 0,7 pueden
+tener una diez veces más material difractando que la otra.</p>
+<h3><code>signal_snr_area</code> y <code>crystallinity_reliable</code></h3>
+<pre><code class="language-python">angular_span    = float(x[-1] - x[0])
+signal_snr_area = (crystalline_area + amorphous_area) / (sigma * angular_span)
+crystallinity_reliable = signal_snr_area &gt;= MIN_SIGNAL_SNR_AREA
+</code></pre>
+<p>Señal integrada en unidades de ruido integrado. <strong>Es el descriptor que dice si los
+demás son una medida.</strong> Anclas empíricas: blanco 0,07, muestra normal 3–5.</p>
+<h3><code>amorphous_hump_center</code> — dónde está el halo</h3>
+<pre><code class="language-python">amorphous_hump_center = integrate(x * halo, x) / integrate(halo, x)
+</code></pre>
+<p>El centroide del halo: su posición media pesada por intensidad. <strong>Arriba y abajo son
+integrales</strong>, así que el paso de la rejilla se cancela y el resultado sale en grados.</p>
+<blockquote>
+<p>Merece la pena pararse en esto porque es una trampa de cálculo clásica. Si el
+numerador fuese un sumatorio (<code>np.sum(x * halo)</code>) y el denominador una integral, las
+dos magnitudes no serían homogéneas: la integral lleva dentro el paso de 0,02° y el
+sumatorio no. El resultado saldría multiplicado por 1/0,02 = <strong>50</strong>, dando ángulos 2θ
+de más de 500° cuando el máximo físico es 180°. <strong>Sospecha siempre de cualquier
+fórmula que mezcle un sumatorio con una integral.</strong></p>
+</blockquote>
+<p>Físicamente el centro del halo informa de la <strong>distancia de contacto media</strong> en la fase
+desordenada: un halo centrado en 20–25° corresponde, vía Bragg, a distancias de 3,5–4,5 Å,
+que es lo esperable en un sólido amorfo denso.</p>
+<h3><code>amorphous_hump_fwhm</code> — cómo de ancho es</h3>
+<pre><code class="language-python">pico_halo = halo.max()
+por_encima = np.where(halo &gt;= pico_halo / 2.0)[0]
+amorphous_hump_fwhm = float(x[por_encima[-1]] - x[por_encima[0]])
+</code></pre>
+<p>Anchura a media altura del halo, medida directamente sobre la curva sin ajustar ninguna
+gaussiana. Un halo estrecho apunta a una fase desordenada con orden local a corta
+distancia; uno muy ancho, a desorden total.</p>
+<h3><code>frac_intensity_below_15deg</code> — celda grande sin depender de detectar picos</h3>
+<pre><code class="language-python">ventana = x &lt; LOW_ANGLE_WINDOW_DEG
+frac_intensity_below_15deg = integrate(normalizado[ventana], x[ventana])
+</code></pre>
+<p>Qué fracción de la intensidad total cae por debajo de 15°. <strong>No necesita detección de
+picos</strong>, así que sigue teniendo sentido en una muestra completamente amorfa donde
+<code>n_peaks_below_15deg</code> es cero. Es el compañero robusto de aquel.</p>
+<h3><code>peak_to_background_ratio</code> — contraste</h3>
+<pre><code class="language-python">background_level = float(np.median(instrumental))
+peak_to_background_ratio = float(np.max(cristalino) / background_level)
+</code></pre>
+<p>Cuánto destaca el pico más alto sobre el fondo del equipo. Es una medida de <strong>calidad de
+la medida</strong> más que del material: sube con el tiempo de conteo y con la cantidad de
+muestra.</p>
+<h3><code>amorphous_fraction_blank</code>, <code>crystalline_fraction_blank</code>, <code>blank_scale_factor</code></h3>
+<p>Los tres descriptores de v3.0, y <strong>los que hay que usar</strong> en lugar de
+<code>crystalline_fraction</code>. La derivacion completa esta en la seccion 7bis; aqui va la
+mecanica linea a linea.</p>
+<pre><code class="language-python">ventana = x &gt;= BLANK_SCALE_FROM_DEG                      # por defecto, 45 grados
+escala  = np.median(base[ventana]) / np.median(blanco[ventana])
+blank_scale_factor = escala
+</code></pre>
+<p><strong>Por qué hace falta escalar.</strong> El blanco y la muestra no se contaron el mismo tiempo por
+paso, y <code>time_per_step_s</code> no aparece en ninguna cabecera <code>.xrdml</code> revisada, asi que sus
+cuentas no son restables tal cual. Se igualan por encima de 45&amp;deg;, donde la difusion
+propia de la muestra ya ha decaido en gran medida.</p>
+<p>Se usa la <strong>mediana</strong> y no la media por lo de siempre: si queda alguna reflexion suelta
+en esa ventana, la media se iria detras de ella y la mediana no.</p>
+<pre><code class="language-python">instrumento = escala * blanco
+amorfo      = np.maximum(base - instrumento, 0.0)
+amorphous_fraction_blank = integrate(amorfo, x) / integrate(normalizada, x)
+crystalline_fraction_blank = 1.0 - amorphous_fraction_blank
+</code></pre>
+<p><code>base</code> es lo que retira arPLS, o sea <strong>instrumento + difusion de la muestra</strong>;
+<code>instrumento</code> es el aparato vacio. La resta es lo que difunde la muestra. El
+<code>np.maximum(..., 0)</code> impide un amorfo negativo, que no significaria nada fisico.</p>
+<p>La division entre el <strong>area total</strong> y no entre la suma de areas es deliberada: hace el
+numero comparable entre medidas de distinta longitud e intensidad, que es justo lo que
+<code>crystalline_fraction</code> no conseguia.</p>
+<blockquote>
+<p><strong>Y el matiz que hay que llevarse.</strong> El descriptor mide <strong>cuanto de este patron no es
+difraccion de Bragg</strong>. Ahi dentro hay material amorfo, pero tambien dispersion difusa
+termica y por defectos, dispersion del aire, fluorescencia (el Fe bajo radiacion de Cu
+es un caso claro en este laboratorio) y el portamuestras. Todo eso es &quot;no cristalino&quot;,
+y contarlo junto es una decision, no un descuido. Lo que <strong>no</strong> es, es un porcentaje
+absoluto de material amorfo.</p>
+</blockquote>
+<h2>10.4 Descriptores globales — 3 que no necesitan detectar ningún pico</h2>
+<p>Estos tres tienen una virtud que los demás no: <strong>siguen dando un número con sentido en
+una muestra completamente amorfa</strong>, donde no hay picos que detectar. Por eso son los
+más útiles para ordenar el corpus de peor a mejor.</p>
+<h3><code>spectral_entropy</code> — cómo de repartida está la intensidad</h3>
+<pre><code class="language-python">p = neto / neto.sum()                       # la curva como distribucion de probabilidad
+p = p[p &gt; 0]                                # 0*log(0) = 0, pero log(0) da -inf
+spectral_entropy = float(-np.sum(p * np.log2(p)))
+</code></pre>
+<p>La <strong>entropía de Shannon</strong>, $H = -\sum p_i \log_2 p_i$, mide cómo de repartida está una
+cantidad. Baja = todo concentrado en un sitio. Alta = repartido por todas partes. Su
+máximo posible es $\log_2 N$, con $N$ el número de puntos de la curva: unos 11,1 si la
+medida cubre la rejilla entera, algo menos si cubre un tramo más corto.</p>
+<p>Aplicada al patrón neto:</p>
+<ul>
+<li>Muestra <strong>cristalina</strong> → la intensidad se concentra en <strong>unas pocas reflexiones
+estrechas</strong> → distribución concentrada → entropía <strong>baja</strong>.</li>
+<li>Muestra <strong>amorfa</strong> → la intensidad se reparte por <strong>una joroba ancha</strong> que ocupa
+decenas de grados → distribución extendida → entropía <strong>alta</strong>.</li>
+</ul>
+<p>Medida sobre el corpus real, la correlación con la cristalinidad es de <strong>−0,73</strong> (se
+comprueba en la sección 13). Es un descriptor barato y sorprendentemente informativo.</p>
+<blockquote>
+<p><strong>Una comprobación que conviene tener en cuenta.</strong> Bajo la rejilla anterior, que
+empezaba en 3°, esta misma correlación salía con el <strong>signo contrario</strong> (+0,70), y
+había una explicación física aparentemente convincente para ello. La explicación era
+falsa: lo que concentraba la distribución era la cola del haz directo, un pico
+estrecho a bajo ángulo presente en todas las muestras. Al quitar el instrumento, el
+signo se dio la vuelta y coincidió con la intuición de manual. <strong>Cuando los datos
+contradicen la física conocida, antes de reescribir la física conviene mirar si lo
+que se está midiendo es el equipo.</strong></p>
+</blockquote>
+<blockquote>
+<p><strong>Un detalle que cambia el resultado por completo:</strong> hay que calcularla sobre la señal
+<strong>neta</strong>, no sobre el patrón completo. Sobre el patrón completo el fondo plano domina
+la distribución, todas las muestras saturan cerca del máximo log₂N y la correlación se
+desploma a +0,04. La entropía mide lo que le des; si le das fondo, mide fondo.</p>
+</blockquote>
+<h3><code>snr_global</code> — relación señal/ruido de verdad</h3>
+<pre><code class="language-python">snr_global = float(np.max(neto) / sigma)
+</code></pre>
+<p>El pico más alto de la señal <strong>neta</strong> dividido entre el ruido de Poisson. Mide si la
+señal destaca sobre la incertidumbre de conteo.</p>
+<blockquote>
+<p><strong>Por qué no <code>max / sqrt(max)</code>.</strong> Esa fórmula, que parece razonable, se simplifica
+algebraicamente a <strong>exactamente <code>sqrt(max)</code></strong>: no es una relación señal/ruido, es la
+raíz cuadrada de otro descriptor que ya está en la tabla. Para un modelo son dos
+columnas colineales que dicen lo mismo, y el nombre engaña: un patrón de puro ruido
+con muchas cuentas sacaría &quot;SNR excelente&quot;. <strong>Conviene simplificar a mano cada
+fórmula antes de darla por buena.</strong></p>
+</blockquote>
+<h3><code>raw_counts_max</code> — la escala que la normalización borró</h3>
+<pre><code class="language-python">raw_counts_max = float(np.max(y_raw))
+</code></pre>
+<p>Todo el procesado trabaja con la curva normalizada, así que la escala absoluta
+desaparece. Este descriptor la recupera. No es una propiedad del material: es
+<strong>cuánta muestra había y cuánto tiempo contó el detector</strong>. Sirve para filtrar medidas
+pobres y para explicar por qué una fila tiene <code>crystallinity_reliable = FALSE</code>.</p>
+<h3>El techo de $\log_2 N$: por qué la entropía &quot;siempre sale alta&quot;</h3>
+<p>Mirando el gráfico de entropía frente a cristalinidad salta una objeción razonable: <em>los
+puntos salen todos altos, a lo largo de todo el rango de cristalinidad</em>. Parece que el
+descriptor no discrimine nada. Conviene desmontarlo, porque la conclusión es que <strong>el
+número está bien y la escala en la que se dibuja es la que engaña</strong>.</p>
+<p><strong>1. El culpable es el logaritmo.</strong> $H$ se mide en bits y su máximo es $\log_2 N$. Con la
+rejilla de este pipeline —2.250 puntos, de 5 a 50°— ese techo vale <strong>11,14 bits</strong>. Y ahora
+la predicción a mano: un patrón cristalino con unas 40 reflexiones de 0,2° de anchura
+cubre el 17,8 % del eje, así que debería dar $\log_2(0{,}178 \times 2250) = 8{,}64$ bits.
+Medido sobre los 358 patrones CRISTALINO del corpus: <strong>8,46</strong>. La teoría acierta.</p>
+<p>Ahí está todo el misterio. Concentrar la intensidad <strong>5 veces</strong> solo baja la entropía
+$\log_2 5 = 2{,}3$ bits. El logaritmo convierte un cambio enorme en la física en un
+desplazamiento pequeño en el eje, y como nunca baja del 75 % del techo, el ojo lo lee
+como &quot;siempre alta&quot;.</p>
+<p><strong>2. Discriminar, discrimina —pero es la peor de las cuatro.</strong> Medido como AUC (0,5 =
+azar, 1,0 = separación perfecta) entre CRISTALINO y AMORFO:</p>
+<table>
+<thead>
+<tr>
+  <th>Descriptor</th>
+  <th>AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>n_peaks</code></td>
+  <td><strong>0,994</strong></td>
+</tr>
+<tr>
+  <td><code>crystalline_fraction</code></td>
+  <td>0,973</td>
+</tr>
+<tr>
+  <td><code>amorphous_fraction_blank</code></td>
+  <td>0,964</td>
+</tr>
+<tr>
+  <td><code>spectral_entropy</code></td>
+  <td><strong>0,909</strong></td>
+</tr>
+</tbody>
+</table>
+<p>0,909 no es &quot;no discrimina&quot;: es un descriptor decente. Pero llega el último, y los otros
+tres ya hacen ese trabajo mejor. En los pares difíciles cae más (CRISTALINO–INCIPIENTE
+0,78, INCIPIENTE–AMORFO 0,74).</p>
+<p><strong>3. El arreglo es de gráfico, no de cálculo.</strong> Si en vez de bits se representa
+$2^H \cdot \Delta$, con $\Delta$ el paso de la rejilla, sale <strong>sobre cuántos grados se
+reparte efectivamente la intensidad difractada</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th>Clase</th>
+  <th>$H$ (bits)</th>
+  <th>Anchura efectiva</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>CRISTALINO</td>
+  <td>8,46</td>
+  <td><strong>7,1°</strong></td>
+</tr>
+<tr>
+  <td>INCIPIENTE</td>
+  <td>8,94</td>
+  <td>9,8°</td>
+</tr>
+<tr>
+  <td>AMORFO</td>
+  <td>9,24</td>
+  <td><strong>12,1°</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>(el eje completo mide 45°)</em></p>
+<p>Eso ya se lee solo: un cristalino concentra su intensidad en 7 grados de los 45, un amorfo
+la desparrama sobre 12. Es un factor 1,7 entre clases, que es exactamente lo que la escala
+en bits estaba escondiendo.</p>
+<blockquote>
+<p><strong>Y aquí la parte honesta: esto no mejora el modelo.</strong> $2^H$ es una transformación
+<strong>monótona</strong> de $H$, y una transformación monótona no cambia el orden de los datos. Un
+árbol de decisión parte por umbrales, así que da exactamente el mismo resultado con una
+que con otra: el AUC sigue siendo 0,909 clavado. Lo único que mejora es la lectura
+humana. <strong>Cambiar de escala nunca añade información</strong> —merece la pena tenerlo presente
+cada vez que una transformación &quot;arregla&quot; un gráfico.</p>
+</blockquote>
+<p><strong>4. Entonces, ¿para qué sirve?</strong> Tiene una virtud que las otras tres no tienen: <strong>no
+necesita detectar picos</strong>. <code>n_peaks</code>, la FWHM y el tamaño de Scherrer dependen todos del
+detector de picos, y en una muestra amorfa el detector no tiene nada que detectar. La
+entropía se calcula sobre la distribución de intensidad completa y devuelve un número con
+sentido siempre. Es el descriptor de <strong>respaldo y de corroboración independiente</strong>, no el
+protagonista.</p>
+<p>Con una pega real que conviene anotar: $H$ depende de $\log_2 N$, del <strong>tamaño de la
+rejilla</strong>. Aquí da igual porque la rejilla es fija (2.250 puntos siempre), pero significa
+que el número no sería comparable con el de otro laboratorio que muestreara distinto. La
+versión en grados sí lo sería, porque el paso $\Delta$ va dentro.</p>
+<figure><img src="/figures/nb05-18.png" alt="Figura 18, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 18, generada por el cuaderno 05.</figcaption></figure>
+<h1>11. Verificación del pipeline</h1>
+<p>Las secciones 7 a 10 construyeron el vector de descriptores. Esta comprueba que los
+números que produce son correctos, con cuatro tipos de prueba independientes:</p>
+<table>
+<thead>
+<tr>
+  <th>Prueba</th>
+  <th>Qué detecta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>11.1</strong> Referencias externas</td>
+  <td>Que las muestras de respuesta conocida den lo esperado</td>
+</tr>
+<tr>
+  <td><strong>11.2</strong> Reproducción a mano</td>
+  <td>Que las fórmulas implementadas sean las documentadas</td>
+</tr>
+<tr>
+  <td><strong>11.3</strong> Rangos físicos</td>
+  <td>Valores imposibles: ángulos &gt;180°, fracciones &gt;1, tamaños negativos</td>
+</tr>
+<tr>
+  <td><strong>11.4</strong> Coherencia interna</td>
+  <td>Que las áreas sumen, que los conteos cuadren</td>
+</tr>
+</tbody>
+</table>
+<p>Ninguna de las cuatro puede detectar que el pipeline mida <strong>la cosa equivocada de forma
+consistente</strong> — eso fue lo que ocurrió con el método 2 de la sección 7.2, que era
+internamente coherente mientras medía faldas de pico. Para eso hace falta la prueba
+externa de la sección 7.4, el contraste contra las etiquetas humanas.</p>
+<p>Un pipeline se valida haciéndole preguntas cuya respuesta ya se conoce. Tres pruebas.</p>
+<p><strong>Prueba 1 — el blanco.</strong> El portamuestras vacío sale con $X_c$ ≈ 0,02, <code>SNR_area</code> ≈
+0,07 y <strong>marcado como no fiable</strong>. El pipeline dice &quot;aquí no hay nada&quot;, que es la
+respuesta correcta. Este es el control que ninguna versión anterior pasaba.</p>
+<p><strong>Prueba 2 — las sales metálicas.</strong> Nitratos de Mg, Cu, Ni, Ca, Zn y Bi son sólidos
+cristalinos bien definidos, y salen entre 0,91 y 0,96. Correcto y con el orden esperable.</p>
+<p><strong>Prueba 3 — los ligandos libres.</strong> Los fosfonatos de pireno y de triazina salen entre
+0,57 y 0,71: cristalinos, pero claramente por debajo de las sales. Es lo esperable en
+sólidos moleculares orgánicos, con reflexiones más anchas y más dispersión difusa.</p>
+<p>El <code>reference_standard</code> merece una nota aparte: su <code>FWHM_med</code> es la <strong>anchura
+instrumental</strong>, el suelo por debajo del cual ninguna muestra puede bajar. Cualquier
+<code>fwhm_min_deg</code> del corpus que salga por debajo de ese valor es un artefacto, no un
+cristal mejor.</p>
+<h2>11.5 Las tres referencias de respuesta conocida</h2>
+<p>Las pruebas anteriores comprueban coherencia interna. Esta usa objetos cuya respuesta se
+conoce <strong>antes</strong> de calcular nada, que es la única forma de detectar un error sistemático:</p>
+<table>
+<thead>
+<tr>
+  <th>Referencia</th>
+  <th>Qué es</th>
+  <th>Qué debe dar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Portamuestras vacío</strong></td>
+  <td>Sin muestra dentro</td>
+  <td>$A \approx 0$: no hay ni cristalino ni difuso</td>
+</tr>
+<tr>
+  <td><strong>Patrón Si NIST 640</strong></td>
+  <td>Silicio cristalino puro</td>
+  <td>$A$ bajo, más el aporte de su soporte (§7.5)</td>
+</tr>
+<tr>
+  <td><strong>Muestra amorfa etiquetada</strong></td>
+  <td>Vidrio a ojo de químico</td>
+  <td>$A$ alto</td>
+</tr>
+</tbody>
+</table>
+<p>Cualquier desviación es error medible, no opinión.</p>
+<h1>12. Escribir en <code>pxrd_descriptors</code></h1>
+<h2>12.1 Cómo está montada la tabla</h2>
+<p>Dos tablas separadas, y la separación es deliberada:</p>
+<ul>
+<li><strong><code>pxrd_descriptors</code></strong> — lo que calcula la máquina. Se puede <strong>borrar y recalcular</strong>
+entero cuando cambie el pipeline.</li>
+<li><strong><code>pxrd_labels</code></strong> — lo que decide una persona mirando el patrón. Es <strong>juicio humano
+caro</strong> y tiene que sobrevivir a todos los recálculos de los descriptores.</li>
+</ul>
+<p>Si las etiquetas vivieran en la misma tabla, cada recálculo las destruiría o exigiría un
+<code>UPDATE</code> selectivo propenso a errores. Separarlas hace que borrar los descriptores sea
+una operación segura.</p>
+<p>La clave primaria es <code>measurement_id</code> (UUID) con <code>ON DELETE CASCADE</code> contra
+<code>characterization_measurements</code>: si se borra una medida, sus descriptores se van con
+ella y no queda ninguna fila huérfana.</p>
+<h2>12.2 Calcular y guardar un lote</h2>
+<p>El cuaderno procesa un lote acotado para que se pueda ejecutar entero en poco tiempo.
+El corpus completo se lanza aparte con el mismo <code>src/pxrd_descriptors.py</code>, así que los
+números son idénticos.</p>
+<p>La escritura es un <strong>UPSERT</strong> (<code>ON CONFLICT ... DO UPDATE</code>): reejecutar el cuaderno
+actualiza las filas existentes en vez de duplicarlas o fallar. Y lleva el
+<code>pipeline_version</code> dentro, así que siempre se sabe con qué reglas se calculó cada fila.</p>
+<h1>13. Qué dicen los datos</h1>
+<p>Con los descriptores en la base de datos, la pregunta del principio —<em>&quot;enséñame las
+síntesis con celda grande y cristalinidad baja&quot;</em>— ya es una consulta SQL.</p>
+<figure><img src="/figures/nb05-19.png" alt="Figura 19, generada por el cuaderno 05." loading="lazy"><figcaption>Figura 19, generada por el cuaderno 05.</figcaption></figure>
+<p><strong>Qué se ve.</strong> En (a), la cristalinidad se reparte por un rango amplio en vez de
+apelotonarse en un extremo: el descriptor <strong>discrimina</strong>, que es lo único que le
+pedimos. En (b), la relación con la entropía es clara y negativa —y está dibujada como
+<strong>anchura efectiva</strong> en grados, no en bits, por la razón que explica la sección 10.4:
+en bits el logaritmo aplasta todo el corpus contra su techo y la figura sugiere que la
+entropía no discrimina, cuando lo que pasa es que la escala lo esconde. En (c), los dos
+indicadores independientes de celda grande —el espaciado máximo y el número de
+reflexiones a bajo ángulo— se mueven juntos, que es la validación cruzada barata de que
+ninguno de los dos está midiendo un artefacto.</p>
+<blockquote>
+<p><strong>La estadística implicada en (b).</strong> <code>r</code> es el coeficiente de correlación de Pearson,
+que mide relación <strong>lineal</strong> entre dos variables y va de −1 a +1. Que salga −0,70 no
+significa que la entropía &quot;cause&quot; la cristalinidad: son dos formas de mirar la misma
+propiedad física. Precisamente por eso hay que tener cuidado al meter las dos en un
+modelo: son parcialmente <strong>colineales</strong>, y dos variables colineales se reparten la
+importancia entre sí, con lo que ninguna de las dos parece importante aunque juntas
+lo sean.</p>
+</blockquote>
+<h1>14. Buenas prácticas que salen de este cuaderno</h1>
+<p>Ninguna es específica de difracción; todas cuestan poco y evitan errores caros.</p>
+<ol>
+<li><p><strong>Un cuaderno sin ejecutar no es un resultado, es una propuesta.</strong> Si todas las
+celdas tienen <code>execution_count: None</code>, los errores de cálculo sobreviven porque nadie
+los ha visto fallar.</p>
+</li>
+<li><p><strong>Calibra contra algo cuya respuesta ya conoces.</strong> Un parámetro &quot;calibrado&quot; que nadie
+ha calibrado es una opinión. Media hora de barrido contra un blanco, una muestra
+amorfa y una cristalina convierte una decisión arbitraria en una decisión defendible
+— y puede cambiar el valor elegido.</p>
+</li>
+<li><p><strong>Calcula los descriptores del blanco.</strong> Es la prueba más barata que existe y la que
+más errores caza: si el pipeline dice algo interesante sobre un portamuestras vacío,
+el pipeline está roto. Nadie lo hace porque el blanco &quot;no es una muestra&quot;.</p>
+</li>
+<li><p><strong>Un algoritmo fuera de su propósito falla en silencio.</strong> arPLS busca suelos; pedirle
+una envolvente devuelve ceros plausibles, no una excepción. Cuando un método nuevo
+produce números que quedan bien, desconfía.</p>
+</li>
+<li><p><strong>Verifica los rangos físicos de cada magnitud.</strong> Un ángulo 2θ mayor que 180°, una
+fracción mayor que 1, un tamaño negativo. Una línea de código, y caza en el día 1
+errores que si no viven meses.</p>
+</li>
+<li><p><strong>Sospecha de cualquier fórmula que mezcle un sumatorio con una integral.</strong> Si una
+lleva dentro el paso de la rejilla y la otra no, el resultado sale escalado por
+1/paso. Aquí habría sido ×50.</p>
+</li>
+<li><p><strong>Simplifica cada fórmula a mano antes de darla por buena.</strong> Un descriptor que se
+reduce algebraicamente a otro no es un descriptor, es una columna duplicada con un
+nombre que engaña.</p>
+</li>
+<li><p><strong>El orden de las operaciones importa tanto como las operaciones.</strong> Normalizar
+después de ajustar la línea base da resultados distintos que normalizar antes, y solo
+uno de los dos órdenes hace comparables las medidas entre sí.</p>
+</li>
+<li><p><strong>Distingue &quot;no hay señal&quot; de &quot;no se ha mirado&quot;.</strong> Rellenar con ceros el rango no
+medido es afirmar algo que no se ha comprobado. Una máscara de validez cuesta lo
+mismo y no miente.</p>
+</li>
+<li><p><strong>Guarda con qué reglas se calculó cada fila.</strong> <code>pipeline_version</code>,
+<code>baseline_lambda</code>, <code>peak_sigma_k</code>. Sin ellas, dos generaciones de números conviven
+en la misma tabla sin forma de distinguirlas.</p>
+</li>
+<li><p><strong>Si un descriptor puede no ser una medida, dilo en una columna.</strong> <code>d_max_saturated</code>
+y <code>crystallinity_reliable</code> no cambian ningún número: cambian lo que se puede
+afirmar con él.</p>
+</li>
+</ol>
+<hr />
+<h3>Cuatro más, que salieron de descubrir que la sección 7 estaba mal</h3>
+<ol start="12">
+<li><p><strong>Una hipótesis correcta cuya condición de validez no se comprueba es
+indistinguible de una hipótesis falsa.</strong> &quot;Los picos son estrechos&quot; era cierto. Lo que
+el filtro necesitaba era &quot;los picos son minoría dentro de la ventana&quot;, que nadie
+verificó. Cuando un método asume algo sobre los datos, <strong>mide esa suposición</strong>, no la
+des por buena.</p>
+</li>
+<li><p><strong>Un arreglo hay que probarlo contra el caso que ya funcionaba.</strong> Los dos parches de
+7bis.2 arreglaban las muestras cristalinas y destrozaban las amorfas. Probado solo
+contra el caso roto, cualquiera de los dos parecía la solución. El criterio de
+aceptación tiene que incluir lo que ya iba bien.</p>
+</li>
+<li><p><strong>Ordenar bien no es medir bien.</strong> El descriptor v2.0 clasificaba el corpus en el
+orden correcto —cristalinas arriba, amorfas abajo— mientras medía ruido y faldas de
+pico. Ninguna comprobación automática lo habría cazado: hizo falta comparar el
+<strong>valor absoluto</strong> contra etiquetas humanas.</p>
+</li>
+<li><p><strong>Elegir &quot;un ejemplo representativo&quot; a ojo es decidir la conclusión de antemano.</strong>
+Los tres ejemplos de la sección 9 estaban mal escogidos precisamente porque parecían
+buenos. Ahora los elige una consulta con un criterio numérico, y los ejemplos
+canónicos del cuaderno son el caso <strong>mediano</strong> de su clase, no el más vistoso.</p>
+</li>
+</ol>
+<h1>Cierre</h1>
+<p>Lo que hay ahora en la base de datos, y lo que no.</p>
+<p><strong>Hay:</strong> una tabla <code>pxrd_descriptors</code> con un vector de descriptores por medida, cada una documentada
+en <code>data_dictionary</code>, calculadas por un único módulo (<code>src/pxrd_descriptors.py</code>) cuyos
+parámetros están calibrados contra referencias reales del laboratorio y cuya versión
+queda escrita en cada fila.</p>
+<p><strong>No hay, y conviene tenerlo claro:</strong></p>
+<ul>
+<li><strong>La cristalinidad no es una etiqueta.</strong> Es un número reproducible que ordena el
+corpus. Que una muestra tenga la fase deseada es un juicio distinto, y ese juicio va
+en <code>pxrd_labels</code>.</li>
+<li><strong><code>d_max_angstrom</code> está limitado por el equipo a 17,66 Å.</strong> No es una propiedad del
+material.</li>
+<li><strong>Scherrer da un índice comparativo</strong>, no un tamaño de cristalito absoluto.</li>
+</ul>
+<h2>Sobre el NMF: los patrones que hacen falta no son el blanco y el patrón</h2>
+<p>Hay una pregunta razonable que conviene contestar bien porque la respuesta es
+contraintuitiva. La <strong>factorización en matrices no negativas</strong> (NMF) descompone el
+corpus completo en unos pocos <em>patrones componentes</em> que, combinados con pesos no
+negativos, reconstruyen cada difractograma. Su entrada <strong>no son las referencias</strong>: es la
+<strong>matriz entera de N medidas × 2.250 puntos</strong>. El NMF aprende las componentes <em>de los
+propios datos</em>, y necesita muchas muestras que compartan fases para poder separarlas.</p>
+<p>El blanco y el patrón hacen otro trabajo, igual de necesario pero distinto:</p>
+<table>
+<thead>
+<tr>
+  <th></th>
+  <th>Para qué sirve</th>
+  <th>Se usa en</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Blanco</strong></td>
+  <td>Definir el &quot;cero&quot;: qué mide el equipo sin muestra</td>
+  <td>Calibrar λ, validar que el pipeline no inventa señal</td>
+</tr>
+<tr>
+  <td><strong>Patrón</strong></td>
+  <td>Definir la resolución instrumental (anchura mínima)</td>
+  <td>Poner suelo a <code>fwhm_min_deg</code> y a Scherrer</td>
+</tr>
+<tr>
+  <td><strong>Precursores</strong></td>
+  <td>Reconocer señal de material de partida sin reaccionar</td>
+  <td>Descartar falsos positivos de fase nueva</td>
+</tr>
+<tr>
+  <td><strong>Simulados de SCXRD</strong></td>
+  <td>Comparar con estructuras propias ya resueltas</td>
+  <td>Triaje de <strong>novedad</strong></td>
+</tr>
+<tr>
+  <td><strong>Corpus completo</strong></td>
+  <td><strong>La entrada del NMF</strong></td>
+  <td>Descomposición en fases</td>
+</tr>
+</tbody>
+</table>
+<p>Para el NMF, entonces, hace falta el lote completo de descriptores y curvas
+resampleadas, no las referencias. Y una advertencia: aplicado a las curvas crudas el
+NMF gasta su primera componente en describir el fondo. Hay que alimentarlo con la
+<strong>señal neta</strong> que produce la sección 5.</p>
+<h2>Qué sigue</h2>
+<ol>
+<li><strong>Lanzar el lote completo</strong> sobre las ~1.880 medidas, fuera del cuaderno.</li>
+<li><strong>Etiquetar</strong> (<code>pxrd_labels</code>). Es el cuello de botella real: los descriptores no
+necesitan etiquetas, pero cualquier modelo sí.</li>
+<li><strong>NMF</strong> sobre la matriz completa de señal neta.</li>
+<li><strong>Triaje de novedad</strong> comparando posiciones de pico contra los patrones simulados de
+las estructuras propias resueltas por monocristal. Según el roadmap, ese es el
+producto real del proyecto, más que la cristalinidad.</li>
+</ol>
+<hr />
+<h3>Cómo leer este cuaderno si se usa como guía para otra técnica</h3>
+<p>El recorrido que sigue no es específico de difracción de rayos X, y ese es el motivo de
+conservar los caminos que no funcionaron en vez de presentar sólo el resultado:</p>
+<ol>
+<li><strong>Mirar la heterogeneidad antes de tocar nada</strong> (§3). Rangos, pasos y escalas
+distintas hacen incomparables dos medidas de la misma cosa.</li>
+<li><strong>Averiguar dónde acaba el instrumento y empieza la muestra</strong> (§4, §7bis). Es la
+decisión que más mueve todos los números posteriores, y la que más fácil es no tomar.</li>
+<li><strong>Calibrar los parámetros libres contra objetos de respuesta conocida</strong> (§6), no
+contra lo que quede bonito.</li>
+<li><strong>Separar las componentes con un criterio explícito</strong> (§7) y después <strong>comprobar que
+ese criterio se cumple en los datos reales</strong> (§7bis).</li>
+<li><strong>Poner un umbral estadístico, no un umbral a ojo</strong> (§8).</li>
+<li><strong>Derivar cada descriptor con su fórmula y reproducirlo a mano</strong> (§10).</li>
+<li><strong>Validar contra referencias externas y rangos físicos</strong> (§11), incluida la referencia
+que debería dar cero.</li>
+<li><strong>Guardar la trazabilidad junto al dato</strong> (§12): versión, parámetros y banderas de
+fiabilidad, para que dentro de un año se sepa con qué se calculó cada fila.</li>
+</ol>
+<p>Y el hilo que atraviesa todo: <strong>las etiquetas humanas no son un lujo del final del
+proyecto</strong>. Fueron lo único capaz de detectar que un descriptor bien construido,
+internamente coherente y con el orden correcto estaba midiendo otra cosa.</p>
+<h2>DUDAS</h2>
+<ul>
+<li>En la línea 19 se mencionan 1.800 medidas, en la línea 123 se citan 1.883 medidas, en la línea 481 se indican 1.881 patrones etiquetados a mano, en la línea 701 se desglosan 1.852 (486 amorfos + 1.011 incipientes + 355 cristalinos), y en la línea 1470 se habla de ~1.880 medidas. Convendría uniformar o documentar la causa del filtrado entre las 1.883 medidas del corpus y los 1.852 patrones finales del desglose de picos (diferencia de 31 patrones).</li>
+<li>En las líneas 1072, 1403, 1487 y 1492 se hace referencia a una sección «7bis» («en la sección 7bis», «parches de 7bis.2», «§7bis»). En el esquema final del cuaderno, dicha sección corresponde a los apartados 7.3 y 7.4. Se recomienda actualizar las referencias cruzadas internas sustituyendo «7bis» por «7.3» o «7.4».</li>
+<li>En la Sección 4.2 (línea 162), se indica que el blanco y el patrón comenzaron a medirse en 5,0066°, justificando el corte a 5,0°. Al transformar a espaciado interplanar en 4.3 mediante Bragg (17,66 Å), se menciona radiación Cu Kα1. Si el difractómetro emplea radiación de tubo estándar sin monocromador primario (doblete Kα1/Kα2 promedio a 1,5418 Å en lugar de Kα1 pura a 1,5406 Å), d_max variaría ligeramente (~17,68 Å frente a 17,66 Å).</li>
+</ul>
+
+</div></body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 Excel Ingestion and Transformation</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">English</span><a href="./01_Excel_Ingestion_and_Transformation.es.html">Español</a><a class="back" href="/">&larr; Back to the site</a></div>
+<div class="banner"><strong>Reading copy.</strong> This is the narrative of the notebook, edited for reading and translated — not the executable notebook, which is published separately with its code and outputs. Sample identifiers and unpublished ligand names are pseudonymised. Every figure below was produced by the notebook itself; none of the code was re-executed to build this page.</div>
+<h1>🧪 Notebook 01: Chemical Feature Engineering &amp; ETL Pipeline</h1>
+<h3>📌 Objectives:</h3>
+<ol>
+<li><strong>Load Raw Synthesis Dataset:</strong> Ingest the raw, multi-tab laboratory Excel workbook (<code>data/raw/</code>).</li>
+<li><strong>Column Renaming &amp; Normalisation:</strong> Standardise arbitrary column headers into a strict SQL schema.</li>
+<li><strong>Stoichiometric Feature Engineering:</strong> Calculate active millimoles (mmol) for pure liquid acids/bases and molar aqueous solutions.</li>
+<li><strong>Thermal Ramp Parsing:</strong> Extract heating and cooling rates (°C/min), initial, target, and final temperatures, and isothermal plateau duration (hours).</li>
+<li><strong>Data Sanitisation &amp; Disambiguation:</strong> Audit metadata (ISO 17025 compliance), assign default reactor volumes, standardise ligand nomenclature, drop unused columns, and disambiguate duplicate sample identifiers (<code>_v2</code>, <code>_MW</code>, <code>_HTS</code>).</li>
+<li><strong>MD5 Business Natural Key Checksum:</strong> Generate a unique MD5 hash based on six business natural keys.</li>
+<li><strong>Exploratory Data Analysis (EDA) &amp; Data Profiling:</strong> Profile the dataset comprehensively to evaluate data types, null counts, unique value cardinality, and numerical ranges.</li>
+<li><strong>Export Local Backup:</strong> Save the cleaned master dataset locally to <code>backups/df_final_limpio_backup.xlsx</code>.</li>
+<li><strong>Production-Grade PostgreSQL Upload (UPSERT):</strong> Synchronise records into <code>alchemy_db</code> using <code>ON CONFLICT DO UPDATE</code> without overwriting live n8n data.</li>
+</ol>
+<h2>📦 Step 1: Import Dependencies</h2>
+<h2>🏷️ Step 2: Header Renaming (<code>column_mapping</code>)</h2>
+<h2>⚗️ Step 3: Stoichiometric Engineering for Modulators &amp; Solvents</h2>
+<h3>🧪 Stoichiometric Calculations &amp; Mathematical Formulas:</h3>
+<blockquote>
+<p><strong>Unit correction (2026-09-03): mL versus µL.</strong> This notebook previously assumed that all additive columns were recorded in microlitres. They were not. The evidence lies within the formula of the <code>V total</code> column in the original spreadsheet:</p>
+<pre><code>V total = SUMA(Q:AB) + SUMA(AE:AU)/1000
+</code></pre>
+<p>This <code>/1000</code> divisor is applied exclusively to the second block, demonstrating that the first block—containing <code>HCl (0,6M)</code>, <code>HCl (3M)</code>, and <code>HF (3M)</code>—is expressed in millilitres. This aligns with laboratory practice: these are dilute solutions, dispensed in mL and acting as part of the solvent system; concentrated solutions and neat liquids are dosed in µL.</p>
+<p><strong>The consequence was severe and silent:</strong> dividing these volumes by 1,000 caused the water they contributed to vanish. Total volumes failed to balance in 18% of the syntheses, leaving those rows flagged with unknown solvent composition. No solvent was missing; rather, the dilution water had been omitted. Following this correction, complete solvent breakdown coverage increased from 81.7% to 99.5% of rows.</p>
+<p><strong>The database has already been corrected</strong> using <code>src/fix_volume_units_2026_09.py</code>, which updates only the affected columns. This notebook has been amended to prevent future re-ingestions from reintroducing the error, but it is not re-executed: a full ingestion run would overwrite manual chemical corrections stored in the database.</p>
+</blockquote>
+<h4>1. Type A: Molar Aqueous Solutions (Acid/Base Solutions)</h4>
+<p>Conversion of dispensed volumes to active millimoles. Unit consistency is critical: dilute solutions are provided in mL and concentrated solutions in µL:</p>
+<pre><code>mmol_HCl = V_0.6M(mL) * 0.6 + V_1M(mL) * 1.0 + V_3M(mL) * 3.0 + V_5M(mL) * 5.0 + V_12M(mL) * 12.0
+mmol_HF = V_3M(mL) * 3.0
+mmol_KOH = V_10M(mL) * 10.0
+</code></pre>
+<h4>2. Type B: Pure Organic Liquid Acids &amp; Modulators</h4>
+<p>Calculation of active millimoles (mmol) directly from dispensed volume V (µL), density ρ (g/mL), purity percentage P_%, and molecular weight MW (g/mol):</p>
+<pre><code>mmol = [V(µL) * ρ(g/mL) * P_%] / [100 * MW(g/mol)]
+</code></pre>
+<blockquote>
+<p><strong>Unit correction (2026-08-29).</strong> This formula previously contained a factor of <code>* 10 / MW</code> instead of <code>/ (100 * MW)</code>: an overestimate by a factor of <strong>1,000</strong>. Consequently, the seven neat liquid modulators were computed in <strong>µmol while labelled as mmol</strong>, whereas the Type A entries (HCl, HF, KOH, derived from molar solutions) were calculated correctly.</p>
+<p>The issue was not merely the scaling factor itself—a uniform linear transformation does not disrupt model behaviour—but that <strong>both families are summed together</strong> in <code>v_ml_features</code>. Conflating mmol with µmol caused HCl (0.004) to be dwarfed by TFA (582), effectively rendering the most frequently used modulator in the dataset invisible to machine learning models.</p>
+<p>The discrepancy was uncovered through domain-specific chemical scrutiny: the median dosage of formic acid evaluated to 1,168 'mmol', which corresponds to <strong>54 g in a 2.5 mL reactor</strong>. No standard statistical metric had flagged the anomaly.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Modulator / Additive</th>
+  <th style="text-align:left">Formula</th>
+  <th style="text-align:center">Density ρ (g/mL)</th>
+  <th style="text-align:center">Purity %</th>
+  <th style="text-align:center">Molecular Weight MW (g/mol)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>Formic acid</strong></td>
+  <td style="text-align:left">HCOOH</td>
+  <td style="text-align:center">1.22</td>
+  <td style="text-align:center">98.0%</td>
+  <td style="text-align:center">46.03</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Acetic acid</strong></td>
+  <td style="text-align:left">CH3COOH</td>
+  <td style="text-align:center">1.05</td>
+  <td style="text-align:center">99.8%</td>
+  <td style="text-align:center">60.05</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Propionic acid</strong></td>
+  <td style="text-align:left">CH3CH2COOH</td>
+  <td style="text-align:center">0.99</td>
+  <td style="text-align:center">99.5%</td>
+  <td style="text-align:center">74.08</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Trifluoroacetic acid (TFA)</strong></td>
+  <td style="text-align:left">CF3COOH</td>
+  <td style="text-align:center">1.49</td>
+  <td style="text-align:center">99.0%</td>
+  <td style="text-align:center">114.02</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Triflic acid</strong></td>
+  <td style="text-align:left">CF3SO3H</td>
+  <td style="text-align:center">1.70</td>
+  <td style="text-align:center">99.0%</td>
+  <td style="text-align:center">150.08</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Triethylamine (TEA)</strong></td>
+  <td style="text-align:left">(C2H5)3N</td>
+  <td style="text-align:center">0.726</td>
+  <td style="text-align:center">99.5%</td>
+  <td style="text-align:center">101.19</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Methanesulfonic acid</strong></td>
+  <td style="text-align:left">CH3SO3H</td>
+  <td style="text-align:center">1.48</td>
+  <td style="text-align:center">99.5%</td>
+  <td style="text-align:center">96.11</td>
+</tr>
+</tbody>
+</table>
+<h4>3. Total Water Volume Homogenisation:</h4>
+<pre><code>h2o_total_ml = V_pure_H2O(mL) + sum(V_aqueous_solutions(mL))
+</code></pre>
+<h2>🌡️ Step 4: Comprehensive Thermal Ramp Parser (°C/min Rates)</h2>
+<h3>📈 Thermal Ramp Rate Equations:</h3>
+<pre><code>Rate_heating = (T_target - T_initial) / (Time_heating(hours) * 60)   (°C/min)
+Rate_cooling = (T_target - T_final) / (Time_cooling(hours) * 60)   (°C/min)
+</code></pre>
+<p><em>Note: For rapid microwave fan cooling (<code>asap</code>), cooling duration is set to <strong>10 minutes</strong> (10/60 = 0.1667 hours) with an isothermal plateau duration of 0 hours.</em></p>
+<h2>🧹 Step 5: Data Sanitisation &amp; Disambiguation</h2>
+<h2>🔑 Step 6: MD5 Checksum Calculation (Business Natural Keys)</h2>
+<h2>📊 Step 7: Exploratory Data Analysis (EDA) &amp; Data Profiling Summary</h2>
+<h3>🔍 Automated Profiling Metrics:</h3>
+<ul>
+<li><strong>Data Types &amp; dtypes</strong> for each column.</li>
+<li><strong>Non-null vs null counts</strong> and null percentage (%).</li>
+<li><strong>Cardinality of unique values</strong> and sample value ranges.</li>
+</ul>
+<h2>💾 Step 8: Export Local Clean Excel Backup (<code>backups/</code>)</h2>
+<h2>🚀 Step 9: Production-Grade PostgreSQL Upload (UPSERT / Merge Protocol)</h2>
+
+</div></body></html>

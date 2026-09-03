@@ -217,22 +217,6 @@ export default function Eda() {
           />
         </div>
         <ScrollTable head={EDA_MISSING.tableHead} rows={EDA_MISSING.tableRows} />
-
-        <Card accent className="mt-8">
-          <h3 className="text-base">{EDA_MISSING.zeroTitle}</h3>
-          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{EDA_MISSING.zeroBody}</Rich>
-          </p>
-          <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{EDA_MISSING.zeroDetail}</Rich>
-          </p>
-        </Card>
-        <Note>
-          <Rich>{EDA_MISSING.zeroRule}</Rich>
-        </Note>
-        <p className="max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <Rich>{EDA_MISSING.lesson}</Rich>
-        </p>
       </section>
 
       {/* --- De donde salen las columnas de modulador --- */}
@@ -252,11 +236,6 @@ export default function Eda() {
             >
               {EDA_MODULATORS.formula}
             </div>
-          </Card>
-          <Card accent>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_MODULATORS.consequence}</Rich>
-            </p>
           </Card>
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
