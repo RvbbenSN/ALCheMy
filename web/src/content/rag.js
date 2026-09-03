@@ -13,17 +13,15 @@ export const RAG_HERO = {
   lead:
     'A laboratory assistant grounded in 958 indexed documents and 87,765 passages, wired to the same database the rest of this site describes - and built so that it cannot repeat an unpublished ligand name to a stranger.',
   sub:
-    'The workflow below is live and validated. The chat is not open on this site, and the section at the bottom says exactly why.',
+    'The workflow below runs on the project machine and is validated end to end. The chat itself is not opened on this site: that needs the models to live somewhere permanent, which is an architecture decision rather than a missing button.',
 }
 
 /* Lo que hay dentro, medido. */
 export const RAG_NUMBERS = [
   { n: '958', label: 'Documents indexed', why: '955 papers, 2 digitised lab notebooks, 1 supporting information' },
   { n: '87,765', label: 'Passages', why: '1,200 characters each with 250 of overlap; 1,021 on average' },
-  { n: '87,765', label: 'Context sentences', why: 'One per passage - the contextual-retrieval layer, 145 characters on average' },
   { n: '1,024', label: 'Dimensions per vector', why: '`bge-m3`, run locally, so no passage ever leaves the machine' },
   { n: '6,506', label: 'Nodes in the knowledge graph', why: '3,251 measurements, 3,213 samples, 23 metals, 10 modulators, 9 ligands' },
-  { n: '10,906', label: 'Edges', why: 'HAS_MEASUREMENT, USES_METAL, USES_LIGAND, USES_MODULATOR' },
 ]
 
 /* --------------------------------------------------------------------------
@@ -244,15 +242,6 @@ export const RAG_ACCESS = {
     'What does not exist yet is an interface that injects that token - today it can only be passed by hand. That was left deliberately for after the architecture underneath had settled.',
 }
 
-/* El enmascarado, que sigue siendo la demostracion mas clara. */
-export const RAG_MASKING = {
-  intro:
-    'Before any query leaves for an external model, unpublished ligand codes and proprietary formulas are substituted. The metal stays - it carries no trade secret. Toggle it and watch the question change.',
-  before: 'Does H4bdc-tt form a crystalline framework with Zr at 130 °C in DMF?',
-  after: 'Does LIG_HASH_8F2 form a crystalline framework with Zr at 130 °C in DMF?',
-  footnote:
-    'The ligand code on the left is invented for this demonstration. Real unpublished ligands never appear on this site, which is the point the panel is making.',
-}
 
 export const RAG_SUGGESTED = [
   'Which temperature window favours crystalline zirconium phosphonates?',
@@ -260,20 +249,3 @@ export const RAG_SUGGESTED = [
   'How does formic acid act as a modulator in solvothermal synthesis?',
 ]
 
-/* Estado real, sin adornos. Es la seccion que cierra la pantalla. */
-export const RAG_STATUS = {
-  title: 'What runs, and what this page is showing you',
-  running: [
-    ['The workflow is live', '36 nodes and 48 connections, validated with zero errors. Last successful run: 1 September 2026.'],
-    ['The corpus is indexed', '958 documents and 87,765 passages, embedded twice - once plainly, once with context.'],
-    ['The graph is built', '6,506 nodes and 10,906 edges, reachable from the assistant in two hops.'],
-    ['The fallback works', 'Verified by forcing a real Gemini failure and watching Qwen answer in its place.'],
-  ],
-  notLive: [
-    ['The chat is not open here', 'The assistant answers through n8n on the project machine. Exposing it publicly means either leaving that machine on and reachable, or moving the models to a paid endpoint. That is an architecture decision with a bill attached, not a missing button.'],
-    ['The vectors are heavy', '`rag_chunks` occupies **1.9 GB**, almost all of it the two embedding columns. That is the real constraint on hosting this cheaply, and it is why the backup routine skips the vectors and re-embeds them on restore instead of carrying them.'],
-    ['`embedding_v2` needs its index', 'Built, populated, unindexed. Named here rather than quietly omitted.'],
-  ],
-  closing:
-    'Everything on this page was built and measured. What is not exposed is not missing - it is waiting on a decision about where the models should live.',
-}

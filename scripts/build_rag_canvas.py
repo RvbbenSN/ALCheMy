@@ -41,6 +41,9 @@ OUT = ROOT / "web" / "public" / "data" / "rag_canvas.json"
 NODE_W, NODE_H = 190, 58
 COL_GAP, ROW_GAP = 96, 46      # hueco entre cajas dentro de un area
 PAD = 34                        # del marco a la caja mas exterior
+PAD_TOP = 82                    # el titulo del area se dibuja DENTRO del marco,
+                                # asi que necesita su propia banda o las cajas
+                                # de la primera fila se le echan encima.
 AREA_GAP_X, AREA_GAP_Y = 150, 130
 
 KIND = {
@@ -159,7 +162,7 @@ def main() -> int:
         n_cols = len(a["cols"])
         n_rows = max(len(c) for c in a["cols"])
         a["w"] = n_cols * NODE_W + (n_cols - 1) * COL_GAP + 2 * PAD
-        a["h"] = n_rows * NODE_H + (n_rows - 1) * ROW_GAP + 2 * PAD
+        a["h"] = n_rows * NODE_H + (n_rows - 1) * ROW_GAP + PAD_TOP + PAD
 
     # --- Colocacion de las areas: bandas apiladas --------------------------
     y = 0
@@ -187,7 +190,7 @@ def main() -> int:
             n_rows = max(len(c) for c in a["cols"])
             alto_col = len(col) * NODE_H + (len(col) - 1) * ROW_GAP
             alto_max = n_rows * NODE_H + (n_rows - 1) * ROW_GAP
-            y0 = a["y"] + PAD + (alto_max - alto_col) // 2
+            y0 = a["y"] + PAD_TOP + (alto_max - alto_col) // 2
             for ri, nombre in enumerate(col):
                 nd = by_name[nombre]
                 nd["area"] = a["n"]
@@ -195,15 +198,30 @@ def main() -> int:
                 nd["y"] = y0 + ri * (NODE_H + ROW_GAP)
 
     # --- Aristas, leidas del export tal cual -------------------------------
-    edges = []
+    # Area de las herramientas: sus aristas de entrada se agrupan (ver docstring).
+    AREA_TOOLS = 6
+
+    edges, haces = [], {}
     for src, outs in (wf.get("connections") or {}).items():
         if src not in by_name:
             continue
         for _tipo, ramas in outs.items():
             for i, rama in enumerate(ramas or []):
                 for link in rama or []:
-                    if link.get("node") in by_name:
-                        edges.append({"from": src, "to": link["node"], "branch": i})
+                    dst = link.get("node")
+                    if dst not in by_name:
+                        continue
+                    a_src = by_name[src].get("area")
+                    a_dst = by_name[dst].get("area")
+                    # Una herramienta enchufada a un agente: no se dibuja la
+                    # linea, se cuenta en el haz de ese agente.
+                    if a_src == AREA_TOOLS and a_dst != AREA_TOOLS:
+                        haces[dst] = haces.get(dst, 0) + 1
+                        continue
+                    edges.append({"from": src, "to": dst, "branch": i})
+
+    area_edges = [{"from": nodo, "toArea": AREA_TOOLS, "count": n}
+                  for nodo, n in sorted(haces.items())]
 
     # --- Ningun marco puede pisar a otro -----------------------------------
     for i in range(len(AREAS)):
@@ -225,8 +243,8 @@ def main() -> int:
               "h": max(a["y"] + a["h"] for a in areas) + pad - y0}
 
     payload = {"nodeSize": {"w": NODE_W, "h": NODE_H}, "bounds": bounds,
-               "areas": areas, "nodes": nodes, "edges": edges, "notes": [],
-               "composed": True}
+               "areas": areas, "nodes": nodes, "edges": edges,
+               "areaEdges": area_edges, "notes": [], "composed": True}
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
@@ -238,7 +256,10 @@ def main() -> int:
                  a["w"], a["h"], a["x"], a["y"]))
     print("nodos    %d (%d desactivado)"
           % (len(nodes), sum(1 for nd in nodes if nd["disabled"])))
-    print("aristas  %d  (leidas del export, sin tocar)" % len(edges))
+    print("aristas  %d dibujadas" % len(edges))
+    for ae in area_edges:
+        print("   haz: %-46s -> area %d  (%d herramientas)"
+              % (ae["from"][:46], ae["toArea"], ae["count"]))
     print("lienzo   %dx%d" % (bounds["w"], bounds["h"]))
     print("escrito  %s (%.1f KB)" % (OUT.relative_to(ROOT), OUT.stat().st_size / 1024))
     return 0

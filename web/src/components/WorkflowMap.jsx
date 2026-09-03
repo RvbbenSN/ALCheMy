@@ -440,6 +440,42 @@ export default function WorkflowMap({
                   />
                 )
               })}
+
+              {/* Haces: una sola linea del nodo al marco de un area entera.
+                  Solo el lienzo del RAG los trae; en el de la ingesta la lista
+                  viene vacia y esto no dibuja nada. */}
+              {(data.areaEdges ?? []).map((e) => {
+                const a = pos[e.from]
+                const area = areas.find((ar) => ar.n === e.toArea)
+                if (!a || !area) return null
+                const x1 = a.x + nodeSize.w / 2
+                const y1 = a.y + nodeSize.h
+                const x2 = area.x + area.w / 2
+                const y2 = area.y
+                const lit = hover === e.from
+                const mid = (y1 + y2) / 2
+                return (
+                  <g key={`bundle-${e.from}`}>
+                    <path
+                      d={`M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`}
+                      fill="none"
+                      stroke={lit ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                      strokeWidth={px(lit ? 3.4 : 2.2)}
+                      opacity={lit ? 1 : 0.6}
+                      strokeLinecap="round"
+                    />
+                    <text
+                      x={(x1 + x2) / 2}
+                      y={mid - px(6)}
+                      textAnchor="middle"
+                      fill="var(--text-muted)"
+                      style={{ fontSize: px(15) }}
+                    >
+                      {e.count} tools
+                    </text>
+                  </g>
+                )
+              })}
             </g>
           </svg>
 
@@ -590,7 +626,8 @@ export default function WorkflowMap({
               <Badge tone="accent">Whole flow</Badge>
               <h3 className="text-lg leading-tight">Every lane, end to end</h3>
               <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {nodes.length} nodes · {edges.length} connections
+                {nodes.length} nodes ·{' '}
+                {edges.length + (data.areaEdges ?? []).reduce((t, e) => t + e.count, 0)} connections
               </span>
             </div>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>

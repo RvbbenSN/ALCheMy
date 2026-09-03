@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
@@ -7,11 +6,9 @@ import {
   RAG_AREAS,
   RAG_CONTEXTUAL,
   RAG_HERO,
-  RAG_MASKING,
   RAG_NUMBERS,
   RAG_POWERS,
   RAG_RETRIEVAL,
-  RAG_STATUS,
   RAG_SUGGESTED,
 } from '../content/rag.js'
 import {
@@ -35,8 +32,6 @@ const RAG_AREA_ICON = {
 }
 
 export default function Rag() {
-  const [masked, setMasked] = useState(true)
-
   return (
     <div className="flex flex-col gap-16">
       {/* --- Entrada --- */}
@@ -218,47 +213,7 @@ export default function Rag() {
         </p>
       </section>
 
-      {/* --- Enmascarado, la demostracion --- */}
-      <section>
-        <SectionTitle eyebrow="The safeguard">IP data masking, shown live</SectionTitle>
-        <Card accent>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{RAG_MASKING.intro}</Rich>
-          </p>
-          <div className="mt-5 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setMasked((v) => !v)}
-              aria-pressed={masked}
-              className="rounded-[var(--radius-button)] px-4 py-2 text-xs uppercase tracking-wider"
-              style={{
-                border: '2.5px solid var(--accent-primary)',
-                background: masked ? 'var(--accent-primary)' : 'transparent',
-                color: masked ? 'var(--surface)' : 'var(--text-primary)',
-              }}
-            >
-              Masking {masked ? 'on' : 'off'}
-            </button>
-            <Badge tone={masked ? 'pure' : 'amorphous'}>
-              {masked ? 'Safe to send' : 'Would leak IP'}
-            </Badge>
-          </div>
-          <pre
-            className="mono mt-5 overflow-x-auto rounded-[var(--radius-card)] p-4 text-sm"
-            style={{
-              background: 'var(--surface-elevated)',
-              border: `2px solid ${masked ? 'var(--status-pure)' : 'var(--status-amorphous)'}`,
-              color: 'var(--text-secondary)',
-              whiteSpace: 'pre-wrap',
-            }}
-          >
-            {masked ? RAG_MASKING.after : RAG_MASKING.before}
-          </pre>
-          <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <Rich>{RAG_MASKING.footnote}</Rich>
-          </p>
-        </Card>
-      </section>
+      
 
       {/* --- Preguntas de ejemplo --- */}
       <section>
@@ -284,48 +239,7 @@ export default function Rag() {
         </Card>
       </section>
 
-      {/* --- Estado real --- */}
-      <section>
-        <SectionTitle eyebrow="Status">{RAG_STATUS.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="flex flex-col gap-3">
-            <h3 className="text-sm uppercase tracking-wider" style={{ color: 'var(--status-pure)' }}>
-              Built and running
-            </h3>
-            {RAG_STATUS.running.map(([t, b]) => (
-              <Card key={t}>
-                <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  <Rich>{t}</Rich>
-                </div>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  <Rich>{b}</Rich>
-                </p>
-              </Card>
-            ))}
-          </div>
-          <div className="flex flex-col gap-3">
-            <h3
-              className="text-sm uppercase tracking-wider"
-              style={{ color: 'var(--status-incipient)' }}
-            >
-              Not exposed here, and why
-            </h3>
-            {RAG_STATUS.notLive.map(([t, b]) => (
-              <Card key={t}>
-                <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  <Rich>{t}</Rich>
-                </div>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  <Rich>{b}</Rich>
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
-        <Note>
-          <Rich>{RAG_STATUS.closing}</Rich>
-        </Note>
-      </section>
+      
 
       {/* --- Cuadernos --- */}
       <section>
