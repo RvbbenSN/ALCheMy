@@ -16,6 +16,8 @@ import {
 import * as SITE_EN from '../content/site.js'
 import * as SITE_ES from '../content/es/site.js'
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { Button, Card, KpiCard, Rich, SectionTitle, Term } from '../components/ui.jsx'
 import StackGrid from '../components/StackGrid.jsx'
 
@@ -36,6 +38,7 @@ const SCREEN_ICON = {
 }
 
 export default function Overview() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, PILLARS_INTRO, SCREENS } =
     useBundle(SITE_EN, SITE_ES)
 
@@ -58,9 +61,7 @@ export default function Overview() {
         <h1
           className="max-w-4xl text-4xl uppercase md:text-6xl"
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2.5px' }}
-        >
-          Augmented Laboratory for Chemistry &amp; Materials
-        </h1>
+        >{UI.overview.augmentedLaboratoryForChemistry}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and
           governed <Term k="MLOps" />. It accelerates the discovery of advanced porous materials,
@@ -88,7 +89,7 @@ export default function Overview() {
 
       {/* --- Tres pilares --- */}
       <section>
-        <SectionTitle eyebrow="What holds it up">Three synchronized pillars</SectionTitle>
+        <SectionTitle eyebrow={UI.overview.threeSynchronizedPillars.eyebrow}>{UI.overview.threeSynchronizedPillars.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{PILLARS_INTRO}</Rich>
         </p>
@@ -113,9 +114,7 @@ export default function Overview() {
 
       {/* --- Mapa CRISP-DM --- */}
       <section>
-        <SectionTitle eyebrow="How to read this site">
-          The tabs follow <Term k="CRISP-DM" /> in order
-        </SectionTitle>
+        <SectionTitle eyebrow={UI.overview.theTabsFollowTerm.eyebrow}>{UI.overview.theTabsFollowTerm.title}</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           Each tab is one phase of the data lifecycle, in the order
           the decisions were actually made — how the data arrived, how it was cleaned, what it turned out
@@ -152,7 +151,7 @@ export default function Overview() {
 
       {/* --- Bio corta --- */}
       <section>
-        <SectionTitle eyebrow="Who is behind it">About the author</SectionTitle>
+        <SectionTitle eyebrow={UI.overview.aboutTheAuthor.eyebrow}>{UI.overview.aboutTheAuthor.title}</SectionTitle>
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <Card>
             {BIO_SHORT.map((p, i) => (
@@ -177,7 +176,7 @@ export default function Overview() {
             </div>
           </Card>
           <Card>
-            <h3 className="text-base uppercase tracking-wider">Stack</h3>
+            <h3 className="text-base uppercase tracking-wider">{UI.overview.stack}</h3>
             <div className="mt-5">
               <StackGrid />
             </div>

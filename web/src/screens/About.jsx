@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { useState } from 'react'
 import { Contact, Download, ExternalLink, Mail, Send } from 'lucide-react'
 import SOCIAL from '../data/social_icons.json'
@@ -69,6 +71,7 @@ function LinkButton({ href, icon: Icon, brand, children, primary = false }) {
    ningun dato de nadie.
    --------------------------------------------------------------------------- */
 function ContactForm() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   /* Componente aparte del de la pantalla: pide su propio paquete. */
   const { SITE } = useBundle(SITE_EN, SITE_ES)
   const [subject, setSubject] = useState('')
@@ -81,7 +84,7 @@ function ContactForm() {
 
   return (
     <Card>
-      <h3 className="text-base">Say something</h3>
+      <h3 className="text-base">{UI.about.saySomething}</h3>
       <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
         Thoughts on the platform, a question about the chemistry, an opportunity — whatever it is, it
         reaches <code><Rich>{SITE.email}</Rich></code>.
@@ -146,6 +149,7 @@ function ContactForm() {
 }
 
 export default function About() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { BIO_ABOUT, SITE } = useBundle(SITE_EN, SITE_ES)
   const { EDUCATION, EXPERIENCE, HEADLINE, METRICS, FUNDING, OUTREACH, PROJECTS, PUBLICATIONS, PUBLICATION_SUMMARY, SKILLS } = useBundle(ABOUT_EN, ABOUT_ES)
 
@@ -154,9 +158,7 @@ export default function About() {
       {/* --- cabecera --- */}
       <section>
         <Badge tone="accent">08 · About</Badge>
-        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          Rubén Serrano Nieto
-        </h1>
+        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.about.rubNSerranoNieto}</h1>
         <p className="mt-3 text-lg" style={{ color: 'var(--accent-secondary-text)', fontFamily: 'var(--font-heading)' }}>
           <Rich>{HEADLINE}</Rich>
         </p>
@@ -204,7 +206,7 @@ export default function About() {
 
       {/* --- experiencia --- */}
       <section>
-        <SectionTitle eyebrow="Experience">Where the chemistry happened</SectionTitle>
+        <SectionTitle eyebrow={UI.about.whereTheChemistryHappened.eyebrow}>{UI.about.whereTheChemistryHappened.title}</SectionTitle>
         <ol className="flex list-none flex-col gap-4 p-0">
           {EXPERIENCE.map((e) => (
             <li key={e.when}>
@@ -231,7 +233,7 @@ export default function About() {
 
       {/* --- formacion --- */}
       <section>
-        <SectionTitle eyebrow="Education">Training</SectionTitle>
+        <SectionTitle eyebrow={UI.about.training.eyebrow}>{UI.about.training.title}</SectionTitle>
         <ol className="flex list-none flex-col gap-4 p-0">
           {EDUCATION.map((e) => (
             <li key={e.when}>
@@ -263,7 +265,7 @@ export default function About() {
 
       {/* --- publicaciones --- */}
       <section>
-        <SectionTitle eyebrow="Scientific production">Publications</SectionTitle>
+        <SectionTitle eyebrow={UI.about.publications.eyebrow}>{UI.about.publications.title}</SectionTitle>
         <div className="grid gap-4 md:grid-cols-2">
           {PUBLICATIONS.map((p) => (
             <Card key={p.title} accent={Boolean(p.note)}>
@@ -314,7 +316,7 @@ export default function About() {
 
       {/* --- proyectos --- */}
       <section>
-        <SectionTitle eyebrow="Funded research">Competitive R&amp;D projects</SectionTitle>
+        <SectionTitle eyebrow={UI.about.competitiveRDProjects.eyebrow}>{UI.about.competitiveRDProjects.title}</SectionTitle>
         <Card>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Six competitive projects at European, national and regional level, contributing to data
@@ -330,7 +332,7 @@ export default function About() {
         </Card>
 
         <Card className="mt-4">
-          <h3 className="text-base">The contracts behind them</h3>
+          <h3 className="text-base">{UI.about.theContractsBehindThem}</h3>
           <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
             <Rich>{FUNDING.intro}</Rich>
           </p>
@@ -361,7 +363,7 @@ export default function About() {
 
       {/* --- competencias --- */}
       <section>
-        <SectionTitle eyebrow="Skills">What the toolbox holds</SectionTitle>
+        <SectionTitle eyebrow={UI.about.whatTheToolboxHolds.eyebrow}>{UI.about.whatTheToolboxHolds.title}</SectionTitle>
         <div className="grid gap-4 lg:grid-cols-3">
           {SKILLS.map((s) => (
             <Card key={s.group}>
@@ -378,7 +380,7 @@ export default function About() {
 
       {/* --- divulgacion --- */}
       <section>
-        <SectionTitle eyebrow="Outreach">Writing for a wider audience</SectionTitle>
+        <SectionTitle eyebrow={UI.about.writingForAWider.eyebrow}>{UI.about.writingForAWider.title}</SectionTitle>
         <div className="grid gap-4 md:grid-cols-2">
           {OUTREACH.map((o) => (
             <Card key={o.title}>
@@ -405,11 +407,11 @@ export default function About() {
 
       {/* --- contacto --- */}
       <section>
-        <SectionTitle eyebrow="Get in touch">Contact</SectionTitle>
+        <SectionTitle eyebrow={UI.about.contact.eyebrow}>{UI.about.contact.title}</SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
           <ContactForm />
           <Card accent>
-            <h3 className="text-base">Or the direct route</h3>
+            <h3 className="text-base">{UI.about.orTheDirectRoute}</h3>
             <div className="mt-4 flex flex-col gap-3">
               <a
                 href={`mailto:${SITE.email}`}

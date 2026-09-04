@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { ExternalLink, Fingerprint, Link2, ScrollText, Shapes } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Badge, Card, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
@@ -36,6 +38,7 @@ function N8nMark({ size = 18 }) {
 }
 
 export default function DataCollection() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { SITE } = useBundle(SITE_EN, SITE_ES)
   const { COLLECTION_CANVAS_INTRO, COLLECTION_HERO, COLLECTION_PROBLEM, COLLECTION_ROW_INTRO, COLLECTION_TREE, ROW_SHAPE } = useBundle(COLLECTION_EN, COLLECTION_ES)
 
@@ -43,9 +46,7 @@ export default function DataCollection() {
     <div className="flex flex-col gap-16">
       <section>
         <Badge tone="accent">02 · Data Collection</Badge>
-        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          The Ingestion Workflow
-        </h1>
+        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.collection.theIngestionWorkflow}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_HERO.lead}</Rich>
         </p>
@@ -53,7 +54,7 @@ export default function DataCollection() {
 
       {/* --- El problema y su solucion, en un solo hilo --- */}
       <section>
-        <SectionTitle eyebrow="The problem, and the fix">Why this exists</SectionTitle>
+        <SectionTitle eyebrow={UI.collection.whyThisExists.eyebrow}>{UI.collection.whyThisExists.title}</SectionTitle>
         <p className="max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_PROBLEM.body1}</Rich>
         </p>
@@ -98,7 +99,7 @@ export default function DataCollection() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="Interactive">The workflow canvas</SectionTitle>
+        <SectionTitle eyebrow={UI.collection.theWorkflowCanvas.eyebrow}>{UI.collection.theWorkflowCanvas.title}</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_CANVAS_INTRO}</Rich>
         </p>
@@ -106,9 +107,7 @@ export default function DataCollection() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="Start from the goal">
-          What a ingested measurement looks like
-        </SectionTitle>
+        <SectionTitle eyebrow={UI.collection.whatAIngestedMeasurement.eyebrow}>{UI.collection.whatAIngestedMeasurement.title}</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_ROW_INTRO}</Rich>
         </p>
@@ -117,20 +116,20 @@ export default function DataCollection() {
 
       {/* --- La misma fila, pero de verdad --- */}
       <section>
-        <SectionTitle eyebrow="The same row, opened up">{COLLECTION_TREE.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.collection.ebTheSameRowOpened}>{COLLECTION_TREE.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_TREE.lead}</Rich>
         </p>
         <IngestedRowTree />
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <Card accent>
-            <h3 className="text-base">Header metadata</h3>
+            <h3 className="text-base">{UI.collection.headerMetadata}</h3>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{COLLECTION_TREE.point}</Rich>
             </p>
           </Card>
           <Card>
-            <h3 className="text-base">Raw data</h3>
+            <h3 className="text-base">{UI.collection.rawData}</h3>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{COLLECTION_TREE.contract}</Rich>
             </p>
@@ -139,7 +138,7 @@ export default function DataCollection() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="Where it lands">The PostgreSQL schema</SectionTitle>
+        <SectionTitle eyebrow={UI.collection.thePostgresqlSchema.eyebrow}>{UI.collection.thePostgresqlSchema.title}</SectionTitle>
         <p className="max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           Every row this workflow writes ends up in one governed schema, and every automated
           decision it takes ends up in <code>audit_log</code> with a typed verdict and cause.{' '}
@@ -151,7 +150,7 @@ export default function DataCollection() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="The code itself">Notebooks behind this screen</SectionTitle>
+        <SectionTitle eyebrow={UI.collection.notebooksBehindThisScreen.eyebrow}>{UI.collection.notebooksBehindThisScreen.title}</SectionTitle>
         <NotebookList only="02" />
       </section>
     </div>

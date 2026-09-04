@@ -3415,6 +3415,506 @@
   "es": null
  },
  {
+  "path": "ui.js:UI.about.whereTheChemistryHappened.title",
+  "en": "Where the chemistry happened",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.competitiveRDProjects.title",
+  "en": "Competitive R&D projects",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.whatTheToolboxHolds.title",
+  "en": "What the toolbox holds",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.writingForAWider.title",
+  "en": "Writing for a wider audience",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.contact.eyebrow",
+  "en": "Get in touch",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.rubNSerranoNieto",
+  "en": "Rubén Serrano Nieto",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.theContractsBehindThem",
+  "en": "The contracts behind them",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.about.orTheDirectRoute",
+  "en": "Or the direct route",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.whyThisExists.eyebrow",
+  "en": "The problem, and the fix",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.whyThisExists.title",
+  "en": "Why this exists",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.theWorkflowCanvas.title",
+  "en": "The workflow canvas",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.whatAIngestedMeasurement.eyebrow",
+  "en": "Start from the goal",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.whatAIngestedMeasurement.title",
+  "en": "What a ingested measurement looks like",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.thePostgresqlSchema.eyebrow",
+  "en": "Where it lands",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.thePostgresqlSchema.title",
+  "en": "The PostgreSQL schema",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.notebooksBehindThisScreen.eyebrow",
+  "en": "The code itself",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.notebooksBehindThisScreen.title",
+  "en": "Notebooks behind this screen",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.theIngestionWorkflow",
+  "en": "The Ingestion Workflow",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.collection.ebTheSameRowOpened",
+  "en": "The same row, opened up",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.oneRowPerSynthesis.eyebrow",
+  "en": "What the table looks like",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.oneRowPerSynthesis.title",
+  "en": "One row per synthesis",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whatEachColumnHolds.eyebrow",
+  "en": "The variables, before anything is removed",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whatEachColumnHolds.title",
+  "en": "What each column holds",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.fromSpreadsheetToGoverned.title",
+  "en": "From spreadsheet to governed table",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whyTheElementIs.eyebrow",
+  "en": "From a chemical symbol to physics",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whyTheElementIs.title",
+  "en": "Why the element is replaced by its properties",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.examplesOfSilentData.eyebrow",
+  "en": "What the expert review found",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.examplesOfSilentData.title",
+  "en": "Examples of silent data bugs",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.pxrdDiffractogramsAsCore.title",
+  "en": "PXRD diffractograms as core target",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.fromRawSignalTo.eyebrow",
+  "en": "Notebook 05 · the centrepiece",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.fromRawSignalTo.title",
+  "en": "From raw signal to 29 numbers",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.labelerExplorer.eyebrow",
+  "en": "The tools that produced the ground truth",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.labelerExplorer.title",
+  "en": "Labeler & Explorer",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whatADiffractogramBecomes.eyebrow",
+  "en": "PXRD Feature Vector",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whatADiffractogramBecomes.title",
+  "en": "What a diffractogram becomes",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.readTheNotebooks.eyebrow",
+  "en": "The code itself",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.readTheNotebooks.title",
+  "en": "Read the notebooks",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.switchLane.eyebrow",
+  "en": "The other half",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.etlPxrdSignalProcessing",
+  "en": "ETL & PXRD Signal Processing",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.paso1HeaderNormalisation",
+  "en": "1 · Header normalisation",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.paso2StoichiometricFeatureEngineering",
+  "en": "2 · Stoichiometric feature engineering",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.paso4AnMd5Business",
+  "en": "4 · An MD5 business natural key",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.paso5TheLoadIs",
+  "en": "5 · The load is an UPSERT, never a replace",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.whatTheThreeLayers",
+  "en": "What the three layers mean",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.peakDetectionThe3",
+  "en": "Peak detection: the 3σ threshold",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.howToReadIt",
+  "en": "How to read it",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.ebADecisionThatCould",
+  "en": "A decision that could have been cheating",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.prep.ebFillingTheGaps",
+  "en": "Filling the gaps",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.database.whatIsInThere.eyebrow",
+  "en": "At a glance",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.database.whatIsInThere.title",
+  "en": "What is in there",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.database.sevenFamiliesAndWhat.title",
+  "en": "Seven families, and what feeds what",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.database.oneSchemaDocumented",
+  "en": "One Schema, Documented",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.database.ebTheCaseForIt",
+  "en": "The case for it",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.theNotebookBehindThis.eyebrow",
+  "en": "The code itself",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.theNotebookBehindThis.title",
+  "en": "The notebook behind this screen",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.whatThisStageSettled.title",
+  "en": "What this stage settled",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.theDecisionHighThroughput",
+  "en": "The decision: high-throughput syntheses only",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.ebFirstTheName",
+  "en": "First, the name",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.ebBeforeLoadingAnything",
+  "en": "Before loading anything",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.ebWhichRowsTheModel",
+  "en": "Which rows the model sees",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.ebOneGapDeservesIts",
+  "en": "One gap deserves its own section",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.ebTheMostImportantSubsection",
+  "en": "The most important subsection",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.eda.ebALastLookBefore",
+  "en": "A last look before modeling",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.classificationAndWhyNot.title",
+  "en": "Classification, and why not regression",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.tenModelsNotOne.title",
+  "en": "Ten models, not one",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.whereTheModelStands.title",
+  "en": "Where the model stands",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.theMetricsAndWhy.title",
+  "en": "The metrics, and why accuracy misleads here",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.whatTheseNumbersActually.title",
+  "en": "What these numbers actually say",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.theNotebookBehindThis.eyebrow",
+  "en": "The code itself",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.theNotebookBehindThis.title",
+  "en": "The notebook behind this screen",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.whatTheModelingStage.title",
+  "en": "What the modeling stage established",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.trainingEvaluation",
+  "en": "Training & Evaluation",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.whatAPlateIs",
+  "en": "What a plate is",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.soTheSplitFollows",
+  "en": "So the split follows the plate",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.ebACriticismOfThe",
+  "en": "A criticism of the problem, not the execution",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.modeling.ebDirectionNotJustMagnitude",
+  "en": "Direction, not just magnitude",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.threeSynchronizedPillars.eyebrow",
+  "en": "What holds it up",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.threeSynchronizedPillars.title",
+  "en": "Three synchronized pillars",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.theTabsFollowTerm.eyebrow",
+  "en": "How to read this site",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.theTabsFollowTerm.title",
+  "en": "The tabs follow <Term k=\"CRISP-DM\" /> in order",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.aboutTheAuthor.eyebrow",
+  "en": "Who is behind it",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.aboutTheAuthor.title",
+  "en": "About the author",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.overview.augmentedLaboratoryForChemistry",
+  "en": "Augmented Laboratory for Chemistry & Materials",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.whatIsActuallyIndexed.title",
+  "en": "What is actually indexed",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.sixStagesEndTo.title",
+  "en": "Six stages, end to end",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.theKnowledgeGraph.title",
+  "en": "The knowledge graph",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.notebooksBehindThisScreen.eyebrow",
+  "en": "The code itself",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.notebooksBehindThisScreen.title",
+  "en": "Notebooks behind this screen",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.theTechniqueBuiltEnd",
+  "en": "The technique, built end to end",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.whyItDidNot",
+  "en": "Why it did not help much here",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.rag.soItIsBuilt",
+  "en": "So it is built and not switched on",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.science.mofsLabDailyLife",
+  "en": "MOFs & Lab Daily-life",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.science.ebInsideTheLab",
+  "en": "Inside the lab",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.inSilicoSynthesis.eyebrow",
+  "en": "The virtual lab",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.whatWasTrainedAnd.title",
+  "en": "What was trained, and what survived",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.simulatorRegistryActiveLearning",
+  "en": "Simulator, Registry & Active Learning",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.theMapInThe",
+  "en": "The map in the dark",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.whereItPoints",
+  "en": "Where it points",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.whatTheMapActually",
+  "en": "What the map actually says",
+  "es": null
+ },
+ {
+  "path": "ui.js:UI.model.andItAgreesWith",
+  "en": "And it agrees with the diagnosis",
+  "es": null
+ },
+ {
   "path": "workflow.js:AREAS[0].subtitle",
   "en": "Three ingestion lanes",
   "es": null

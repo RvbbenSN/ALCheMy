@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { useState } from 'react'
 import DataScale from '../components/DataScale.jsx'
 import LabDiagram from '../components/LabDiagram.jsx'
@@ -129,6 +131,7 @@ function TechIcon({ name, primary }) {
 }
 
 export default function Science() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { LAB_CYCLE } = useBundle(SITE_EN, SITE_ES)
   const { BOTTLENECK, LAB_INTRO, MOF_DEF, MOF_FACTS, MOF_NAMING, NOBEL, SCIENCE_INTRO, TECHNIQUES, DATA_SCALE, WHY_CHARACTERISE } = useBundle(SCIENCE_EN, SCIENCE_ES)
 
@@ -139,9 +142,7 @@ export default function Science() {
     <div className="flex flex-col gap-16">
       <section>
         <Badge tone="accent">01 · The Science</Badge>
-        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          MOFs &amp; Lab Daily-life
-        </h1>
+        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.science.mofsLabDailyLife}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{SCIENCE_INTRO}</Rich>
         </p>
@@ -149,7 +150,7 @@ export default function Science() {
 
       {/* --- 1. Que es un MOF --- */}
       <section>
-        <SectionTitle eyebrow="The material">
+        <SectionTitle eyebrow={UI.science.ebTheMaterial}>
           What is a {MOF_DEF.acronym}?
         </SectionTitle>
 
@@ -251,7 +252,7 @@ export default function Science() {
 
       {/* --- 2. Por que hay que caracterizar --- */}
       <section>
-        <SectionTitle eyebrow="Characterisation"><Rich>{WHY_CHARACTERISE.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.science.ebCharacterisation}><Rich>{WHY_CHARACTERISE.title}</Rich></SectionTitle>
 
         <p className="max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{WHY_CHARACTERISE.lead}</Rich>
@@ -328,7 +329,7 @@ export default function Science() {
 
       {/* --- 3. El dia en el laboratorio --- */}
       <section>
-        <SectionTitle eyebrow="Inside the lab"><Rich>{LAB_INTRO.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.science.ebInsideTheLab}><Rich>{LAB_INTRO.title}</Rich></SectionTitle>
         <p className="mb-8 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{LAB_INTRO.lead}</Rich>
         </p>
@@ -350,7 +351,7 @@ export default function Science() {
 
       {/* --- 4. El cuello de botella --- */}
       <section>
-        <SectionTitle eyebrow="The bottleneck"><Rich>{BOTTLENECK.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.science.ebTheBottleneck}><Rich>{BOTTLENECK.title}</Rich></SectionTitle>
 
         <h3 className="text-lg"><Rich>{DATA_SCALE.title}</Rich></h3>
         <p className="mb-6 mt-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
@@ -372,7 +373,7 @@ export default function Science() {
 
       {/* --- 5. Gancho hacia la 02 --- */}
       <section>
-        <SectionTitle eyebrow="Next">
+        <SectionTitle eyebrow={UI.science.ebNext}>
           <Rich>{BOTTLENECK.hookTitle}</Rich>
         </SectionTitle>
         <Card>

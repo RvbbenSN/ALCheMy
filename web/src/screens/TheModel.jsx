@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import Simulator from '../components/Simulator.jsx'
 import KnowledgeMap from '../components/KnowledgeMap.jsx'
@@ -10,6 +12,7 @@ import * as MODEL_EN from '../content/model.js'
 import * as MODEL_ES from '../content/es/model.js'
 
 export default function TheModel() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { MODEL_NOTES } = useBundle(SITE_EN, SITE_ES)
   const { MODEL_HERO, MODEL_LOOP, MODEL_REGISTRY } = useBundle(MODEL_EN, MODEL_ES)
 
@@ -20,9 +23,7 @@ export default function TheModel() {
         <h1
           className="mt-4 text-3xl uppercase md:text-5xl"
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}
-        >
-          Simulator, Registry & Active Learning
-        </h1>
+        >{UI.model.simulatorRegistryActiveLearning}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_HERO.lead}</Rich>
         </p>
@@ -30,13 +31,13 @@ export default function TheModel() {
 
       {/* --- El simulador --- */}
       <section>
-        <SectionTitle eyebrow="The virtual lab">In-silico synthesis</SectionTitle>
+        <SectionTitle eyebrow={UI.model.inSilicoSynthesis.eyebrow}>{UI.model.inSilicoSynthesis.title}</SectionTitle>
         <Simulator />
       </section>
 
       {/* --- Como se guarda un modelo --- */}
       <section>
-        <SectionTitle eyebrow="Governance">{MODEL_REGISTRY.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.model.ebGovernance}>{MODEL_REGISTRY.title}</SectionTitle>
         <p className="mb-3 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_REGISTRY.lead}</Rich>
         </p>
@@ -85,7 +86,7 @@ export default function TheModel() {
               sobrecargada, y encaja mejor aqui: esta pantalla habla de lo que
               se despliega, no de lo que se entrena. --- */}
       <section>
-        <SectionTitle eyebrow="The registry">What was trained, and what survived</SectionTitle>
+        <SectionTitle eyebrow={UI.model.whatWasTrainedAnd.eyebrow}>{UI.model.whatWasTrainedAnd.title}</SectionTitle>
         <ScrollTable
           head={['Model', 'Algorithm', 'F1 macro', 'Size', 'Status']}
           rows={SCORECARD.registry.map((m) => [
@@ -112,16 +113,16 @@ export default function TheModel() {
 
       {/* --- El bucle, y el mapa --- */}
       <section>
-        <SectionTitle eyebrow="Feedback">{MODEL_LOOP.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.model.ebFeedback}>{MODEL_LOOP.title}</SectionTitle>
         <div className="mb-6 grid gap-4 lg:grid-cols-2">
           <Card accent>
-            <h3 className="text-base">The map in the dark</h3>
+            <h3 className="text-base">{UI.model.theMapInThe}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{MODEL_LOOP.metaphor}</Rich>
             </p>
           </Card>
           <Card>
-            <h3 className="text-base">Where it points</h3>
+            <h3 className="text-base">{UI.model.whereItPoints}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{MODEL_LOOP.method}</Rich>
             </p>
@@ -132,7 +133,7 @@ export default function TheModel() {
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <Card>
-            <h3 className="text-base">What the map actually says</h3>
+            <h3 className="text-base">{UI.model.whatTheMapActually}</h3>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
               {/* La cifra se lee del propio mapa: escribirla a mano fue un error
                   una vez ya, contando veredictos en vez de casillas. */}
@@ -151,7 +152,7 @@ export default function TheModel() {
             </ul>
           </Card>
           <Card accent>
-            <h3 className="text-base">And it agrees with the diagnosis</h3>
+            <h3 className="text-base">{UI.model.andItAgreesWith}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{MODEL_LOOP.consequence}</Rich>
             </p>

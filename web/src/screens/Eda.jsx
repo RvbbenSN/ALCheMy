@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import * as SITE_EN from '../content/site.js'
 import * as SITE_ES from '../content/es/site.js'
 import * as SCREENS_EN from '../content/screens.js'
@@ -31,6 +33,7 @@ function Pullquote({ children, tone = 'accent' }) {
 }
 
 export default function Eda() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { FUNNEL } = useBundle(SITE_EN, SITE_ES)
   const { EDA_BIVARIATE, EDA_CONFOUNDER, EDA_INTRO, EDA_MODULATORS, EDA_FUNNEL_INTRO, EDA_CORRELATION, EDA_DISCRETE, EDA_IMBALANCE, EDA_LEAKAGE, EDA_MISSING, EDA_PCA } = useBundle(SCREENS_EN, SCREENS_ES)
 
@@ -38,9 +41,7 @@ export default function Eda() {
     <div className="flex flex-col gap-16">
       <section>
         <Badge tone="accent">04 · Data Understanding</Badge>
-        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          Data Understanding
-        </h1>
+        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.eda.dataUnderstanding}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           Everything below changed the plan before a single model was trained.
         </p>
@@ -48,7 +49,7 @@ export default function Eda() {
 
       {/* --- Que es un EDA --- */}
       <section>
-        <SectionTitle eyebrow="First, the name">
+        <SectionTitle eyebrow={UI.eda.ebFirstTheName}>
           {EDA_INTRO.acronym} &mdash; {EDA_INTRO.expansion}
         </SectionTitle>
         {/* Misma forma que los tres verbos del ETL en la pantalla 03: tres
@@ -105,7 +106,7 @@ export default function Eda() {
 
       {/* --- 1. El factor de confusion --- */}
       <section>
-        <SectionTitle eyebrow="Before loading anything"><Rich>{EDA_CONFOUNDER.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebBeforeLoadingAnything}><Rich>{EDA_CONFOUNDER.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{EDA_CONFOUNDER.intro}</Rich>
         </p>
@@ -129,7 +130,7 @@ export default function Eda() {
         </Card>
 
         <Card className="mt-6">
-          <h3 className="text-lg">The decision: high-throughput syntheses only</h3>
+          <h3 className="text-lg">{UI.eda.theDecisionHighThroughput}</h3>
           <ol className="mt-4 flex list-decimal flex-col gap-2 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {EDA_CONFOUNDER.decision.map((d, i) => (
               <li key={i}><Rich>{d}</Rich></li>
@@ -141,7 +142,7 @@ export default function Eda() {
 
       {/* --- 2. El embudo --- */}
       <section>
-        <SectionTitle eyebrow="Which rows the model sees">{EDA_FUNNEL_INTRO.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebWhichRowsTheModel}>{EDA_FUNNEL_INTRO.title}</SectionTitle>
         <p className="mb-3 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{EDA_FUNNEL_INTRO.lead}</Rich>
         </p>
@@ -175,7 +176,7 @@ export default function Eda() {
 
       {/* --- 3. Ausentes --- */}
       <section>
-        <SectionTitle eyebrow="Profiling"><Rich>{EDA_MISSING.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebProfiling}><Rich>{EDA_MISSING.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{EDA_MISSING.intro}</Rich>
         </p>
@@ -192,7 +193,7 @@ export default function Eda() {
 
       {/* --- De donde salen las columnas de modulador --- */}
       <section>
-        <SectionTitle eyebrow="One gap deserves its own section">{EDA_MODULATORS.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebOneGapDeservesIts}>{EDA_MODULATORS.title}</SectionTitle>
         {/* Una sola tarjeta a todo el ancho: el texto es corto y no gana nada
             metido en media pantalla con la otra mitad vacia. */}
         <Card>
@@ -222,7 +223,7 @@ export default function Eda() {
 
       {/* --- 4. Desequilibrio --- */}
       <section>
-        <SectionTitle eyebrow="The target"><Rich>{EDA_IMBALANCE.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebTheTarget}><Rich>{EDA_IMBALANCE.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{EDA_IMBALANCE.intro}</Rich>
         </p>
@@ -271,7 +272,7 @@ export default function Eda() {
 
       {/* --- 5. Variables discretas --- */}
       <section>
-        <SectionTitle eyebrow="Distributions"><Rich>{EDA_DISCRETE.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebDistributions}><Rich>{EDA_DISCRETE.title}</Rich></SectionTitle>
         <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{EDA_DISCRETE.body}</Rich>
         </p>
@@ -289,7 +290,7 @@ export default function Eda() {
 
       {/* --- 6. Correlacion --- */}
       <section>
-        <SectionTitle eyebrow="Association"><Rich>{EDA_CORRELATION.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebAssociation}><Rich>{EDA_CORRELATION.title}</Rich></SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
           {EDA_CORRELATION.questions.map((q, qi) => (
             <Card key={q.title}>
@@ -354,7 +355,7 @@ export default function Eda() {
 
       {/* --- 7. Bivariante --- */}
       <section>
-        <SectionTitle eyebrow="Class separation"><Rich>{EDA_BIVARIATE.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebClassSeparation}><Rich>{EDA_BIVARIATE.title}</Rich></SectionTitle>
         <Card className="mb-6">
           <h3 className="text-base">{EDA_BIVARIATE.whichTitle}</h3>
           <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -363,9 +364,7 @@ export default function Eda() {
 
           {/* Recordatorio de que aspecto tiene el vector de cada clase: se
               explico en la pantalla 03 y nadie lee en orden. */}
-          <h4 className="mt-5 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-            {EDA_BIVARIATE.shapesTitle}
-          </h4>
+          <h4 className="mt-5 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>{UI.eda.edaBivariateShapestitle}</h4>
           <ul className="mt-3 flex list-none flex-col gap-2.5 p-0 text-sm">
             {EDA_BIVARIATE.shapes.map((s) => {
               const tone = `var(--status-${s.tone})`
@@ -400,7 +399,7 @@ export default function Eda() {
 
       {/* --- 8. Fuga por agrupamiento --- */}
       <section>
-        <SectionTitle eyebrow="The most important subsection"><Rich>{EDA_LEAKAGE.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebTheMostImportantSubsection}><Rich>{EDA_LEAKAGE.title}</Rich></SectionTitle>
         <Card accent>
           <p style={{ color: 'var(--text-secondary)' }}><Rich>{EDA_LEAKAGE.body}</Rich></p>
           <div className="my-5">
@@ -423,7 +422,7 @@ export default function Eda() {
 
       {/* --- 9. PCA --- */}
       <section>
-        <SectionTitle eyebrow="A last look before modeling"><Rich>{EDA_PCA.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.eda.ebALastLookBefore}><Rich>{EDA_PCA.title}</Rich></SectionTitle>
         <p className="mb-6 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
           <Rich>{EDA_PCA.disclaimer}</Rich>
         </p>
@@ -483,12 +482,12 @@ export default function Eda() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="The code itself">The notebook behind this screen</SectionTitle>
+        <SectionTitle eyebrow={UI.eda.theNotebookBehindThis.eyebrow}>{UI.eda.theNotebookBehindThis.title}</SectionTitle>
         <NotebookList only="04" />
       </section>
 
       <section>
-        <SectionTitle eyebrow="Takeaway">What this stage settled</SectionTitle>
+        <SectionTitle eyebrow={UI.eda.whatThisStageSettled.eyebrow}>{UI.eda.whatThisStageSettled.title}</SectionTitle>
         <Card accent>
           <ul className="flex list-none flex-col gap-3 p-0" style={{ color: 'var(--text-secondary)' }}>
             <li>

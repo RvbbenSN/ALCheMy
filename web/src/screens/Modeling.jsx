@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import * as SCREENS_EN from '../content/screens.js'
 import * as SCREENS_ES from '../content/es/screens.js'
 import { Badge, Card, Note, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
@@ -34,15 +36,14 @@ function Pullquote({ children, tone = 'accent' }) {
 }
 
 export default function Modeling() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { MODEL_ASSESSMENT, MODEL_CHEMISTRY, MODEL_ERRORS, MODEL_FINDINGS, MODEL_LINEUP, MODEL_METRICS, MODEL_SHAP, MODEL_TWO, MODEL_VALIDATION } = useBundle(SCREENS_EN, SCREENS_ES)
 
   return (
     <div className="flex flex-col gap-16">
       <section>
         <Badge tone="accent">05 · Modeling &amp; Evaluation</Badge>
-        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          Training &amp; Evaluation
-        </h1>
+        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.modeling.trainingEvaluation}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           Ten model families are trained on the same 1,516 syntheses and compared under one validation
           scheme, grouped by plate. The headline figure is <strong>0.52 macro F1</strong> against 0.26
@@ -52,7 +53,7 @@ export default function Modeling() {
 
       {/* --- El planteamiento --- */}
       <section>
-        <SectionTitle eyebrow="The framing">Classification, and why not regression</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.classificationAndWhyNot.eyebrow}>{UI.modeling.classificationAndWhyNot.title}</SectionTitle>
         <Card>
           <p style={{ color: 'var(--text-secondary)' }}>
             The target is the same three-way verdict the bench already used when triaging a 24-well plate:
@@ -66,7 +67,7 @@ export default function Modeling() {
 
       {/* --- Los diez modelos --- */}
       <section>
-        <SectionTitle eyebrow="Experimental design">Ten models, not one</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.tenModelsNotOne.eyebrow}>{UI.modeling.tenModelsNotOne.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_LINEUP.intro}</Rich>
         </p>
@@ -131,10 +132,10 @@ export default function Modeling() {
 
       {/* --- Validacion --- */}
       <section>
-        <SectionTitle eyebrow="Validation"><Rich>{MODEL_VALIDATION.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.ebValidation}><Rich>{MODEL_VALIDATION.title}</Rich></SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <h3 className="text-base">What a plate is</h3>
+            <h3 className="text-base">{UI.modeling.whatAPlateIs}</h3>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
               {MODEL_VALIDATION.setupPoints.map((p, i) => (
                 <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
@@ -144,7 +145,7 @@ export default function Modeling() {
             </ul>
           </Card>
           <Card accent>
-            <h3 className="text-base">So the split follows the plate</h3>
+            <h3 className="text-base">{UI.modeling.soTheSplitFollows}</h3>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
               {MODEL_VALIDATION.bodyPoints.map((p, i) => (
                 <li key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
@@ -161,7 +162,7 @@ export default function Modeling() {
 
       {/* --- Dos modelos --- */}
       <section>
-        <SectionTitle eyebrow="A criticism of the problem, not the execution"><Rich>{MODEL_TWO.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.ebACriticismOfThe}><Rich>{MODEL_TWO.title}</Rich></SectionTitle>
         <Pullquote><Rich>{MODEL_TWO.objection}</Rich></Pullquote>
         <p className="max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_TWO.body}</Rich>
@@ -194,7 +195,7 @@ export default function Modeling() {
 
       {/* --- Cifras de rendimiento, antes que la prosa --- */}
       <section>
-        <SectionTitle eyebrow="Performance">Where the model stands</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.whereTheModelStands.eyebrow}>{UI.modeling.whereTheModelStands.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           The figures first. Every number below is cross-validated with plates as groups, and is shown
           against the trivial baseline — without that reference an F1 of 0.52 could mean anything.
@@ -204,7 +205,7 @@ export default function Modeling() {
 
       {/* --- La lectura honesta --- */}
       <section>
-        <SectionTitle eyebrow="Assessment"><Rich>{MODEL_ASSESSMENT.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.ebAssessment}><Rich>{MODEL_ASSESSMENT.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_ASSESSMENT.lead}</Rich>
         </p>
@@ -291,7 +292,7 @@ export default function Modeling() {
 
       {/* --- Metricas --- */}
       <section>
-        <SectionTitle eyebrow="Evaluation">The metrics, and why accuracy misleads here</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.theMetricsAndWhy.eyebrow}>{UI.modeling.theMetricsAndWhy.title}</SectionTitle>
         <ScrollTable head={MODEL_METRICS.tableHead} rows={MODEL_METRICS.tableRows} />
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
           <Rich>{MODEL_METRICS.note}</Rich>
@@ -300,7 +301,7 @@ export default function Modeling() {
 
       {/* --- Que dicen los numeros --- */}
       <section>
-        <SectionTitle eyebrow="Results">What these numbers actually say</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.whatTheseNumbersActually.eyebrow}>{UI.modeling.whatTheseNumbersActually.title}</SectionTitle>
         <ol className="flex list-none flex-col gap-4 p-0">
           {MODEL_FINDINGS.map((f, i) => (
             <li key={i}>
@@ -339,7 +340,7 @@ export default function Modeling() {
 
       {/* --- Errores --- */}
       <section>
-        <SectionTitle eyebrow="Error analysis"><Rich>{MODEL_ERRORS.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.ebErrorAnalysis}><Rich>{MODEL_ERRORS.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_ERRORS.intro}</Rich>
         </p>
@@ -371,7 +372,7 @@ export default function Modeling() {
 
       {/* --- Lectura quimica --- */}
       <section>
-        <SectionTitle eyebrow="Interpretation"><Rich>{MODEL_CHEMISTRY.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.ebInterpretation}><Rich>{MODEL_CHEMISTRY.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_CHEMISTRY.why}</Rich>
         </p>
@@ -398,7 +399,7 @@ export default function Modeling() {
 
       {/* --- SHAP --- */}
       <section>
-        <SectionTitle eyebrow="Direction, not just magnitude"><Rich>{MODEL_SHAP.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.ebDirectionNotJustMagnitude}><Rich>{MODEL_SHAP.title}</Rich></SectionTitle>
         <Card>
           <p style={{ color: 'var(--text-secondary)' }}><Rich>{MODEL_SHAP.body}</Rich></p>
           <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -422,12 +423,12 @@ export default function Modeling() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="The code itself">The notebook behind this screen</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.theNotebookBehindThis.eyebrow}>{UI.modeling.theNotebookBehindThis.title}</SectionTitle>
         <NotebookList only="05" />
       </section>
 
       <section>
-        <SectionTitle eyebrow="Takeaway">What the modeling stage established</SectionTitle>
+        <SectionTitle eyebrow={UI.modeling.whatTheModelingStage.eyebrow}>{UI.modeling.whatTheModelingStage.title}</SectionTitle>
         <Card accent>
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
             There is real predictive signal in five years of laboratory records, and it is modest:

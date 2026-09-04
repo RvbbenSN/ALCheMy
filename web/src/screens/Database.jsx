@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import {
   Bot,
   BookOpenCheck,
@@ -41,6 +43,7 @@ function headline(t) {
 }
 
 export default function DatabaseScreen() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { DB_BOUNDARY, DB_HERO, DB_VIEWS, DB_WHY } = useBundle(DATABASE_EN, DATABASE_ES)
 
   const stats = headline(SCHEMA.totals)
@@ -59,9 +62,7 @@ export default function DatabaseScreen() {
         <h1
           className="mt-4 text-3xl uppercase md:text-5xl"
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}
-        >
-          One Schema, Documented
-        </h1>
+        >{UI.database.oneSchemaDocumented}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{DB_HERO.lead}</Rich>
         </p>
@@ -72,7 +73,7 @@ export default function DatabaseScreen() {
 
       {/* --- Cifras --- */}
       <section>
-        <SectionTitle eyebrow="At a glance">What is in there</SectionTitle>
+        <SectionTitle eyebrow={UI.database.whatIsInThere.eyebrow}>{UI.database.whatIsInThere.title}</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((k) => (
             <Card key={k.label}>
@@ -98,7 +99,7 @@ export default function DatabaseScreen() {
 
       {/* --- El diagrama --- */}
       <section>
-        <SectionTitle eyebrow="The map">Seven families, and what feeds what</SectionTitle>
+        <SectionTitle eyebrow={UI.database.sevenFamiliesAndWhat.eyebrow}>{UI.database.sevenFamiliesAndWhat.title}</SectionTitle>
         <p className="mb-5 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           Everything starts at the laboratory record and fans out from it. Pick a block to see its
           tables, their size, and the description each one carries inside PostgreSQL.
@@ -108,7 +109,7 @@ export default function DatabaseScreen() {
 
       {/* --- Por que una base de datos --- */}
       <section>
-        <SectionTitle eyebrow="The case for it">{DB_WHY.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.database.ebTheCaseForIt}>{DB_WHY.title}</SectionTitle>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {DB_WHY.cards.map((c) => {
             const Icon = WHY_ICON[c.icon] ?? BookOpenCheck
@@ -138,7 +139,7 @@ export default function DatabaseScreen() {
 
       {/* --- La frontera del agente, como corchete --- */}
       <section>
-        <SectionTitle eyebrow="The boundary">{DB_BOUNDARY.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.database.ebTheBoundary}>{DB_BOUNDARY.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{DB_BOUNDARY.body}</Rich>
         </p>
@@ -213,7 +214,7 @@ export default function DatabaseScreen() {
 
       {/* --- Las vistas --- */}
       <section>
-        <SectionTitle eyebrow="The surface">{DB_VIEWS.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.database.ebTheSurface}>{DB_VIEWS.title}</SectionTitle>
         <p className="mb-5 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{DB_VIEWS.lead}</Rich>
         </p>

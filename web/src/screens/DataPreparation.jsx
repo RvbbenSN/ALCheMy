@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
@@ -165,6 +167,7 @@ function LaneSwitch({ lane, setLane, onPick }) {
 const ETL_STEP_ICONS = { extract: Download, transform: Wand2, load: Database }
 
 export default function DataPreparation() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { ETL_DEFECTS, ETL_EXCLUSION, ETL_IMPUTATION, ETL_STOICHIOMETRY, ETL_TANNIC, ETL_THERMAL, ETL_ZERO_VS_NULL } = useBundle(SCREENS_EN, SCREENS_ES)
   const { DESCRIPTOR_GROUPS, DESCRIPTOR_RECAP, ELEMENT_INTRO, LANES, LINKER_FEATURES, METAL_FEATURES, PREP_INTRO, PREP_TAKEAWAY, SYNTH_GROUPS, SYNTH_PREVIEW, WHY_PXRD } = useBundle(PREP_EN, PREP_ES)
 
@@ -178,9 +181,7 @@ export default function DataPreparation() {
     <div className="flex flex-col gap-16">
       <section>
         <Badge tone="accent">03 · Data Preparation</Badge>
-        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
-          ETL &amp; PXRD Signal Processing
-        </h1>
+        <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.prep.etlPxrdSignalProcessing}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{PREP_INTRO.lead}</Rich>
         </p>
@@ -243,7 +244,7 @@ export default function DataPreparation() {
       {lane === 'synthesis' && (
         <>
           <section>
-            <SectionTitle eyebrow="What the table looks like">One row per synthesis</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.oneRowPerSynthesis.eyebrow}>{UI.prep.oneRowPerSynthesis.title}</SectionTitle>
             <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{SYNTH_PREVIEW.caption}</Rich>
             </p>
@@ -257,7 +258,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="The variables, before anything is removed">What each column holds</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.whatEachColumnHolds.eyebrow}>{UI.prep.whatEachColumnHolds.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               Forty-six columns in five blocks, plus the timestamps the database keeps on its own.
             </p>
@@ -284,7 +285,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="Notebook 01">From spreadsheet to governed table</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.fromSpreadsheetToGoverned.eyebrow}>{UI.prep.fromSpreadsheetToGoverned.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               Five years of handwritten synthesis conditions lived in one multi-tab Excel file with
               arbitrary headers.
@@ -292,7 +293,7 @@ export default function DataPreparation() {
 
             <div className="flex flex-col gap-4">
               <Card>
-                <h3 className="text-base">1 · Header normalisation</h3>
+                <h3 className="text-base">{UI.prep.paso1HeaderNormalisation}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   A master mapping dictionary translates arbitrary spreadsheet headers into a strict SQL
                   schema. Kept as an explicit dictionary rather than automatic slug-casing, so that
@@ -302,7 +303,7 @@ export default function DataPreparation() {
               </Card>
 
               <Card>
-                <h3 className="text-base">2 · Stoichiometric feature engineering</h3>
+                <h3 className="text-base">{UI.prep.paso2StoichiometricFeatureEngineering}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{ETL_STOICHIOMETRY.intro}</Rich>
                 </p>
@@ -339,7 +340,7 @@ export default function DataPreparation() {
               </Card>
 
               <Card>
-                <h3 className="text-base">4 · An MD5 business natural key</h3>
+                <h3 className="text-base">{UI.prep.paso4AnMd5Business}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   A checksum over six business fields — sample code, date, researcher, unit, metal centre
                   and linker — gives every synthesis an identity derived from what it <em>is</em>, not from
@@ -349,7 +350,7 @@ export default function DataPreparation() {
               </Card>
 
               <Card accent>
-                <h3 className="text-base">5 · The load is an UPSERT, never a replace</h3>
+                <h3 className="text-base">{UI.prep.paso5TheLoadIs}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   The synthesis table is written by both this ETL notebook and the live ingestion pipeline. Using an UPSERT (on conflict: update) keyed on sample_code guarantees that batch updates never overwrite or erase newly ingested records.
                 </p>
@@ -358,7 +359,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="From a chemical symbol to physics">Why the element is replaced by its properties</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.whyTheElementIs.eyebrow}>{UI.prep.whyTheElementIs.title}</SectionTitle>
             <div className="grid gap-4 lg:grid-cols-2">
               <Card>
                 <h3 className="flex items-center gap-2 text-base">
@@ -408,7 +409,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="What the expert review found">Examples of silent data bugs</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.examplesOfSilentData.eyebrow}>{UI.prep.examplesOfSilentData.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               A model can run smoothly on corrupted data without throwing errors. These examples show why revisions are neccesary.
             </p>
@@ -455,7 +456,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="Curation"><Rich>{ETL_EXCLUSION.title}</Rich></SectionTitle>
+            <SectionTitle eyebrow={UI.prep.ebCuration}><Rich>{ETL_EXCLUSION.title}</Rich></SectionTitle>
             <Card accent>
               <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_EXCLUSION.body}</Rich></p>
               <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
@@ -466,7 +467,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="A decision that could have been cheating"><Rich>{ETL_TANNIC.title}</Rich></SectionTitle>
+            <SectionTitle eyebrow={UI.prep.ebADecisionThatCould}><Rich>{ETL_TANNIC.title}</Rich></SectionTitle>
             <Card>
               <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_TANNIC.body}</Rich></p>
               <p className="mt-4 text-sm" style={{ color: 'var(--status-pure)' }}>
@@ -477,7 +478,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="Filling the gaps"><Rich>{ETL_IMPUTATION.title}</Rich></SectionTitle>
+            <SectionTitle eyebrow={UI.prep.ebFillingTheGaps}><Rich>{ETL_IMPUTATION.title}</Rich></SectionTitle>
             <Card>
               <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_IMPUTATION.body}</Rich></p>
               <Pullquote tone="amorphous"><Rich>{ETL_IMPUTATION.leak}</Rich></Pullquote>
@@ -500,7 +501,7 @@ export default function DataPreparation() {
       {lane === 'characterisation' && (
         <>
           <section>
-            <SectionTitle eyebrow="Analytical diagnostic">PXRD diffractograms as core target</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.pxrdDiffractogramsAsCore.eyebrow}>{UI.prep.pxrdDiffractogramsAsCore.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{WHY_PXRD.lead}</Rich>
             </p>
@@ -550,14 +551,14 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.fromRawSignalTo.eyebrow}>{UI.prep.fromRawSignalTo.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               A machine learning model cannot ingest thousands of raw (2theta, Intensity) points as tabular features. Here, each <strong>diffraction pattern is decomposed into its physical components </strong>—instrument background, diffuse amorphous halo, and Bragg peaks—extracting 29 quantitative descriptors that capture crystal order, peak geometry, and signal quality.
             </p>
             <PxrdChart />
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <Card accent>
-                <h3 className="text-base">What the three layers mean</h3>
+                <h3 className="text-base">{UI.prep.whatTheThreeLayers}</h3>
                 <ul className="mt-3 flex list-none flex-col gap-3 p-0 text-sm">
                   <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
                     <strong style={{ color: 'var(--text-primary)' }}>Dashed baseline — instrument noise.</strong>{' '}
@@ -589,7 +590,7 @@ export default function DataPreparation() {
                 </ul>
               </Card>
               <Card accent>
-                <h3 className="text-base">Peak detection: the 3σ threshold</h3>
+                <h3 className="text-base">{UI.prep.peakDetectionThe3}</h3>
                 <ul className="mt-3 flex list-none flex-col gap-3 p-0 text-sm">
                   <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
                     <strong style={{ color: 'var(--text-primary)' }}>Poisson noise scale.</strong>{' '}
@@ -619,7 +620,7 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="The tools that produced the ground truth">Labeler &amp; Explorer</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.labelerExplorer.eyebrow}>{UI.prep.labelerExplorer.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               Two Streamlit tools, built for this project. The <strong>labeler</strong> produced four
               independent verdicts per pattern over 1,877 diffractograms — crystallinity class, incipient
@@ -647,7 +648,7 @@ export default function DataPreparation() {
           {/* Ancla: la pantalla 04 enlaza aqui para recordar de donde salen los
               29 numeros. Ver scrollToHash en Layout.jsx. */}
           <section id="descriptors">
-            <SectionTitle eyebrow="PXRD Feature Vector">What a diffractogram becomes</SectionTitle>
+            <SectionTitle eyebrow={UI.prep.whatADiffractogramBecomes.eyebrow}>{UI.prep.whatADiffractogramBecomes.title}</SectionTitle>
             <p className="mb-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{DESCRIPTOR_RECAP.lead}</Rich>
             </p>
@@ -692,7 +693,7 @@ export default function DataPreparation() {
               })}
             </div>
 
-            <h3 className="mb-4 mt-10 text-lg">How to read it</h3>
+            <h3 className="mb-4 mt-10 text-lg">{UI.prep.howToReadIt}</h3>
             <div className="grid gap-4 lg:grid-cols-3">
               {DESCRIPTOR_RECAP.reading.map((r) => {
                 const Icon = READ_ICON[r.icon] ?? Waves
@@ -741,7 +742,7 @@ export default function DataPreparation() {
 
       {/* --- comun a las dos vias --- */}
       <section>
-        <SectionTitle eyebrow="The code itself">Read the notebooks</SectionTitle>
+        <SectionTitle eyebrow={UI.prep.readTheNotebooks.eyebrow}>{UI.prep.readTheNotebooks.title}</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
         </p>
         <NotebookList only="03" />
@@ -752,7 +753,7 @@ export default function DataPreparation() {
 
       {/* Volver a ofrecer la otra mitad al llegar al final. */}
       <section>
-        <SectionTitle eyebrow="The other half">Switch lane</SectionTitle>
+        <SectionTitle eyebrow={UI.prep.switchLane.eyebrow}>{UI.prep.switchLane.title}</SectionTitle>
         <p className="mb-4 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           This screen has two halves and you have just finished one of them.
         </p>
@@ -767,7 +768,7 @@ export default function DataPreparation() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="Takeaway"><Rich>{PREP_TAKEAWAY.title}</Rich></SectionTitle>
+        <SectionTitle eyebrow={UI.prep.ebTakeaway}><Rich>{PREP_TAKEAWAY.title}</Rich></SectionTitle>
         <p className="mb-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{PREP_TAKEAWAY.lead}</Rich>
         </p>

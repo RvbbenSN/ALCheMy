@@ -1,4 +1,6 @@
 import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as UI_EN from '../content/ui.js'
+import * as UI_ES from '../content/es/ui.js'
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
@@ -26,6 +28,7 @@ const RAG_AREA_ICON = {
 }
 
 export default function Rag() {
+  const { UI } = useBundle(UI_EN, UI_ES)
   const { RAG_AREAS, RAG_CONTEXTUAL, RAG_HERO, RAG_NUMBERS, RAG_POWERS, RAG_RETRIEVAL } = useBundle(RAG_EN, RAG_ES)
 
   return (
@@ -36,9 +39,7 @@ export default function Rag() {
         <h1
           className="mt-4 text-3xl uppercase md:text-5xl"
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}
-        >
-          Scientific Co-pilot
-        </h1>
+        >{UI.rag.scientificCoPilot}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{RAG_HERO.lead}</Rich>
         </p>
@@ -49,7 +50,7 @@ export default function Rag() {
 
       {/* --- Que hay dentro --- */}
       <section>
-        <SectionTitle eyebrow="The corpus">What is actually indexed</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.whatIsActuallyIndexed.eyebrow}>{UI.rag.whatIsActuallyIndexed.title}</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {RAG_NUMBERS.map((k) => (
             <Card key={k.label}>
@@ -72,7 +73,7 @@ export default function Rag() {
 
       {/* --- El mapa del flujo --- */}
       <section>
-        <SectionTitle eyebrow="The workflow">Six stages, end to end</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.sixStagesEndTo.eyebrow}>{UI.rag.sixStagesEndTo.title}</SectionTitle>
         <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           Two flows share one canvas: the top band indexes documents and runs by hand whenever the
           corpus grows; the bottom band answers a question and runs on every message. Pick a stage
@@ -89,7 +90,7 @@ export default function Rag() {
 
       {/* --- Los recuperadores --- */}
       <section>
-        <SectionTitle eyebrow="Retrieval">{RAG_RETRIEVAL.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.ebRetrieval}>{RAG_RETRIEVAL.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{RAG_RETRIEVAL.lead}</Rich>
         </p>
@@ -114,16 +115,16 @@ export default function Rag() {
 
       {/* --- Recuperacion contextual: la parte honesta --- */}
       <section>
-        <SectionTitle eyebrow="The upgrade">{RAG_CONTEXTUAL.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.ebTheUpgrade}>{RAG_CONTEXTUAL.title}</SectionTitle>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <h3 className="text-base">The problem</h3>
+            <h3 className="text-base">{UI.rag.theProblem}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{RAG_CONTEXTUAL.problem}</Rich>
             </p>
           </Card>
           <Card>
-            <h3 className="text-base">The technique, built end to end</h3>
+            <h3 className="text-base">{UI.rag.theTechniqueBuiltEnd}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{RAG_CONTEXTUAL.technique}</Rich>
             </p>
@@ -143,13 +144,13 @@ export default function Rag() {
         </blockquote>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <h3 className="text-base">Why it did not help much here</h3>
+            <h3 className="text-base">{UI.rag.whyItDidNot}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{RAG_CONTEXTUAL.why}</Rich>
             </p>
           </Card>
           <Card>
-            <h3 className="text-base">So it is built and not switched on</h3>
+            <h3 className="text-base">{UI.rag.soItIsBuilt}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{RAG_CONTEXTUAL.decision}</Rich>
             </p>
@@ -162,7 +163,7 @@ export default function Rag() {
 
       {/* --- Los poderes --- */}
       <section>
-        <SectionTitle eyebrow="Capabilities">{RAG_POWERS.title}</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.ebCapabilities}>{RAG_POWERS.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{RAG_POWERS.lead}</Rich>
         </p>
@@ -182,7 +183,7 @@ export default function Rag() {
 
       {/* --- El grafo, que es lo que usan las dos ultimas herramientas --- */}
       <section>
-        <SectionTitle eyebrow="Beyond vectors">The knowledge graph</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.theKnowledgeGraph.eyebrow}>{UI.rag.theKnowledgeGraph.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           A vector search finds passages that <em>read</em> alike. It cannot answer{' '}
           <em>what do these two samples have in common</em>, because that is a question about
@@ -195,7 +196,7 @@ export default function Rag() {
 
       {/* --- Cuadernos --- */}
       <section>
-        <SectionTitle eyebrow="The code itself">Notebooks behind this screen</SectionTitle>
+        <SectionTitle eyebrow={UI.rag.notebooksBehindThisScreen.eyebrow}>{UI.rag.notebooksBehindThisScreen.title}</SectionTitle>
         <NotebookList only="07" />
       </section>
     </div>
