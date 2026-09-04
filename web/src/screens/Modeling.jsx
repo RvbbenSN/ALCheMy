@@ -50,9 +50,9 @@ export default function Modeling() {
           Training &amp; Evaluation
         </h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          With the problem framed and the data prepared, this stage is short. That is the correct order,
-          and it is also why the figure reported here is lower than the one this analysis reported before
-          the confounding was removed.
+          Ten model families are trained on the same 1,516 syntheses and compared under one validation
+          scheme, grouped by plate. The headline figure is <strong>0.52 macro F1</strong> against 0.26
+          for a model that always answers the majority class.
         </p>
       </section>
 
@@ -141,15 +141,23 @@ export default function Modeling() {
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <h3 className="text-base">What a plate is</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{MODEL_VALIDATION.setup}</Rich>
-            </p>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
+              {MODEL_VALIDATION.setupPoints.map((p, i) => (
+                <li key={i} style={{ borderLeft: '2px solid var(--surface-border)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                  <Rich>{p}</Rich>
+                </li>
+              ))}
+            </ul>
           </Card>
           <Card accent>
             <h3 className="text-base">So the split follows the plate</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{MODEL_VALIDATION.body}</Rich>
-            </p>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
+              {MODEL_VALIDATION.bodyPoints.map((p, i) => (
+                <li key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                  <Rich>{p}</Rich>
+                </li>
+              ))}
+            </ul>
           </Card>
         </div>
         <Note>
@@ -165,18 +173,25 @@ export default function Modeling() {
           <Rich>{MODEL_TWO.body}</Rich>
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Card accent>
-            <Badge tone="info">Full model</Badge>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{MODEL_TWO.full}</Rich>
-            </p>
-          </Card>
-          <Card accent>
-            <Badge tone="pure">Actionable model</Badge>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{MODEL_TWO.actionable}</Rich>
-            </p>
-          </Card>
+          {MODEL_TWO.models.map((m, i) => (
+            <Card key={m.name} accent>
+              <Badge tone={i === 0 ? 'info' : 'pure'}>{m.name}</Badge>
+              <p className="mt-3 text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                {m.inputs}
+              </p>
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                <Rich>{m.asks}</Rich>
+              </p>
+              <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
+                <li style={{ borderLeft: '2px solid var(--status-pure)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                  <Rich>{m.pro}</Rich>
+                </li>
+                <li style={{ borderLeft: '2px solid var(--status-amorphous)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                  <Rich>{m.limit}</Rich>
+                </li>
+              </ul>
+            </Card>
+          ))}
         </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
           <Rich>{MODEL_TWO.note}</Rich>
@@ -423,8 +438,8 @@ export default function Modeling() {
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
             There is real predictive signal in five years of laboratory records, and it is modest:
             roughly twice the trivial baseline. Most of what the model distinguishes is which
-            metal-linker system was used rather than which conditions were applied — not because
-            conditions do not matter chemically, but because this record did not vary them enough for
+            metal-linker system was used rather than which conditions were applied. The record varied
+            those conditions across only 9 temperatures and 3 reaction times, which is too narrow for
             their effect to be learnable.
           </p>
           <p className="mt-4 text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>

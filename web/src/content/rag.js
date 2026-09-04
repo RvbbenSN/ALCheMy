@@ -13,7 +13,7 @@ export const RAG_HERO = {
   lead:
     'A laboratory assistant grounded in 958 indexed documents and 87,765 passages, wired to the same database the rest of this site describes - and built so that it cannot repeat an unpublished ligand name to a stranger.',
   sub:
-    'The workflow below runs on the project machine and is validated end to end. The chat itself is not opened on this site: that needs the models to live somewhere permanent, which is an architecture decision rather than a missing button.',
+    'The chat is not opened on this site.',
 }
 
 /* Lo que hay dentro, medido. */
@@ -80,7 +80,7 @@ export const RAG_AREAS = [
       'A row in `rag_documents` per source file, one in `rag_chunks` per passage',
     ],
     note:
-      'The embeddings node is shared with the query side on purpose. If indexing and searching ever used different models, the store would return plausible nonsense and never raise an error - the worst kind of bug. Sharing one node makes that mismatch impossible rather than merely unlikely.',
+      'The embeddings node is shared with the query side on purpose. If indexing and searching used different models, the store would return plausible nonsense and never raise an error. Sharing one node makes that mismatch structurally impossible.',
     nodes: [
       { name: 'Split Text (Chunking)', kind: 'transform' },
       { name: 'Document Loader', kind: 'file' },
@@ -202,20 +202,20 @@ export const RAG_CONTEXTUAL = {
   technique:
     'The fix, published by **Anthropic as contextual retrieval**, is to have an LLM write one short sentence situating each passage inside its own document, prepend it, and embed *that*. It is built here end to end: `rag_chunk_context` holds **87,765 context sentences**, one per passage, and `rag_chunks.embedding_v2` holds the re-embedding of passage-plus-context.',
   result:
-    'And here is the part worth publishing: **the gain was modest.** Compared live against the original embeddings on real questions, similarities came out 0.005-0.01 higher and only one or two of every four retrieved passages changed. Nothing like the improvement the technique reports.',
+    '**The gain was modest.** Compared live against the original embeddings on real questions, similarities came out 0.005-0.01 higher and only one or two of every four retrieved passages changed. Nothing like the improvement the technique reports.',
   why:
-    'The explanation is the corpus, not the method. The published measurements come from material whose fragments lean heavily on their surroundings. A chemistry paper is written in paragraphs that already name their own compound and their own conditions - there was less missing context to restore. **The technique is sound; this corpus had little room for it to help.**',
+    'The explanation is the corpus, not the method. The published measurements come from material whose fragments lean heavily on their surroundings. A chemistry paper is written in paragraphs that already name their own compound and their own conditions, so there was less missing context to restore. **The technique is sound; this corpus had little room for it to help.**',
   decision:
-    'So `embedding_v2` is built, populated, and deliberately **not promoted** to the default search. Switching it on is one line. The measurement that would justify it - the same comparison over enough questions to tell a real gain from noise - has not been done, and publishing a built-but-unproven improvement as though it were live would be the easy version of this page.',
+    'So `embedding_v2` is built, populated, and deliberately **not promoted** to the default search. Switching it on is one line. What is missing is the measurement that would justify it: the same comparison over enough questions to tell a real gain from noise.',
   caveat:
-    'One concrete thing stands between it and production, found while writing this page: **`embedding_v2` has no HNSW index.** The original column has one; its contextual twin does not, so a query against it would scan all 87,765 vectors. The work is done, the plumbing is not - and that is the sort of gap a portfolio should name rather than quietly omit.',
+    'One concrete thing stands between it and production: **`embedding_v2` has no HNSW index.** The original column has one; its contextual twin does not, so a query against it would scan all 87,765 vectors. The work is done and the plumbing is not.',
 }
 
 /* Los poderes del agente. */
 export const RAG_POWERS = {
   title: 'What the assistant can actually do',
   lead:
-    'Not "it answers questions about the lab". These are the nine tools it holds, each one a stored SQL function with typed parameters. **The assistant never writes SQL**, so the boundary of what it can ask is enforced by the database rather than by the wording of a prompt.',
+    'Nine tools, each one a stored SQL function with typed parameters. **The assistant never writes SQL**, so the boundary of what it can ask is enforced by the database rather than by the wording of a prompt.',
   tools: [
     ['`search_synthesis`', 'Find syntheses by metal, linker, temperature window or date range. Every filter optional.'],
     ['`sample_summary`', 'The complete record of one sample: solvents, thermal ramp, modulators, masses.'],
@@ -231,21 +231,5 @@ export const RAG_POWERS = {
     'The split between the last two is deliberate. An assistant that guesses node ids invents relationships; forcing it to resolve the id first means a wrong guess **fails loudly instead of returning a confident answer about a sample that does not exist**.',
 }
 
-/* El control de acceso, que es lo que permite ensenarlo en publico. */
-export const RAG_ACCESS = {
-  title: 'Two answers to the same question',
-  body:
-    'The same question returns different detail depending on who asks. By default - anyone, a visitor to this site included - the tools return a **coarse** view: which syntheses exist, with which metal and linker, and what was measured. Exact masses, temperatures, times and ratios are withheld.',
-  owner:
-    'Only a caller presenting the project token receives exact values. The token is never stored: `agent_owner_secret` keeps its MD5, `agent_verify_owner()` checks it, and every downstream function receives a **boolean**, never the token itself. Losing the database does not lose the key.',
-  honest:
-    'What does not exist yet is an interface that injects that token - today it can only be passed by hand. That was left deliberately for after the architecture underneath had settled.',
-}
 
-
-export const RAG_SUGGESTED = [
-  'Which temperature window favours crystalline zirconium phosphonates?',
-  'What distinguishes an amorphous halo from a broad reflection?',
-  'How does formic acid act as a modulator in solvothermal synthesis?',
-]
 

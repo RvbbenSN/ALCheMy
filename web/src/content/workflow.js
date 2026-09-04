@@ -87,6 +87,25 @@ export const AREAS = [
     objective:
       'Decide which of the three extraction strategies applies: a deterministic parser, AI over a PDF, or rejection as unrecognised.',
     adds: ['Nothing new — this area only reads the technique field set back in area 2.'],
+    /* La tabla "un contrato, nueve formatos". Vivia en la pantalla 03 (Data
+       Preparation), pegada al PXRD, donde no venia a cuento: es sobre el
+       PARSEO -- lo que esta area decide -- no sobre el tratamiento de la
+       senal PXRD. `tableIntro` va antes de la tabla dentro de la misma
+       ficha del area, no como una seccion aparte. */
+    tableIntro:
+      'Every parser — Python and JavaScript alike — returns the same dictionary shape, and `data_json` always holds `header_metadata` and `raw_data`. Stored as **JSONB** with a GIN index, so an agent can query any technique uniformly.',
+    table: {
+      head: ['Format', 'Instrument', 'Comments'],
+      rows: [
+        ['`.xrdml`', 'PANalytical PXRD', 'Only counts are stored; the 2θ axis is reconstructed by linspace from start and end angles.'],
+        ['`.brml`', 'Bruker VT-XRD', 'A ZIP container. More than two RawData*.xml entries means a temperature series, not a single scan.'],
+        ['`.txt`', 'TA SDT Q600 TGA', 'UTF-16 with a latin1 fallback, seven signals.'],
+        ['`.csv`', 'FTIR', 'Comma or semicolon separated, tolerant of decimal commas.'],
+        ['`.xls`', 'Micromeritics BET', 'Adsorption isotherm and surface area.'],
+        ['`.asc` / `.csv`', 'UV-Vis', 'Kubelka-Munk and Tauc vectors derived at parse time.'],
+        ['`.jpg` + `.txt`', 'Hitachi SEM', 'Image plus companion sidecar; the AI description is added later, never fabricated.'],
+      ],
+    },
     nodes: [
       { name: 'Technique Router', kind: 'router' },
       { name: 'Deterministic Parser Router', kind: 'router' },

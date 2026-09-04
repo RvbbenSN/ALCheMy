@@ -3,14 +3,12 @@ import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
 import GraphConstellation from '../components/GraphConstellation.jsx'
 import {
-  RAG_ACCESS,
   RAG_AREAS,
   RAG_CONTEXTUAL,
   RAG_HERO,
   RAG_NUMBERS,
   RAG_POWERS,
   RAG_RETRIEVAL,
-  RAG_SUGGESTED,
 } from '../content/rag.js'
 import {
   BookOpen,
@@ -83,13 +81,6 @@ export default function Rag() {
           corpus grows; the bottom band answers a question and runs on every message. Pick a stage
           to fly to it, or take the last stop for the whole thing at once.
         </p>
-        <Note>
-          Unlike the ingestion map on screen 02 — which reproduces the n8n canvas pixel for pixel,
-          because the frames there were drawn by hand around their nodes — this one is{' '}
-          <strong>laid out for reading</strong>. Every node, name, type and each of the 48
-          connections comes straight from the workflow export; only the positions are composed, and
-          only because two stages genuinely share a column in n8n and their frames would overlap.
-        </Note>
         <div className="mt-6">
           <WorkflowMap
             src="/data/rag_canvas.json"
@@ -198,62 +189,12 @@ export default function Rag() {
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           A vector search finds passages that <em>read</em> alike. It cannot answer{' '}
           <em>what do these two samples have in common</em>, because that is a question about
-          relations rather than about text. So the same database also holds the record as a graph —
+          relations rather than about text. So the same database also holds the record as a graph:
           samples, metals, linkers, modulators and measurements as nodes, and what connects them as
-          edges. In PostgreSQL, with recursive queries, not in a separate graph database.
+          edges. It runs in PostgreSQL with recursive queries, not in a separate graph database.
         </p>
         <GraphConstellation />
       </section>
-
-      {/* --- Control de acceso --- */}
-      <section>
-        <SectionTitle eyebrow="Governance">{RAG_ACCESS.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card accent>
-            <h3 className="text-base">Coarse by default</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{RAG_ACCESS.body}</Rich>
-            </p>
-          </Card>
-          <Card>
-            <h3 className="text-base">The token is never stored</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{RAG_ACCESS.owner}</Rich>
-            </p>
-          </Card>
-        </div>
-        <p className="mt-4 max-w-3xl text-sm" style={{ color: 'var(--text-muted)' }}>
-          <Rich>{RAG_ACCESS.honest}</Rich>
-        </p>
-      </section>
-
-      
-
-      {/* --- Preguntas de ejemplo --- */}
-      <section>
-        <SectionTitle eyebrow="What it gets asked">Questions from the bench</SectionTitle>
-        <Card>
-          <div className="flex flex-wrap gap-2">
-            {RAG_SUGGESTED.map((q) => (
-              <span
-                key={q}
-                className="rounded-[var(--radius-badge)] px-3 py-1.5 text-xs"
-                style={{ border: '1.5px solid var(--surface-border)', color: 'var(--text-secondary)' }}
-              >
-                <Rich>{q}</Rich>
-              </span>
-            ))}
-          </div>
-          <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            The first is answered from the literature, the second from the methodology of screen 03,
-            and the third from both at once. Retrieval runs on <Term k="pgvector" /> inside the same
-            PostgreSQL instance that holds the syntheses — which is why one answer can cite a paper
-            and a sample in the same sentence.
-          </p>
-        </Card>
-      </section>
-
-      
 
       {/* --- Cuadernos --- */}
       <section>

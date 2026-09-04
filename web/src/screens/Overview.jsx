@@ -109,7 +109,7 @@ export default function Overview() {
           The tabs follow <Term k="CRISP-DM" /> in order
         </SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          This is not a catalogue of features. Each tab is one phase of the data lifecycle, in the order
+          Each tab is one phase of the data lifecycle, in the order
           the decisions were actually made — how the data arrived, how it was cleaned, what it turned out
           to say, and only then what a model could learn from it.
         </p>

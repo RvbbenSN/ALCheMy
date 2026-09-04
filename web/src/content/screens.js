@@ -14,7 +14,7 @@
 
 export const ETL_STOICHIOMETRY = {
   intro:
-    'Modulators reach the reactor in two physically different forms, and each needs its own arithmetic. Treating them alike is what caused the worst defect in the entire dataset.',
+    'Modulators reach the reactor in two physically different forms, and each needs its own arithmetic.',
   typeA: {
     title: 'Type A — aqueous molar solutions',
     body: 'HCl, HF and KOH are dosed as solutions of known molarity, so the active amount follows directly from volume times concentration.',
@@ -29,7 +29,7 @@ export const ETL_STOICHIOMETRY = {
 
 export const ETL_THERMAL = {
   title: 'Parsing thermal ramps written in prose',
-  body: 'The master spreadsheet recorded thermal programs as free text. They are parsed into initial, target and final temperature, plateau hours, and two slopes in °C per minute. Microwave runs that record "asap" cooling are assigned a 10-minute fan cooldown with no plateau, because the alternative — leaving them null — would silently drop every microwave synthesis from any feature that uses the cooling rate.',
+  body: 'The spreadsheet recorded thermal programs as free text. They are parsed into initial, target and final temperature, plateau hours, and two slopes in °C per minute.',
   formulas: [
     'heating rate = (T_target − T_initial) / (t_heating × 60)',
     'cooling rate = (T_target − T_final) / (t_cooling × 60)',
@@ -90,11 +90,11 @@ export const ETL_ZERO_VS_NULL = {
 
 export const ETL_EXCLUSION = {
   title: 'Exclusion as a label, never as a deletion',
-  body: 'Counting rows returned more than counting distinct samples: 43 samples had more than one PXRD measurement labelled separately — one as-recovered and one washed, a re-scan, a refinement. Keeping them would have entered the same physical sample several times. A further 70 amorphous measurements carried intense oxide reflections, which would contaminate the amorphous class with a pattern that is genuinely crystalline, just not of the target product.',
+  body: 'Auditing the dataset uncovered 113 problematic entries: 43 duplicate scans (re-runs, washed samples) that would bias training, and 70 amorphous runs contaminated with metal oxide peaks that would poison class labels',
   decision:
-    'All 113 were reviewed one by one and then marked, not deleted. A new label ml_include = NO records the exclusion; the absence of that label means included.',
+    'Instead of destructive hard-deletions, every case was flagged with ml_include = NO. In scientific databases, deleting destroys experimental history; explicit flagging preserves the audit trail while delivering clean data to the models.',
   pullquote:
-    'In a scientific data store, **deleting destroys evidence and labelling preserves it**. A discarded label is still real human judgement about a real file.',
+    'In a scientific data store, **deleting destroys evidence and labelling preserves it**.',
 }
 
 export const ETL_TANNIC = {
@@ -131,12 +131,27 @@ export const ETL_IMPUTATION = {
 export const EDA_INTRO = {
   acronym: 'EDA',
   expansion: 'Exploratory Data Analysis',
-  what:
-    'Looking at the data before modelling it. Nothing more than that: plotting every variable, counting what is missing, checking whether the classes are balanced and whether two columns say the same thing twice — **before** committing to an algorithm.',
-  why:
-    'It is the stage that returns the most per hour invested, and the one most often skipped, because it produces no model and no metric. What it produces is **decisions**: which rows to drop, which columns cannot be trusted, and which apparent signal is an artefact of how the data was collected rather than a property of the chemistry.',
+  /* Misma forma visual que los tres verbos del ETL en la pantalla 03: tres
+     bloques con icono, uno por idea, en vez de dos tarjetas de parrafos. */
+  steps: [
+    {
+      key: 'look',
+      label: 'Look',
+      body: 'Plot every variable, count what is missing, check whether the classes are balanced and whether two columns say the same thing twice.',
+    },
+    {
+      key: 'decide',
+      label: 'Decide',
+      body: 'It produces no model and no metric, which is why it gets skipped. What it produces is decisions: which rows to drop, which columns cannot be trusted.',
+    },
+    {
+      key: 'catch',
+      label: 'Catch confounders',
+      body: 'Separate signal that comes from the chemistry from signal that comes from how the data was collected.',
+    },
+  ],
   rule:
-    'The rule that governs it: **a model cannot warn you about a problem it has learned to exploit.** If a confounder is in the training data, cross-validation will reward the model for using it. The only place to catch that is here, by looking.',
+    '**A model cannot warn you about a problem it has learned to exploit.** If a confounder sits in the training data, cross-validation rewards the model for using it. The only place to catch it is here.',
   found: [
     ['A confounder', 'One synthesis method had produced no amorphous samples at all — so the method itself predicted the answer'],
     ['Five kinds of gap', 'Nine per cent missing, from five unrelated causes, each needing a different fix'],
@@ -145,20 +160,19 @@ export const EDA_INTRO = {
   ],
 }
 
-/* Las cifras de esta pantalla pueden referirse a dos poblaciones distintas, y
-   mezclarlas es la causa de que varios numeros parezcan contradecirse. Se dice
-   una vez, arriba, y se mantiene. Auditado el 2026-09-02. */
-export const EDA_POPULATION = {
-  title: 'Which rows are we counting?',
-  intro:
-    'Two numbers in this screen can both be right and still disagree, because they count different things. It is worth fixing which is which before anything else.',
-  rows: [
-    ['2,152', 'The feature table', 'Every synthesis on record, including the methods the model does not use'],
-    ['1,810', 'Restricted to high-throughput', 'The universe the model works in, before requiring a label'],
-    ['1,516', 'The training set', 'What actually trained the model: combinatorial synthesis, with an expert verdict'],
-  ],
-  note:
-    'Everything below refers to **the training set** unless it says otherwise. When a figure quotes the full table instead, it says so.',
+/* Antes habia dos secciones diciendo lo mismo con cifras que no cuadraban:
+   una tabla de tres poblaciones (2.152 / 1.810 / 1.516) y el embudo de cinco
+   escalones. El 1.810 no salia del embudo. Ahora hay una sola: el embudo, que
+   es el que reproduce la consulta guardada en el registro. Auditado el
+   2026-09-02. */
+export const EDA_FUNNEL_INTRO = {
+  title: 'From the full record to the training set',
+  lead:
+    'The laboratory performed **2,167 syntheses**. The chain below counts **rows of the feature table**, which is why it starts at 2,152: those are the syntheses the pipeline could turn into features.',
+  chain:
+    'Each step removes exactly one filter from the query the model registry stores for this dataset, so the last line is the number the registry holds. **Every drop is a deliberate exclusion with a stated reason.**',
+  scope:
+    'By the last row the model is no longer a model of this laboratory’s chemistry: it is a model of **combinatorial syntheses that produced a powder someone was willing to judge**. Everything below refers to those 1,516 rows unless it says otherwise.',
 }
 
 export const EDA_CONFOUNDER = {
@@ -171,25 +185,33 @@ export const EDA_CONFOUNDER = {
     ['ST — standard solvothermal', '3', '71', '15', '79.8%'],
     ['MW — microwave-assisted', '0', '90', '4', '95.7%'],
   ],
-  shortcut:
-    '**Zero amorphous samples in microwave**. A model trained on all three mixed together has an enormous shortcut available: if it detects — even indirectly, through reactor volume or year — that a synthesis was microwave-assisted, it can answer CRYSTALLINE and be right 96% of the time. Those 94 microwave cases were 5% of the dataset but 27% of the entire crystalline class.',
-  bias:
-    'And this is not an effect of the method: it is **selection bias**. Combinatorial screening is exploratory — conditions are swept without knowing what will come out, so it is full of failures. Standard and microwave synthesis are used once you already know the recipe works and want to scale or accelerate it. The variable "synthesis type" largely encodes "did you already know this was going to work?". Predicting that is not chemistry, it is reading the lab history.',
-  thermal:
-    'There is also an independent thermal argument, which would hold even without the bias: microwave heating is localised and fast, which favours kinetic phases over thermodynamic ones. The relationship between conditions and product is not the same function in a microwave as in an oven. Mixing them forces the model to learn two physics as if they were one.',
+  points: [
+    {
+      label: 'The shortcut',
+      body: '**Zero amorphous samples in microwave.** Detecting that a synthesis was microwave-assisted, even indirectly through reactor volume or year, lets a model answer CRYSTALLINE and be right 96% of the time. Those 94 cases are 5% of the dataset and 27% of the crystalline class.',
+    },
+    {
+      label: 'The cause is selection bias',
+      body: 'Combinatorial screening is exploratory, so it is full of failures. Standard and microwave synthesis are used once the recipe is known to work. "Synthesis type" largely encodes **whether the outcome was already known**.',
+    },
+    {
+      label: 'And the physics differ',
+      body: 'Microwave heating is localised and fast, favouring kinetic phases over thermodynamic ones. Mixing the methods forces the model to learn two physics as one.',
+    },
+  ],
   decision: [
     'It is the only subset without success bias: it was designed to explore, not to confirm.',
     'It is what we actually want to predict — the next plate is an HTS plate.',
     'It is a single thermal regime, so the model learns one physics, not two.',
   ],
   price:
-    'The price is real and gets stated: 90 of the 330 crystalline cases are lost, 27%, and the minority class becomes scarcer still. It is paid deliberately. **A lower, honest F1 is worth more** than a high one that is really detecting the synthesis method.',
+    'The price is stated: 90 of the 330 crystalline cases are lost, 27%, and the minority class becomes scarcer still. The alternative is **a higher score that measures the synthesis method** instead of the chemistry.',
 }
 
 export const EDA_MISSING = {
-  title: 'Missing values: five causes, five different fixes',
+  title: 'Missing values',
   intro:
-    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the record is internally inconsistent" — and only the first resembles what imputation assumes.',
+    'A single "9% missing" figure hides unrelated problems, and only some of them are what imputation assumes.',
   tableHead: ['Property', 'Who is missing', 'Why', 'What was done'],
   tableRows: [
     [
@@ -236,28 +258,23 @@ export const EDA_MISSING = {
 export const EDA_MODULATORS = {
   title: 'Where the modulator descriptors come from',
   problem:
-    'Ten columns of acids, nearly all zero in any given row, would let the model memorise which plate used which reagent instead of learning chemistry.',
-  fix:
-    'So they were **grouped by chemical role** — carboxylic, strong acid, HF, base, fluorinated — and summed. To avoid losing the chemistry that the sum discards, two extra columns carry the **mean pKa and mean logP of the acids present, weighted by how much of each was added**.',
+    'Ten columns of acids, nearly all zero in any given row, would let the model memorise which plate used which reagent instead of learning chemistry. So they were **grouped by chemical role** (carboxylic, strong acid, HF, base, fluorinated) and summed. Two extra columns carry the **mean pKa and mean logP of the acids present**, weighted by how much of each was added, so the chemistry the sum discards is not lost.',
   formula: 'mod_carbox_mean_pka = (3.75·formic + 4.76·acetic + 4.87·propionic) / total carboxylic mmol',
+  /* Dos notas al pie, no dos secciones: son matices que un quimico preguntaria,
+     no argumentos que sostengan nada. */
   caveats: [
-    {
-      title: '"Carboxylic" here means "weak carboxylic"',
-      body: 'Trifluoroacetic acid **is** a carboxylic acid, but it was grouped with the strong acids, because the grouping criterion was pKa rather than functional family — at pKa 0.23 it behaves like a strong acid, not like a modulator. 82 syntheses. The chemistry is defensible; the column name is not entirely.',
-    },
-    {
-      title: 'These two values have no cited source',
-      body: 'The pKa and logP values are standard aqueous figures at 25 °C written directly into the SQL. Every other chemical property in the model — electronegativity, hardness, oxophilicity, ionic radius — is traceable to a reference in a `property_sources` table. **These two are the exception**, and saying so is cheaper than being caught.',
-    },
+    '**"Carboxylic" here means weak carboxylic.** Trifluoroacetic acid is grouped with the strong acids: the criterion was pKa, not functional family, and at pKa 0.23 it behaves like one. 82 syntheses.',
+    '**The pKa and logP values carry no citation.** They are standard aqueous figures at 25 °C written into the SQL. Every other chemical property in the model traces to a reference in `property_sources`.',
   ],
 }
 
 export const EDA_IMBALANCE = {
   title: 'The target: how much imbalance there is',
-  /* La pregunta era "desequilibrio entre que". Se responde con la tabla, no con
-     una frase: son las tres clases de cristalinidad que etiqueto Ruben a mano. */
+  /* La distribucion por clase ya sale arriba, en la tabla del confounder. Aqui
+     no se vuelve a presentar: se cuantifica el desequilibrio y se dice que hace
+     con el, que es lo que esta seccion aporta. */
   intro:
-    'The imbalance is **between the three crystallinity classes** — the verdict a human gave each diffractogram, and the thing the model has to predict. They are not equally common, and that is a property of the chemistry, not a sampling error: most attempts land somewhere in between.',
+    'Across the 1,516 training rows the three classes are far from equally common, and that is chemistry rather than sampling: most attempts land somewhere in between.',
   /* Recuentos tomados de ml_datasets.class_distribution para el conjunto
      crystallinity_v4_hts_2026_09_02 (1.516 filas). No editar a mano: si cambian,
      cambian ahi primero. */
@@ -268,7 +285,7 @@ export const EDA_IMBALANCE = {
     ['Crystalline', 'Sharp, well-ordered reflections', '167', '11.0%'],
   ],
   trivial:
-    'That first row is the whole problem. A model that learns nothing — one that always answers **INCIPIENT** — is right 64% of the time. Reporting "64% accuracy" would sound like the model does something, when it would do nothing at all. This is why every metric on the next screen is compared against that floor rather than against zero.',
+    'A model that learns nothing at all, always answering **INCIPIENT**, is right 64% of the time. That is why every metric in this project is quoted against that floor rather than against zero: reporting "64% accuracy" would describe a model that does nothing.',
   ratio:
     'The gap between the largest and smallest class is **6 : 1**, and it is sharper than over the whole record, because restricting to high-throughput synthesis removed material that was almost entirely crystalline. It is handled by **weighting the classes inside each model**, which is simpler than resampling and does not invent samples that were never made.',
 }
@@ -287,13 +304,13 @@ export const EDA_DISCRETE = {
   concentration:
     'And they are not evenly used either: **710 of the syntheses sit at 150 °C** and 370 at 120 °C, so two settings out of nine cover seven tenths of the record.',
   why:
-    'That is not a defect in the data. It reflects how combinatorial synthesis is actually designed — **fix a grid of conditions and sweep composition** — and a chemist filling a 24-well plate picks round numbers.',
+    'This reflects how combinatorial synthesis is designed: **fix a grid of conditions and sweep composition**. A chemist filling a 24-well plate picks round numbers.',
   consequence:
-    'But it carries a consequence that returns at the interpretation stage: **a variable that was barely varied cannot explain much variance, however important it is chemically**. Reaction time has three values; if the model says it does not matter, that is a statement about this record, not about chemistry.',
+    'It carries a consequence for interpretation: **a variable that was barely varied cannot explain much variance, however important it is chemically**. Reaction time takes three values in this record, so a model that finds it unimportant is describing the record, not the chemistry.',
 }
 
 export const EDA_CORRELATION = {
-  title: 'Correlation: two different questions, and only one usually gets plotted',
+  title: 'Correlation: two different questions',
   questions: [
     {
       title: 'Do two input variables move together?',
@@ -319,43 +336,49 @@ export const EDA_CORRELATION = {
   /* Las casillas en blanco: la pregunta que se hizo Ruben y se hara cualquiera. */
   blankTitle: 'The blank cells are not missing data',
   blankBody:
-    'A white square in the map means the correlation **is not defined**, not that the value was lost. It happens when a variable has **no variance** in this subset: `reactor_volume_ml` is 2.5 mL in every single high-throughput synthesis, so its standard deviation is zero and every correlation involving it divides by zero.',
+    'A white square means the correlation **is not defined**, not that a value was lost. `reactor_volume_ml` is 2.5 mL in every high-throughput synthesis, so its variance is zero and any correlation with it divides by zero.',
   blankConsequence:
-    'It also has a corollary worth stating, because it is the textbook case of the point made just above: since the reactor is always 2.5 mL, **`fill_fraction` is exactly `total_volume_ml / 2.5`**. The two columns are the same variable rescaled — perfect collinearity, verified across all 1,516 rows, not an approximation. Neither can be credited independently, which is one reason importance is read by block. The other is that this reading was acted on: **in v4 both `reactor_volume_ml` and `fill_fraction` are excluded from the model**, each with its reason recorded in the registry — zero variance for the first, perfect collinearity for the second. Finding it here is what made it removable there.',
+    'It follows that `fill_fraction` is exactly `total_volume_ml / 2.5`: the same variable rescaled, across all 1,516 rows. **Both columns are excluded from the model** — zero variance for one, perfect collinearity for the other.',
   causation:
-    '**Correlation is not causation**. These plots measure whether two things move together, nothing more. That temperature appears associated with crystallinity does not demonstrate that raising it causes crystallisation: they may share a common cause, or it may be a coincidence of this particular record. Establishing causation requires intervening — changing only the temperature and seeing what happens — which is precisely what the model suggests where to do, not what it proves.',
+    '**Correlation is not causation**. These plots measure whether two things move together, nothing more. Temperature appearing associated with crystallinity does not demonstrate that raising it causes crystallisation: the two may share a common cause, or it may be a coincidence of this record. Establishing causation requires intervening, changing only the temperature and seeing what happens.',
 }
 
 export const EDA_LEAKAGE = {
   title: 'Hidden structure: why a random split would lie',
-  body: 'The rows of this dataset are **not independent of one another**. Samples come in plates: batches prepared on the same day, with the same linker, the same thermal ramp and often the same metal, sweeping one variable. And the plates are internally homogeneous — knowing one sample from a plate tells you almost the outcome of its neighbours.',
+  body: 'Each row is **one synthesis**: one well of a 24-well plate, with its conditions and the verdict on its diffractogram. Those rows are **not independent of one another**. A plate is a batch prepared on the same day, with the same linker, the same thermal ramp and often the same metal, sweeping one variable. And plates are internally homogeneous: knowing one well tells you most of what its 23 neighbours did.',
   consequence:
     'A random split would put samples from the same plate in both training and test. The model would not need to learn any chemistry: **recognising the plate would be enough**. The score would come out inflated and false. Validation therefore groups by plate, so no plate ever appears on both sides.',
   /* Recordatorio del desequilibrio, porque aqui es donde se combina con el
      agrupamiento y donde mas dano hace. */
   reminder:
-    'And this compounds with the imbalance from two sections ago. With **64% of samples incipient** and whole plates that are almost uniformly one class, a lucky split can hand the test set a plate that is 90% incipient — where the do-nothing baseline scores 90% and any model looks brilliant. Grouping by plate is what stops the split from choosing its own difficulty.',
+    'This compounds with the class imbalance. With **64% of samples incipient** and whole plates almost uniformly one class, a lucky split can hand the test set a plate that is 90% incipient, where the do-nothing baseline scores 90% and any model looks brilliant. Grouping by plate stops the split from choosing its own difficulty.',
   drift:
-    'There is temporal drift too: the class proportions change year on year, because the laboratory was learning. Counts are annotated on every bar deliberately — **a proportion without its sample size misleads**. A year with seven samples would show a 100% bar that means nothing.',
+    'There is temporal drift too: the class proportions change year on year, because the laboratory was learning. Every bar carries its count, because **a proportion without its sample size misleads**: a year with seven samples shows a 100% bar that means nothing.',
 }
 
 export const EDA_PCA = {
-  title: 'A global look: the PCA projection',
+  title: 'The PCA projection',
   disclaimer: 'This is a diagnostic, not a model.',
-  /* Faltaba decir que es un PCA antes de contar como se aplico, y aclarar de
-     que variables se habla: son las de SINTESIS, no los 29 descriptores. */
-  whatTitle: 'What a PCA does, in one paragraph',
-  what:
-    'Each synthesis is a point in a space with as many dimensions as it has variables — impossible to look at. PCA finds the **direction along which the points are most spread out**, calls it the first component, then the most spread-out direction perpendicular to that one, and so on. Projecting onto the first two gives a flat picture that keeps as much of the original spread as any flat picture can. It is a **change of viewpoint**, not a summary: nothing is discarded, the cloud is only turned to be seen from its widest side.',
+  whatTitle: 'What a PCA does',
+  /* Antes era un parrafo de seis lineas. Lo que hay que llevarse son cuatro
+     hechos sueltos, no un argumento encadenado. */
+  what: [
+    'Each synthesis is a point in a space with one dimension per variable, which cannot be looked at directly.',
+    'PCA finds the **direction along which the points are most spread out**, then the most spread-out direction perpendicular to it, and so on.',
+    'Projecting onto the first two gives a flat picture that keeps as much of the original spread as any flat picture can.',
+    'It is a **change of viewpoint, not a summary**: nothing is discarded.',
+  ],
+  varsTitle: 'What goes in',
   varsNote:
-    'The variables here are the **synthesis conditions** — 38 columns of metal properties, linker properties, solvent fractions, thermal ramp and modulators — not the 29 PXRD descriptors. Those describe the *outcome*; these describe what was *done*, and the question is whether what was done already separates the outcomes.',
+    'The **38 synthesis-condition columns**: metal properties, linker properties, solvent fractions, thermal ramp and modulators. Not the 29 PXRD descriptors, which describe the outcome. The question is whether what was *done* already separates the outcomes.',
+  stepsTitle: 'How it is built',
   steps: [
-    'The numeric synthesis variables are standardised after imputation. Without this, reaction time (up to 96) would crush a solvent fraction (0 to 1) purely through the scale of its units, and the result would measure the choice of units rather than the chemistry.',
-    'The direction of maximum variance is found in that space. That direction is a linear combination of every variable — not a subset — and becomes the first component. Then the direction of maximum remaining variance perpendicular to it, and so on.',
-    'The samples are projected onto those components so they can be drawn.',
+    '**Standardise** the numeric variables after imputation. Without it, reaction time (up to 96) would crush a solvent fraction (0 to 1) through the scale of its units alone.',
+    '**Find the direction of maximum variance**, a linear combination of every variable, and call it the first component. Then the maximum remaining variance perpendicular to it, and so on.',
+    '**Project** the samples onto those components so they can be drawn.',
   ],
   honest:
-    'None of this decides which variables to collapse: PCA uses all of them and, crucially, **does not know the classes** — it is unsupervised. The colours are painted on afterwards. That is what makes it an honest diagnostic: if the classes come out separated, it is real structure in the synthesis conditions, not something the method went looking for.',
+    'PCA uses every variable and **does not know the classes**: it is unsupervised, and the colours are painted on afterwards. So any separation that appears is real structure in the synthesis conditions.',
   findings: [
     'There is structure, but the classes overlap heavily. The problem is genuinely multivariate and genuinely hard.',
     'Adding a third component reveals no hidden separation. That is a useful negative result: there is **no plane that separates the classes**, which already predicts that no linear model will shine.',
@@ -365,13 +388,37 @@ export const EDA_PCA = {
 
 export const EDA_BIVARIATE = {
   title: 'Does any single variable separate the classes?',
-  /* "A que te refieres con descriptores" — habia que decirlo. */
+  /* "A que te refieres con descriptores" — habia que decirlo. Y hacia falta
+     recordar que aspecto tiene el vector de cada clase, porque eso se explico
+     en la pantalla 03 y nadie lee en orden: aqui va el resumen numerico, con
+     enlace al desglose completo. */
   whichTitle: 'Which variables are being tested here',
   which:
-    'The **29 PXRD descriptors**: the numbers extracted from each diffractogram on the previous screen — peak count, crystalline fraction, peak width, entropy, signal-to-noise and the rest. Not the synthesis conditions. The question is whether any single measurement taken *from the pattern* is enough, on its own, to tell the three classes apart.',
+    'The **29 PXRD descriptors** extracted from each diffractogram: peak count, crystalline fraction, peak width, entropy, signal-to-noise and the rest. Not the synthesis conditions. The question is whether any single measurement taken *from the pattern* is enough, on its own, to tell the three classes apart.',
+  /* Medianas por clase sobre los 1.855 difractogramas etiquetados. Mismas
+     cifras que la tabla de descriptores de la pantalla 03. */
+  shapesTitle: 'What each class looks like as numbers',
+  shapes: [
+    {
+      klass: 'Amorphous',
+      tone: 'amorphous',
+      body: '**No peaks at all** (`n_peaks` = 0). 88 % of the scattered area sits under the diffuse halo, and peak-to-background stays near **0.03**.',
+    },
+    {
+      klass: 'Incipient',
+      tone: 'incipient',
+      body: 'A handful of **broad** reflections: median 8 peaks at **0.240°** FWHM, with about half the area crystalline and peak-to-background near **1.19**.',
+    },
+    {
+      klass: 'Crystalline',
+      tone: 'pure',
+      body: 'Many **sharp** reflections: median 19 peaks at **0.162°** FWHM, **77 %** crystalline fraction, and peak-to-background at **9.42**.',
+    },
+  ],
+  shapesLink: 'Where those 29 numbers come from, descriptor by descriptor',
   ordering:
-    'They do order the classes, and cleanly: every descriptor tested rises or falls **monotonically** from amorphous through incipient to crystalline. That is the reassuring half of the picture — the numbers agree with the human verdicts about the direction of the effect.',
-  body: 'But ordering is not separating. The boxes **overlap for every variable tested**: an incipient sample and a crystalline one can share the same peak count, the same width, the same entropy. That is not bad news — it is the definition of a multivariate problem, and exactly why a model is needed instead of a threshold. If one variable separated the classes cleanly, machine learning would be unnecessary: a rule would do.',
+    'They do order the classes cleanly: every descriptor tested rises or falls **monotonically** from amorphous through incipient to crystalline. The numbers agree with the human verdicts on the direction of the effect.',
+  body: 'But ordering is not separating. In the box plots below the boxes **overlap for every variable tested**: an incipient sample and a crystalline one can share the same peak count, the same width, the same entropy. That overlap is the definition of a multivariate problem, and the reason a model is needed instead of a threshold.',
 }
 
 /* ==========================================================================
@@ -380,7 +427,7 @@ export const EDA_BIVARIATE = {
 
 export const MODEL_LINEUP = {
   intro:
-    'Ten models are compared, not one. Not out of indecision: different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right. **Comparing is more honest than betting**.',
+    'Ten models are compared, not one. Different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right.',
   tableHead: ['Model', 'What it assumes', 'Why it is here'],
   /* Cada fila se despliega: `detail` explica como funciona el modelo sin
      formulas, y `code` es la linea real con la que se instancia en el cuaderno
@@ -391,7 +438,7 @@ export const MODEL_LINEUP = {
       assumes: 'Nothing: always the most frequent class',
       why: 'The bar. Everything else must clear it',
       detail:
-        'It looks at no variable at all. It counts which class is commonest in the training data and answers that, every time. On this data it says INCIPIENT to everything and is right 64 % of the time — which is exactly why accuracy is a useless headline here. Its purpose is to give every other number a floor to be measured against.',
+        'It looks at no variable at all. It counts which class is commonest in the training data and answers that, every time. On this data it says INCIPIENT to everything and is right 64 % of the time. That is why accuracy is a useless headline here, and why this model is on the list: to give every other number a floor.',
       code: "DummyClassifier(strategy='most_frequent')",
     },
     {
@@ -471,23 +518,42 @@ export const MODEL_LINEUP = {
 
 export const MODEL_VALIDATION = {
   title: 'Validation grouped by plate',
-  setup:
-    'These syntheses were not done one at a time. High-throughput screening runs them in **plates of 24 wells** — one block, one oven, one thermal programme, 24 compositions swept in parallel. The training set is **1,516 syntheses across 68 plates**, so a plate is not an administrative label: it is a batch of samples that shared a reactor, a day, a solvent bottle and an operator.',
-  body:
-    'That is why the split is grouped by plate. **Stratified group k-fold with five folds** keeps every plate entirely inside one fold, so no plate is ever in training and test at once. Without it the model can score well by recognising which plate a sample came from — the shared batch conditions — instead of learning any chemistry. The stratification then keeps the class proportions even, so no fold ends up with almost no crystalline samples.',
+  setupPoints: [
+    '**A plate is 24 wells**: one block, one oven, one thermal programme, 24 compositions swept in parallel.',
+    'The training set is **1,516 syntheses across 68 plates**.',
+    'So a plate is a batch that shared a reactor, a day, a solvent bottle and an operator, not an administrative label.',
+  ],
+  bodyPoints: [
+    '**Stratified group k-fold, five folds.** Every plate stays entirely inside one fold, so no plate is ever in training and test at once.',
+    '**Without it**, a model can score well by recognising which plate a sample came from instead of learning any chemistry.',
+    '**The stratification** keeps class proportions even, so no fold ends up with almost no crystalline samples.',
+  ],
   consequence:
-    'It costs performance and it is worth it. A random split would report a higher number for a model that had learned less.',
+    'It costs performance. A random split would report a higher number for a model that had learned less.',
 }
 
 export const MODEL_TWO = {
   title: 'Two models, not one',
   objection:
-    'The linker does not make a metal crystallise; the linker determines which material can exist at all. Changing it is not moving a reaction condition — it is changing chemistry.',
-  body: 'That objection is correct, and it has consequences. The variables split in two: design variables (the chemistry of metal and linker), which can be changed but changing them changes the research target; and process variables (concentration, ligand-to-metal ratio, temperature, time, ramps, modulators, solvents), which can be changed within the same chemistry.',
-  full: 'The full model answers: is there predictive signal in this data at all?',
-  actionable:
-    'The actionable model, stripped of metal and linker chemistry, answers: given this chemistry, which conditions make it crystallise? That is the question that helps design the next plate.',
-  note: 'The difference between the two is itself a result.',
+    'The linker does not make a metal crystallise; it determines which material can exist at all. Changing it changes the chemistry, not a reaction condition.',
+  body: 'So the variables split in two: **design variables** (metal and linker chemistry), which change the research target itself, and **process variables** (concentration, ligand-to-metal ratio, temperature, time, ramps, modulators, solvents), which can be changed within the same chemistry. One model is trained on each split.',
+  models: [
+    {
+      name: 'Full model',
+      inputs: 'All 39 variables',
+      asks: 'Is there predictive signal in this record at all?',
+      pro: 'Best score of the two: **0.52 macro F1**, twice the baseline.',
+      limit: 'Most of that signal is the metal-linker system, so it cannot tell you what to change.',
+    },
+    {
+      name: 'Actionable model',
+      inputs: 'Process variables only',
+      asks: 'Given this chemistry, which conditions make it crystallise?',
+      pro: 'The question the bench actually asks, and the one that designs the next plate.',
+      limit: 'Falls to **0.393 macro F1**, MCC 0.095: above chance, not yet a basis for recommending conditions.',
+    },
+  ],
+  note: 'The gap between the two scores measures how much of the signal comes from the chemistry rather than from the conditions.',
 }
 
 export const MODEL_METRICS = {
@@ -503,33 +569,33 @@ export const MODEL_METRICS = {
 
 export const MODEL_FINDINGS = [
   {
-    title: 'There is real predictive signal, and it is more modest than it looked',
-    body: 'The best full model reaches a macro F1 of about 0.52 against 0.26 for the baseline — twice as good. MCC lands near 0.31: a real association, but far from strong.',
+    title: 'There is real predictive signal, and it is modest',
+    body: 'The best full model reaches a macro F1 of about 0.52 against 0.26 for the baseline, twice as good. MCC lands near 0.31: a real association, but far from strong.',
   },
   {
-    title: 'The earlier figure of 0.62 did not measure what it appeared to',
-    body: 'The drop from 0.62 to 0.52 corresponds precisely to the removal of microwave and standard solvothermal syntheses — that is, to the portion of the score that derived from identifying the synthesis method rather than the chemistry. Quantifying that difference is **arguably the most useful outcome of this stage**.',
+    title: 'Excluding the confounded syntheses costs 0.10 of macro F1',
+    body: 'Removing microwave and standard solvothermal runs drops the score from 0.62 to 0.52. That gap **measures the portion of the score that came from identifying the synthesis method** rather than the chemistry.',
   },
   {
     title: 'The actionable model drops further, and that answers the objection',
-    body: 'Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. In plain terms, most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
+    body: 'Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. Most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
     caveat:
-      'This does not mean conditions are chemically unimportant. It means that in this data they were not varied enough for their effect to be learnable — 9 temperatures and 3 reaction times across the training set. The suspicion that the linker was acting as the directing variable was correct, and it is now measured.',
+      'That does not make conditions chemically unimportant. In this record they were not varied enough to be learnable: **9 temperatures and 3 reaction times** across the training set.',
   },
   {
-    title: 'Tree-based models now win',
-    body: 'In the earlier version, with the dirty variables, k-nearest neighbours and SVM came out on top. With the variables corrected, Random Forest and LightGBM move ahead. That is coherent: methods that build boundaries from thresholds benefit from variables that genuinely mean what they say.',
+    title: 'Tree-based models win',
+    body: 'Random Forest and LightGBM come out ahead of k-nearest neighbours and SVM. Methods that build boundaries from thresholds benefit from variables that mean what they say, which is what the unit corrections in the previous stage delivered.',
   },
   {
     title: 'Naive Bayes sinks below the baseline',
-    body: 'Not an implementation failure: it assumes the variables are independent given the class, and the correlation map showed strong blocks. Its failure is a measurement of how much that correlation matters — which is why it is on the list at all.',
+    body: 'It assumes the variables are independent given the class, and the correlation map shows strong blocks. Its failure measures how much that correlation matters, which is why it is on the list.',
   },
 ]
 
 export const MODEL_ERRORS = {
   title: 'Where it goes wrong, and whether the errors make chemical sense',
   intro:
-    'A confusion matrix says far more than any single metric. What matters is not how much the model fails but in which direction. The ordinal pattern holds clearly one way and only half-way the other.',
+    'A confusion matrix shows the direction of the errors, not just how many there are. Here the ordinal pattern holds clearly one way and only half-way the other.',
   tableHead: ['True class', '→ neighbouring class (incipient)', '→ opposite extreme'],
   tableRows: [
     ['Amorphous', '44.6%', '5.9% to crystalline'],
@@ -538,9 +604,9 @@ export const MODEL_ERRORS = {
   amorphous:
     'For amorphous samples the behaviour is what you would hope: when it fails, it confuses "nothing" with "almost nothing", which in the diffractogram itself is a matter of degree and something two experts could disagree about. The severe error — calling an amorphous sample crystalline — is rare.',
   crystalline:
-    'For crystalline samples it is not. Roughly one in six crystalline samples is classified as amorphous, the most serious error available. That is not a clean ordinal pattern: it means the model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient ones, and being the most heterogeneous class — there are many ways to crystallise and only one way not to — it was the predictable outcome, but predictable does not stop it being the model\'s main weakness.',
+    'For crystalline samples it is not. Roughly one in six is classified as amorphous, the most serious error available. The model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient, and the most heterogeneous class of the three (many ways to crystallise, one way not to), this was predictable. It remains the model\'s main weakness.',
   usage:
-    'For the intended use — ranking candidates and filling the next plate — this matters less than it appears: what is needed is for good candidates to rise in the ranking, not for the label to be exact. But it refutes any reading along the lines of "the model rarely makes a serious mistake". It makes a serious mistake on **22% of crystalline samples**, and that has to be accounted for.',
+    'For the intended use, ranking candidates and filling the next plate, what matters is that good candidates rise in the ranking rather than that the label is exact. But the model makes a serious mistake on **22% of crystalline samples**, and that figure has to be quoted alongside the aggregate.',
 }
 
 export const MODEL_CHEMISTRY = {
@@ -550,7 +616,7 @@ export const MODEL_CHEMISTRY = {
     {
       name: 'Metal chemistry',
       rank: 'Dominant, by a wide margin',
-      body: 'It enters through ionic radius and charge-over-radius — that is, the **charge density** of the cation, which governs the strength of the metal-phosphonate interaction and with it whether the system has time to order or precipitates amorphous. A result with direct physical meaning, not an artefact.',
+      body: 'It enters through ionic radius and charge-over-radius, which together give the **charge density** of the cation. That charge density governs the strength of the metal-phosphonate interaction, and with it whether the system has time to order or precipitates amorphous.',
     },
     {
       name: 'Process conditions',
@@ -566,7 +632,7 @@ export const MODEL_CHEMISTRY = {
   caution:
     'Permutation importance tends to split and to understate when variables are correlated: if two columns say almost the same thing, shuffling one barely hurts the model because the other covers the gap. So the absolute values should not be read as "percentage of the chemistry explained", and the block-level split is more reliable than any individual variable.',
   distinction:
-    '"It does not matter" and "it was not explored" are different things, and only the second is actionable. The model is not saying temperature is irrelevant to phosphonate crystallisation — that would be chemically absurd. It is saying that in this record it **was not varied enough to be learnable**. That turns a negative result into a concrete experimental instruction.',
+    '"It does not matter" and "it was not explored" are different claims, and only the second is actionable. The model is not saying temperature is irrelevant to phosphonate crystallisation; it is saying that in this record it **was not varied enough to be learnable**. The instruction that follows is experimental: vary it.',
 }
 
 /* Valoracion del rendimiento. Tono de discusion de articulo: se declara la
@@ -575,7 +641,7 @@ export const MODEL_CHEMISTRY = {
 export const MODEL_ASSESSMENT = {
   title: 'An honest reading of the performance',
   lead:
-    'The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31 — a real but moderate association. Two features of these results deserve to be stated plainly rather than left for the reader to infer.',
+    'The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31, a real but moderate association. Two features of the result matter more than that headline.',
   points: [
     {
       title: 'Three quarters of the crystalline syntheses are not recovered',
@@ -630,7 +696,7 @@ export const MODEL_ASSESSMENT = {
     ],
   },
   closing:
-    'The value of this stage does not rest on the magnitude of the score. It rests on the score being defensible: cross-validated with plates as groups, computed after seven data defects were corrected, and reported alongside the baseline that gives it meaning. A previous version of this analysis reported a higher figure that was later shown to reflect the synthesis method rather than the chemistry. Establishing that the present limitation is one of experimental design converts a negative result into a specific and actionable experiment.',
+    'The score is defensible: cross-validated with plates as groups, computed after seven data defects were corrected, and reported alongside the baseline that gives it meaning. The limitation is one of experimental design rather than of the model, which makes it a specific and actionable experiment.',
 }
 
 export const MODEL_SHAP = {

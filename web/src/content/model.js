@@ -16,14 +16,14 @@ export const MODEL_HERO = {
 export const MODEL_REGISTRY = {
   title: 'A model is not a file',
   lead:
-    'The usual way to keep a trained model is a `.pkl` in a folder, and it fails in a specific way: six months later the file is still there and **nothing around it is**. Which rows trained it, which columns, which version of the code, what it actually scored. The binary survives and the meaning does not.',
+    'The usual way to keep a trained model is a `.pkl` in a folder, and it fails in a specific way: six months later the file is still there and **nothing around it is**. Which rows trained it, which columns, which version of the code, what it actually scored.',
   ruling:
-    'So the model lives in the database as **five related tables**, and the binary is the least important of them. Everything else is the recipe — and a complete recipe means the binary is the one part you could throw away and rebuild.',
+    'So the model lives in the database as **five related tables**, and the binary is the least important of them. The other four hold the recipe, and with a complete recipe the binary can be rebuilt.',
   tables: [
     {
       name: 'ml_datasets',
       head: 'What it was trained on',
-      body: 'The literal SQL that selected the rows, plus its SHA-256. Two models sharing a query but differing in row count were **not** trained on the same thing, and the hash is what makes that detectable instead of assumed.',
+      body: 'The literal SQL that selected the rows, plus its SHA-256. Two models sharing a query but differing in row count were **not** trained on the same thing, and the hash makes that difference detectable.',
     },
     {
       name: 'ml_models',
@@ -33,7 +33,7 @@ export const MODEL_REGISTRY = {
     {
       name: 'ml_model_features',
       head: 'Which columns went in, and which did not',
-      body: 'Every input column with its position in the contract, and every **excluded** one with the reason it was excluded. Recording the exclusions is what turns a decision into an auditable decision rather than a thing somebody once did.',
+      body: 'Every input column with its position in the contract, and every **excluded** one with the reason it was excluded. `reactor_volume_ml` is recorded as zero-variance, `fill_fraction` as perfectly collinear with it.',
     },
     {
       name: 'ml_model_metrics',
@@ -47,7 +47,7 @@ export const MODEL_REGISTRY = {
     },
   ],
   slot:
-    'One more thing decides what the page above is actually running: a **deployment slot**. The simulator does not name a model — it asks the database which one occupies the `primary` slot. That is not decoration. This file once had `crystallinity_v3_hts_full` written into it by hand, the v4 was trained to correct a unit error of a factor of a thousand, and **the site went on serving v3 predictions without anything raising an error**. An obsolete model does not fail; it answers.',
+    'One more thing decides which model the simulator is actually running: a **deployment slot**. The simulator does not name a model; it asks the database which one occupies the `primary` slot. When a model name was written into this file by hand instead, retraining to correct a unit error of a factor of a thousand left **the site serving the superseded model with nothing raising an error**: an obsolete model returns predictions as readily as a current one.',
 }
 
 /* El bucle. La metafora del mapa la puso Ruben; el mapa lo dibuja el modelo. */
@@ -61,8 +61,11 @@ export const MODEL_LOOP = {
      knowledge_map.json, que las cuenta. La primera version de este parrafo
      decia "54 de 63 casillas", que salia de contar ternas
      (temperatura, modulador, veredicto) en vez de casillas. Son 18. */
-  reading:
-    'And the map is genuinely dark. Even for the most-studied metal in the record, most of this plane has never been visited — the syntheses pile up in a handful of cells and leave the rest untouched. Worse, the model hesitates almost everywhere, including where the laboratory *has* looked: the conditions were swept while the chemistry changed alongside them, so the record cannot separate the two.',
+  readingPoints: [
+    '**Most of the plane has never been visited.** Even for Ca, the metal with the most history behind it, the syntheses pile up in a handful of cells.',
+    '**The model hesitates almost everywhere**, including where the laboratory has looked.',
+    '**Because conditions were swept while the chemistry changed alongside them**, so the record cannot separate the two.',
+  ],
   consequence:
-    'Which is exactly the conclusion of the previous screen, arrived at from the other end. The next experiment worth running is not another plate of the same shape — it is **one plate that varies conditions finely while holding the chemistry fixed**. The compass and the diagnosis agree, and that agreement is the useful output of this whole stage.',
+    'The map and the model diagnostics point at the same experiment from opposite ends: the next plate worth running is **one that varies conditions finely while holding the metal and linker fixed**.',
 }

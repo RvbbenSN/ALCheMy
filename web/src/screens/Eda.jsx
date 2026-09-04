@@ -4,7 +4,7 @@ import {
   EDA_CONFOUNDER,
   EDA_INTRO,
   EDA_MODULATORS,
-  EDA_POPULATION,
+  EDA_FUNNEL_INTRO,
   EDA_CORRELATION,
   EDA_DISCRETE,
   EDA_IMBALANCE,
@@ -12,10 +12,15 @@ import {
   EDA_MISSING,
   EDA_PCA,
 } from '../content/screens.js'
+import { Link } from 'react-router-dom'
+import { Eye, ListChecks, ShieldAlert } from 'lucide-react'
 import { Badge, Card, Note, Placeholder, ScrollTable, SectionTitle, Rich } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
 import { ConfounderFigure, SeparationFigure } from '../components/Figures.jsx'
+
+// Un icono por idea del EDA, igual que los tres verbos del ETL en la 03.
+const EDA_STEP_ICONS = { look: Eye, decide: ListChecks, catch: ShieldAlert }
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -52,21 +57,34 @@ export default function Eda() {
         <SectionTitle eyebrow="First, the name">
           {EDA_INTRO.acronym} &mdash; {EDA_INTRO.expansion}
         </SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_INTRO.what}</Rich>
-            </p>
-            <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_INTRO.why}</Rich>
-            </p>
-          </Card>
-          <Card accent>
-            <p className="text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-              <Rich>{EDA_INTRO.rule}</Rich>
-            </p>
-          </Card>
+        {/* Misma forma que los tres verbos del ETL en la pantalla 03: tres
+            bloques con icono, sin caja exterior. */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          {EDA_INTRO.steps.map((step) => {
+            const Icon = EDA_STEP_ICONS[step.key]
+            return (
+              <div
+                key={step.key}
+                className="rounded-[var(--radius-card)] p-3"
+                style={{ border: '1px solid var(--surface-border)', background: 'var(--surface-elevated)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon size={16} aria-hidden style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+                  <strong style={{ color: 'var(--text-primary)' }}>{step.label}</strong>
+                </div>
+                <p className="mt-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{step.body}</Rich>
+                </p>
+              </div>
+            )
+          })}
         </div>
+
+        <Card accent className="mt-4">
+          <p className="text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+            <Rich>{EDA_INTRO.rule}</Rich>
+          </p>
+        </Card>
 
         <p className="mb-3 mt-6 text-sm" style={{ color: 'var(--text-muted)' }}>
           What this one found, in order:
@@ -91,38 +109,6 @@ export default function Eda() {
         </ol>
       </section>
 
-      {/* --- Sobre que filas se cuenta --- */}
-      <section>
-        <SectionTitle eyebrow="Before any number">{EDA_POPULATION.title}</SectionTitle>
-        <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          <Rich>{EDA_POPULATION.intro}</Rich>
-        </p>
-        <ol className="flex list-none flex-col gap-2 p-0">
-          {EDA_POPULATION.rows.map(([n, what, why], i) => (
-            <li
-              key={what}
-              className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-[var(--radius-badge)] p-3"
-              style={{
-                border: `2px solid ${i === 2 ? 'var(--accent-primary)' : 'var(--surface-border)'}`,
-                background: i === 2 ? 'var(--accent-glow)' : 'transparent',
-              }}
-            >
-              <span
-                className="text-xl"
-                style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-primary)', minWidth: '5ch' }}
-              >
-                {n}
-              </span>
-              <span style={{ color: 'var(--text-primary)' }}>{what}</span>
-              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{why}</span>
-            </li>
-          ))}
-        </ol>
-        <Note>
-          <Rich>{EDA_POPULATION.note}</Rich>
-        </Note>
-      </section>
-
       {/* --- 1. El factor de confusion --- */}
       <section>
         <SectionTitle eyebrow="Before loading anything"><Rich>{EDA_CONFOUNDER.title}</Rich></SectionTitle>
@@ -138,13 +124,14 @@ export default function Eda() {
         </div>
 
         <Card accent className="mt-6">
-          <p style={{ color: 'var(--text-secondary)' }}><Rich>{EDA_CONFOUNDER.shortcut}</Rich></p>
-          <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{EDA_CONFOUNDER.bias}</Rich>
-          </p>
-          <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{EDA_CONFOUNDER.thermal}</Rich>
-          </p>
+          <ul className="flex list-none flex-col gap-3 p-0 text-sm">
+            {EDA_CONFOUNDER.points.map((p) => (
+              <li key={p.label} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>{p.label}.</strong>{' '}
+                <span style={{ color: 'var(--text-secondary)' }}><Rich>{p.body}</Rich></span>
+              </li>
+            ))}
+          </ul>
         </Card>
 
         <Card className="mt-6">
@@ -160,25 +147,12 @@ export default function Eda() {
 
       {/* --- 2. El embudo --- */}
       <section>
-        <SectionTitle eyebrow="A worked example">From 2,167 syntheses to 1,516 rows</SectionTitle>
+        <SectionTitle eyebrow="Which rows the model sees">{EDA_FUNNEL_INTRO.title}</SectionTitle>
         <p className="mb-3 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          The laboratory performed <strong>2,167 syntheses</strong> and measured{' '}
-          <strong>1,879 diffractograms</strong>. The model trained on 1,516 rows. The gap is not
-          waste: <strong>every drop below is a deliberate exclusion with a stated reason</strong>,
-          and the point of showing them in order is that each one changes what the resulting model
-          can honestly claim to be about.
-        </p>
-        <p className="mb-3 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          The chain below counts <strong>rows of the feature table</strong>, not syntheses — which is
-          why it starts at 2,152 rather than 2,167. Each step removes exactly one filter from the
-          query the model registry stores for this dataset, so the last line is not an assertion:
-          it is the number the registry holds.
+          <Rich>{EDA_FUNNEL_INTRO.lead}</Rich>
         </p>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Read it as the definition of the model&rsquo;s scope. By the last row the model is no longer
-          &ldquo;a model of this laboratory&rsquo;s chemistry&rdquo;: it is a model of{' '}
-          <strong>combinatorial syntheses that produced a powder someone was willing to judge</strong>.
-          That is a narrower and more honest claim, and it is what the exclusions bought.
+          <Rich>{EDA_FUNNEL_INTRO.chain}</Rich>
         </p>
         <ol className="flex list-none flex-col gap-3 p-0">
           {FUNNEL.map((f, i) => (
@@ -200,6 +174,9 @@ export default function Eda() {
             </li>
           ))}
         </ol>
+        <Note>
+          <Rich>{EDA_FUNNEL_INTRO.scope}</Rich>
+        </Note>
       </section>
 
       {/* --- 3. Ausentes --- */}
@@ -222,36 +199,31 @@ export default function Eda() {
       {/* --- De donde salen las columnas de modulador --- */}
       <section>
         <SectionTitle eyebrow="One gap deserves its own section">{EDA_MODULATORS.title}</SectionTitle>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_MODULATORS.problem}</Rich>
-            </p>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_MODULATORS.fix}</Rich>
-            </p>
-            <div
-              className="mono mt-4 overflow-x-auto rounded-[var(--radius-badge)] p-3 text-xs"
-              style={{ background: 'var(--surface-elevated)', border: '2px solid var(--surface-border)', color: 'var(--text-primary)' }}
+        {/* Una sola tarjeta a todo el ancho: el texto es corto y no gana nada
+            metido en media pantalla con la otra mitad vacia. */}
+        <Card>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Rich>{EDA_MODULATORS.problem}</Rich>
+          </p>
+          <div
+            className="mono mt-4 overflow-x-auto rounded-[var(--radius-badge)] p-3 text-xs"
+            style={{ background: 'var(--surface-elevated)', border: '2px solid var(--surface-border)', color: 'var(--text-primary)' }}
+          >
+            {EDA_MODULATORS.formula}
+          </div>
+        </Card>
+        {/* Dos notas al pie, no dos secciones. */}
+        <ul className="mt-4 flex list-none flex-col gap-2 p-0">
+          {EDA_MODULATORS.caveats.map((c, i) => (
+            <li
+              key={i}
+              className="text-sm"
+              style={{ borderLeft: '3px solid var(--status-incipient)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}
             >
-              {EDA_MODULATORS.formula}
-            </div>
-          </Card>
-        </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          {EDA_MODULATORS.caveats.map((c) => (
-            <div
-              key={c.title}
-              className="p-4"
-              style={{ borderLeft: '4px solid var(--status-incipient)', background: 'var(--surface-elevated)' }}
-            >
-              <h4 className="text-sm" style={{ color: 'var(--text-primary)' }}>{c.title}</h4>
-              <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                <Rich>{c.body}</Rich>
-              </p>
-            </div>
+              <Rich>{c}</Rich>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* --- 4. Desequilibrio --- */}
@@ -394,6 +366,28 @@ export default function Eda() {
           <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
             <Rich>{EDA_BIVARIATE.which}</Rich>
           </p>
+
+          {/* Recordatorio de que aspecto tiene el vector de cada clase: se
+              explico en la pantalla 03 y nadie lee en orden. */}
+          <h4 className="mt-5 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
+            {EDA_BIVARIATE.shapesTitle}
+          </h4>
+          <ul className="mt-3 flex list-none flex-col gap-2.5 p-0 text-sm">
+            {EDA_BIVARIATE.shapes.map((s) => {
+              const tone = `var(--status-${s.tone})`
+              return (
+                <li key={s.klass} style={{ borderLeft: `2px solid ${tone}`, paddingLeft: '0.75rem' }}>
+                  <strong className="uppercase tracking-wider" style={{ color: tone }}>{s.klass}</strong>{' '}
+                  <span style={{ color: 'var(--text-secondary)' }}><Rich>{s.body}</Rich></span>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-3 text-sm">
+            <Link to="/data-preparation#descriptors" style={{ color: 'var(--accent-primary)' }}>
+              {EDA_BIVARIATE.shapesLink} &rarr;
+            </Link>
+          </p>
         </Card>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{EDA_BIVARIATE.ordering}</Rich>
@@ -404,9 +398,8 @@ export default function Eda() {
             <Rich>{EDA_BIVARIATE.body}</Rich>
           </p>
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            The medians above separate; the <em>distributions</em> behind them overlap. A median that
-            moves is not the same as a boundary that holds, and confusing the two is how a promising
-            plot becomes a disappointing model.
+            The medians separate; the <em>distributions</em> behind them overlap. A variable can shift
+            class by class and still fail to classify any single sample.
           </p>
         </Card>
       </section>
@@ -443,12 +436,19 @@ export default function Eda() {
         <div className="grid gap-4 lg:grid-cols-2">
           <Card accent>
             <h3 className="text-base">{EDA_PCA.whatTitle}</h3>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{EDA_PCA.what}</Rich>
-            </p>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
+              {EDA_PCA.what.map((w, i) => (
+                <li
+                  key={i}
+                  style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}
+                >
+                  <Rich>{w}</Rich>
+                </li>
+              ))}
+            </ul>
           </Card>
           <Card>
-            <h3 className="text-base">Which variables go into it</h3>
+            <h3 className="text-base">{EDA_PCA.varsTitle}</h3>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{EDA_PCA.varsNote}</Rich>
             </p>
@@ -456,8 +456,8 @@ export default function Eda() {
         </div>
 
         <Card className="mt-4">
-          <h3 className="text-base">How it is built, in three steps</h3>
-          <ol className="mt-4 flex list-decimal flex-col gap-3 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <h3 className="text-base">{EDA_PCA.stepsTitle}</h3>
+          <ol className="mt-4 flex list-decimal flex-col gap-2 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {EDA_PCA.steps.map((s, i) => (
               <li key={i}><Rich>{s}</Rich></li>
             ))}

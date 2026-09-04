@@ -174,6 +174,11 @@ def main() -> int:
         # La primera linea del export es un comentario HTML con el nombre del
         # cuaderno. mistune lo deja pasar tal cual y acaba VISIBLE en la pagina.
         md_text = re.sub(r"^\s*<!--.*?-->\s*", "", md_text, count=1, flags=re.S)
+        # El revisor externo anade al final una seccion "## DUDAS" con notas
+        # dirigidas a Ruben (que decisiones tomo, que le queda por confirmar).
+        # Son notas de produccion, no contenido del cuaderno: sin este corte
+        # acaban publicadas tal cual, en las 7 paginas en espanol de la web.
+        md_text = re.sub(r"\n##\s*DUDAS\b.*$", "\n", md_text, flags=re.S)
         n_figs = len(RE_FIGURA.findall(md_text))
         cuerpo = render(md_text, stem, lang, problemas)
 

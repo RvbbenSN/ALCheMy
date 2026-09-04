@@ -2,7 +2,7 @@
  "generatedAt": "2026-09-04",
  "totals": {
   "tables": 26,
-  "views": 9,
+  "views": 7,
   "functions": 16,
   "columns": 337,
   "dictionaryRows": 499,
@@ -263,11 +263,6 @@
    "comment": "One row per synthesised sample with its metal, linker, date and how many characterisation techniques it has."
   },
   {
-   "name": "v_agente_muestras",
-   "columns": 7,
-   "comment": "Read-only view for the RAG agent. n_tecnicas is the weak label of experimental interest. Duplicate of v_agent_samples, kept only until callers are migrated."
-  },
-  {
    "name": "v_ml_deployed",
    "columns": 12,
    "comment": "The models being served right now, and in which role. One row per deployment slot; if it is empty, nothing is deployed."
@@ -291,11 +286,6 @@
    "name": "v_pxrd_labels_full",
    "columns": 14,
    "comment": "Crystallinity labels joined to the synthesis conditions they belong to. needs_relink flags labels orphaned by a re-ingestion."
-  },
-  {
-   "name": "v_rag_biblioteca",
-   "columns": 16,
-   "comment": "Corpus catalogue with the citation already assembled. Read-only tool for the agent so it never invents a reference. Duplicate of v_rag_library, kept only until callers are migrated."
   },
   {
    "name": "v_rag_library",

@@ -102,18 +102,19 @@ export default function NotebookList({ only }) {
           <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {nb.blurb}
           </p>
-          {/* Tres destinos, y son cosas distintas: el titulo abre el cuaderno
-              entero con su codigo, para auditarlo; las banderas abren la
-              narrativa pulida en un idioma, para leerla. */}
+          {/* Tres destinos, y ahora los tres muestran el mismo notebook completo
+              (codigo, salidas y figuras): el titulo abre la version tal como se
+              escribio (mixta); las banderas abren esa misma version completa
+              en ingles o en espanol. */}
           <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
-            <Badge tone="info">Full notebook</Badge>
+            <Badge tone="info">Full notebook - with code</Badge>
             <span className="ml-auto flex items-center gap-1.5">
               <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                 Read
               </span>
               {[
-                ['en', '\uD83C\uDDEC\uD83C\uDDE7', 'Read in English'],
-                ['es', '\uD83C\uDDEA\uD83C\uDDF8', 'Leer en espanol'],
+                ['en', String.fromCodePoint(0x1F1EC, 0x1F1E7), 'English (full notebook, with code)'],
+                ['es', String.fromCodePoint(0x1F1EA, 0x1F1F8), 'Espa\u00F1ol (cuaderno completo, con c\u00F3digo)'],
               ].map(([code, flag, label]) => (
                 <a
                   key={code}
