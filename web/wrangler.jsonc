@@ -37,9 +37,21 @@
     // "single-page-application" responde con index.html y codigo 200 a lo que
     // no encuentre. React arranca, lee la URL y pinta la pantalla correcta.
     //
-    // Se conserva ademas `public/_redirects`, que hace lo mismo por si el
-    // proyecto se desplegara alguna vez por el camino de Pages. Los dos dicen
-    // exactamente lo mismo, asi que no pueden contradecirse.
+    // AQUI Y NO EN `_redirects`, Y ESTO IMPORTA.
+    // En el camino de Pages, este mismo fallback se escribia como una regla
+    // `/*  /index.html  200` en `public/_redirects`. Por el camino de Workers
+    // esa regla NO se acepta: el despliegue falla con
+    //
+    //   Invalid _redirects configuration:
+    //   Line N: Infinite loop detected in this rule. [code: 100324]
+    //
+    // porque Cloudflare ve que la regla podria reenviarse a si misma. Y falla
+    // tarde y mal: el build compila, los 80 ficheros se suben, y el error salta
+    // en el ultimo paso, cuando ya parece que todo ha ido bien. Por eso el
+    // fichero `_redirects` se ha eliminado y el fallback vive solo aqui.
+    //
+    // Si algun dia se vuelve a Pages, hay que recrearlo con esa regla; no basta
+    // con este fichero, que Pages no lee.
     "not_found_handling": "single-page-application"
   }
 

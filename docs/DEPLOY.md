@@ -3,7 +3,7 @@
 Two separate things, and they are worth not confusing:
 
 1. **The public GitHub repository** — the code, so the work can be read.
-2. **The site on Cloudflare Pages** — the application, so it can be used.
+2. **The site on Cloudflare** — the application, so it can be used.
 
 The site **does not need** the public repository to exist: it can be deployed by
 uploading the built folder. So if you want the URL sooner, start at step 2 and
@@ -63,7 +63,7 @@ git push -u origin main
 
 ---
 
-## 2. The site on Cloudflare Pages
+## 2. The site on Cloudflare
 
 The application builds to `web/dist`, around 20 MB. It is static: no server, no
 database, and no need for your machine to be switched on.
@@ -84,26 +84,57 @@ To update it: `npm run build` again and upload `dist` again.
 
 ### The connected way — deploys itself on every push
 
-If you did step 1, choose **Connect to Git** instead of *Upload assets*, and set:
+Choose **Connect to Git** instead of *Upload assets*. Cloudflare has merged Pages
+into Workers, and for a new project it now offers the **Workers** flow, which
+deploys by running `npx wrangler deploy` rather than by being told where the
+build output is. That is why `web/wrangler.jsonc` exists: it tells wrangler what
+to publish. Without it the deploy step fails.
 
 | Field | Value |
 |---|---|
-| Framework preset | `None` |
 | Build command | `npm run build` |
-| Build output directory | `web/dist` |
-| Root directory | `web` |
-| Environment variable | `NODE_VERSION` = `20` |
+| Deploy command | `npx wrangler deploy` (the default) |
+| Root directory (*Advanced settings*) | `web` |
+
+No environment variables are needed. Cloudflare's build image already provides
+Node 24 and npm 10, which Vite 7 accepts — verified in a real build log, not
+assumed. Set `NODE_VERSION` only if a future build reports a version too old.
 
 From then on, every push to `main` rebuilds and republishes the site.
 
-### One thing already handled
+If the dashboard still offers the older **Pages** flow, it also works — set the
+build output directory to `dist` with the same root directory. Both paths read
+`_headers`; the routing fallback, however, is written differently in each (see
+below), and only the Workers path reads `wrangler.jsonc`.
 
-`web/public/_redirects` sends any path to `index.html` with a 200. It is needed
-because the application is a single-page app: routes like `/database` or
-`/the-model` do not exist as files on the server — the browser resolves them.
-Without that file, opening one directly, or reloading while on it, returns a 404
-**even though navigating there from the home page works**. It is a fault that
-only appears once deployed.
+### Two things already handled
+
+**The routing fallback**, declared in `wrangler.jsonc` as
+`assets.not_found_handling: "single-page-application"`. It is needed because the
+application is a single-page app: routes like `/database` or `/the-model` do not
+exist as files on the server — the browser resolves them. Without it, opening one
+directly, or reloading while on it, returns a 404 **even though navigating there
+from the home page works**. It is a fault that only appears once deployed.
+
+> On the Pages path the same fallback is a `/*  /index.html  200` rule in a
+> `public/_redirects` file. **That rule breaks the Workers path**: the deploy is
+> rejected with `Infinite loop detected in this rule [code: 100324]`, because
+> Cloudflare sees a rule that could forward to itself. It fails late and
+> confusingly — the build compiles, every asset uploads, and the error lands on
+> the very last step. The file was therefore removed. If this project ever goes
+> back to Pages, it has to be recreated.
+
+`web/public/_headers` carries the security headers. Cloudflare provides HTTPS and
+DDoS protection on its own; what it does not provide is the content policy that
+would stop an injected script from running. The CSP authorises the one inline
+script in `index.html` — the theme-flash guard — **by its hash** rather than
+allowing inline scripts in general. Edit that script and the hash must be
+recomputed; the command is in a comment inside `_headers`, and the symptom of
+forgetting is mild and visible (a flash of the light theme on reload).
+
+`web/wrangler.jsonc` carries no server code on purpose. The site is fully static,
+so it deploys as assets alone — fewer moving parts, and nothing that can break in
+production.
 
 ### What the site does not carry, and why
 
@@ -123,6 +154,7 @@ only appears once deployed.
 | Symptom | Where to look |
 |---|---|
 | The site loads blank | The browser console. Almost always an icon or an import that does not exist. |
-| A route 404s when opened directly | `_redirects` is missing from `dist`. Check `web/public/_redirects` exists and rebuild. |
+| A route 404s when opened directly | The routing fallback is not applying. Check `assets.not_found_handling` in `web/wrangler.jsonc`. |
+| Deploy fails with `code: 100324` | A `_redirects` file has come back with a `/*  /index.html  200` rule. On the Workers path that rule is rejected; the fallback belongs in `wrangler.jsonc`. |
 | Figures do not appear | They are served from `/figures/`. Check `web/public/figures/` made it into `dist`. |
 | Docker will not start after moving something | `python scripts/verificar_proyecto.py` names which of the four mounted paths is missing. |

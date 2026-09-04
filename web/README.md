@@ -92,7 +92,7 @@ desplegar; en local no hacen nada, y por eso es fácil olvidarse de ellos.
 
 | Fichero | Qué resuelve |
 |---|---|
-| `public/_redirects` | El **fallback de SPA**. Sin él, recargar en `/the-model` o abrir un enlace directo a una sección devuelve **404**: esas rutas las resuelve React en el navegador, en el servidor no existen. Falla justo con quien llega de fuera |
+| `wrangler.jsonc` (`not_found_handling`) | El **fallback de SPA**. Sin él, recargar en `/the-model` o abrir un enlace directo a una sección devuelve **404**: esas rutas las resuelve React en el navegador, en el servidor no existen. Falla justo con quien llega de fuera. Por el camino de Pages esto se escribía como una regla en `public/_redirects`; **esa regla rompe el despliegue por Workers** (`Infinite loop detected [code: 100324]`), así que el fichero se eliminó |
 | `public/_headers` | Las **cabeceras de seguridad**. Cloudflare pone el HTTPS y el anti-DDoS solo; lo que no pone solo es la política de contenido (CSP), que es la que impediría que un script inyectado llegara a ejecutarse |
 
 **Mantenimiento de la CSP.** Autoriza por *hash* el único script incrustado que hay —el de
