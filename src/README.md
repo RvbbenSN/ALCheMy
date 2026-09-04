@@ -1686,3 +1686,33 @@ privado). Dos detalles que costaron una iteración y se ven en el código:
 Las etiquetas que la referencian están en `web/index.html` y llevan **direcciones absolutas**,
 porque quien genera la vista previa no está navegando por el sitio y no puede resolver una
 ruta relativa. Si cambia el dominio, hay que actualizar `og:url` y `og:image`.
+
+### `scripts/preparar_repo_publico.py`
+
+Prepara una copia publicable del proyecto, con **un solo commit y sin pasado**.
+
+**Por qué no basta con cambiar la visibilidad en GitHub.** `comprobar_privacidad.py` revisa el
+estado *actual* del árbol, y puede decir "limpio" con toda la razón mientras el historial
+guarda intactos los nombres de ligandos y los códigos de muestra que se limpiaron después.
+Borrar un dato hoy no lo borra del commit de la semana pasada.
+
+Comprobado en este repositorio: `H6ttbmp` aparece en **25 commits**, uno de ellos titulado
+*"Un guardián de privacidad, y cerradas las fugas que encontró"*. Y ni siquiera hace falta
+abrir un fichero — este mensaje de commit se lee en la portada:
+
+> `Cierra F0: oxofilicidad de Kepp completa, RS253 por cálculo de masa, identidades
+> H6ttbmp/H8ptp confirmadas`
+
+```bash
+python scripts/preparar_repo_publico.py --dry-run     # qué se copiaría
+python scripts/preparar_repo_publico.py               # crea ../ALCheMy_public
+```
+
+Copia lo que devuelve **`git ls-files`**, no la carpeta: así lo ignorado (`_lab/`, `data/`,
+`.env`, `backups/`) no puede colarse por descuido, porque la lista de exclusiones ya existe y
+está probada — es el `.gitignore`. Después crea un repositorio nuevo con un único commit y
+**vuelve a pasar el comprobador sobre la copia**, que es lo que de verdad se publica. Imprime
+los comandos de GitHub pero no los ejecuta: publicar es una decisión, no un efecto colateral.
+
+Verificado de punta a punta: 252 ficheros, 1 commit, sin rastro de `_lab/`, `data/` ni `.env`,
+y el comprobador diciendo "Limpio: se puede publicar" sobre la copia.

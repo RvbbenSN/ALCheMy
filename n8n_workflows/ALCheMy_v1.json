@@ -150,7 +150,7 @@
             {
               "id": "aac48ff4-7a71-41d2-aa35-b503820cac34",
               "name": "researcher_email",
-              "value": "rubbenserrano@gmail.com",
+              "value": "researcher@example.org",
               "type": "string"
             },
             {
@@ -474,8 +474,8 @@
     {
       "parameters": {
         "operation": "sendAndWait",
-        "fromEmail": "rubbenserrano@gmail.com",
-        "toEmail": "=={{ $json.approver || 'rubbenserrano@gmail.com' }}",
+        "fromEmail": "researcher@example.org",
+        "toEmail": "=={{ $json.approver || 'researcher@example.org' }}",
         "subject": "=={{ $json.approval_email_subject || '[ALCheMy L2 Approval] PDF Ingestion' }}",
         "message": "=={{ $json.approval_email_body }}",
         "options": {
