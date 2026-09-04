@@ -6,7 +6,7 @@ export const DESCRIPTOR_GROUPS = [
   {
     "title": "Peak geometry",
     "icon": "ruler",
-    "blurb": "Where the reflections are, how many, and how sharp.",
+    "blurb": "Dónde están las reflexiones, cuántas hay y cómo de afiladas son.",
     "rows": [
       [
         "n_peaks",
@@ -69,7 +69,7 @@ export const DESCRIPTOR_GROUPS = [
   {
     "title": "Phase composition",
     "icon": "layers",
-    "blurb": "How the signal splits between sharp reflections and the broad halo.",
+    "blurb": "Cómo se reparte la señal entre las reflexiones afiladas y el halo ancho.",
     "rows": [
       [
         "crystalline_fraction",
@@ -130,9 +130,9 @@ export const DESCRIPTOR_GROUPS = [
     ]
   },
   {
-    "title": "Intensity & global statistics",
+    "title": "Intensidad y estadísticos globales",
     "icon": "activity",
-    "blurb": "How strong the signal is, and how concentrated.",
+    "blurb": "Cómo de fuerte es la señal, y cómo de concentrada.",
     "rows": [
       [
         "peak_to_background_ratio",
@@ -179,9 +179,9 @@ export const DESCRIPTOR_GROUPS = [
     ]
   },
   {
-    "title": "Parameters & quality flags",
+    "title": "Parámetros y banderas de calidad",
     "icon": "shield",
-    "blurb": "Not measurements of the sample: what the pipeline did, and whether the result can be trusted.",
+    "blurb": "No son medidas de la muestra: son lo que hizo el pipeline, y si el resultado es de fiar.",
     "rows": [
       [
         "baseline_method",
@@ -244,49 +244,49 @@ export const DESCRIPTOR_RECAP = {
     "Incipient",
     "Crystalline"
   ],
-  "lead": "A continuous diffractogram of thousands of data points is compressed into a fixed **29-dimensional vector**. Below is the complete breakdown of these physical descriptors—grouped by traceability, peak geometry, phase composition, and global statistics—alongside median values across the 1,855 expert-labelled samples.",
+  "lead": "Un difractograma continuo de miles de puntos se comprime en un **vector fijo de 29 dimensiones**. Abajo está el desglose completo de estos descriptores físicos —agrupados por trazabilidad, geometría de picos, composición de fases y estadísticos globales— junto a los valores medianos sobre las 1.855 muestras etiquetadas por un experto.",
   "counts": "484 amorphous · 1,013 incipient · 358 crystalline",
   "reading": [
     {
       "klass": "Amorphous",
       "icon": "waves",
       "tone": "amorphous",
-      "title": "Diffuse halo dominates — no Bragg peaks",
+      "title": "Domina el halo difuso — sin picos de Bragg",
       "points": [
-        "Zero genuine reflections (`n_peaks` = 0)",
-        "Amorphous fraction exceeds **85–90%** of total area (0.88 on the blank-corrected split)",
-        "Spectral entropy is the highest of the three classes; peak-to-background ratio stays near zero"
+        "Cero reflexiones genuinas (`n_peaks` = 0)",
+        "La fracción amorfa supera el **85-90 %** del área total (0,88 en el reparto corregido con el blanco)",
+        "La entropía espectral es la más alta de las tres clases; la relación pico-fondo se queda cerca de cero"
       ]
     },
     {
       "klass": "Incipient",
       "icon": "gitbranch",
       "tone": "incipient",
-      "title": "Intermediate regime — broad, emerging peaks",
+      "title": "Régimen intermedio — picos anchos, emergentes",
       "points": [
-        "The transition zone between disorder and crystal growth",
-        "Emerging, broader reflections — median FWHM 0.240°, even wider than amorphous",
-        "Moderate peak-to-background ratios; descriptors sit midway between halo and crystalline order, making it **the most challenging class for the classifier**"
+        "La zona de transición entre el desorden y el crecimiento cristalino",
+        "Reflexiones emergentes y más anchas: FWHM mediana de 0,240°, incluso más ancha que la amorfa",
+        "Relaciones pico-fondo moderadas; sus descriptores quedan a medio camino entre el halo y el orden cristalino, lo que la convierte en **la clase más difícil para el clasificador**"
       ]
     },
     {
       "klass": "Crystalline",
       "icon": "gem",
       "tone": "pure",
-      "title": "Sharp, intense Bragg reflections",
+      "title": "Reflexiones de Bragg afiladas e intensas",
       "points": [
-        "Intense, narrow peaks at low angles — median FWHM 0.162°, well under 0.20°",
-        "Signal-to-noise and peak-to-background jump orders of magnitude over amorphous (0.03 → 9.42)",
-        "Crystalline fraction accounts for the vast majority of scattered intensity; the pipeline trusts 99% of these"
+        "Picos intensos y estrechos a ángulos bajos: FWHM mediana de 0,162°, bastante por debajo de 0,20°",
+        "La señal-ruido y la relación pico-fondo suben órdenes de magnitud sobre la amorfa (0,03 → 9,42)",
+        "La fracción cristalina se lleva la inmensa mayoría de la intensidad dispersada; el pipeline se fía del 99 % de estas"
       ]
     }
   ],
-  "caveat": "`scherrer_size_nm` mathematically requires a real Bragg peak, yet it comes out **larger for amorphous samples (37.4 nm) than for incipient ones (33.8 nm)** — physically absurd, since an amorphous solid has no crystallites. Calculated over baseline noise, the formula still returns a number: a reminder that a physical formula only applies within its intended domain."
+  "caveat": "`scherrer_size_nm` exige matemáticamente un pico de Bragg real, y sin embargo sale **mayor para las muestras amorfas (37,4 nm) que para las incipientes (33,8 nm)**: físicamente absurdo, porque un sólido amorfo no tiene cristalitos. Calculada sobre el ruido de la línea base, la fórmula devuelve un número igualmente: un recordatorio de que una fórmula física solo vale dentro del dominio para el que se dedujo."
 }
 
 export const ELEMENT_INTRO = {
-  "problem": "A categorical label like \"Fe\" hides the physics and collapses **Fe(II)** (92 pm) and **Fe(III)** (78.5 pm) into the same bin. Replacing chemical symbols with **eight fundamental properties** (Shannon ionic radius, electronegativity, HSAB hardness, charge-to-radius ratio) enables the model to interpolate across the periodic table and predict outcomes for unseen metals",
-  "payoff": "Molecule names convey no spatial or chemical meaning. Using RDKit, each linker is featurized into **six geometric and topological descriptors**: denticity (binding points), max donor distance (pore-size proxy), acidic proton count, and rotatable bonds (flexibility)—capturing the structural rules of reticular assembly."
+  "problem": "Una etiqueta categórica como \"Fe\" esconde la física y mete **Fe(II)** (92 pm) y **Fe(III)** (78,5 pm) en el mismo saco. Sustituir los símbolos químicos por **ocho propiedades fundamentales** (radio iónico de Shannon, electronegatividad, dureza HSAB, relación carga-radio) permite al modelo interpolar por la tabla periódica y predecir resultados para metales que no ha visto",
+  "payoff": "Los nombres de molécula no transmiten significado espacial ni químico. Con RDKit, cada conector se convierte en **seis descriptores geométricos y topológicos**: denticidad (puntos de unión), distancia máxima entre donores (aproximación al tamaño de poro), número de protones ácidos y enlaces rotables (flexibilidad), que capturan las reglas estructurales del ensamblaje reticular."
 }
 
 export const LANES = [
@@ -294,144 +294,144 @@ export const LANES = [
     "id": "synthesis",
     "label": "Synthesis conditions",
     "tag": "Notebook 01",
-    "sub": "A spreadsheet of recipes becomes a governed table",
-    "blurb": "What the chemist controls: metal, linker, solvent, temperature, time, modulator. Structured data that was never structured properly."
+    "sub": "Una hoja de recetas se convierte en una tabla gobernada",
+    "blurb": "Lo que controla el químico: metal, conector, disolvente, temperatura, tiempo, modulador. Datos estructurados que nunca se estructuraron bien."
   },
   {
     "id": "characterisation",
     "label": "Characterisation signal",
-    "tag": "Notebooks 02 & 05",
-    "sub": "A diffractogram becomes 29 comparable numbers",
-    "blurb": "What the material answers back. Raw instrument curves that have to be processed before any two of them can be compared."
+    "tag": "Cuadernos 02 y 05",
+    "sub": "Un difractograma se convierte en 29 números comparables",
+    "blurb": "Lo que responde el material. Curvas de instrumento en crudo que hay que procesar antes de poder comparar dos cualesquiera."
   }
 ]
 
 export const LINKER_FEATURES = [
   [
     "scaffold",
-    "The rigid core the linker is built on. Governs the size of the pore that can form."
+    "El núcleo rígido sobre el que se construye el conector. Gobierna el tamaño del poro que puede formarse."
   ],
   [
     "denticity",
-    "How many points the linker can bind through. Two makes a chain, three or more makes a network."
+    "Por cuántos puntos puede unirse el conector. Dos dan una cadena; tres o más, una red."
   ],
   [
     "n_acidic_protons",
-    "How many protons have to leave before the linker can coordinate — which is what ties the outcome to pH and to the modulator."
+    "Cuántos protones tienen que salir antes de que el conector pueda coordinar, que es lo que ata el resultado al pH y al modulador."
   ],
   [
     "max_donor_distance_a",
-    "The distance between the outermost binding points, in ångström. The first-order estimate of pore size."
+    "La distancia entre los puntos de unión más externos, en ångström. La estimación de primer orden del tamaño de poro."
   ],
   [
     "protection_state",
-    "Whether the binding groups arrive masked as esters and have to be freed in situ."
+    "Si los grupos de unión llegan enmascarados como ésteres y hay que liberarlos in situ."
   ],
   [
     "n_rotatable_bonds",
-    "Conformational freedom. A floppy linker is far less likely to give an ordered framework."
+    "Libertad conformacional. Un conector flexible tiene muchas menos probabilidades de dar una red ordenada."
   ]
 ]
 
 export const METAL_FEATURES = [
   [
     "electronegativity_pauling",
-    "How strongly the metal pulls electron density from the linker. The classic scale."
+    "Con cuánta fuerza atrae el metal la densidad electrónica del conector. La escala clásica."
   ],
   [
     "electronegativity_allen",
-    "A second scale, computed from spectroscopic energies. Computed here, but **dropped before training**: it is undefined for the lanthanides, so for Ce, La, Nd and Dy the value does not exist rather than being missing. Screen 04 tells that story."
+    "Una segunda escala, calculada a partir de energías espectroscópicas. Se calcula aquí, pero se **descarta antes de entrenar**: no está definida para los lantánidos, así que para Ce, La, Nd y Dy el valor no existe, más que faltar. La pantalla 04 cuenta esa historia."
   ],
   [
     "absolute_hardness_ev",
-    "Resistance to deformation of the electron cloud. Hard metals prefer hard donors — the HSAB rule, as a number."
+    "Resistencia a la deformación de la nube electrónica. Los metales duros prefieren donores duros: la regla HSAB, convertida en número."
   ],
   [
     "oxophilicity_kepp",
-    "Affinity for oxygen donors, which is what a carboxylate linker offers."
+    "Afinidad por donores de oxígeno, que es lo que ofrece un conector carboxilato."
   ],
   [
     "polarizability_a3",
-    "How easily the electron cloud distorts. Governs the softer, less directional part of the bonding."
+    "Con cuánta facilidad se deforma la nube electrónica. Gobierna la parte más blanda y menos direccional del enlace."
   ],
   [
     "oxidation_state",
-    "Recovered from the metal salt used, not from the element. This is what separates Fe(II) from Fe(III)."
+    "Recuperado de la sal metálica utilizada, no del elemento. Es lo que separa Fe(II) de Fe(III)."
   ],
   [
     "shannon_radius_pm",
-    "Ionic radius for that specific oxidation state and coordination number. Sets how many linkers fit around the metal."
+    "Radio iónico para ese estado de oxidación y ese número de coordinación concretos. Fija cuántos conectores caben alrededor del metal."
   ],
   [
     "charge_over_radius",
-    "Charge density: the field the metal projects onto its neighbours. Derived, and the most informative of the group."
+    "Densidad de carga: el campo que el metal proyecta sobre sus vecinos. Derivada, y la más informativa del grupo."
   ]
 ]
 
 export const PREP_INTRO = {
-  "etlTitle": "ETL: extract, transform, load",
+  "etlTitle": "ETL: extraer, transformar, cargar",
   "etlSteps": [
     {
       "key": "extract",
       "label": "Extract",
-      "body": "Pull the data out of wherever it lives — a spreadsheet, an instrument file, a scanned report."
+      "body": "Saca los datos de donde sea que vivan: una hoja de cálculo, un fichero de instrumento, un informe escaneado."
     },
     {
       "key": "transform",
       "label": "Transform",
-      "body": "Turn it into something consistent: same units, same names, same shape, with the errors found and fixed."
+      "body": "Conviértelos en algo coherente: mismas unidades, mismos nombres, misma forma, con los errores encontrados y corregidos."
     },
     {
       "key": "load",
       "label": "Load",
-      "body": "Put it into the store the rest of the work reads from."
+      "body": "Déjalos en el almacén del que lee todo el resto del trabajo."
     }
   ],
-  "lead": "Two independent data streams arrive at this stage, and neither is usable as it stands. One is five years of manual synthesis records (mixtures, ratios, temperatures). The other is 1,877 raw diffractograms—thousands of noisy data points per sample that must be standardized into discrete numerical features.",
+  "lead": "A esta etapa llegan dos flujos de datos independientes, y ninguno es utilizable tal cual. Uno son cinco años de registros manuales de síntesis (mezclas, proporciones, temperaturas). El otro son 1.877 difractogramas en crudo: miles de puntos ruidosos por muestra que hay que estandarizar en características numéricas discretas.",
   "halves": [
     {
       "lane": "synthesis",
-      "title": "The synthesis table needs cleaning and enrichment",
-      "body": "Normalising headers, turning free text into numbers, and replacing elements and linkers labels with their properties that explain its behavior."
+      "title": "La tabla de síntesis necesita limpieza y enriquecimiento",
+      "body": "Normalizar cabeceras, convertir texto libre en números, y sustituir las etiquetas de elementos y conectores por las propiedades que explican su comportamiento."
     },
     {
       "lane": "characterisation",
-      "title": "The diffractograms need signal processing",
-      "body": "Separating the crystalline signal from the background, so that each curve collapses into a fixed set of comparable numbers."
+      "title": "Los difractogramas necesitan procesado de señal",
+      "body": "Separar la señal cristalina del fondo, para que cada curva se reduzca a un conjunto fijo de números comparables."
     }
   ],
-  "halvesNote": "Those are the **two sections of this screen**, and they are read one at a time — pick one below, and the buttons come back at the bottom to switch.",
-  "note": "**Garbage in, garbage out**. This stage sets the quality for everything downstream."
+  "halvesNote": "Esas son las **dos secciones de esta pantalla**, y se leen de una en una: elige una abajo, y los botones vuelven a aparecer al final para cambiar.",
+  "note": "**Basura entra, basura sale**. Esta etapa fija la calidad de todo lo que viene después."
 }
 
 export const PREP_TAKEAWAY = {
-  "title": "Why this stage decides the ceiling",
-  "lead": "A model is only as good as the feature matrix it trains on. Everything here exists to transform raw chemistry into rigorous, physically meaningful tabular numbers.",
+  "title": "Por qué esta etapa decide el techo",
+  "lead": "Un modelo no puede ser mejor que la matriz de características con la que entrena. Todo lo que hay aquí existe para convertir química en crudo en números tabulares rigurosos y con sentido físico.",
   "points": [
     {
       "icon": "flask",
-      "title": "Synthesis: Chemical plausibility over statistics",
-      "body": "Cleaning spreadsheets required chemical insight, not just data profiling. Catching impossible units and hidden solvent fractions prevents corrupt numbers from entering training."
+      "title": "Síntesis: plausibilidad química por encima de la estadística",
+      "body": "Limpiar las hojas de cálculo exigió criterio químico, no solo perfilado de datos. Cazar unidades imposibles y fracciones de disolvente ocultas impide que entren números corruptos al entrenamiento."
     },
     {
       "icon": "waves",
-      "title": "Characterization: Signal into structured features",
-      "body": "Diffraction patterns are compressed into discrete physical descriptors, preserving critical features like the amorphous halo without losing signal to baseline noise."
+      "title": "Caracterización: de señal a características estructuradas",
+      "body": "Los patrones de difracción se comprimen en descriptores físicos discretos, conservando rasgos críticos como el halo amorfo sin perder señal contra el ruido de la línea base."
     },
     {
       "icon": "link",
-      "title": "The unified row: Recipes paired with outcomes",
-      "body": "Recipes without outcomes cannot train a model; outcomes without recipes explain nothing. The true deliverable is the clean relational join: one complete experiment per row."
+      "title": "La fila unificada: recetas emparejadas con resultados",
+      "body": "Recetas sin resultados no entrenan nada; resultados sin recetas no explican nada. El entregable de verdad es el JOIN relacional limpio: un experimento completo por fila."
     }
   ],
-  "close": "Domain knowledge is irreplaceable during data preparation: only a chemist can distinguish an impossible data error from a genuine, unexpected scientific discovery."
+  "close": "El conocimiento del dominio es insustituible durante la preparación de datos: solo un químico distingue un error imposible de un hallazgo científico genuino e inesperado."
 }
 
 export const SYNTH_GROUPS = [
   {
-    "title": "Identity & audit",
+    "title": "Identidad y auditoría",
     "icon": "id",
-    "body": "Who ran it, when, under which unit, and in which well of the high-throughput plate. Not predictive, but it is what makes a row traceable to a physical notebook page — the ISO-17025 requirement that turns a spreadsheet into a record.",
+    "body": "Quién la hizo, cuándo, bajo qué unidad y en qué pocillo de la placa de alto rendimiento. No es predictivo, pero es lo que hace una fila rastreable hasta una página física de cuaderno: el requisito ISO-17025 que convierte una hoja de cálculo en un registro.",
     "fields": [
       "sample_code",
       "synthesis_date",
@@ -445,7 +445,7 @@ export const SYNTH_GROUPS = [
   {
     "title": "Theoretical design",
     "icon": "design",
-    "body": "The chemistry the experiment was meant to be. **lm_ratio** — linker to metal — is the single most argued-over number in the whole table: it decides whether there is enough organic strut to build a framework at all.",
+    "body": "La química que el experimento pretendía ser. **lm_ratio** —conector frente a metal— es el número más discutido de toda la tabla: decide si hay suficiente puntal orgánico para levantar una red.",
     "fields": [
       "metal_center",
       "metal_source",
@@ -459,7 +459,7 @@ export const SYNTH_GROUPS = [
   {
     "title": "Solvent system",
     "icon": "solvent",
-    "body": "Six solvents recorded as absolute volumes in millilitres. Absolute volumes are not comparable between a 1,5 mL vial and a 15 mL autoclave, so they are later converted into **fractions of the total**, plus a `fill_fraction` that says how full the reactor was.",
+    "body": "Seis disolventes registrados como volúmenes absolutos en mililitros. Los volúmenes absolutos no son comparables entre un vial de 1,5 mL y un autoclave de 15 mL, así que después se convierten en **fracciones del total**, más un `fill_fraction` que dice cuán lleno estaba el reactor.",
     "fields": [
       "h2o_total_ml",
       "meoh_ml",
@@ -474,7 +474,7 @@ export const SYNTH_GROUPS = [
   {
     "title": "Thermal ramp",
     "icon": "thermal",
-    "body": "Written in the notebooks as free text — *\"ramp to 120 °C over 2 h, hold 48 h, cool overnight\"*. Parsed into four numbers, because the **rate** of heating and cooling changes the product as much as the target temperature does.",
+    "body": "Escritas en los cuadernos como texto libre: *\"rampa a 120 °C en 2 h, mantener 48 h, enfriar toda la noche\"*. Se parsean en cuatro números, porque la **velocidad** de calentamiento y de enfriamiento cambia el producto tanto como la temperatura objetivo.",
     "fields": [
       "temp_initial_c",
       "temp_target_c",
@@ -489,7 +489,7 @@ export const SYNTH_GROUPS = [
   {
     "title": "Modulators",
     "icon": "modulator",
-    "body": "Ten additives, each stored as **mmol of active species** rather than as microlitres of stock solution. The conversion is the single most delicate transformation in the notebook: a modulator added as an aqueous acid also contributes water, and forgetting that corrupts the solvent fractions above.",
+    "body": "Diez aditivos, cada uno guardado como **mmol de especie activa** y no como microlitros de disolución madre. La conversión es la transformación más delicada del cuaderno: un modulador añadido como ácido acuoso también aporta agua, y olvidarlo corrompe las fracciones de disolvente de arriba.",
     "fields": [
       "formic_acid_mmol",
       "acetic_acid_mmol",
@@ -506,8 +506,8 @@ export const SYNTH_GROUPS = [
 ]
 
 export const SYNTH_PREVIEW = {
-  "caption": "One row per synthesis, 46 columns. These eight are the ones a chemist would recognise first.",
-  "warning": "Synthetic rows. The values sit inside the real observed ranges but no row corresponds to an actual experiment; sample codes are placeholders and linker identities are withheld.",
+  "caption": "Una fila por síntesis, 46 columnas. Estas ocho son las que un químico reconocería primero.",
+  "warning": "Filas sintéticas. Los valores están dentro de los rangos reales observados, pero ninguna fila corresponde a un experimento real; los códigos de muestra son marcadores y las identidades de los conectores se omiten.",
   "head": [
     "sample_code",
     "metal_center",
@@ -583,38 +583,38 @@ export const SYNTH_PREVIEW = {
 }
 
 export const WHY_PXRD = {
-  "lead": "In reticular chemistry, powder X-ray diffraction (PXRD) serves as the primary diagnostic benchmark. Fast and non-destructive, it provides immediate insight into long-range periodic order.",
-  "gate": "PXRD requires only milligrams and minutes of scan time without consuming the sample. It immediately reveals whether the reaction produced sharp Bragg reflections (characteristic of an ordered framework) or a diffuse amorphous profile, establishing whether the target crystalline phase assembled before investing in advanced characterization.",
-  "why_model": "For periodic MOFs, long-range order dictates pore architecture, internal surface area, and host-guest properties. Predicting whether a specific combination of synthetic variables will yield a crystalline network enables rational navigation of reaction space, filtering out unpromising synthesis conditions beforehand.",
+  "lead": "En química reticular, la difracción de rayos X de polvo (PXRD) es el diagnóstico de referencia. Rápida y no destructiva, da información inmediata sobre el orden periódico de largo alcance.",
+  "gate": "La PXRD solo necesita miligramos y minutos de barrido, sin consumir la muestra. Revela de inmediato si la reacción produjo reflexiones de Bragg afiladas (características de una red ordenada) o un perfil amorfo difuso, y así establece si la fase cristalina buscada se ensambló antes de invertir en caracterización avanzada.",
+  "why_model": "En los MOF periódicos, el orden de largo alcance dicta la arquitectura del poro, la superficie interna y las propiedades huésped-anfitrión. Predecir si una combinación concreta de variables de síntesis dará una red cristalina permite navegar el espacio de reacción de forma racional, descartando de antemano las condiciones poco prometedoras.",
   "steps": [
     [
       "PXRD",
-      "Is it crystalline?",
-      "Minutes. Non-destructive. Run on everything.",
+      "¿Es cristalino?",
+      "Minutos. No destructiva. Se hace a todo.",
       true
     ],
     [
       "FTIR · UV-Vis · ICP · EA",
-      "Which groups, which gap, which composition?",
-      "Confirmatory. Only once the material is worth confirming.",
+      "¿Qué grupos, qué band gap, qué composición?",
+      "Confirmatoria. Solo cuando el material merece confirmarse.",
       false
     ],
     [
       "TGA",
-      "Up to what temperature does it survive?",
-      "Hours. Consumes the sample.",
+      "¿Hasta qué temperatura sobrevive?",
+      "Horas. Consume la muestra.",
       false
     ],
     [
       "SEM",
-      "What do the crystals look like?",
-      "Booked instrument time, and a trained operator.",
+      "¿Qué aspecto tienen los cristales?",
+      "Tiempo de instrumento reservado, y un operador con formación.",
       false
     ],
     [
       "Gas adsorption",
-      "Is it actually porous, and how much?",
-      "A day per sample. Needs prior activation.",
+      "¿Es poroso de verdad, y cuánto?",
+      "Un día por muestra. Necesita activación previa.",
       false
     ]
   ]

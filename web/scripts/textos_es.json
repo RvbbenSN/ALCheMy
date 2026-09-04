@@ -2,402 +2,402 @@
  {
   "path": "about.js:EDUCATION[0].when",
   "en": "Apr 2026 — present",
-  "es": null
+  "es": "Abr 2026 — actualidad"
  },
  {
   "path": "about.js:EDUCATION[0].what",
   "en": "Master's in Applied AI & Process Optimisation",
-  "es": null
+  "es": "Máster en IA Aplicada y Optimización de Procesos"
  },
  {
   "path": "about.js:EDUCATION[0].detail",
   "en": "Retrieval-augmented generation, vector databases, prompt engineering, natural language to SQL and to code, autonomous agents, Docker and cloud. Mentored by practitioners from Microsoft, Cloudflare, Sanofi and Google.",
-  "es": null
+  "es": "Generación aumentada por recuperación, bases de datos vectoriales, ingeniería de prompts, lenguaje natural a SQL y a código, agentes autónomos, Docker y nube. Con mentores de Microsoft, Cloudflare, Sanofi y Google."
  },
  {
   "path": "about.js:EDUCATION[0].tags[1]",
   "en": "RAG & agents",
-  "es": null
+  "es": "RAG y agentes"
  },
  {
   "path": "about.js:EDUCATION[1].when",
   "en": "Jun 2026 — present",
-  "es": null
+  "es": "Jun 2026 — actualidad"
  },
  {
   "path": "about.js:EDUCATION[1].what",
   "en": "IBM Data Science Professional Certificate",
-  "es": null
+  "es": "Certificado Profesional de Ciencia de Datos de IBM"
  },
  {
   "path": "about.js:EDUCATION[1].detail",
   "en": "CRISP-DM end to end: Python, SQL, APIs and web scraping, exploratory analysis with pandas and NumPy, and deploying scikit-learn models through Streamlit. The methodology this whole platform is structured around.",
-  "es": null
+  "es": "CRISP-DM de principio a fin: Python, SQL, APIs y web scraping, análisis exploratorio con pandas y NumPy, y despliegue de modelos de scikit-learn con Streamlit. La metodología sobre la que se estructura toda esta plataforma."
  },
  {
   "path": "about.js:EDUCATION[2].when",
   "en": "Nov 2022 — Dec 2025",
-  "es": null
+  "es": "Nov 2022 — Dic 2025"
  },
  {
   "path": "about.js:EDUCATION[2].what",
   "en": "PhD in Advanced Chemistry",
-  "es": null
+  "es": "Doctorado en Química Avanzada"
  },
  {
   "path": "about.js:EDUCATION[2].where",
   "en": "Universidad Complutense de Madrid · IMDEA Energy (APMU)",
-  "es": null
+  "es": "Universidad Complutense de Madrid · IMDEA Energía (APMU)"
  },
  {
   "path": "about.js:EDUCATION[2].detail",
   "en": "Novel Phosphonate-based Metal-Organic Frameworks (P-MOFs): From Design to Application. Directed by Patricia Horcajada.",
-  "es": null
+  "es": "Nuevas redes metal-orgánicas basadas en fosfonatos (P-MOF): del diseño a la aplicación. Dirigida por Patricia Horcajada."
  },
  {
   "path": "about.js:EDUCATION[2].tags[0]",
   "en": "Sobresaliente Cum Laude",
-  "es": null
+  "es": "Sobresaliente Cum Laude"
  },
  {
   "path": "about.js:EDUCATION[2].tags[1]",
   "en": "International PhD Mention",
-  "es": null
+  "es": "Mención Internacional"
  },
  {
   "path": "about.js:EDUCATION[3].when",
   "en": "Sep 2020 — Sep 2021",
-  "es": null
+  "es": "Sep 2020 — Sep 2021"
  },
  {
   "path": "about.js:EDUCATION[3].what",
   "en": "MSc in Chemical Science & Technology",
-  "es": null
+  "es": "Máster en Ciencia y Tecnología Químicas"
  },
  {
   "path": "about.js:EDUCATION[3].where",
   "en": "Universidad Complutense de Madrid",
-  "es": null
+  "es": "Universidad Complutense de Madrid"
  },
  {
   "path": "about.js:EDUCATION[3].detail",
   "en": "New electro/photoactive MOFs: synthesis, characterisation and properties — catalysis for green hydrogen and antibiotic removal from water.",
-  "es": null
+  "es": "Nuevos MOF electro/fotoactivos: síntesis, caracterización y propiedades — catálisis para hidrógeno verde y eliminación de antibióticos del agua."
  },
  {
   "path": "about.js:EDUCATION[3].tags[0]",
   "en": "Nanoscience & materials",
-  "es": null
+  "es": "Nanociencia y materiales"
  },
  {
   "path": "about.js:EDUCATION[4].when",
   "en": "Sep 2015 — Jul 2020",
-  "es": null
+  "es": "Sep 2015 — Jul 2020"
  },
  {
   "path": "about.js:EDUCATION[4].what",
   "en": "BSc in Chemistry",
-  "es": null
+  "es": "Grado en Química"
  },
  {
   "path": "about.js:EDUCATION[4].where",
   "en": "Universidad Complutense de Madrid",
-  "es": null
+  "es": "Universidad Complutense de Madrid"
  },
  {
   "path": "about.js:EDUCATION[4].detail",
   "en": "Materials for clean energy storage based on porous metal-organic frameworks.",
-  "es": null
+  "es": "Materiales para almacenamiento de energía limpia basados en redes metal-orgánicas porosas."
  },
  {
   "path": "about.js:EXPERIENCE[0].when",
   "en": "Mar 2022 — Dec 2025",
-  "es": null
+  "es": "Mar 2022 — Dic 2025"
  },
  {
   "path": "about.js:EXPERIENCE[0].where",
   "en": "IMDEA Energy Institute, Madrid",
-  "es": null
+  "es": "Instituto IMDEA Energía, Madrid"
  },
  {
   "path": "about.js:EXPERIENCE[0].points[0]",
   "en": "Led the design, synthesis and optimisation of novel hybrid materials — over 2,000 syntheses, 18 novel materials, 12 structures resolved — using high-throughput, solvothermal and microwave-assisted approaches.",
-  "es": null
+  "es": "Dirigí el diseño, la síntesis y la optimización de nuevos materiales híbridos —más de 2.000 síntesis, 18 materiales nuevos, 12 estructuras resueltas— por vías de alto rendimiento, solvotermal y asistida por microondas."
  },
  {
   "path": "about.js:EXPERIENCE[0].points[1]",
   "en": "Ran multi-technique characterisation across up to twelve structural, textural and spectroscopic methods.",
-  "es": null
+  "es": "Realicé caracterización multitécnica con hasta doce métodos estructurales, texturales y espectroscópicos."
  },
  {
   "path": "about.js:EXPERIENCE[0].points[2]",
   "en": "Designed workflows linking structure, property and function, selecting materials for photocatalytic H₂ production, wastewater remediation, CO₂ conversion to cyclic carbonates and polymerisation catalysis — reaching benchmark-level efficiencies under mild conditions.",
-  "es": null
+  "es": "Diseñé flujos de trabajo que enlazan estructura, propiedad y función, seleccionando materiales para producción fotocatalítica de H₂, remediación de aguas residuales, conversión de CO₂ en carbonatos cíclicos y catálisis de polimerización, alcanzando eficiencias de referencia en condiciones suaves."
  },
  {
   "path": "about.js:EXPERIENCE[0].points[3]",
   "en": "Held technical responsibility for laboratory instrumentation and unit inventory.",
-  "es": null
+  "es": "Responsable técnico de la instrumentación del laboratorio y del inventario de la unidad."
  },
  {
   "path": "about.js:EXPERIENCE[1].when",
   "en": "Jun 2023 — Oct 2023",
-  "es": null
+  "es": "Jun 2023 — Oct 2023"
  },
  {
   "path": "about.js:EXPERIENCE[1].where",
   "en": "University of Glasgow, Scotland — Pablo Docampo group",
-  "es": null
+  "es": "Universidad de Glasgow, Escocia — grupo de Pablo Docampo"
  },
  {
   "path": "about.js:EXPERIENCE[1].points[0]",
   "en": "María de Maeztu Mobility Programme. Solar-cell prototypes using bismuth-based perovskites and quantum-dot MOFs.",
-  "es": null
+  "es": "Programa de movilidad María de Maeztu. Prototipos de células solares con perovskitas de bismuto y MOF con puntos cuánticos."
  },
  {
   "path": "about.js:EXPERIENCE[2].when",
   "en": "Apr 2021 — Feb 2022",
-  "es": null
+  "es": "Abr 2021 — Feb 2022"
  },
  {
   "path": "about.js:EXPERIENCE[2].where",
   "en": "IMDEA Energy Institute, Madrid",
-  "es": null
+  "es": "Instituto IMDEA Energía, Madrid"
  },
  {
   "path": "about.js:EXPERIENCE[2].points[0]",
   "en": "MOFs with ionic conductivity as exchange membranes for fuel cells (PEMFCs).",
-  "es": null
+  "es": "MOF con conductividad iónica como membranas de intercambio para pilas de combustible (PEMFC)."
  },
  {
   "path": "about.js:FUNDING.intro",
   "en": "Four competitive pre-doctoral contracts under funded research projects, plus collaboration in two more.",
-  "es": null
+  "es": "Cuatro contratos predoctorales competitivos dentro de proyectos de investigación financiados, más colaboración en otros dos."
  },
  {
   "path": "about.js:FUNDING.contracts[0].ref",
   "en": "FEDER 2014–2020 / OE / REACT-UE 1",
-  "es": null
+  "es": "FEDER 2014–2020 / OE / REACT-UE 1"
  },
  {
   "path": "about.js:FUNDING.contracts[4].ref",
   "en": "H+MOFs · Fundación Ramón Areces",
-  "es": null
+  "es": "H+MOFs · Fundación Ramón Areces"
  },
  {
   "path": "about.js:FUNDING.contracts[5].ref",
   "en": "PCI2020-111998 / AEI",
-  "es": null
+  "es": "PCI2020-111998 / AEI"
  },
  {
   "path": "about.js:HEADLINE",
   "en": "PhD in Chemistry · Applied AI & Data Science · Advanced Materials",
-  "es": null
+  "es": "Doctor en Química · IA aplicada y ciencia de datos · Materiales avanzados"
  },
  {
   "path": "about.js:METRICS[2].l",
   "en": "Crystal structures resolved",
-  "es": null
+  "es": "Estructuras cristalinas resueltas"
  },
  {
   "path": "about.js:METRICS[5].l",
   "en": "Competitive R&D projects",
-  "es": null
+  "es": "Proyectos de I+D competitivos"
  },
  {
   "path": "about.js:OUTREACH[0].title",
   "en": "Los antibióticos están llegando a nuestros grifos: ¿podemos evitarlo?",
-  "es": null
+  "es": "Los antibióticos están llegando a nuestros grifos: ¿podemos evitarlo?"
  },
  {
   "path": "about.js:OUTREACH[1].title",
   "en": "Así mejoramos las pilas de hidrógeno para que sean más duraderas y asequibles",
-  "es": null
+  "es": "Así mejoramos las pilas de hidrógeno para que sean más duraderas y asequibles"
  },
  {
   "path": "about.js:PUBLICATIONS[0].title",
   "en": "Two Cu-based Phosphonate Metal-Organic Frameworks as Efficient Water Splitting Photocatalysts",
-  "es": null
+  "es": "Two Cu-based Phosphonate Metal-Organic Frameworks as Efficient Water Splitting Photocatalysts"
  },
  {
   "path": "about.js:PUBLICATIONS[0].journal",
   "en": "Chemistry of Materials",
-  "es": null
+  "es": "Chemistry of Materials"
  },
  {
   "path": "about.js:PUBLICATIONS[0].tag",
   "en": "IF 7.2 · Q1",
-  "es": null
+  "es": "IF 7.2 · Q1"
  },
  {
   "path": "about.js:PUBLICATIONS[0].note",
   "en": "Outperforms the industrial benchmark MIL-125(Ti)-NH₂ in green hydrogen production.",
-  "es": null
+  "es": "Supera al referente industrial MIL-125(Ti)-NH₂ en producción de hidrógeno verde."
  },
  {
   "path": "about.js:PUBLICATIONS[1].title",
   "en": "Novel pyrene phosphonate metal-organic frameworks to efficiently degrade sulfamethazine in wastewater",
-  "es": null
+  "es": "Novel pyrene phosphonate metal-organic frameworks to efficiently degrade sulfamethazine in wastewater"
  },
  {
   "path": "about.js:PUBLICATIONS[1].journal",
   "en": "Journal of Environmental Chemical Engineering",
-  "es": null
+  "es": "Journal of Environmental Chemical Engineering"
  },
  {
   "path": "about.js:PUBLICATIONS[1].tag",
   "en": "IF 7.2 · Q1",
-  "es": null
+  "es": "IF 7.2 · Q1"
  },
  {
   "path": "about.js:PUBLICATIONS[1].note",
   "en": "Tested on real urban water matrices.",
-  "es": null
+  "es": "Ensayado sobre matrices reales de agua urbana."
  },
  {
   "path": "about.js:PUBLICATIONS[2].title",
   "en": "Ca-Triazine Phosphonate Metal-Organic Framework as Fungicide Active Packaging",
-  "es": null
+  "es": "Ca-Triazine Phosphonate Metal-Organic Framework as Fungicide Active Packaging"
  },
  {
   "path": "about.js:PUBLICATIONS[2].journal",
   "en": "Inorganic Chemistry Frontiers",
-  "es": null
+  "es": "Inorganic Chemistry Frontiers"
  },
  {
   "path": "about.js:PUBLICATIONS[2].tag",
   "en": "IF 6.4 · Q1",
-  "es": null
+  "es": "IF 6.4 · Q1"
  },
  {
   "path": "about.js:PUBLICATIONS[3].title",
   "en": "Novel Purine Derivative ITH15004 Facilitates Exocytosis through a Mitochondrial Calcium-Mediated Mechanism",
-  "es": null
+  "es": "Novel Purine Derivative ITH15004 Facilitates Exocytosis through a Mitochondrial Calcium-Mediated Mechanism"
  },
  {
   "path": "about.js:PUBLICATIONS[3].journal",
   "en": "International Journal of Molecular Sciences",
-  "es": null
+  "es": "International Journal of Molecular Sciences"
  },
  {
   "path": "about.js:PUBLICATIONS[3].tag",
   "en": "IF 5.6 · Q1",
-  "es": null
+  "es": "IF 5.6 · Q1"
  },
  {
   "path": "about.js:PUBLICATIONS[3].note",
   "en": "From an earlier medicinal-chemistry internship.",
-  "es": null
+  "es": "De una estancia anterior en química médica."
  },
  {
   "path": "about.js:PUBLICATIONS[4].title",
   "en": "Triazine Mg-based Phosphonate Metal-Organic Framework for ε-Caprolactone Polymerization",
-  "es": null
+  "es": "Triazine Mg-based Phosphonate Metal-Organic Framework for ε-Caprolactone Polymerization"
  },
  {
   "path": "about.js:PUBLICATIONS[4].tag",
   "en": "IF 4.7 · Q1",
-  "es": null
+  "es": "IF 4.7 · Q1"
  },
  {
   "path": "about.js:PUBLICATIONS[5].title",
   "en": "Controlling Band-Bending for Perovskite Optoelectronic Devices Using Bismuth-Based Interlayers",
-  "es": null
+  "es": "Controlling Band-Bending for Perovskite Optoelectronic Devices Using Bismuth-Based Interlayers"
  },
  {
   "path": "about.js:PUBLICATIONS[5].tag",
   "en": "IF 4.3 · Q1",
-  "es": null
+  "es": "IF 4.3 · Q1"
  },
  {
   "path": "about.js:PUBLICATIONS[5].note",
   "en": "From the Glasgow secondment; also uncovered unexpected memristive behaviour.",
-  "es": null
+  "es": "De la estancia en Glasgow; también destapó un comportamiento memristivo inesperado."
  },
  {
   "path": "about.js:SKILLS[0].group",
   "en": "Data science & AI",
-  "es": null
+  "es": "Ciencia de datos e IA"
  },
  {
   "path": "about.js:SKILLS[0].items[0]",
   "en": "Python (Pandas, NumPy, SciPy, Scikit-learn, Statsmodels)",
-  "es": null
+  "es": "Python (Pandas, NumPy, SciPy, Scikit-learn, Statsmodels)"
  },
  {
   "path": "about.js:SKILLS[0].items[1]",
   "en": "SQL & PostgreSQL",
-  "es": null
+  "es": "SQL & PostgreSQL"
  },
  {
   "path": "about.js:SKILLS[0].items[3]",
   "en": "GenAI & prompt engineering",
-  "es": null
+  "es": "IA generativa e ingeniería de prompts"
  },
  {
   "path": "about.js:SKILLS[0].items[5]",
   "en": "Plotly, Matplotlib, Seaborn, Streamlit",
-  "es": null
+  "es": "Plotly, Matplotlib, Seaborn, Streamlit"
  },
  {
   "path": "about.js:SKILLS[0].items[6]",
   "en": "No-code orchestration (n8n)",
-  "es": null
+  "es": "Orquestación sin código (n8n)"
  },
  {
   "path": "about.js:SKILLS[1].group",
   "en": "Chemistry & materials",
-  "es": null
+  "es": "Química y materiales"
  },
  {
   "path": "about.js:SKILLS[1].items[1]",
   "en": "Solvothermal & microwave synthesis",
-  "es": null
+  "es": "Síntesis solvotermal y por microondas"
  },
  {
   "path": "about.js:SKILLS[1].items[2]",
   "en": "XRD (single-crystal and powder)",
-  "es": null
+  "es": "DRX (monocristal y polvo)"
  },
  {
   "path": "about.js:SKILLS[1].items[3]",
   "en": "Crystal refinement (LeBail, FullProf, Olex2)",
-  "es": null
+  "es": "Refinamiento cristalino (LeBail, FullProf, Olex2)"
  },
  {
   "path": "about.js:SKILLS[1].items[4]",
   "en": "SEM, TEM, TGA, FTIR, UV-Vis",
-  "es": null
+  "es": "SEM, TEM, TGA, FTIR, UV-Vis"
  },
  {
   "path": "about.js:SKILLS[1].items[5]",
   "en": "ICP-OES, elemental analysis, NMR, HPLC",
-  "es": null
+  "es": "ICP-OES, análisis elemental, RMN, HPLC"
  },
  {
   "path": "about.js:SKILLS[1].items[6]",
   "en": "Gas sorption & textural analysis",
-  "es": null
+  "es": "Sorción de gases y análisis textural"
  },
  {
   "path": "about.js:SKILLS[2].items[2]",
   "en": "Mandarin (HSK 2)",
-  "es": null
+  "es": "Mandarín (HSK 2)"
  },
  {
   "path": "about.js:SKILLS[2].items[3]",
   "en": "Adobe Illustrator, Affinity, Blender 3D",
-  "es": null
+  "es": "Adobe Illustrator, Affinity, Blender 3D"
  },
  {
   "path": "about.js:SKILLS[2].items[4]",
   "en": "Scientific writing & technical reporting",
-  "es": null
+  "es": "Redacción científica e informes técnicos"
  },
  {
   "path": "about.js:SKILLS[2].items[5]",
   "en": "Agile / cross-functional R&D",
-  "es": null
+  "es": "Ágil / I+D multidisciplinar"
  },
  {
   "path": "collection.js:COLLECTION_CANVAS_INTRO",
@@ -667,417 +667,417 @@
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[0].blurb",
   "en": "Where the reflections are, how many, and how sharp.",
-  "es": null
+  "es": "Dónde están las reflexiones, cuántas hay y cómo de afiladas son."
  },
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[1].blurb",
   "en": "How the signal splits between sharp reflections and the broad halo.",
-  "es": null
+  "es": "Cómo se reparte la señal entre las reflexiones afiladas y el halo ancho."
  },
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[2].title",
   "en": "Intensity & global statistics",
-  "es": null
+  "es": "Intensidad y estadísticos globales"
  },
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[2].blurb",
   "en": "How strong the signal is, and how concentrated.",
-  "es": null
+  "es": "Cómo de fuerte es la señal, y cómo de concentrada."
  },
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[3].title",
   "en": "Parameters & quality flags",
-  "es": null
+  "es": "Parámetros y banderas de calidad"
  },
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[3].blurb",
   "en": "Not measurements of the sample: what the pipeline did, and whether the result can be trusted.",
-  "es": null
+  "es": "No son medidas de la muestra: son lo que hizo el pipeline, y si el resultado es de fiar."
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.lead",
   "en": "A continuous diffractogram of thousands of data points is compressed into a fixed **29-dimensional vector**. Below is the complete breakdown of these physical descriptors—grouped by traceability, peak geometry, phase composition, and global statistics—alongside median values across the 1,855 expert-labelled samples.",
-  "es": null
+  "es": "Un difractograma continuo de miles de puntos se comprime en un **vector fijo de 29 dimensiones**. Abajo está el desglose completo de estos descriptores físicos —agrupados por trazabilidad, geometría de picos, composición de fases y estadísticos globales— junto a los valores medianos sobre las 1.855 muestras etiquetadas por un experto."
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[0].title",
   "en": "Diffuse halo dominates — no Bragg peaks",
-  "es": null
+  "es": "Domina el halo difuso — sin picos de Bragg"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[0].points[0]",
   "en": "Zero genuine reflections (`n_peaks` = 0)",
-  "es": null
+  "es": "Cero reflexiones genuinas (`n_peaks` = 0)"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[0].points[1]",
   "en": "Amorphous fraction exceeds **85–90%** of total area (0.88 on the blank-corrected split)",
-  "es": null
+  "es": "La fracción amorfa supera el **85-90 %** del área total (0,88 en el reparto corregido con el blanco)"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[0].points[2]",
   "en": "Spectral entropy is the highest of the three classes; peak-to-background ratio stays near zero",
-  "es": null
+  "es": "La entropía espectral es la más alta de las tres clases; la relación pico-fondo se queda cerca de cero"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[1].title",
   "en": "Intermediate regime — broad, emerging peaks",
-  "es": null
+  "es": "Régimen intermedio — picos anchos, emergentes"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[1].points[0]",
   "en": "The transition zone between disorder and crystal growth",
-  "es": null
+  "es": "La zona de transición entre el desorden y el crecimiento cristalino"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[1].points[1]",
   "en": "Emerging, broader reflections — median FWHM 0.240°, even wider than amorphous",
-  "es": null
+  "es": "Reflexiones emergentes y más anchas: FWHM mediana de 0,240°, incluso más ancha que la amorfa"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[1].points[2]",
   "en": "Moderate peak-to-background ratios; descriptors sit midway between halo and crystalline order, making it **the most challenging class for the classifier**",
-  "es": null
+  "es": "Relaciones pico-fondo moderadas; sus descriptores quedan a medio camino entre el halo y el orden cristalino, lo que la convierte en **la clase más difícil para el clasificador**"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[2].title",
   "en": "Sharp, intense Bragg reflections",
-  "es": null
+  "es": "Reflexiones de Bragg afiladas e intensas"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[2].points[0]",
   "en": "Intense, narrow peaks at low angles — median FWHM 0.162°, well under 0.20°",
-  "es": null
+  "es": "Picos intensos y estrechos a ángulos bajos: FWHM mediana de 0,162°, bastante por debajo de 0,20°"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[2].points[1]",
   "en": "Signal-to-noise and peak-to-background jump orders of magnitude over amorphous (0.03 → 9.42)",
-  "es": null
+  "es": "La señal-ruido y la relación pico-fondo suben órdenes de magnitud sobre la amorfa (0,03 → 9,42)"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.reading[2].points[2]",
   "en": "Crystalline fraction accounts for the vast majority of scattered intensity; the pipeline trusts 99% of these",
-  "es": null
+  "es": "La fracción cristalina se lleva la inmensa mayoría de la intensidad dispersada; el pipeline se fía del 99 % de estas"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.caveat",
   "en": "`scherrer_size_nm` mathematically requires a real Bragg peak, yet it comes out **larger for amorphous samples (37.4 nm) than for incipient ones (33.8 nm)** — physically absurd, since an amorphous solid has no crystallites. Calculated over baseline noise, the formula still returns a number: a reminder that a physical formula only applies within its intended domain.",
-  "es": null
+  "es": "`scherrer_size_nm` exige matemáticamente un pico de Bragg real, y sin embargo sale **mayor para las muestras amorfas (37,4 nm) que para las incipientes (33,8 nm)**: físicamente absurdo, porque un sólido amorfo no tiene cristalitos. Calculada sobre el ruido de la línea base, la fórmula devuelve un número igualmente: un recordatorio de que una fórmula física solo vale dentro del dominio para el que se dedujo."
  },
  {
   "path": "prep.js:ELEMENT_INTRO.problem",
   "en": "A categorical label like \"Fe\" hides the physics and collapses **Fe(II)** (92 pm) and **Fe(III)** (78.5 pm) into the same bin. Replacing chemical symbols with **eight fundamental properties** (Shannon ionic radius, electronegativity, HSAB hardness, charge-to-radius ratio) enables the model to interpolate across the periodic table and predict outcomes for unseen metals",
-  "es": null
+  "es": "Una etiqueta categórica como \"Fe\" esconde la física y mete **Fe(II)** (92 pm) y **Fe(III)** (78,5 pm) en el mismo saco. Sustituir los símbolos químicos por **ocho propiedades fundamentales** (radio iónico de Shannon, electronegatividad, dureza HSAB, relación carga-radio) permite al modelo interpolar por la tabla periódica y predecir resultados para metales que no ha visto"
  },
  {
   "path": "prep.js:ELEMENT_INTRO.payoff",
   "en": "Molecule names convey no spatial or chemical meaning. Using RDKit, each linker is featurized into **six geometric and topological descriptors**: denticity (binding points), max donor distance (pore-size proxy), acidic proton count, and rotatable bonds (flexibility)—capturing the structural rules of reticular assembly.",
-  "es": null
+  "es": "Los nombres de molécula no transmiten significado espacial ni químico. Con RDKit, cada conector se convierte en **seis descriptores geométricos y topológicos**: denticidad (puntos de unión), distancia máxima entre donores (aproximación al tamaño de poro), número de protones ácidos y enlaces rotables (flexibilidad), que capturan las reglas estructurales del ensamblaje reticular."
  },
  {
   "path": "prep.js:LANES[0].sub",
   "en": "A spreadsheet of recipes becomes a governed table",
-  "es": null
+  "es": "Una hoja de recetas se convierte en una tabla gobernada"
  },
  {
   "path": "prep.js:LANES[0].blurb",
   "en": "What the chemist controls: metal, linker, solvent, temperature, time, modulator. Structured data that was never structured properly.",
-  "es": null
+  "es": "Lo que controla el químico: metal, conector, disolvente, temperatura, tiempo, modulador. Datos estructurados que nunca se estructuraron bien."
  },
  {
   "path": "prep.js:LANES[1].tag",
   "en": "Notebooks 02 & 05",
-  "es": null
+  "es": "Cuadernos 02 y 05"
  },
  {
   "path": "prep.js:LANES[1].sub",
   "en": "A diffractogram becomes 29 comparable numbers",
-  "es": null
+  "es": "Un difractograma se convierte en 29 números comparables"
  },
  {
   "path": "prep.js:LANES[1].blurb",
   "en": "What the material answers back. Raw instrument curves that have to be processed before any two of them can be compared.",
-  "es": null
+  "es": "Lo que responde el material. Curvas de instrumento en crudo que hay que procesar antes de poder comparar dos cualesquiera."
  },
  {
   "path": "prep.js:LINKER_FEATURES[0][1]",
   "en": "The rigid core the linker is built on. Governs the size of the pore that can form.",
-  "es": null
+  "es": "El núcleo rígido sobre el que se construye el conector. Gobierna el tamaño del poro que puede formarse."
  },
  {
   "path": "prep.js:LINKER_FEATURES[1][1]",
   "en": "How many points the linker can bind through. Two makes a chain, three or more makes a network.",
-  "es": null
+  "es": "Por cuántos puntos puede unirse el conector. Dos dan una cadena; tres o más, una red."
  },
  {
   "path": "prep.js:LINKER_FEATURES[2][1]",
   "en": "How many protons have to leave before the linker can coordinate — which is what ties the outcome to pH and to the modulator.",
-  "es": null
+  "es": "Cuántos protones tienen que salir antes de que el conector pueda coordinar, que es lo que ata el resultado al pH y al modulador."
  },
  {
   "path": "prep.js:LINKER_FEATURES[3][1]",
   "en": "The distance between the outermost binding points, in ångström. The first-order estimate of pore size.",
-  "es": null
+  "es": "La distancia entre los puntos de unión más externos, en ångström. La estimación de primer orden del tamaño de poro."
  },
  {
   "path": "prep.js:LINKER_FEATURES[4][1]",
   "en": "Whether the binding groups arrive masked as esters and have to be freed in situ.",
-  "es": null
+  "es": "Si los grupos de unión llegan enmascarados como ésteres y hay que liberarlos in situ."
  },
  {
   "path": "prep.js:LINKER_FEATURES[5][1]",
   "en": "Conformational freedom. A floppy linker is far less likely to give an ordered framework.",
-  "es": null
+  "es": "Libertad conformacional. Un conector flexible tiene muchas menos probabilidades de dar una red ordenada."
  },
  {
   "path": "prep.js:METAL_FEATURES[0][1]",
   "en": "How strongly the metal pulls electron density from the linker. The classic scale.",
-  "es": null
+  "es": "Con cuánta fuerza atrae el metal la densidad electrónica del conector. La escala clásica."
  },
  {
   "path": "prep.js:METAL_FEATURES[1][1]",
   "en": "A second scale, computed from spectroscopic energies. Computed here, but **dropped before training**: it is undefined for the lanthanides, so for Ce, La, Nd and Dy the value does not exist rather than being missing. Screen 04 tells that story.",
-  "es": null
+  "es": "Una segunda escala, calculada a partir de energías espectroscópicas. Se calcula aquí, pero se **descarta antes de entrenar**: no está definida para los lantánidos, así que para Ce, La, Nd y Dy el valor no existe, más que faltar. La pantalla 04 cuenta esa historia."
  },
  {
   "path": "prep.js:METAL_FEATURES[2][1]",
   "en": "Resistance to deformation of the electron cloud. Hard metals prefer hard donors — the HSAB rule, as a number.",
-  "es": null
+  "es": "Resistencia a la deformación de la nube electrónica. Los metales duros prefieren donores duros: la regla HSAB, convertida en número."
  },
  {
   "path": "prep.js:METAL_FEATURES[3][1]",
   "en": "Affinity for oxygen donors, which is what a carboxylate linker offers.",
-  "es": null
+  "es": "Afinidad por donores de oxígeno, que es lo que ofrece un conector carboxilato."
  },
  {
   "path": "prep.js:METAL_FEATURES[4][1]",
   "en": "How easily the electron cloud distorts. Governs the softer, less directional part of the bonding.",
-  "es": null
+  "es": "Con cuánta facilidad se deforma la nube electrónica. Gobierna la parte más blanda y menos direccional del enlace."
  },
  {
   "path": "prep.js:METAL_FEATURES[5][1]",
   "en": "Recovered from the metal salt used, not from the element. This is what separates Fe(II) from Fe(III).",
-  "es": null
+  "es": "Recuperado de la sal metálica utilizada, no del elemento. Es lo que separa Fe(II) de Fe(III)."
  },
  {
   "path": "prep.js:METAL_FEATURES[6][1]",
   "en": "Ionic radius for that specific oxidation state and coordination number. Sets how many linkers fit around the metal.",
-  "es": null
+  "es": "Radio iónico para ese estado de oxidación y ese número de coordinación concretos. Fija cuántos conectores caben alrededor del metal."
  },
  {
   "path": "prep.js:METAL_FEATURES[7][1]",
   "en": "Charge density: the field the metal projects onto its neighbours. Derived, and the most informative of the group.",
-  "es": null
+  "es": "Densidad de carga: el campo que el metal proyecta sobre sus vecinos. Derivada, y la más informativa del grupo."
  },
  {
   "path": "prep.js:PREP_INTRO.etlTitle",
   "en": "ETL: extract, transform, load",
-  "es": null
+  "es": "ETL: extraer, transformar, cargar"
  },
  {
   "path": "prep.js:PREP_INTRO.etlSteps[0].body",
   "en": "Pull the data out of wherever it lives — a spreadsheet, an instrument file, a scanned report.",
-  "es": null
+  "es": "Saca los datos de donde sea que vivan: una hoja de cálculo, un fichero de instrumento, un informe escaneado."
  },
  {
   "path": "prep.js:PREP_INTRO.etlSteps[1].body",
   "en": "Turn it into something consistent: same units, same names, same shape, with the errors found and fixed.",
-  "es": null
+  "es": "Conviértelos en algo coherente: mismas unidades, mismos nombres, misma forma, con los errores encontrados y corregidos."
  },
  {
   "path": "prep.js:PREP_INTRO.etlSteps[2].body",
   "en": "Put it into the store the rest of the work reads from.",
-  "es": null
+  "es": "Déjalos en el almacén del que lee todo el resto del trabajo."
  },
  {
   "path": "prep.js:PREP_INTRO.lead",
   "en": "Two independent data streams arrive at this stage, and neither is usable as it stands. One is five years of manual synthesis records (mixtures, ratios, temperatures). The other is 1,877 raw diffractograms—thousands of noisy data points per sample that must be standardized into discrete numerical features.",
-  "es": null
+  "es": "A esta etapa llegan dos flujos de datos independientes, y ninguno es utilizable tal cual. Uno son cinco años de registros manuales de síntesis (mezclas, proporciones, temperaturas). El otro son 1.877 difractogramas en crudo: miles de puntos ruidosos por muestra que hay que estandarizar en características numéricas discretas."
  },
  {
   "path": "prep.js:PREP_INTRO.halves[0].title",
   "en": "The synthesis table needs cleaning and enrichment",
-  "es": null
+  "es": "La tabla de síntesis necesita limpieza y enriquecimiento"
  },
  {
   "path": "prep.js:PREP_INTRO.halves[0].body",
   "en": "Normalising headers, turning free text into numbers, and replacing elements and linkers labels with their properties that explain its behavior.",
-  "es": null
+  "es": "Normalizar cabeceras, convertir texto libre en números, y sustituir las etiquetas de elementos y conectores por las propiedades que explican su comportamiento."
  },
  {
   "path": "prep.js:PREP_INTRO.halves[1].title",
   "en": "The diffractograms need signal processing",
-  "es": null
+  "es": "Los difractogramas necesitan procesado de señal"
  },
  {
   "path": "prep.js:PREP_INTRO.halves[1].body",
   "en": "Separating the crystalline signal from the background, so that each curve collapses into a fixed set of comparable numbers.",
-  "es": null
+  "es": "Separar la señal cristalina del fondo, para que cada curva se reduzca a un conjunto fijo de números comparables."
  },
  {
   "path": "prep.js:PREP_INTRO.halvesNote",
   "en": "Those are the **two sections of this screen**, and they are read one at a time — pick one below, and the buttons come back at the bottom to switch.",
-  "es": null
+  "es": "Esas son las **dos secciones de esta pantalla**, y se leen de una en una: elige una abajo, y los botones vuelven a aparecer al final para cambiar."
  },
  {
   "path": "prep.js:PREP_INTRO.note",
   "en": "**Garbage in, garbage out**. This stage sets the quality for everything downstream.",
-  "es": null
+  "es": "**Basura entra, basura sale**. Esta etapa fija la calidad de todo lo que viene después."
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.title",
   "en": "Why this stage decides the ceiling",
-  "es": null
+  "es": "Por qué esta etapa decide el techo"
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.lead",
   "en": "A model is only as good as the feature matrix it trains on. Everything here exists to transform raw chemistry into rigorous, physically meaningful tabular numbers.",
-  "es": null
+  "es": "Un modelo no puede ser mejor que la matriz de características con la que entrena. Todo lo que hay aquí existe para convertir química en crudo en números tabulares rigurosos y con sentido físico."
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.points[0].title",
   "en": "Synthesis: Chemical plausibility over statistics",
-  "es": null
+  "es": "Síntesis: plausibilidad química por encima de la estadística"
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.points[0].body",
   "en": "Cleaning spreadsheets required chemical insight, not just data profiling. Catching impossible units and hidden solvent fractions prevents corrupt numbers from entering training.",
-  "es": null
+  "es": "Limpiar las hojas de cálculo exigió criterio químico, no solo perfilado de datos. Cazar unidades imposibles y fracciones de disolvente ocultas impide que entren números corruptos al entrenamiento."
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.points[1].title",
   "en": "Characterization: Signal into structured features",
-  "es": null
+  "es": "Caracterización: de señal a características estructuradas"
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.points[1].body",
   "en": "Diffraction patterns are compressed into discrete physical descriptors, preserving critical features like the amorphous halo without losing signal to baseline noise.",
-  "es": null
+  "es": "Los patrones de difracción se comprimen en descriptores físicos discretos, conservando rasgos críticos como el halo amorfo sin perder señal contra el ruido de la línea base."
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.points[2].title",
   "en": "The unified row: Recipes paired with outcomes",
-  "es": null
+  "es": "La fila unificada: recetas emparejadas con resultados"
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.points[2].body",
   "en": "Recipes without outcomes cannot train a model; outcomes without recipes explain nothing. The true deliverable is the clean relational join: one complete experiment per row.",
-  "es": null
+  "es": "Recetas sin resultados no entrenan nada; resultados sin recetas no explican nada. El entregable de verdad es el JOIN relacional limpio: un experimento completo por fila."
  },
  {
   "path": "prep.js:PREP_TAKEAWAY.close",
   "en": "Domain knowledge is irreplaceable during data preparation: only a chemist can distinguish an impossible data error from a genuine, unexpected scientific discovery.",
-  "es": null
+  "es": "El conocimiento del dominio es insustituible durante la preparación de datos: solo un químico distingue un error imposible de un hallazgo científico genuino e inesperado."
  },
  {
   "path": "prep.js:SYNTH_GROUPS[0].title",
   "en": "Identity & audit",
-  "es": null
+  "es": "Identidad y auditoría"
  },
  {
   "path": "prep.js:SYNTH_GROUPS[0].body",
   "en": "Who ran it, when, under which unit, and in which well of the high-throughput plate. Not predictive, but it is what makes a row traceable to a physical notebook page — the ISO-17025 requirement that turns a spreadsheet into a record.",
-  "es": null
+  "es": "Quién la hizo, cuándo, bajo qué unidad y en qué pocillo de la placa de alto rendimiento. No es predictivo, pero es lo que hace una fila rastreable hasta una página física de cuaderno: el requisito ISO-17025 que convierte una hoja de cálculo en un registro."
  },
  {
   "path": "prep.js:SYNTH_GROUPS[1].body",
   "en": "The chemistry the experiment was meant to be. **lm_ratio** — linker to metal — is the single most argued-over number in the whole table: it decides whether there is enough organic strut to build a framework at all.",
-  "es": null
+  "es": "La química que el experimento pretendía ser. **lm_ratio** —conector frente a metal— es el número más discutido de toda la tabla: decide si hay suficiente puntal orgánico para levantar una red."
  },
  {
   "path": "prep.js:SYNTH_GROUPS[2].body",
   "en": "Six solvents recorded as absolute volumes in millilitres. Absolute volumes are not comparable between a 1,5 mL vial and a 15 mL autoclave, so they are later converted into **fractions of the total**, plus a `fill_fraction` that says how full the reactor was.",
-  "es": null
+  "es": "Seis disolventes registrados como volúmenes absolutos en mililitros. Los volúmenes absolutos no son comparables entre un vial de 1,5 mL y un autoclave de 15 mL, así que después se convierten en **fracciones del total**, más un `fill_fraction` que dice cuán lleno estaba el reactor."
  },
  {
   "path": "prep.js:SYNTH_GROUPS[3].body",
   "en": "Written in the notebooks as free text — *\"ramp to 120 °C over 2 h, hold 48 h, cool overnight\"*. Parsed into four numbers, because the **rate** of heating and cooling changes the product as much as the target temperature does.",
-  "es": null
+  "es": "Escritas en los cuadernos como texto libre: *\"rampa a 120 °C en 2 h, mantener 48 h, enfriar toda la noche\"*. Se parsean en cuatro números, porque la **velocidad** de calentamiento y de enfriamiento cambia el producto tanto como la temperatura objetivo."
  },
  {
   "path": "prep.js:SYNTH_GROUPS[4].body",
   "en": "Ten additives, each stored as **mmol of active species** rather than as microlitres of stock solution. The conversion is the single most delicate transformation in the notebook: a modulator added as an aqueous acid also contributes water, and forgetting that corrupts the solvent fractions above.",
-  "es": null
+  "es": "Diez aditivos, cada uno guardado como **mmol de especie activa** y no como microlitros de disolución madre. La conversión es la transformación más delicada del cuaderno: un modulador añadido como ácido acuoso también aporta agua, y olvidarlo corrompe las fracciones de disolvente de arriba."
  },
  {
   "path": "prep.js:SYNTH_PREVIEW.caption",
   "en": "One row per synthesis, 46 columns. These eight are the ones a chemist would recognise first.",
-  "es": null
+  "es": "Una fila por síntesis, 46 columnas. Estas ocho son las que un químico reconocería primero."
  },
  {
   "path": "prep.js:SYNTH_PREVIEW.warning",
   "en": "Synthetic rows. The values sit inside the real observed ranges but no row corresponds to an actual experiment; sample codes are placeholders and linker identities are withheld.",
-  "es": null
+  "es": "Filas sintéticas. Los valores están dentro de los rangos reales observados, pero ninguna fila corresponde a un experimento real; los códigos de muestra son marcadores y las identidades de los conectores se omiten."
  },
  {
   "path": "prep.js:WHY_PXRD.lead",
   "en": "In reticular chemistry, powder X-ray diffraction (PXRD) serves as the primary diagnostic benchmark. Fast and non-destructive, it provides immediate insight into long-range periodic order.",
-  "es": null
+  "es": "En química reticular, la difracción de rayos X de polvo (PXRD) es el diagnóstico de referencia. Rápida y no destructiva, da información inmediata sobre el orden periódico de largo alcance."
  },
  {
   "path": "prep.js:WHY_PXRD.gate",
   "en": "PXRD requires only milligrams and minutes of scan time without consuming the sample. It immediately reveals whether the reaction produced sharp Bragg reflections (characteristic of an ordered framework) or a diffuse amorphous profile, establishing whether the target crystalline phase assembled before investing in advanced characterization.",
-  "es": null
+  "es": "La PXRD solo necesita miligramos y minutos de barrido, sin consumir la muestra. Revela de inmediato si la reacción produjo reflexiones de Bragg afiladas (características de una red ordenada) o un perfil amorfo difuso, y así establece si la fase cristalina buscada se ensambló antes de invertir en caracterización avanzada."
  },
  {
   "path": "prep.js:WHY_PXRD.why_model",
   "en": "For periodic MOFs, long-range order dictates pore architecture, internal surface area, and host-guest properties. Predicting whether a specific combination of synthetic variables will yield a crystalline network enables rational navigation of reaction space, filtering out unpromising synthesis conditions beforehand.",
-  "es": null
+  "es": "En los MOF periódicos, el orden de largo alcance dicta la arquitectura del poro, la superficie interna y las propiedades huésped-anfitrión. Predecir si una combinación concreta de variables de síntesis dará una red cristalina permite navegar el espacio de reacción de forma racional, descartando de antemano las condiciones poco prometedoras."
  },
  {
   "path": "prep.js:WHY_PXRD.steps[0][1]",
   "en": "Is it crystalline?",
-  "es": null
+  "es": "¿Es cristalino?"
  },
  {
   "path": "prep.js:WHY_PXRD.steps[0][2]",
   "en": "Minutes. Non-destructive. Run on everything.",
-  "es": null
+  "es": "Minutos. No destructiva. Se hace a todo."
  },
  {
   "path": "prep.js:WHY_PXRD.steps[1][0]",
   "en": "FTIR · UV-Vis · ICP · EA",
-  "es": null
+  "es": "FTIR · UV-Vis · ICP · EA"
  },
  {
   "path": "prep.js:WHY_PXRD.steps[1][1]",
   "en": "Which groups, which gap, which composition?",
-  "es": null
+  "es": "¿Qué grupos, qué band gap, qué composición?"
  },
  {
   "path": "prep.js:WHY_PXRD.steps[1][2]",
   "en": "Confirmatory. Only once the material is worth confirming.",
-  "es": null
+  "es": "Confirmatoria. Solo cuando el material merece confirmarse."
  },
  {
   "path": "prep.js:WHY_PXRD.steps[2][1]",
   "en": "Up to what temperature does it survive?",
-  "es": null
+  "es": "¿Hasta qué temperatura sobrevive?"
  },
  {
   "path": "prep.js:WHY_PXRD.steps[2][2]",
   "en": "Hours. Consumes the sample.",
-  "es": null
+  "es": "Horas. Consume la muestra."
  },
  {
   "path": "prep.js:WHY_PXRD.steps[3][1]",
   "en": "What do the crystals look like?",
-  "es": null
+  "es": "¿Qué aspecto tienen los cristales?"
  },
  {
   "path": "prep.js:WHY_PXRD.steps[3][2]",
   "en": "Booked instrument time, and a trained operator.",
-  "es": null
+  "es": "Tiempo de instrumento reservado, y un operador con formación."
  },
  {
   "path": "prep.js:WHY_PXRD.steps[4][1]",
   "en": "Is it actually porous, and how much?",
-  "es": null
+  "es": "¿Es poroso de verdad, y cuánto?"
  },
  {
   "path": "prep.js:WHY_PXRD.steps[4][2]",
   "en": "A day per sample. Needs prior activation.",
-  "es": null
+  "es": "Un día por muestra. Necesita activación previa."
  },
  {
   "path": "rag.js:RAG_AREAS[0].subtitle",
