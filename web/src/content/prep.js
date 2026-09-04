@@ -19,12 +19,30 @@
 
 export const PREP_INTRO = {
   /* Que es un ETL, antes de nada. El titulo de la pantalla lo usa como si fuese
-     obvio, y para un quimico no lo es. */
+     obvio, y para un quimico no lo es. Antes era un unico parrafo con los tres
+     verbos en negrita; ahora son tres bloques con icono, uno por verbo, sin
+     caja propia (solo la seccion los envuelve), para que se lea como lo que
+     es -- tres pasos distintos -- y no como una definicion de diccionario. */
   etlTitle: 'ETL: extract, transform, load',
-  etl:
-    'The three verbs name what happens to data between where it is produced and where it can be used. **Extract** it from wherever it lives — a spreadsheet, an instrument file, a scanned report. **Transform** it into something consistent: same units, same names, same shape, with the errors found and fixed. **Load** it into the store the rest of the work reads from. It is unglamorous and it is most of the job.',
+  etlSteps: [
+    {
+      key: 'extract',
+      label: 'Extract',
+      body: 'Pull the data out of wherever it lives — a spreadsheet, an instrument file, a scanned report.',
+    },
+    {
+      key: 'transform',
+      label: 'Transform',
+      body: 'Turn it into something consistent: same units, same names, same shape, with the errors found and fixed.',
+    },
+    {
+      key: 'load',
+      label: 'Load',
+      body: 'Put it into the store the rest of the work reads from.',
+    },
+  ],
   lead:
-    'Two independent streams of data arrive at this stage, and neither is usable as it stands. One is five years of synthesis conditions written by hand into a spreadsheet: what was mixed, in what proportion, at what temperature. The other is 1,877 raw diffractograms, each one a curve of several thousand points that no model can read as a curve.',
+    'Two independent data streams arrive at this stage, and neither is usable as it stands. One is five years of manual synthesis records (mixtures, ratios, temperatures). The other is 1,877 raw diffractograms—thousands of noisy data points per sample that must be standardized into discrete numerical features.',
   /* Dos guiones en vez de un parrafo largo: son dos trabajos distintos y se
      lee mucho mejor cuando se ven como dos, ademas de anunciar las dos
      secciones que vienen debajo. */
@@ -32,7 +50,7 @@ export const PREP_INTRO = {
     {
       lane: 'synthesis',
       title: 'The synthesis table needs cleaning and enrichment',
-      body: 'Normalising headers, turning free text into numbers, and replacing labels such as "Fe" with the physical properties that actually explain a metal\'s behaviour.',
+      body: 'Normalising headers, turning free text into numbers, and replacing elements and linkers labels with their properties that explain its behavior.',
     },
     {
       lane: 'characterisation',
@@ -41,9 +59,9 @@ export const PREP_INTRO = {
     },
   ],
   halvesNote:
-    'Those are the **two sections of this screen**, and they are read one at a time — pick one below, and the buttons come back at the bottom to switch. Only when both halves exist as rectangular tables of numbers can they be joined into a single row per experiment.',
+    'Those are the **two sections of this screen**, and they are read one at a time — pick one below, and the buttons come back at the bottom to switch.',
   note:
-    'This is the longest stage of the project, and the one that decides how good everything downstream can possibly be. A model cannot recover information that was destroyed here.',
+    '**Garbage in, garbage out**. This stage sets the quality for everything downstream.',
 }
 
 export const LANES = [
@@ -70,7 +88,7 @@ export const LANES = [
 export const SYNTH_PREVIEW = {
   caption: 'One row per synthesis, 46 columns. These eight are the ones a chemist would recognise first.',
   warning:
-    'Synthetic rows. The values sit inside the real observed ranges but no row corresponds to an actual experiment; sample codes are placeholders and linker identities are withheld, since several are unpublished.',
+    'Synthetic rows. The values sit inside the real observed ranges but no row corresponds to an actual experiment; sample codes are placeholders and linker identities are withheld.',
   head: ['sample_code', 'metal_center', 'linker', 'metal_conc_m', 'lm_ratio', 'temp_target_c', 'time_hours', 'mod_total_mmol'],
   rows: [
     ['SYN-0001', 'Fe', 'L-A', '0.030', '0.50', '120', '48.0', '0.267'],
@@ -124,11 +142,9 @@ export const SYNTH_GROUPS = [
 
 export const ELEMENT_INTRO = {
   problem:
-    'A column that holds `Fe`, `Ca`, `Zr` is a **categorical label**. Encoded the usual way, one binary column per element, it tells a model only whether two experiments used the same metal — nothing about whether two different metals behave alike. Worse, it cannot generalise: a metal absent from the training set is a column of zeros, and the model has nothing to say about it.',
-  fix:
-    'So each symbol is replaced by the physical properties that actually drive coordination chemistry, pulled from `mendeleev` and `pymatgen` and stored in a reference table. The label disappears; the physics stays.',
+    'A categorical label like "Fe" hides the physics and collapses **Fe(II)** (92 pm) and **Fe(III)** (78.5 pm) into the same bin. Replacing chemical symbols with **eight fundamental properties** (Shannon ionic radius, electronegativity, HSAB hardness, charge-to-radius ratio) enables the model to interpolate across the periodic table and predict outcomes for unseen metals',
   payoff:
-    'The gain is not only statistical. **Fe(II) and Fe(III) stop being the same thing** — same symbol, but 92 pm against 78,5 pm of ionic radius, and a charge-to-radius ratio of 0,022 against 0,038. A one-hot column called "Fe" collapses that difference; a table of properties preserves it. And an unseen metal is no longer unseen: it lands somewhere between the ones already measured.',
+    'Molecule names convey no spatial or chemical meaning. Using RDKit, each linker is featurized into **six geometric and topological descriptors**: denticity (binding points), max donor distance (pore-size proxy), acidic proton count, and rotatable bonds (flexibility)—capturing the structural rules of reticular assembly.',
 }
 
 export const METAL_FEATURES = [
@@ -155,13 +171,11 @@ export const LINKER_FEATURES = [
 
 export const WHY_PXRD = {
   lead:
-    'Nine techniques are ingested, and they are not interchangeable. They answer different questions, they cost different amounts of instrument time, and — crucially — they are not run in parallel. They are run **in an order**, and that order is a decision tree.',
+    'In reticular chemistry, powder X-ray diffraction (PXRD) serves as the primary diagnostic benchmark. Fast and non-destructive, it provides immediate insight into long-range periodic order.',
   gate:
-    'Powder X-ray diffraction is the first branch of that tree. It is fast, it needs a few milligrams, it destroys nothing, and it answers the only question that matters at that moment: **did anything ordered form at all?**',
-  consequence:
-    'Everything else waits on that answer. A diffractogram with sharp peaks earns the sample a thermogravimetric run to check its stability, a gas adsorption isotherm to measure its porosity, an electron micrograph to see its habit. A flat, featureless curve ends the sample — no further instrument time is spent on it.',
+    'PXRD requires only milligrams and minutes of scan time without consuming the sample. It immediately reveals whether the reaction produced sharp Bragg reflections (characteristic of an ordered framework) or a diffuse amorphous profile, establishing whether the target crystalline phase assembled before investing in advanced characterization.',
   why_model:
-    'That is why the model predicts crystallinity and not surface area or yield. It is the property that ** gates access to every other measurement**.Predicting it before the synthesis is run is what turns a screening campaign from exhaustive into selective.',
+    'For periodic MOFs, long-range order dictates pore architecture, internal surface area, and host-guest properties. Predicting whether a specific combination of synthetic variables will yield a crystalline network enables rational navigation of reaction space, filtering out unpromising synthesis conditions beforehand.',
   steps: [
     ['PXRD', 'Is it crystalline?', 'Minutes. Non-destructive. Run on everything.', true],
     ['FTIR · UV-Vis · ICP · EA', 'Which groups, which gap, which composition?', 'Confirmatory. Only once the material is worth confirming.', false],
@@ -245,35 +259,53 @@ export const DESCRIPTOR_GROUPS = [
 export const DESCRIPTOR_RECAP = {
   head: ['Descriptor', 'What it measures', 'Amorphous', 'Incipient', 'Crystalline'],
   lead:
-    'A diffractogram is a few thousand intensity readings against angle. The pipeline turns it into a fixed row of **29 numbers**, which is what makes two experiments comparable at all. Here are all of them, grouped by what they measure, with the **median value inside each expert-labelled class** over the 1,855 labelled diffractograms.',
+    'A continuous diffractogram of thousands of data points is compressed into a fixed **29-dimensional vector**. Below is the complete breakdown of these physical descriptors—grouped by traceability, peak geometry, phase composition, and global statistics—alongside median values across the 1,855 expert-labelled samples.',
   counts: '484 amorphous · 1,013 incipient · 358 crystalline',
   /* Tres lecturas, una por clase, como tarjetas con simbolo en vez de un
      parrafo corrido: es lo que de verdad hay que llevarse de la tabla. */
+  /* `points` en vez de un `body` corrido: tres frases seguidas por tarjeta se
+     leian como un bloque, y lo que hay que llevarse de cada clase son datos
+     sueltos (un umbral, un porcentaje), no un argumento encadenado. */
   reading: [
     {
       klass: 'Amorphous',
       icon: 'waves',
       tone: 'amorphous',
-      title: 'No peaks at all, so half the table is meaningless',
-      body: '`n_peaks` is zero, so the "first peak" angle is noise at high angle and the size derived from it means nothing. What does separate it is the **blank-corrected split**: 0.88 of the signal is halo. Entropy is the highest of the three, because the intensity is spread everywhere instead of concentrated.',
-    },
-    {
-      klass: 'Crystalline',
-      icon: 'gem',
-      tone: 'pure',
-      title: 'Few, narrow, intense reflections at low angle',
-      body: '**Peak-to-background jumps by two orders of magnitude** over amorphous, 0.03 to 9.42, and signal-to-noise by seventy. Peaks are the narrowest (0.162°) and the crystallite size the largest. The pipeline trusts 99% of these.',
+      title: 'Diffuse halo dominates — no Bragg peaks',
+      points: [
+        'Zero genuine reflections (`n_peaks` = 0)',
+        'Amorphous fraction exceeds **85–90%** of total area (0.88 on the blank-corrected split)',
+        'Spectral entropy is the highest of the three classes; peak-to-background ratio stays near zero',
+      ],
     },
     {
       klass: 'Incipient',
       icon: 'gitbranch',
       tone: 'incipient',
-      title: 'Between the two on almost every descriptor',
-      body: 'That is exactly the problem: it **overlaps both neighbours** rather than occupying its own region. Its median peak width (0.240°) is even slightly wider than amorphous, and its crystalline fraction sits halfway. It is the class the model confuses most, and this table is why.',
+      title: 'Intermediate regime — broad, emerging peaks',
+      points: [
+        'The transition zone between disorder and crystal growth',
+        'Emerging, broader reflections — median FWHM 0.240°, even wider than amorphous',
+        'Moderate peak-to-background ratios; descriptors sit midway between halo and crystalline order, making it **the most challenging class for the classifier**',
+      ],
+    },
+    {
+      klass: 'Crystalline',
+      icon: 'gem',
+      tone: 'pure',
+      title: 'Sharp, intense Bragg reflections',
+      points: [
+        'Intense, narrow peaks at low angles — median FWHM 0.162°, well under 0.20°',
+        'Signal-to-noise and peak-to-background jump orders of magnitude over amorphous (0.03 → 9.42)',
+        'Crystalline fraction accounts for the vast majority of scattered intensity; the pipeline trusts 99% of these',
+      ],
     },
   ],
+  /* Version corta a proposito: la anterior explicaba el mismo caso en cuatro
+     frases; esta lo deja en dos, y la comparacion numerica (37.4 vs 33.8 nm)
+     hace el trabajo de convencer sin que haga falta razonarlo mas. */
   caveat:
-    'One number in that table is a trap. `scherrer_size_nm` is larger for amorphous samples (37.4 nm) than for incipient ones (33.8 nm), which is physically absurd — an amorphous solid has no crystallites. The Scherrer equation assumes a peak exists; applied to noise it returns a number anyway. It is kept as a reminder that **a descriptor is only valid inside the regime it was derived for**.',
+    '`scherrer_size_nm` mathematically requires a real Bragg peak, yet it comes out **larger for amorphous samples (37.4 nm) than for incipient ones (33.8 nm)** — physically absurd, since an amorphous solid has no crystallites. Calculated over baseline noise, the formula still returns a number: a reminder that a physical formula only applies within its intended domain.',
 }
 
 /* --- Cierre de la pantalla ------------------------------------------------
@@ -284,24 +316,24 @@ export const DESCRIPTOR_RECAP = {
 export const PREP_TAKEAWAY = {
   title: 'Why this stage decides the ceiling',
   lead:
-    'A model does not see a laboratory. It sees a rectangle of numbers, and it can only be as good as that rectangle. Everything on this screen exists to build one: **one row per experiment**, every column meaning the same thing in every row, every gap either filled for a stated reason or left empty on purpose.',
+    'A model is only as good as the feature matrix it trains on. Everything here exists to transform raw chemistry into rigorous, physically meaningful tabular numbers.',
   points: [
     {
       icon: 'flask',
-      title: 'On the synthesis side, the work was interpretation',
-      body: 'Seven defects survived every statistical check — including a unit error that made the most-used modulator in the record invisible to the model, while the column still looked like a plausible number. They were found by reading the values **chemically** rather than statistically: nobody flags 54 grams of formic acid in a 2.5 mL reactor except someone who has weighed formic acid.',
+      title: 'Synthesis: Chemical plausibility over statistics',
+      body: 'Cleaning spreadsheets required chemical insight, not just data profiling. Catching impossible units and hidden solvent fractions prevents corrupt numbers from entering training.',
     },
     {
       icon: 'waves',
-      title: 'On the characterisation side, the work was measurement',
-      body: 'A curve of several thousand points had to become a fixed row of comparable numbers without discarding the part that matters — and the amorphous halo, which is easy to mistake for background, is precisely what separates a failed synthesis from a disordered solid.',
+      title: 'Characterization: Signal into structured features',
+      body: 'Diffraction patterns are compressed into discrete physical descriptors, preserving critical features like the amorphous halo without losing signal to baseline noise.',
     },
     {
       icon: 'link',
-      title: 'And neither half is useful alone',
-      body: 'Conditions without an outcome cannot train anything; an outcome without its conditions cannot explain anything. The join between them, one row per experiment, is the actual deliverable of this stage.',
+      title: 'The unified row: Recipes paired with outcomes',
+      body: 'Recipes without outcomes cannot train a model; outcomes without recipes explain nothing. The true deliverable is the clean relational join: one complete experiment per row.',
     },
   ],
   close:
-    'That is the argument for a domain expert staying in the loop through data preparation — not as a reviewer at the end, but as the person who can tell a wrong number from an unusual one.',
+    'Domain knowledge is irreplaceable during data preparation: only a chemist can distinguish an impossible data error from a genuine, unexpected scientific discovery.',
 }

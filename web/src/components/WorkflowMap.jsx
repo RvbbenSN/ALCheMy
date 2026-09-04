@@ -28,7 +28,7 @@ import {
   Wrench,
 } from 'lucide-react'
 import { AREAS } from '../content/workflow.js'
-import { Badge } from './ui.jsx'
+import { Badge, Rich, ScrollTable } from './ui.jsx'
 
 /* --------------------------------------------------------------------------
    WorkflowMap — el lienzo de n8n, navegable, con su capa didactica encima.
@@ -618,6 +618,19 @@ export default function WorkflowMap({
               >
                 {card.note}
               </p>
+            )}
+
+            {card.table && (
+              <>
+                {card.tableIntro && (
+                  <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <Rich>{card.tableIntro}</Rich>
+                  </p>
+                )}
+                <div className="mt-3">
+                  <ScrollTable head={card.table.head} rows={card.table.rows} />
+                </div>
+              </>
             )}
           </>
         ) : (

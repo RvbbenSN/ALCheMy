@@ -95,6 +95,12 @@ FAMILIES = [
 # excepcion que nadie vuelve a revisar.
 NOT_OURS = {"job_leads"}
 
+# Vistas que existen en la base pero NO se publican en la web: duplicados en
+# castellano que siguen ahi solo hasta migrar a quien las llama. Ensenarlas en
+# la pantalla 08 obliga a explicar en cada fila que son una copia temporal, que
+# es ruido para quien lee. Cuando se borren de la base, quitarlas de aqui.
+VIEWS_HIDDEN = {"v_agente_muestras", "v_rag_biblioteca"}
+
 
 def connect():
     import psycopg2
@@ -154,7 +160,8 @@ def main() -> int:
     funciones = [r[0] for r in cur.fetchall()]
 
     tablas = [o for o in objetos.values() if o["kind"] == "table"]
-    vistas = [o for o in objetos.values() if o["kind"] == "view"]
+    vistas = [o for o in objetos.values()
+              if o["kind"] == "view" and o["name"] not in VIEWS_HIDDEN]
 
     declaradas = {t for f in FAMILIES for t in f["tables"]}
     faltan = [t for t in declaradas if t not in objetos]

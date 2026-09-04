@@ -2,6 +2,23 @@ import { NavLink, Link, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { SCREENS, SITE } from '../content/site.js'
 import { AmbientPlayer, useTheme } from './ui.jsx'
+import { useLocale, withLocale, toggleLocalePath } from '../i18n/LocaleContext.jsx'
+
+function LangToggle() {
+  const locale = useLocale()
+  const { pathname } = useLocation()
+  const other = locale === 'es' ? 'EN' : 'ES'
+  return (
+    <Link
+      to={toggleLocalePath(pathname)}
+      className="rounded-[var(--radius-button)] px-3 py-1.5 text-xs uppercase tracking-wider no-underline"
+      style={{ border: '2px solid var(--surface-border)', color: 'var(--text-secondary)' }}
+      aria-label={locale === 'es' ? 'Switch to English' : 'Cambiar a espanol'}
+    >
+      {other}
+    </Link>
+  )
+}
 
 function ThemeToggle() {
   const [theme, setTheme] = useTheme()
@@ -45,11 +62,25 @@ function StatusBadge() {
 
 export default function Layout() {
   const [open, setOpen] = useState(false)
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
+  const locale = useLocale()
+  /* Al cambiar de pantalla se sube arriba, salvo que la URL traiga un ancla
+     (#descriptors, por ejemplo): entonces se baja a esa seccion. El timeout de
+     0 ms deja que React pinte la pantalla nueva antes de buscar el elemento;
+     sin el, getElementById corre sobre el DOM de la pantalla anterior. */
   useEffect(() => {
     setOpen(false)
-    window.scrollTo(0, 0)
-  }, [pathname])
+    if (!hash) {
+      window.scrollTo(0, 0)
+      return
+    }
+    const t = setTimeout(() => {
+      const el = document.getElementById(hash.slice(1))
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      else window.scrollTo(0, 0)
+    }, 0)
+    return () => clearTimeout(t)
+  }, [pathname, hash])
 
   return (
     <>
@@ -67,7 +98,7 @@ export default function Layout() {
       >
         <div className="mx-auto flex max-w-[var(--content-max)] items-center gap-4 px-4 py-3">
           <Link
-            to="/"
+            to={withLocale('/', locale)}
             className="flex items-center gap-2.5 no-underline"
             style={{ color: 'var(--accent-primary)' }}
             aria-label="ALCheMy — home"
@@ -99,6 +130,7 @@ export default function Layout() {
             >
               LinkedIn
             </a>
+            <LangToggle />
             <ThemeToggle />
             <button
               type="button"
@@ -122,7 +154,7 @@ export default function Layout() {
             {SCREENS.map((s) => (
               <li key={s.id}>
                 <NavLink
-                  to={`/${s.slug}`}
+                  to={withLocale(`/${s.slug}`, locale)}
                   end={s.slug === ''}
                   className="block px-3 py-2 text-xs uppercase tracking-wider no-underline"
                   style={({ isActive }) => ({
@@ -157,7 +189,7 @@ export default function Layout() {
           />
           <div className="flex flex-col gap-2 md:text-right">
             <span>
-              © {new Date().getFullYear()} Rubén Serrano · {SITE.tagline}
+              © {new Date().getFullYear()} ALCheMy · Rubén Serrano · {SITE.tagline}
             </span>
             <span>
               Sample identifiers and unpublished ligand names shown on this site are pseudonymized. No raw

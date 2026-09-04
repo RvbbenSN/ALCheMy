@@ -47,7 +47,7 @@ export const KPIS = [
 /* Intro a los tres pilares. Faltaba: se soltaban de golpe sin decir por que son
    tres ni que relacion tienen entre si. */
 export const PILLARS_INTRO =
-  'The platform is built in three layers, and they are meant to be read in order. The first gets the data in and keeps it trustworthy. The second learns from it. The third puts what the field already knows next to what the laboratory has measured. Each one only makes sense because the one before it exists.'
+  'The platform is built in three layers: the first gets the data in and keeps it trustworthy; the second learns from it; the third puts what the field already knows next to what the laboratory has measured.'
 
 export const PILLARS = [
   {
@@ -55,10 +55,10 @@ export const PILLARS = [
     title: 'Automated Data Ingestion, Quality & Enterprise Governance',
     subtitle: 'ISO 17025 / FAIR compliant',
     points: [
-      'Orchestrated ingestion pipelines built with n8n and PostgreSQL capture raw analytical files (PXRD, TGA, gas adsorption, FTIR, VT-XRD, EA, ICP-OES) via secure REST webhooks or forms.',
-      'Cryptographic data quality gates: every incoming file passes an MD5 deduplication gate that prevents duplicate records, guarantees raw file lineage and eliminates redundant compute.',
-      'Polymorphic instrument parsers write metadata and 2D curves into indexed JSONB containers, so adding a new technique never requires a schema migration.',
-      'Agentic observability and IP protection: every AI interaction is logged, and confidential ligand formulas are masked before any external LLM call.',
+      '**Orchestrated ingestion pipelines** built with n8n and PostgreSQL capture raw analytical files (PXRD, TGA, gas adsorption, FTIR, VT-XRD, EA, ICP-OES) via secure REST webhooks or forms.',
+      '**Cryptographic data quality gates** ensures that every incoming file passes an MD5 deduplication gate that prevents duplicate records and guarantees raw file lineage.',
+      '**Instrument parsers** write metadata and 2D curves into indexed JSONB containers, so adding a new technique never requires a schema migration.',
+      '**Agentic observability** tracks every AI interaction',
     ],
   },
   {
@@ -66,10 +66,10 @@ export const PILLARS = [
     title: 'Digital Twin & Machine Learning',
     subtitle: 'From raw diffraction to a synthesis recommendation',
     points: [
-      'Raw powder diffraction patterns are treated with arPLS to isolate baseline drift while preserving genuine amorphous halos. A 3-sigma Poisson noise model extracts a vector of 29 descriptors.',
-      'Supervised classifiers (Random Forest and LightGBM) trained on 1,877 hand-labeled diffractograms predict whether a reaction matrix yields a pure crystalline phase, an incipient phase or an amorphous solid.',
-      'A PostgreSQL model registry tracks binaries, hyperparameters, exact git commit hashes (including dirty-tree states) and cross-validation metrics under strict CHECK constraints.',
-      'An active learning loop identifies high-uncertainty synthesis boundaries and recommends the next physical experiments.',
+      '**Raw powder diffraction patterns** are treated with arPLS to isolate baseline drift while preserving genuine amorphous halos. A 3-sigma Poisson noise model extracts a vector of 29 descriptors.',
+      '**Supervised classifiers** (Random Forest and LightGBM) trained on 1,877 hand-labeled diffractograms predict whether a reaction matrix yields a pure crystalline phase, an incipient phase or an amorphous solid.',
+      '**A PostgreSQL model registry tracks versions** (binaries, hyperparameters, git commit hashes and cross-validation metrics).',
+      '**An active learning loop** identifies high-uncertainty synthesis boundaries and recommends the next experiments.',
     ],
   },
   {
@@ -77,10 +77,10 @@ export const PILLARS = [
     title: 'Graph-Augmented Hybrid RAG',
     subtitle: 'A co-pilot that cites three sources of truth',
     points: [
-      'A vectorized corpus powered by pgvector indexes 956 peer-reviewed papers and patents.',
-      'Contextual chunking prevents loss of chemical meaning across synthetic procedures, stoichiometries and characterization sections.',
-      'A knowledge graph maps relationships between performed syntheses, their characterization and literature citations.',
-      'Local-first retrieval with role-based access control keeps proprietary records governed and compatible with zero-data-retention or fully local deployments.',
+      '**A vectorized corpus powered by pgvector** indexes 956 peer-reviewed papers and patents.',
+      '**Contextual chunking** prevents loss of chemical meaning across synthetic procedures, stoichiometries and characterization sections.',
+      '**A knowledge graph** maps relationships between performed syntheses, their characterization and literature citations.',
+      '**Local-first retrieval** with role-based access control keeps proprietary records governed and compatible with fully local deployments.',
     ],
   },
 ]
@@ -185,7 +185,7 @@ export const FUNNEL = [
   { n: '1,839', label: 'With a labelled diffractogram', why: 'The rest never reached the diffractometer, or nobody has judged them yet' },
   { n: '1,723', label: 'Verdict usable', why: 'Drops SIN_MUESTRA and anything an expert marked ml_include = NO' },
   { n: '1,540', label: 'Combinatorial only', why: 'Solvothermal and microwave runs excluded — the confounder above' },
-  { n: '1,516', label: 'Rows in training set v4', why: 'No tannic acid' },
+  { n: '1,516', label: 'Rows in the training set', why: 'No tannic acid' },
 ]
 
 /* Glosario para los tooltips. Se generara desde la guia didactica

@@ -107,8 +107,8 @@ export default function DataCollection() {
       </section>
 
       <section>
-        <SectionTitle eyebrow="Start from the goal, not the flow">
-          What a row must look like when it lands
+        <SectionTitle eyebrow="Start from the goal">
+          What a ingested measurement looks like
         </SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{COLLECTION_ROW_INTRO}</Rich>
@@ -125,13 +125,13 @@ export default function DataCollection() {
         <IngestedRowTree />
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <Card accent>
-            <h3 className="text-base">The part worth opening</h3>
+            <h3 className="text-base">Header metadata</h3>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{COLLECTION_TREE.point}</Rich>
             </p>
           </Card>
           <Card>
-            <h3 className="text-base">And the part that never changes</h3>
+            <h3 className="text-base">Raw data</h3>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{COLLECTION_TREE.contract}</Rich>
             </p>

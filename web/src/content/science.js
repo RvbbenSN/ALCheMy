@@ -9,7 +9,7 @@
    -------------------------------------------------------------------------- */
 
 export const SCIENCE_INTRO =
-  'This screen is the context for everything that follows. It explains what these materials are, how they are made and why making one requires measuring it in a dozen different ways — which is where the data problem begins.'
+  'Ever wondered what happens when you build crystalline materials like molecular *Lego*? Step inside the chemistry of Metal-Organic Frameworks (MOFs) and see why characterizing them requires an entire suite of analytical techniques.'
 
 /* --- Que es un MOF --------------------------------------------------------- */
 
@@ -20,15 +20,15 @@ export const MOF_DEF = {
     'A coordination network with organic ligands containing potential voids.',
   iupacNote: 'IUPAC recommendation, 2013.',
   plain:
-    'In plain terms: **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold.',
-  why: 'Because both halves can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today.',
+    'In a nutshell, **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold.',
+  why: 'Because both parts can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today.',
 }
 
 export const MOF_FACTS = [
   {
     icon: 'grid',
     title: 'Built like a scaffold',
-    body: '**Metal nodes joined by organic linkers** into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed rather than discovered.',
+    body: '**Metal nodes joined by organic linkers** into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed',
   },
   {
     icon: 'expand',
@@ -38,7 +38,7 @@ export const MOF_FACTS = [
   {
     icon: 'sliders',
     title: 'Tunable by design',
-    body: 'Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the **isoreticular principle**, and it is why one good architecture becomes a family.',
+    body: 'Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the **isoreticular principle**.',
   },
   {
     icon: 'flask',
@@ -66,10 +66,10 @@ export const WHY_CHARACTERISE = {
   title: 'Why one material needs a dozen measurements',
   /* Va como texto corrido, antes de la rejilla: es la premisa, no una nota. */
   lead:
-    'Making a solid is not the same as knowing what it is. **A newly formed powder has to be interrogated** from several independent angles before anything can be claimed about it: whether it is ordered, what it is made of, how much empty space it holds, how hot it can get before it collapses. **No single technique answers more than one of those questions.**',
+    'Making a solid is not the same as knowing what it is. **A newly formed powder has to be interrogated** from several angles before anything can be claimed about it.',
   /* Y esto va en la caja de nota, condensado. */
   consequence:
-    'Every promising sample generates files from several instruments, each in its own format, each written by a different manufacturer. Multiply that by thousands of samples and it stops being a chemistry problem.',
+    'Every promising sample generates files from several instruments, each written in its own format. Multiply that by thousands of samples and it stops being a chemistry problem — it becomes a **data management and processing challenge**.',
   /* Cifras auditadas el 2026-09-03. Las medidas salen de
      `characterization_measurements`. Los ficheros, de contar el data lake
      historico (`data/raw_datalake_historico`) descartando lo que no escribio un
@@ -156,7 +156,7 @@ export const LAB_INTRO = {
   /* Como en la seccion anterior: la premisa va suelta, no encerrada en una
      tarjeta. La cadencia se ha quitado porque la repite el esquema de abajo. */
   lead:
-    'Designing a framework is not a matter of deciding what to make and then making it. Which combination of metal, linker, solvent, temperature and time produces an ordered solid **cannot be predicted reliably**, so it is explored — by preparing many candidate conditions at once and seeing which ones work.',
+    'A structure can be designed on paper, but its **synthesis must be discovered**. The ideal recipe is found by screening countless reaction trials. This is how pipeline looks like:',
 }
 
 /* --- El cuello de botella -------------------------------------------------- */
@@ -164,16 +164,16 @@ export const LAB_INTRO = {
 export const BOTTLENECK = {
   title: 'Where the data problem begins',
   scale:
-    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,073 instrument files**, **nine formats**, across network folders and local disks — plus one spreadsheet holding every synthesis condition.',
+    'Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,073 instrument files**, across folders, notebooks and local disks.',
   problem:
-    'Nothing about that is unusual, and that is the point: it is how most laboratories work. But it means a simple question — *which conditions have ever produced a crystalline phase with this metal?* — is answered by opening dozens of files by hand, and the answer is only as good as someone\'s memory of where things were saved.',
+    'Nothing about that is unusual, it is how most laboratories work. But it means a simple question — *which conditions have ever produced a promising material?* — and the answer is only as good as someone\'s memory of where things were saved.',
   /* Va en la caja de nota. El enfasis, por peticion, en la base de datos. */
   turn:
-    'The fix is a **governed database**: one row per synthesis, one row per measurement, every file fingerprinted and attributed. Once the record is a table, the question above becomes a query — and a model can learn from the whole record rather than from what anyone remembers.',
+    'The fix is a **governed database**: one row per synthesis, one row per measurement, every file fingerprinted and attributed. Once the record is a table, the question above becomes a query — and a model can learn from the whole record.',
   /* Gancho hacia la 02, con las mismas palabras con que abre esa pantalla. */
   hookTitle: 'Which leaves one problem unsolved',
   hook:
-    'Thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to — and nothing stopping the same file being saved twice under two names. What is needed is unglamorous and specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**',
+    'Thousands of instrument files, several formats... and nothing stopping the same file being saved twice under two names. What is needed is specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**',
 }
 
 /* --- La escala del dato ----------------------------------------------------
@@ -224,7 +224,7 @@ export const TECHNIQUE_COUNTS = [
 export const DATA_SCALE = {
   title: 'How much data one laboratory produces',
   lead:
-    'On the left, every synthesis ever performed. In the middle, every measurement taken on those samples, by technique. **They are not a sequence** — only the diffractogram is routine; the rest are requested when a specific question needs answering, in whatever order that question arises, and for most samples never. On the right, the one place all of it has to end up.',
+    'On the left, every synthesis ever performed. In the middle, every measurement taken on those samples, by technique. On the right, the one place all of it has to end up. **A true challenge of scale.**',
   bracketLabel: 'measurements',
   databaseLabel: 'One governed database',
   databaseNote: 'One row per synthesis, one row per measurement, every file fingerprinted.',

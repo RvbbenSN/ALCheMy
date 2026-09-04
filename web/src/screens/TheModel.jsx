@@ -127,16 +127,22 @@ export default function TheModel() {
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <Card>
             <h3 className="text-base">What the map actually says</h3>
-            {/* La cifra se lee del propio mapa: escribirla a mano fue un error
-                una vez ya, contando veredictos en vez de casillas. */}
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Of the {KMAP.coverage.total} cells in this plane, the laboratory has run{' '}
-              <strong>{KMAP.coverage.tried}</strong> — and that is for {KMAP.metal}, the metal with
-              the most history behind it ({KMAP.nSyntheses} syntheses).
-            </p>
-            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Rich>{MODEL_LOOP.reading}</Rich>
-            </p>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 text-sm">
+              {/* La cifra se lee del propio mapa: escribirla a mano fue un error
+                  una vez ya, contando veredictos en vez de casillas. */}
+              <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>
+                  {KMAP.coverage.tried} of {KMAP.coverage.total} cells have been run
+                </strong>{' '}
+                — and that is for {KMAP.metal}, the metal with the most history behind it
+                ({KMAP.nSyntheses} syntheses).
+              </li>
+              {MODEL_LOOP.readingPoints.map((p, i) => (
+                <li key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                  <Rich>{p}</Rich>
+                </li>
+              ))}
+            </ul>
           </Card>
           <Card accent>
             <h3 className="text-base">And it agrees with the diagnosis</h3>

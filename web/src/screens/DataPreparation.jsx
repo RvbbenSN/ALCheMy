@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Activity,
   Atom,
   Beaker,
+  Database,
+  Download,
   Droplets,
   FlaskConical,
   Flame,
@@ -14,6 +17,7 @@ import {
   Microscope,
   Ruler,
   ShieldCheck,
+  Wand2,
   Waves,
 } from 'lucide-react'
 import {
@@ -44,15 +48,6 @@ import NotebookFigure from '../components/NotebookFigure.jsx'
 import PxrdChart from '../components/PxrdChart.jsx'
 import ScreenRecording from '../components/ScreenRecording.jsx'
 
-const FORMATS = [
-  ['.xrdml', 'PANalytical PXRD', 'Only counts are stored; the 2θ axis is reconstructed by linspace from start and end angles.'],
-  ['.brml', 'Bruker VT-XRD', 'A ZIP container. More than two RawData*.xml entries means a temperature series, not a single scan.'],
-  ['.txt', 'TA SDT Q600 TGA', 'UTF-16 with a latin1 fallback, seven signals.'],
-  ['.csv', 'FTIR', 'Comma or semicolon separated, tolerant of decimal commas.'],
-  ['.xls', 'Micromeritics BET', 'Adsorption isotherm and surface area.'],
-  ['.asc / .csv', 'UV-Vis', 'Kubelka-Munk and Tauc vectors derived at parse time.'],
-  ['.jpg + .txt', 'Hitachi SEM', 'Image plus companion sidecar; the AI description is added later, never fabricated.'],
-]
 
 /* Un simbolo por grupo de variables de sintesis. */
 const GROUP_ICON = {
@@ -178,8 +173,16 @@ function LaneSwitch({ lane, setLane, onPick }) {
   )
 }
 
+// Un icono por verbo del ETL, en el mismo orden en que aparecen en pantalla:
+// entra el dato (Download), se le da forma (Wand2), aterriza en el almacen (Database).
+const ETL_STEP_ICONS = { extract: Download, transform: Wand2, load: Database }
+
 export default function DataPreparation() {
-  const [lane, setLane] = useState('synthesis')
+  /* Si se llega con #descriptors (el enlace desde la pantalla 04), hay que
+     abrir la via de caracterizacion: la seccion enlazada vive dentro de ella y
+     con la via de sintesis activa el ancla sencillamente no existe en el DOM. */
+  const { hash } = useLocation()
+  const [lane, setLane] = useState(hash === '#descriptors' ? 'characterisation' : 'synthesis')
 
   return (
     <div className="flex flex-col gap-16">
@@ -192,12 +195,29 @@ export default function DataPreparation() {
           <Rich>{PREP_INTRO.lead}</Rich>
         </p>
 
-        <Card className="mt-6 max-w-3xl">
+        <div className="mt-6 max-w-3xl">
           <h3 className="text-base">{PREP_INTRO.etlTitle}</h3>
-          <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Rich>{PREP_INTRO.etl}</Rich>
-          </p>
-        </Card>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {PREP_INTRO.etlSteps.map((step) => {
+              const Icon = ETL_STEP_ICONS[step.key]
+              return (
+                <div
+                  key={step.key}
+                  className="rounded-[var(--radius-card)] p-3"
+                  style={{ border: '1px solid var(--surface-border)', background: 'var(--surface-elevated)' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon size={16} aria-hidden style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+                    <strong style={{ color: 'var(--text-primary)' }}>{step.label}</strong>
+                  </div>
+                  <p className="mt-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {step.body}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
 
         <ul className="mt-6 flex max-w-3xl list-none flex-col gap-3 p-0">
           {PREP_INTRO.halves.map((h) => (
@@ -249,9 +269,7 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow="The variables, before anything is removed">What each column holds</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              Forty-six columns in five blocks, plus the timestamps the database keeps on its own. Knowing what is there matters, because most of the
-              decisions further down this page are about <strong>taking things out</strong> — and that
-              only reads as a decision if you know what was in.
+              Forty-six columns in five blocks, plus the timestamps the database keeps on its own.
             </p>
             <div className="flex flex-col gap-4">
               {SYNTH_GROUPS.map((g) => {
@@ -279,8 +297,7 @@ export default function DataPreparation() {
             <SectionTitle eyebrow="Notebook 01">From spreadsheet to governed table</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               Five years of handwritten synthesis conditions lived in one multi-tab Excel file with
-              arbitrary headers. Turning it into the table above takes five transformations, and every one
-              of them is a decision rather than a formatting step.
+              arbitrary headers.
             </p>
 
             <div className="flex flex-col gap-4">
@@ -344,11 +361,7 @@ export default function DataPreparation() {
               <Card accent>
                 <h3 className="text-base">5 · The load is an UPSERT, never a replace</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  This is a governance decision, not a convenience. The same table is written by two
-                  independent lanes: this notebook, and the automated ingestion workflow. A
-                  delete-and-reinsert would silently destroy every row the workflow had written since the
-                  last run. Conflicting on the sample code and updating in place means the two lanes can
-                  coexist without either being able to erase the other.
+                  The synthesis table is written by both this ETL notebook and the live ingestion pipeline. Using an UPSERT (on conflict: update) keyed on sample_code guarantees that batch updates never overwrite or erase newly ingested records.
                 </p>
               </Card>
             </div>
@@ -358,7 +371,10 @@ export default function DataPreparation() {
             <SectionTitle eyebrow="From a chemical symbol to physics">Why the element is replaced by its properties</SectionTitle>
             <div className="grid gap-4 lg:grid-cols-2">
               <Card>
-                <h3 className="text-base">The problem with a label</h3>
+                <h3 className="flex items-center gap-2 text-base">
+                  <Atom size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
+                  Metal featurization
+                </h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{ELEMENT_INTRO.problem}</Rich>
                 </p>
@@ -367,7 +383,10 @@ export default function DataPreparation() {
                 </p>
               </Card>
               <Card accent>
-                <h3 className="text-base">What it buys</h3>
+                <h3 className="flex items-center gap-2 text-base">
+                  <Link2 size={17} aria-hidden style={{ color: 'var(--accent-tertiary)' }} />
+                  Linker featurization
+                </h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{ELEMENT_INTRO.payoff}</Rich>
                 </p>
@@ -399,12 +418,9 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="What the expert review found">Seven defects, zero statistical alarms</SectionTitle>
+            <SectionTitle eyebrow="What the expert review found">Examples of silent data bugs</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              Version 2 of the analysis was accepted with a macro F1 of 0.62. Reading its tables{' '}
-              <em>chemically</em> — asking whether the numbers were physically possible rather than
-              whether they were statistically odd — found seven problems. None of them had triggered any
-              alarm.
+              A model can run smoothly on corrupted data without throwing errors. These examples show why revisions are neccesary.
             </p>
             <ol className="flex list-none flex-col gap-4 p-0">
               {ETL_DEFECTS.map((d) => (
@@ -494,7 +510,7 @@ export default function DataPreparation() {
       {lane === 'characterisation' && (
         <>
           <section>
-            <SectionTitle eyebrow="Why one technique out of nine">PXRD is the gate everything else waits behind</SectionTitle>
+            <SectionTitle eyebrow="Analytical diagnostic">PXRD diffractograms as core target</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{WHY_PXRD.lead}</Rich>
             </p>
@@ -544,71 +560,71 @@ export default function DataPreparation() {
           </section>
 
           <section>
-            <SectionTitle eyebrow="Notebook 02">One contract, nine formats</SectionTitle>
-            <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Every parser — Python and JavaScript alike — returns the same dictionary shape, and{' '}
-              <code>data_json</code> always holds <code>header_metadata</code> and <code>raw_data</code>.
-              Stored as <Term k="JSONB" /> with a GIN index, so an agent can query any technique uniformly
-              and adding a tenth format needs no schema migration.
-            </p>
-            <ScrollTable
-              head={['Format', 'Instrument', 'What makes it awkward']}
-              rows={FORMATS.map(([a, b, c]) => [<code key={a}><Rich>{a}</Rich></code>, b, c])}
-            />
-          </section>
-
-          <section>
             <SectionTitle eyebrow="Notebook 05 · the centrepiece">From raw signal to 29 numbers</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              These are real diffractograms from the laboratory, decomposed by the same code that
-              populated the descriptor table. Each one is the <strong>median case</strong> of its class by
-              crystallinity index — not the most flattering example. The amorphous one looks poor because
-              a typical amorphous sample <em>is</em> poor, and picking the prettiest scan would turn the
-              figure into advertising instead of evidence.
+              A machine learning model cannot ingest thousands of raw (2theta, Intensity) points as tabular features. Here, each <strong>diffraction pattern is decomposed into its physical components </strong>—instrument background, diffuse amorphous halo, and Bragg peaks—extracting 29 quantitative descriptors that capture crystal order, peak geometry, and signal quality.
             </p>
             <PxrdChart />
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <Card accent>
                 <h3 className="text-base">What the three layers mean</h3>
-                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  The dashed line is the <strong>instrument alone</strong> — air scatter, the holder,
-                  detector drift. What sits above it splits into the broad amorphous halo and the sharp
-                  Bragg reflections, and <strong>both are signal</strong>.
-                </p>
-                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Where that line comes from matters more than it looks. Fitting a smooth curve to the
-                  pattern — an <Term k="arPLS" /> baseline — works while the halo is narrower than the
-                  scan. In a genuinely amorphous sample it is not: the halo spans the whole measured
-                  range, so the fitted curve simply climbs onto it and carries it away. Measured on the
-                  amorphous example below, that leaves <strong>0.4% of the area as halo</strong> when the
-                  sample is almost entirely halo.
-                </p>
-                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  So the background is not fitted, it is <strong>measured</strong>: a scan of the empty
-                  holder on the same diffractometer, rescaled to the sample and subtracted. What the
-                  fitted curve removed <em>minus</em> what the instrument contributes on its own is what
-                  the specimen scattered diffusely. On the same example the halo comes back at{' '}
-                  <strong>18% of the total area</strong>, and 94% of what the sample itself scattered.
-                </p>
+                <ul className="mt-3 flex list-none flex-col gap-3 p-0 text-sm">
+                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Dashed baseline — instrument noise.</strong>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      Measured directly from an empty sample holder on the same diffractometer (air
+                      scatter, detector drift), not fitted. Fitting a smooth curve instead — an{' '}
+                      <Term k="arPLS" /> baseline — works only while the halo is narrower than the scan;
+                      in a genuinely amorphous sample the fitted curve climbs onto the halo and carries
+                      it away, leaving <strong>0.4% of the area as halo</strong> on the amorphous example
+                      below when the sample is almost entirely halo.
+                    </span>
+                  </li>
+                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Diffuse halo — amorphous fraction.</strong>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      The broad hump from short-range disorder. It is true chemical signal, not
+                      background — measured correctly (baseline subtracted, not fitted), it comes back at{' '}
+                      <strong>18% of the total area</strong> on that same example, 94% of what the sample
+                      itself scattered. It is what separates a failed synthesis from a disordered solid.
+                    </span>
+                  </li>
+                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Sharp Bragg peaks — crystalline order.</strong>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      Constructive interference from periodic (hkl) crystal planes. Their position,
+                      intensity and width (FWHM) are what identify the crystalline phase.
+                    </span>
+                  </li>
+                </ul>
               </Card>
               <Card accent>
-                <h3 className="text-base">Why the peaks are counted at 3σ</h3>
-                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  X-ray detection is photon counting, so noise follows Poisson statistics and its scale is
-                  the square root of the counts. Three sigma is the level for <em>one</em> comparison,
-                  though — scanning thousands of points for a maximum needs a stricter level, or noise
-                  gets counted as reflections. The threshold drawn here is the honest floor, not the final
-                  criterion.
-                </p>
+                <h3 className="text-base">Peak detection: the 3σ threshold</h3>
+                <ul className="mt-3 flex list-none flex-col gap-3 p-0 text-sm">
+                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Poisson noise scale.</strong>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      X-ray detection is photon counting, so noise follows Poisson statistics: its scale
+                      is the square root of the counts.
+                    </span>
+                  </li>
+                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>The 3σ floor.</strong>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      A local maximum only counts as a genuine reflection once its height clears three
+                      times the noise level above the local background.
+                    </span>
+                  </li>
+                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Why not looser.</strong>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      Three sigma is the level for <em>one</em> comparison — scanning thousands of points
+                      for a maximum needs a stricter level, or noise gets misread as reflections. The
+                      threshold drawn here is the honest floor, not the final criterion.
+                    </span>
+                  </li>
+                </ul>
               </Card>
-            </div>
-            <div className="mt-6">
-              <NotebookFigure
-                src="nb05-17.png"
-                alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
-                caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
-                source="notebook 05"
-              />
             </div>
           </section>
 
@@ -621,10 +637,6 @@ export default function DataPreparation() {
               signal-processing pipeline was tuned, curve by curve, before it was trusted on all of them.
             </p>
             <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-              They are shown as recordings rather than served live: both write to the production database,
-              and the human labels are the only data in the whole platform that no pipeline could ever
-              reproduce. Labels are keyed by <code>file_hash</code> rather than by measurement id, so they
-              survive a full regeneration of the measurement tables.
             </p>
             <div className="grid gap-6 lg:grid-cols-2">
               <ScreenRecording
@@ -642,14 +654,25 @@ export default function DataPreparation() {
             </div>
           </section>
 
-          <section>
-            <SectionTitle eyebrow="The translation, in one table">What a diffractogram becomes</SectionTitle>
+          {/* Ancla: la pantalla 04 enlaza aqui para recordar de donde salen los
+              29 numeros. Ver scrollToHash en Layout.jsx. */}
+          <section id="descriptors">
+            <SectionTitle eyebrow="PXRD Feature Vector">What a diffractogram becomes</SectionTitle>
             <p className="mb-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{DESCRIPTOR_RECAP.lead}</Rich>
             </p>
             <p className="mb-6 text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               {DESCRIPTOR_RECAP.counts}
             </p>
+
+            <div className="mb-6">
+              <NotebookFigure
+                src="nb05-17.png"
+                alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
+                caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
+                source="notebook 05"
+              />
+            </div>
 
             <div className="flex flex-col gap-6">
               {DESCRIPTOR_GROUPS.map((g) => {
@@ -698,9 +721,13 @@ export default function DataPreparation() {
                       </span>
                     </div>
                     <h4 className="mt-3 text-base leading-tight">{r.title}</h4>
-                    <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <Rich>{r.body}</Rich>
-                    </p>
+                    <ul className="mt-2 flex list-none flex-col gap-1.5 p-0 text-sm">
+                      {r.points.map((p, i) => (
+                        <li key={i} style={{ borderLeft: `2px solid ${tone}`, paddingLeft: '0.6rem', color: 'var(--text-secondary)' }}>
+                          <Rich>{p}</Rich>
+                        </li>
+                      ))}
+                    </ul>
                   </Card>
                 )
               })}
@@ -714,22 +741,18 @@ export default function DataPreparation() {
                 color: 'var(--text-secondary)',
               }}
             >
-              <strong style={{ color: 'var(--text-primary)' }}>One number in it is a trap. </strong>
+              <strong style={{ color: 'var(--text-primary)' }}>A physical note on descriptor validity. </strong>
               <Rich>{DESCRIPTOR_RECAP.caveat}</Rich>
             </p>
           </section>
         </>
-      )}
+      )
+      }
 
       {/* --- comun a las dos vias --- */}
       <section>
         <SectionTitle eyebrow="The code itself">Read the notebooks</SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Every notebook is published as a static, read-only page. Sample identifiers and unpublished
-          ligand names are replaced by pseudonyms and local paths removed; metal centres are shown
-          unchanged, since they carry no trade secret. None of the code was re-executed to produce these
-          pages — several of these notebooks write to the production database, and re-running them to make
-          a clean copy could duplicate or cascade-delete rows.
         </p>
         <NotebookList only="03" />
         <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -778,6 +801,6 @@ export default function DataPreparation() {
           </p>
         </Card>
       </section>
-    </div>
+    </div >
   )
 }

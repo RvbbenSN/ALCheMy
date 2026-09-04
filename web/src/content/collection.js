@@ -12,7 +12,7 @@
 
 export const COLLECTION_HERO = {
   lead:
-    'Three ways in, one row out — and a gate at every step that can reject a file before it costs anything to process.',
+    'How do you process thousands of raw instrument files without ingesting chaos? Explore the automated pipeline that fingerprints, validates, and routes measurements in real time.',
 }
 
 export const COLLECTION_PROBLEM = {
@@ -21,9 +21,9 @@ export const COLLECTION_PROBLEM = {
      nivel de detalle; ahora el problema y su solucion van en el mismo hilo, y
      el hilo arranca donde termina la pantalla anterior. */
   body1:
-    'The previous screen ended with the problem stated: thousands of instrument files, nine formats, none of them knowing which synthesis it belongs to. Solving it by hand means someone opening each file, reading the sample code off the filename, and retyping it into a spreadsheet — for **6,073 files**.',
+    'Thousands of instrument files across nine formats, none linked to its synthesis. Processing **6,073 raw files** by hand would mean endless manual retyping and inevitable human error.',
   body2:
-    'So it is automated. **A file arrives by one of three routes** — a watched folder, a web form, or a webhook. Its metadata is normalised and the sender checked against a whitelist. Its fingerprint is taken and compared against everything already stored. It is then routed by technique to one of three extraction strategies: a deterministic parser for the seven formats that are well understood, an AI agent for the reports that exist only as PDFs, and a vision agent that describes microscopy images without ever inventing a measurement. Whatever happens, the outcome is written to the audit log.',
+    'Instead, the workflow takes over. Incoming files are authenticated, fingerprinted against duplicates, and routed by technique: deterministic parsers handle tabular data, while specialized AI agents extract unstructured PDF reports and microscopy images, **logging every step to an audit trail**.',
   builtWith:
     'Built in **n8n**, a workflow automation tool: every box on the canvas below is a real node in a running instance.',
   guaranteesTitle: 'What the workflow guarantees',
@@ -52,10 +52,10 @@ export const COLLECTION_PROBLEM = {
 }
 
 export const COLLECTION_CANVAS_INTRO =
-  'The flow as it exists in n8n — **79 nodes**, **114 connections**, nine framed areas — read straight from the exported workflow, not redrawn by hand. Pick a stop and the map flies to it, with the card below the map saying what that area adds to the row and why. The last stop pulls back to the whole flow.'
+  'The flow as it is — **79 nodes**, **114 connections**, nine areas. Pick a stop and the map flies to it, with the card below the map saying what that area adds to the row and why.'
 
 export const COLLECTION_ROW_INTRO =
-  'Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint or silently stores a null — and it is worth knowing which section was supposed to set it.'
+  'Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint.'
 
 export const ROW_SHAPE = [
   ['sample_code', 'Foreign key into synthesis_experiments'],
@@ -70,12 +70,12 @@ export const ROW_SHAPE = [
 /* El arbol de una fila ya ingestada. La tabla de mas arriba dice que campos
    tiene la fila; esto ensena lo que esa tabla no puede: cuanto trae dentro. */
 export const COLLECTION_TREE = {
-  title: 'What one ingested file actually looks like',
+  title: 'An example of a ingested file',
   lead:
-    'The table above lists the fields a row must carry. This is one of those rows, opened up — the same shape, filled in by a real `.xrdml` going through the workflow.',
+    'A real `.xrdml` after going through the workflow.',
   point:
-    'The part worth opening is `header_metadata`. **Forty-four fields nobody typed**: anode material, both K-alpha wavelengths, every slit angle, the detector pitch, the start and end timestamps. All of it was sitting inside the instrument file, and all of it is now queryable next to the curve — which is the difference between a file on a disk and a measurement in a database.',
+    'The experimental context. It stores the instrumental parameters automatically parsed from the file header such as radiation wavelength, optical setup, and acquisition timestamps. It guarantees reproducibility without manual logging.',
   contract:
-    'Note that `raw_data` holds only `x`, `y` and their labels. That is the **parser contract**: every technique, from a diffractogram to a thermogram to a micrograph, produces the same two sub-objects, so a query can span all nine without knowing anything about instruments.',
+    'The curve. It holds the measurement signal as normalized (X, Y) coordinate arrays along with their physical units (e.g. 2theta vs. Intensity). Every technique shares this exact structure, making all curves instantly plottable.',
 }
 

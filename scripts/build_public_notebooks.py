@@ -32,6 +32,9 @@ Que sanea
   invierte por fuerza bruta en segundos, y entonces el seudonimo no protege nada.
 - **Ligandos no publicados** -> `LIG-A`, `LIG-B`... El metal se deja visible, que
   no es secreto industrial.
+- **Nombres de terceros** (companeros de laboratorio, analistas externos citados
+  en un PDF de ICP/EA) -> `Lab Technician A`, `Lab Technician B`... El autor del
+  proyecto (Ruben Serrano) NO se sanea: su nombre ya es publico en toda la web.
 - **Rutas absolutas** del disco local -> ruta relativa al repositorio.
 - **Correos electronicos** -> `nombre@dominio-oculto`.
 
@@ -76,6 +79,14 @@ RE_SAMPLE = re.compile(r"\b(?:RSMix\d+|RSMIX\d+|RS\d+|LP\d+|IEF-\d+)\b")
 LIGANDS = ["H6ttbmp", "Et6ttbmp", "H8ptp", "Et8ptp"]
 RE_LIGAND = re.compile("|".join(re.escape(l) for l in sorted(LIGANDS, key=len, reverse=True)), re.I)
 
+# Nombres de terceros (companeros de laboratorio, analistas externos) que
+# aparecen citados en outputs o en texto narrativo -- normalmente dentro de un
+# PDF de ICP/EA que un agente de IA leyo mal. NO incluye a Ruben Serrano: es el
+# autor del proyecto, su nombre ya es publico en toda la web (CV, About, commits).
+# Anadir aqui cualquier nombre completo de tercero que aparezca en un cuaderno.
+PERSON_NAMES = ["Laura Garcia Firgaira", "Laura García Firgaira"]
+RE_PERSON = re.compile("|".join(re.escape(n) for n in sorted(PERSON_NAMES, key=len, reverse=True)), re.I)
+
 RE_ABSPATH = re.compile(r"[A-Za-z]:\\\\?(?:[^\\\s\"']+\\\\?)*|/(?:home|Users)/[^\s\"':]+")
 RE_EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.]+\b")
 
@@ -114,10 +125,10 @@ img { max-width: 100%; height: auto; }
 """
 
 BANNER = """<div class="alchemy-banner">
-<strong>Published copy.</strong> Sample identifiers and unpublished ligand names in this notebook have
-been replaced by pseudonyms, and local file paths removed. Metal centres are shown unchanged &mdash;
-they carry no trade secret. This page is a static, read-only render: the notebook file itself is not
-served, and none of the code here was re-executed to produce it.
+<strong>Published copy.</strong> Sample identifiers, unpublished ligand names and third-party names
+in this notebook have been replaced by pseudonyms, and local file paths removed. Metal centres are
+shown unchanged &mdash; they carry no trade secret. This page is a static, read-only render: the
+notebook file itself is not served, and none of the code here was re-executed to produce it.
 </div>
 """
 
@@ -128,13 +139,16 @@ class Sanitizer:
     def __init__(self):
         self.samples: dict[str, str] = {}
         self.ligands: dict[str, str] = {}
-        self.counts = {"sample": 0, "ligand": 0, "path": 0, "email": 0}
+        self.persons: dict[str, str] = {}
+        self.counts = {"sample": 0, "ligand": 0, "path": 0, "email": 0, "person": 0}
 
     def collect(self, text: str):
         for m in RE_SAMPLE.findall(text):
             self.samples.setdefault(m, "")
         for m in RE_LIGAND.findall(text):
             self.ligands.setdefault(m.lower(), "")
+        for m in RE_PERSON.findall(text):
+            self.persons.setdefault(m.lower(), "")
 
     def freeze(self):
         """Asigna los seudonimos una vez visto todo el corpus, en orden estable."""
@@ -142,6 +156,8 @@ class Sanitizer:
             self.samples[code] = "SMP-%04d" % i
         for i, lig in enumerate(sorted(self.ligands), start=1):
             self.ligands[lig] = "LIG-%s" % chr(ord("A") + i - 1)
+        for i, person in enumerate(sorted(self.persons), start=1):
+            self.persons[person] = "Lab Technician %s" % chr(ord("A") + i - 1)
 
     def apply(self, text: str) -> str:
         def sub_sample(m):
@@ -151,6 +167,10 @@ class Sanitizer:
         def sub_ligand(m):
             self.counts["ligand"] += 1
             return self.ligands.get(m.group(0).lower(), "LIG-?")
+
+        def sub_person(m):
+            self.counts["person"] += 1
+            return self.persons.get(m.group(0).lower(), "Lab Technician ?")
 
         def sub_path(m):
             self.counts["path"] += 1
@@ -162,6 +182,7 @@ class Sanitizer:
 
         text = RE_SAMPLE.sub(sub_sample, text)
         text = RE_LIGAND.sub(sub_ligand, text)
+        text = RE_PERSON.sub(sub_person, text)
         text = RE_ABSPATH.sub(sub_path, text)
         text = RE_EMAIL.sub(sub_email, text)
         return text
@@ -230,6 +251,7 @@ def main() -> int:
     print("Corpus: %d cuadernos" % len(notebooks))
     print("  codigos de muestra distintos : %d" % len(san.samples))
     print("  ligandos distintos           : %d" % len(san.ligands))
+    print("  personas distintas           : %d" % len(san.persons))
     print()
     print("%-62s %7s %7s" % ("cuaderno", "celdas", "figuras"))
     print("-" * 80)
@@ -279,8 +301,9 @@ def main() -> int:
     for out, size in written:
         print("escrito %-58s %8.1f KB" % (out.relative_to(ROOT), size / 1024))
     print()
-    print("Sustituciones: %d codigos de muestra, %d ligandos, %d rutas, %d correos."
-          % (san.counts["sample"], san.counts["ligand"], san.counts["path"], san.counts["email"]))
+    print("Sustituciones: %d codigos de muestra, %d ligandos, %d personas, %d rutas, %d correos."
+          % (san.counts["sample"], san.counts["ligand"], san.counts["person"],
+             san.counts["path"], san.counts["email"]))
     if not args.strip_images and total_img:
         print("AVISO: %d figuras publicadas sin sanear. Revisar sus titulos a mano." % total_img)
     return 0
