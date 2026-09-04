@@ -3,51 +3,51 @@
    y volver a ejecutar el script. Lo que no este traducido sale en ingles. */
 
 export const MODEL_HERO = {
-  "lead": "Play with the synthesis conditions and watch the prediction move — then see what keeps this from being a loose pickle file on somebody’s laptop."
+  "lead": "Juega con las condiciones de síntesis y mira cómo se mueve la predicción; luego mira qué impide que esto sea un fichero pickle suelto en el portátil de alguien."
 }
 
 export const MODEL_LOOP = {
-  "title": "A compass, not an oracle",
-  "metaphor": "Think of the synthesis space as a map in the dark. The experiments already run light up a few patches of it. A predictive model is not a machine that tells you the answer — it is **a compass**: it points at the direction where walking would light up the most new ground.",
-  "method": "And the direction it points is not \"where crystals are most likely\". An experiment run where the model is already confident confirms what it knew. The useful place is **where it hesitates**, because either outcome there corrects it. That is what the map below measures: the entropy of the predicted distribution, cell by cell.",
+  "title": "Una brújula, no un oráculo",
+  "metaphor": "Piensa en el espacio de síntesis como un mapa a oscuras. Los experimentos ya hechos iluminan unos pocos trozos. Un modelo predictivo no es una máquina que da la respuesta: es **una brújula**, y apunta hacia donde caminar iluminaría más terreno nuevo.",
+  "method": "Y la dirección que señala no es \"donde hay más probabilidad de cristales\". Un experimento hecho donde el modelo ya está seguro confirma lo que ya sabía. El sitio útil es **donde duda**, porque allí cualquiera de los dos resultados lo corrige. Eso es lo que mide el mapa de abajo: la entropía de la distribución predicha, casilla a casilla.",
   "readingPoints": [
-    "**Most of the plane has never been visited.** Even for Ca, the metal with the most history behind it, the syntheses pile up in a handful of cells.",
-    "**The model hesitates almost everywhere**, including where the laboratory has looked.",
-    "**Because conditions were swept while the chemistry changed alongside them**, so the record cannot separate the two."
+    "**La mayor parte del plano no se ha visitado nunca.** Incluso para el Ca, el metal con más historia detrás, las síntesis se amontonan en un puñado de casillas.",
+    "**El modelo duda casi en todas partes**, incluso donde el laboratorio sí ha mirado.",
+    "**Porque las condiciones se barrieron mientras la química cambiaba a la vez**, así que el registro no puede separar las dos cosas."
   ],
-  "consequence": "The map and the model diagnostics point at the same experiment from opposite ends: the next plate worth running is **one that varies conditions finely while holding the metal and linker fixed**."
+  "consequence": "El mapa y el diagnóstico del modelo señalan el mismo experimento desde extremos opuestos: la siguiente placa que merece la pena es **una que varíe las condiciones con finura manteniendo fijos el metal y el conector**."
 }
 
 export const MODEL_REGISTRY = {
-  "title": "A model is not a file",
-  "lead": "The usual way to keep a trained model is a `.pkl` in a folder, and it fails in a specific way: six months later the file is still there and **nothing around it is**. Which rows trained it, which columns, which version of the code, what it actually scored.",
-  "ruling": "So the model lives in the database as **five related tables**, and the binary is the least important of them. The other four hold the recipe, and with a complete recipe the binary can be rebuilt.",
+  "title": "Un modelo no es un fichero",
+  "lead": "La forma habitual de guardar un modelo entrenado es un `.pkl` en una carpeta, y falla de una manera concreta: seis meses después el fichero sigue ahí y **no sigue nada de lo que había alrededor**. Qué filas lo entrenaron, qué columnas, qué versión del código, qué puntuó de verdad.",
+  "ruling": "Así que el modelo vive en la base de datos como **cinco tablas relacionadas**, y el binario es la menos importante. Las otras cuatro guardan la receta, y con una receta completa el binario se puede reconstruir.",
   "tables": [
     {
       "name": "ml_datasets",
       "head": "What it was trained on",
-      "body": "The literal SQL that selected the rows, plus its SHA-256. Two models sharing a query but differing in row count were **not** trained on the same thing, and the hash makes that difference detectable."
+      "body": "El SQL literal que seleccionó las filas, más su SHA-256. Dos modelos que comparten consulta pero difieren en número de filas **no** se entrenaron sobre lo mismo, y el hash hace detectable esa diferencia."
     },
     {
       "name": "ml_models",
       "head": "The recipe",
-      "body": "Algorithm, hyperparameters, random seed, library versions, and the exact git commit. Also the status — active, superseded, archived or **invalid** — and a `CHECK` that refuses to mark a model irreproducible without writing why."
+      "body": "Algoritmo, hiperparámetros, semilla aleatoria, versiones de las librerías y el commit exacto de git. También el estado (activo, superado, archivado o **inválido**) y un `CHECK` que se niega a marcar un modelo como irreproducible sin escribir por qué."
     },
     {
       "name": "ml_model_features",
       "head": "Which columns went in, and which did not",
-      "body": "Every input column with its position in the contract, and every **excluded** one with the reason it was excluded. `reactor_volume_ml` is recorded as zero-variance, `fill_fraction` as perfectly collinear with it."
+      "body": "Cada columna de entrada con su posición en el contrato, y cada una **excluida** con el motivo de la exclusión. `reactor_volume_ml` queda registrada como varianza cero, y `fill_fraction` como perfectamente colineal con ella."
     },
     {
       "name": "ml_model_metrics",
       "head": "What it scored",
-      "body": "Metrics in long format — one row per metric, per class, per split — so adding a new metric never means altering the schema."
+      "body": "Métricas en formato largo, una fila por métrica, por clase y por partición, así que añadir una métrica nueva nunca obliga a alterar el esquema."
     },
     {
       "name": "ml_model_artifacts",
       "head": "The binary, and its fingerprint",
-      "body": "The serialised pipeline with a SHA-256 checked on every load. It sits in its own table so a light backup can skip it: it is the only part that a complete recipe can regenerate."
+      "body": "El pipeline serializado con un SHA-256 que se comprueba en cada carga. Vive en su propia tabla para que una copia de seguridad ligera pueda saltárselo: es la única parte que una receta completa puede regenerar."
     }
   ],
-  "slot": "One more thing decides which model the simulator is actually running: a **deployment slot**. The simulator does not name a model; it asks the database which one occupies the `primary` slot. When a model name was written into this file by hand instead, retraining to correct a unit error of a factor of a thousand left **the site serving the superseded model with nothing raising an error**: an obsolete model returns predictions as readily as a current one."
+  "slot": "Una cosa más decide qué modelo está ejecutando el simulador de verdad: una **ranura de despliegue**. El simulador no nombra un modelo; le pregunta a la base de datos cuál ocupa la ranura `primary`. Cuando en su lugar se escribió a mano el nombre de un modelo en este fichero, reentrenar para corregir un error de unidades de un factor de mil dejó **la web sirviendo el modelo superado sin que nada diera error**: un modelo obsoleto devuelve predicciones con la misma facilidad que uno vigente."
 }

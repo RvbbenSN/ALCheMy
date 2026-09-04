@@ -153,7 +153,6 @@ export const UI = {
     },
     "dataUnderstanding": "Data Understanding",
     "theDecisionHighThroughput": "The decision: high-throughput syntheses only",
-    "edaBivariateShapestitle": "{EDA_BIVARIATE.shapesTitle}",
     "ebFirstTheName": "First, the name",
     "ebBeforeLoadingAnything": "Before loading anything",
     "ebWhichRowsTheModel": "Which rows the model sees",
@@ -212,7 +211,8 @@ export const UI = {
     },
     "theTabsFollowTerm": {
       "eyebrow": "How to read this site",
-      "title": "The tabs follow <Term k=\"CRISP-DM\" /> in order"
+      "titleBefore": "The tabs follow",
+      "titleAfter": "in order"
     },
     "aboutTheAuthor": {
       "eyebrow": "Who is behind it",

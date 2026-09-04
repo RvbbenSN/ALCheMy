@@ -114,7 +114,12 @@ export default function Overview() {
 
       {/* --- Mapa CRISP-DM --- */}
       <section>
-        <SectionTitle eyebrow={UI.overview.theTabsFollowTerm.eyebrow}>{UI.overview.theTabsFollowTerm.title}</SectionTitle>
+        {/* El titulo lleva un <Term> dentro, asi que va partido en dos claves:
+            una cadena con JSX incrustado se pintaria literal. */}
+        <SectionTitle eyebrow={UI.overview.theTabsFollowTerm.eyebrow}>
+          {UI.overview.theTabsFollowTerm.titleBefore} <Term k="CRISP-DM" />{' '}
+          {UI.overview.theTabsFollowTerm.titleAfter}
+        </SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           Each tab is one phase of the data lifecycle, in the order
           the decisions were actually made — how the data arrived, how it was cleaned, what it turned out

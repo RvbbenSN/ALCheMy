@@ -364,7 +364,7 @@ export default function Eda() {
 
           {/* Recordatorio de que aspecto tiene el vector de cada clase: se
               explico en la pantalla 03 y nadie lee en orden. */}
-          <h4 className="mt-5 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>{UI.eda.edaBivariateShapestitle}</h4>
+          <h4 className="mt-5 text-sm uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>{EDA_BIVARIATE.shapesTitle}</h4>
           <ul className="mt-3 flex list-none flex-col gap-2.5 p-0 text-sm">
             {EDA_BIVARIATE.shapes.map((s) => {
               const tone = `var(--status-${s.tone})`

@@ -48,21 +48,26 @@ function esProsa(s) {
   return palabras.length >= 3
 }
 
+/* En ui.js el filtro de tres palabras no vale: ahi TODO es texto que se ve en
+   pantalla, y los titulos cortos ("Stack", "How to read it") son justo los que
+   mas cantan sin traducir. */
+const SIEMPRE_TRADUCIBLE = new Set(['ui.js'])
+
 const textos = []
 
-function recorrer(valor, ruta, claveActual) {
+function recorrer(valor, ruta, claveActual, todo = false) {
   if (typeof valor === 'string') {
-    if (CLAVES_TECNICAS.has(claveActual)) return
-    if (!esProsa(valor)) return
+    if (!todo && CLAVES_TECNICAS.has(claveActual)) return
+    if (!todo && !esProsa(valor)) return
     textos.push({ path: ruta, en: valor })
     return
   }
   if (Array.isArray(valor)) {
-    valor.forEach((v, i) => recorrer(v, `${ruta}[${i}]`, claveActual))
+    valor.forEach((v, i) => recorrer(v, `${ruta}[${i}]`, claveActual, todo))
     return
   }
   if (valor && typeof valor === 'object') {
-    for (const [k, v] of Object.entries(valor)) recorrer(v, `${ruta}.${k}`, k)
+    for (const [k, v] of Object.entries(valor)) recorrer(v, `${ruta}.${k}`, k, todo)
   }
 }
 
@@ -71,7 +76,7 @@ const ficheros = (await readdir(DIR)).filter((f) => f.endsWith('.js')).sort()
 for (const f of ficheros) {
   const mod = await import(pathToFileURL(path.join(DIR, f)).href)
   for (const [nombre, valor] of Object.entries(mod)) {
-    recorrer(valor, `${f}:${nombre}`, nombre)
+    recorrer(valor, `${f}:${nombre}`, nombre, SIEMPRE_TRADUCIBLE.has(f))
   }
 }
 

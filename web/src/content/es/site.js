@@ -223,28 +223,28 @@ export const SCREENS = [
     "id": "03",
     "slug": "data-preparation",
     "short": "Data Preparation",
-    "title": "ETL & PXRD Signal Processing",
+    "title": "ETL y procesado de la señal PXRD",
     "crisp": "Data preparation"
   },
   {
     "id": "04",
     "slug": "data-understanding",
     "short": "Data Understanding",
-    "title": "Exploratory data analysis",
+    "title": "Análisis exploratorio de datos",
     "crisp": "Data Understanding"
   },
   {
     "id": "05",
     "slug": "modeling",
     "short": "Modeling",
-    "title": "Training & Evaluation",
+    "title": "Entrenamiento y evaluación",
     "crisp": "Modeling · Evaluation"
   },
   {
     "id": "06",
     "slug": "the-model",
     "short": "The Model",
-    "title": "Simulator, Registry & Active Learning",
+    "title": "Simulador, registro y aprendizaje activo",
     "crisp": "Deployment · Feedback"
   },
   {
@@ -350,12 +350,12 @@ export const WORKFLOW_SECTIONS = [
   },
   {
     "n": 8,
-    "title": "DB write & response",
-    "adds": "The row itself, plus the reply to the caller"
+    "title": "Escritura en la base y respuesta",
+    "adds": "La propia fila, más la respuesta a quien llamó"
   },
   {
     "n": 9,
-    "title": "Governance — fallbacks, audit & errors",
-    "adds": "audit_log with typed verdict, cause and result"
+    "title": "Gobernanza — fallbacks, auditoría y errores",
+    "adds": "audit_log con veredicto, causa y resultado tipados"
   }
 ]

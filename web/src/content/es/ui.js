@@ -5,264 +5,264 @@
 export const UI = {
   "about": {
     "whereTheChemistryHappened": {
-      "eyebrow": "Experience",
-      "title": "Where the chemistry happened"
+      "eyebrow": "Experiencia",
+      "title": "Dónde ocurrió la química"
     },
     "training": {
-      "eyebrow": "Education",
-      "title": "Training"
+      "eyebrow": "Formación",
+      "title": "Formación"
     },
     "publications": {
-      "eyebrow": "Scientific production",
-      "title": "Publications"
+      "eyebrow": "Producción científica",
+      "title": "Publicaciones"
     },
     "competitiveRDProjects": {
-      "eyebrow": "Funded research",
-      "title": "Competitive R&D projects"
+      "eyebrow": "Investigación financiada",
+      "title": "Proyectos de I+D competitivos"
     },
     "whatTheToolboxHolds": {
-      "eyebrow": "Skills",
-      "title": "What the toolbox holds"
+      "eyebrow": "Competencias",
+      "title": "Qué hay en la caja de herramientas"
     },
     "writingForAWider": {
-      "eyebrow": "Outreach",
-      "title": "Writing for a wider audience"
+      "eyebrow": "Divulgación",
+      "title": "Divulgación para público general"
     },
     "contact": {
-      "eyebrow": "Get in touch",
-      "title": "Contact"
+      "eyebrow": "Hablemos",
+      "title": "Contacto"
     },
     "rubNSerranoNieto": "Rubén Serrano Nieto",
-    "saySomething": "Say something",
-    "theContractsBehindThem": "The contracts behind them",
-    "orTheDirectRoute": "Or the direct route"
+    "saySomething": "Escríbeme",
+    "theContractsBehindThem": "Los contratos que hay detrás",
+    "orTheDirectRoute": "O la vía directa"
   },
   "collection": {
     "whyThisExists": {
-      "eyebrow": "The problem, and the fix",
-      "title": "Why this exists"
+      "eyebrow": "El problema, y su solución",
+      "title": "Por qué existe esto"
     },
     "theWorkflowCanvas": {
-      "eyebrow": "Interactive",
-      "title": "The workflow canvas"
+      "eyebrow": "Interactivo",
+      "title": "El lienzo del workflow"
     },
     "whatAIngestedMeasurement": {
-      "eyebrow": "Start from the goal",
-      "title": "What a ingested measurement looks like"
+      "eyebrow": "Empezar por el objetivo",
+      "title": "Qué aspecto tiene una medida ingerida"
     },
     "thePostgresqlSchema": {
-      "eyebrow": "Where it lands",
-      "title": "The PostgreSQL schema"
+      "eyebrow": "Dónde aterriza",
+      "title": "El esquema de PostgreSQL"
     },
     "notebooksBehindThisScreen": {
-      "eyebrow": "The code itself",
-      "title": "Notebooks behind this screen"
+      "eyebrow": "El código en sí",
+      "title": "Los cuadernos detrás de esta pantalla"
     },
-    "theIngestionWorkflow": "The Ingestion Workflow",
-    "headerMetadata": "Header metadata",
-    "rawData": "Raw data",
-    "ebTheSameRowOpened": "The same row, opened up"
+    "theIngestionWorkflow": "El flujo de ingesta",
+    "headerMetadata": "Metadatos de cabecera",
+    "rawData": "Datos en crudo",
+    "ebTheSameRowOpened": "La misma fila, por dentro"
   },
   "prep": {
     "oneRowPerSynthesis": {
-      "eyebrow": "What the table looks like",
-      "title": "One row per synthesis"
+      "eyebrow": "Qué aspecto tiene la tabla",
+      "title": "Una fila por síntesis"
     },
     "whatEachColumnHolds": {
-      "eyebrow": "The variables, before anything is removed",
-      "title": "What each column holds"
+      "eyebrow": "Las variables, antes de quitar nada",
+      "title": "Qué guarda cada columna"
     },
     "fromSpreadsheetToGoverned": {
-      "eyebrow": "Notebook 01",
-      "title": "From spreadsheet to governed table"
+      "eyebrow": "Cuaderno 01",
+      "title": "De hoja de cálculo a tabla gobernada"
     },
     "whyTheElementIs": {
-      "eyebrow": "From a chemical symbol to physics",
-      "title": "Why the element is replaced by its properties"
+      "eyebrow": "Del símbolo químico a la física",
+      "title": "Por qué el elemento se sustituye por sus propiedades"
     },
     "examplesOfSilentData": {
-      "eyebrow": "What the expert review found",
-      "title": "Examples of silent data bugs"
+      "eyebrow": "Lo que encontró la revisión experta",
+      "title": "Ejemplos de errores de datos silenciosos"
     },
     "pxrdDiffractogramsAsCore": {
-      "eyebrow": "Analytical diagnostic",
-      "title": "PXRD diffractograms as core target"
+      "eyebrow": "Diagnóstico analítico",
+      "title": "El difractograma PXRD como objetivo central"
     },
     "fromRawSignalTo": {
-      "eyebrow": "Notebook 05 · the centrepiece",
-      "title": "From raw signal to 29 numbers"
+      "eyebrow": "Cuaderno 05 · la pieza central",
+      "title": "De la señal en crudo a 29 números"
     },
     "labelerExplorer": {
-      "eyebrow": "The tools that produced the ground truth",
-      "title": "Labeler & Explorer"
+      "eyebrow": "Las herramientas que produjeron la verdad de referencia",
+      "title": "Etiquetador y explorador"
     },
     "whatADiffractogramBecomes": {
-      "eyebrow": "PXRD Feature Vector",
-      "title": "What a diffractogram becomes"
+      "eyebrow": "Vector de características PXRD",
+      "title": "En qué se convierte un difractograma"
     },
     "readTheNotebooks": {
-      "eyebrow": "The code itself",
-      "title": "Read the notebooks"
+      "eyebrow": "El código en sí",
+      "title": "Leer los cuadernos"
     },
     "switchLane": {
-      "eyebrow": "The other half",
-      "title": "Switch lane"
+      "eyebrow": "La otra mitad",
+      "title": "Cambiar de vía"
     },
-    "etlPxrdSignalProcessing": "ETL & PXRD Signal Processing",
-    "paso1HeaderNormalisation": "1 · Header normalisation",
-    "paso2StoichiometricFeatureEngineering": "2 · Stoichiometric feature engineering",
-    "paso4AnMd5Business": "4 · An MD5 business natural key",
-    "paso5TheLoadIs": "5 · The load is an UPSERT, never a replace",
-    "whatTheThreeLayers": "What the three layers mean",
-    "peakDetectionThe3": "Peak detection: the 3σ threshold",
-    "howToReadIt": "How to read it",
-    "ebCuration": "Curation",
-    "ebADecisionThatCould": "A decision that could have been cheating",
-    "ebFillingTheGaps": "Filling the gaps",
-    "ebTakeaway": "Takeaway"
+    "etlPxrdSignalProcessing": "ETL y procesado de la señal PXRD",
+    "paso1HeaderNormalisation": "1 · Normalización de cabeceras",
+    "paso2StoichiometricFeatureEngineering": "2 · Ingeniería de características estequiométricas",
+    "paso4AnMd5Business": "4 · Una clave natural de negocio con MD5",
+    "paso5TheLoadIs": "5 · La carga es un UPSERT, nunca un reemplazo",
+    "whatTheThreeLayers": "Qué significan las tres capas",
+    "peakDetectionThe3": "Detección de picos: el umbral de 3σ",
+    "howToReadIt": "Cómo leerla",
+    "ebCuration": "Curación",
+    "ebADecisionThatCould": "Una decisión que podría haber sido trampa",
+    "ebFillingTheGaps": "Rellenar los huecos",
+    "ebTakeaway": "Para llevarse"
   },
   "database": {
     "whatIsInThere": {
-      "eyebrow": "At a glance",
-      "title": "What is in there"
+      "eyebrow": "De un vistazo",
+      "title": "Qué hay dentro"
     },
     "sevenFamiliesAndWhat": {
-      "eyebrow": "The map",
-      "title": "Seven families, and what feeds what"
+      "eyebrow": "El mapa",
+      "title": "Siete familias, y qué alimenta a qué"
     },
-    "oneSchemaDocumented": "One Schema, Documented",
-    "ebTheCaseForIt": "The case for it",
-    "ebTheBoundary": "The boundary",
-    "ebTheSurface": "The surface"
+    "oneSchemaDocumented": "Un esquema, documentado",
+    "ebTheCaseForIt": "El argumento a favor",
+    "ebTheBoundary": "El límite",
+    "ebTheSurface": "La superficie"
   },
   "eda": {
     "theNotebookBehindThis": {
-      "eyebrow": "The code itself",
-      "title": "The notebook behind this screen"
+      "eyebrow": "El código en sí",
+      "title": "El cuaderno detrás de esta pantalla"
     },
     "whatThisStageSettled": {
-      "eyebrow": "Takeaway",
-      "title": "What this stage settled"
+      "eyebrow": "Para llevarse",
+      "title": "Qué dejó zanjado esta etapa"
     },
-    "dataUnderstanding": "Data Understanding",
-    "theDecisionHighThroughput": "The decision: high-throughput syntheses only",
-    "edaBivariateShapestitle": "{EDA_BIVARIATE.shapesTitle}",
-    "ebFirstTheName": "First, the name",
-    "ebBeforeLoadingAnything": "Before loading anything",
-    "ebWhichRowsTheModel": "Which rows the model sees",
-    "ebProfiling": "Profiling",
-    "ebOneGapDeservesIts": "One gap deserves its own section",
-    "ebTheTarget": "The target",
-    "ebDistributions": "Distributions",
-    "ebAssociation": "Association",
-    "ebClassSeparation": "Class separation",
-    "ebTheMostImportantSubsection": "The most important subsection",
-    "ebALastLookBefore": "A last look before modeling"
+    "dataUnderstanding": "Comprensión de los datos",
+    "theDecisionHighThroughput": "La decisión: solo síntesis de alto rendimiento",
+    "ebFirstTheName": "Primero, el nombre",
+    "ebBeforeLoadingAnything": "Antes de cargar nada",
+    "ebWhichRowsTheModel": "Qué filas ve el modelo",
+    "ebProfiling": "Perfilado",
+    "ebOneGapDeservesIts": "Un hueco que merece sección propia",
+    "ebTheTarget": "La variable objetivo",
+    "ebDistributions": "Distribuciones",
+    "ebAssociation": "Asociación",
+    "ebClassSeparation": "Separación de clases",
+    "ebTheMostImportantSubsection": "La subsección más importante",
+    "ebALastLookBefore": "Una última mirada antes de modelar"
   },
   "modeling": {
     "classificationAndWhyNot": {
-      "eyebrow": "The framing",
-      "title": "Classification, and why not regression"
+      "eyebrow": "El planteamiento",
+      "title": "Clasificación, y por qué no regresión"
     },
     "tenModelsNotOne": {
-      "eyebrow": "Experimental design",
-      "title": "Ten models, not one"
+      "eyebrow": "Diseño experimental",
+      "title": "Diez modelos, no uno"
     },
     "whereTheModelStands": {
-      "eyebrow": "Performance",
-      "title": "Where the model stands"
+      "eyebrow": "Rendimiento",
+      "title": "Dónde está el modelo"
     },
     "theMetricsAndWhy": {
-      "eyebrow": "Evaluation",
-      "title": "The metrics, and why accuracy misleads here"
+      "eyebrow": "Evaluación",
+      "title": "Las métricas, y por qué aquí la exactitud engaña"
     },
     "whatTheseNumbersActually": {
-      "eyebrow": "Results",
-      "title": "What these numbers actually say"
+      "eyebrow": "Resultados",
+      "title": "Qué dicen estos números en realidad"
     },
     "theNotebookBehindThis": {
-      "eyebrow": "The code itself",
-      "title": "The notebook behind this screen"
+      "eyebrow": "El código en sí",
+      "title": "El cuaderno detrás de esta pantalla"
     },
     "whatTheModelingStage": {
-      "eyebrow": "Takeaway",
-      "title": "What the modeling stage established"
+      "eyebrow": "Para llevarse",
+      "title": "Qué estableció la etapa de modelado"
     },
-    "trainingEvaluation": "Training & Evaluation",
-    "whatAPlateIs": "What a plate is",
-    "soTheSplitFollows": "So the split follows the plate",
-    "ebValidation": "Validation",
-    "ebACriticismOfThe": "A criticism of the problem, not the execution",
-    "ebAssessment": "Assessment",
-    "ebErrorAnalysis": "Error analysis",
-    "ebInterpretation": "Interpretation",
-    "ebDirectionNotJustMagnitude": "Direction, not just magnitude"
+    "trainingEvaluation": "Entrenamiento y evaluación",
+    "whatAPlateIs": "Qué es una placa",
+    "soTheSplitFollows": "Por eso la partición sigue a la placa",
+    "ebValidation": "Validación",
+    "ebACriticismOfThe": "Una crítica al problema, no a la ejecución",
+    "ebAssessment": "Valoración",
+    "ebErrorAnalysis": "Análisis de errores",
+    "ebInterpretation": "Interpretación",
+    "ebDirectionNotJustMagnitude": "Dirección, no solo magnitud"
   },
   "overview": {
     "threeSynchronizedPillars": {
-      "eyebrow": "What holds it up",
-      "title": "Three synchronized pillars"
+      "eyebrow": "Lo que lo sostiene",
+      "title": "Tres pilares sincronizados"
     },
     "theTabsFollowTerm": {
-      "eyebrow": "How to read this site",
-      "title": "The tabs follow <Term k=\"CRISP-DM\" /> in order"
+      "eyebrow": "Cómo leer esta web",
+      "titleBefore": "Las pestañas siguen",
+      "titleAfter": "en orden"
     },
     "aboutTheAuthor": {
-      "eyebrow": "Who is behind it",
-      "title": "About the author"
+      "eyebrow": "Quién hay detrás",
+      "title": "Sobre el autor"
     },
-    "augmentedLaboratoryForChemistry": "Augmented Laboratory for Chemistry & Materials",
+    "augmentedLaboratoryForChemistry": "Laboratorio Aumentado para Química y Materiales",
     "stack": "Stack"
   },
   "rag": {
     "whatIsActuallyIndexed": {
-      "eyebrow": "The corpus",
-      "title": "What is actually indexed"
+      "eyebrow": "El corpus",
+      "title": "Qué hay indexado en realidad"
     },
     "sixStagesEndTo": {
-      "eyebrow": "The workflow",
-      "title": "Six stages, end to end"
+      "eyebrow": "El flujo",
+      "title": "Seis etapas, de principio a fin"
     },
     "theKnowledgeGraph": {
-      "eyebrow": "Beyond vectors",
-      "title": "The knowledge graph"
+      "eyebrow": "Más allá de los vectores",
+      "title": "El grafo de conocimiento"
     },
     "notebooksBehindThisScreen": {
-      "eyebrow": "The code itself",
-      "title": "Notebooks behind this screen"
+      "eyebrow": "El código en sí",
+      "title": "Los cuadernos detrás de esta pantalla"
     },
-    "scientificCoPilot": "Scientific Co-pilot",
-    "theProblem": "The problem",
-    "theTechniqueBuiltEnd": "The technique, built end to end",
-    "whyItDidNot": "Why it did not help much here",
-    "soItIsBuilt": "So it is built and not switched on",
-    "ebRetrieval": "Retrieval",
-    "ebTheUpgrade": "The upgrade",
-    "ebCapabilities": "Capabilities"
+    "scientificCoPilot": "Copiloto científico",
+    "theProblem": "El problema",
+    "theTechniqueBuiltEnd": "La técnica, construida de principio a fin",
+    "whyItDidNot": "Por qué aquí no ayudó mucho",
+    "soItIsBuilt": "Por eso está construida y no activada",
+    "ebRetrieval": "Recuperación",
+    "ebTheUpgrade": "La mejora",
+    "ebCapabilities": "Capacidades"
   },
   "science": {
-    "mofsLabDailyLife": "MOFs & Lab Daily-life",
-    "ebTheMaterial": "The material",
-    "ebCharacterisation": "Characterisation",
-    "ebInsideTheLab": "Inside the lab",
-    "ebTheBottleneck": "The bottleneck",
-    "ebNext": "Next"
+    "mofsLabDailyLife": "Los MOF y el día a día del laboratorio",
+    "ebTheMaterial": "El material",
+    "ebCharacterisation": "Caracterización",
+    "ebInsideTheLab": "Dentro del laboratorio",
+    "ebTheBottleneck": "El cuello de botella",
+    "ebNext": "Siguiente"
   },
   "model": {
     "inSilicoSynthesis": {
-      "eyebrow": "The virtual lab",
-      "title": "In-silico synthesis"
+      "eyebrow": "El laboratorio virtual",
+      "title": "Síntesis in silico"
     },
     "whatWasTrainedAnd": {
-      "eyebrow": "The registry",
-      "title": "What was trained, and what survived"
+      "eyebrow": "El registro",
+      "title": "Qué se entrenó, y qué sobrevivió"
     },
-    "simulatorRegistryActiveLearning": "Simulator, Registry & Active Learning",
-    "theMapInThe": "The map in the dark",
-    "whereItPoints": "Where it points",
-    "whatTheMapActually": "What the map actually says",
-    "andItAgreesWith": "And it agrees with the diagnosis",
-    "ebGovernance": "Governance",
-    "ebFeedback": "Feedback"
+    "simulatorRegistryActiveLearning": "Simulador, registro y aprendizaje activo",
+    "theMapInThe": "El mapa a oscuras",
+    "whereItPoints": "Hacia dónde apunta",
+    "whatTheMapActually": "Qué dice el mapa en realidad",
+    "andItAgreesWith": "Y coincide con el diagnóstico",
+    "ebGovernance": "Gobernanza",
+    "ebFeedback": "Retroalimentación"
   }
 }

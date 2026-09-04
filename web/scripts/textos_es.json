@@ -402,62 +402,62 @@
  {
   "path": "collection.js:COLLECTION_CANVAS_INTRO",
   "en": "The flow as it is — **79 nodes**, **114 connections**, nine areas. Pick a stop and the map flies to it, with the card below the map saying what that area adds to the row and why.",
-  "es": null
+  "es": "El flujo tal cual es: **79 nodos**, **114 conexiones**, nueve áreas. Elige una parada y el mapa vuela hasta ella, con la ficha de debajo explicando qué añade esa área a la fila y por qué."
  },
  {
   "path": "collection.js:COLLECTION_HERO.lead",
   "en": "How do you process thousands of raw instrument files without ingesting chaos? Explore the automated pipeline that fingerprints, validates, and routes measurements in real time.",
-  "es": null
+  "es": "¿Cómo se procesan miles de ficheros de instrumento en crudo sin ingerir caos? Recorre el pipeline automatizado que toma huella, valida y enruta las medidas en tiempo real."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.body1",
   "en": "Thousands of instrument files across nine formats, none linked to its synthesis. Processing **6,073 raw files** by hand would mean endless manual retyping and inevitable human error.",
-  "es": null
+  "es": "Miles de ficheros de instrumento en nueve formatos, ninguno enlazado con su síntesis. Procesar **6.073 ficheros en crudo** a mano significaría teclear sin fin y errores humanos inevitables."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.body2",
   "en": "Instead, the workflow takes over. Incoming files are authenticated, fingerprinted against duplicates, and routed by technique: deterministic parsers handle tabular data, while specialized AI agents extract unstructured PDF reports and microscopy images, **logging every step to an audit trail**.",
-  "es": null
+  "es": "En su lugar, se encarga el workflow. Los ficheros que entran se autentican, se les toma huella contra duplicados y se enrutan por técnica: los parsers deterministas se ocupan de los datos tabulares, mientras agentes de IA especializados extraen informes PDF sin estructura e imágenes de microscopía, **registrando cada paso en una traza de auditoría**."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.builtWith",
   "en": "Built in **n8n**, a workflow automation tool: every box on the canvas below is a real node in a running instance.",
-  "es": null
+  "es": "Construido en **n8n**, una herramienta de automatización de flujos: cada caja del lienzo de abajo es un nodo real de una instancia en marcha."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guaranteesTitle",
   "en": "What the workflow guarantees",
-  "es": null
+  "es": "Qué garantiza el workflow"
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[0].body",
   "en": "Every measurement is linked to the synthesis it came from, by sample code, and to the person who submitted it.",
-  "es": null
+  "es": "Cada medida queda enlazada con la síntesis de la que salió, por código de muestra, y con la persona que la envió."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[1].body",
   "en": "A cryptographic fingerprint of the file contents rejects a second copy before it is parsed.",
-  "es": null
+  "es": "Una huella criptográfica del contenido del fichero rechaza una segunda copia antes de parsearla."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[2].body",
   "en": "Nine formats become one row shape, so a query can span techniques without knowing anything about instruments.",
-  "es": null
+  "es": "Nueve formatos se convierten en una única forma de fila, así que una consulta puede abarcar varias técnicas sin saber nada de instrumentos."
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[3].lead",
   "en": "A record of every decision",
-  "es": null
+  "es": "Un registro de cada decisión"
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[3].body",
   "en": "Accepted or rejected, with the reason, in an audit table written by code and never by a language model.",
-  "es": null
+  "es": "Aceptado o rechazado, con el motivo, en una tabla de auditoría escrita por código y nunca por un modelo de lenguaje."
  },
  {
   "path": "collection.js:COLLECTION_ROW_INTRO",
   "en": "Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint.",
-  "es": null
+  "es": "Todo camino por este workflow tiene que llegar a la escritura en la base llevando exactamente estos campos. Piensa en el elemento como una bola de nieve que rueda por el pipeline y va recogiendo más de esta forma en cada etapa. Si al llegar todavía falta un campo, la inserción falla en seco contra una restricción."
  },
  {
   "path": "collection.js:COLLECTION_TREE.title",
@@ -472,17 +472,17 @@
  {
   "path": "collection.js:COLLECTION_TREE.point",
   "en": "The experimental context. It stores the instrumental parameters automatically parsed from the file header such as radiation wavelength, optical setup, and acquisition timestamps. It guarantees reproducibility without manual logging.",
-  "es": null
+  "es": "El contexto experimental. Guarda los parámetros instrumentales parseados automáticamente de la cabecera del fichero, como la longitud de onda de la radiación, la configuración óptica y las marcas de tiempo de la adquisición. Garantiza reproducibilidad sin anotar nada a mano."
  },
  {
   "path": "collection.js:COLLECTION_TREE.contract",
   "en": "The curve. It holds the measurement signal as normalized (X, Y) coordinate arrays along with their physical units (e.g. 2theta vs. Intensity). Every technique shares this exact structure, making all curves instantly plottable.",
-  "es": null
+  "es": "La curva. Guarda la señal medida como arrays de coordenadas (X, Y) normalizadas junto con sus unidades físicas (por ejemplo, 2theta frente a intensidad). Todas las técnicas comparten esta misma estructura, así que cualquier curva se puede representar al instante."
  },
  {
   "path": "collection.js:ROW_SHAPE[0][1]",
   "en": "Foreign key into synthesis_experiments",
-  "es": null
+  "es": "Clave foránea hacia synthesis_experiments"
  },
  {
   "path": "collection.js:ROW_SHAPE[1][1]",
@@ -497,172 +497,172 @@
  {
   "path": "collection.js:ROW_SHAPE[2][1]",
   "en": "Accountability, checked against a whitelist",
-  "es": null
+  "es": "Responsabilidad, comprobada contra una lista blanca"
  },
  {
   "path": "collection.js:ROW_SHAPE[3][1]",
   "en": "Provenance of the measurement",
-  "es": null
+  "es": "Procedencia de la medida"
  },
  {
   "path": "collection.js:ROW_SHAPE[4][1]",
   "en": "Where the original bytes live",
-  "es": null
+  "es": "Dónde viven los bytes originales"
  },
  {
   "path": "collection.js:ROW_SHAPE[5][1]",
   "en": "Real MD5 of the actual file bytes",
-  "es": null
+  "es": "MD5 real de los bytes del fichero"
  },
  {
   "path": "collection.js:ROW_SHAPE[6][1]",
   "en": "{ header_metadata, raw_data } — the parser contract",
-  "es": null
+  "es": "{ header_metadata, raw_data } — el contrato del parser"
  },
  {
   "path": "database.js:DB_BOUNDARY.title",
   "en": "What the AI agent is allowed to touch",
-  "es": null
+  "es": "Qué puede tocar el agente de IA"
  },
  {
   "path": "database.js:DB_BOUNDARY.body",
   "en": "The RAG assistant **never writes SQL**. Every one of its tools is a call to a stored function with typed parameters, so what it can ask is fixed by the schema rather than by how carefully a prompt was worded. `agent_verify_owner()` decides whether the answer carries exact values or coarse ones: it receives a token, hands on a **boolean**, and stores neither.",
-  "es": null
+  "es": "El asistente RAG **nunca escribe SQL**. Cada una de sus herramientas es una llamada a una función almacenada con parámetros tipados, así que lo que puede preguntar lo fija el esquema y no lo cuidadosa que fuera la redacción de un prompt. `agent_verify_owner()` decide si la respuesta lleva valores exactos o aproximados: recibe un token, pasa un **booleano** y no guarda ninguno de los dos."
  },
  {
   "path": "database.js:DB_BOUNDARY.bracketTitle",
   "en": "What those functions can read",
-  "es": null
+  "es": "Qué pueden leer esas funciones"
  },
  {
   "path": "database.js:DB_HERO.lead",
   "en": "Five years of chemistry lived in one spreadsheet, a folder of instrument files, and a stack of handwritten notebooks. This is what it became: a single governed schema where every column has a documented meaning and every automated action leaves a trace.",
-  "es": null
+  "es": "Cinco años de química vivían en una hoja de cálculo, una carpeta de ficheros de instrumento y una pila de cuadernos manuscritos. Esto es en lo que se convirtió: un único esquema gobernado donde cada columna tiene un significado documentado y cada acción automática deja rastro."
  },
  {
   "path": "database.js:DB_VIEWS.title",
   "en": "The views everything reads through",
-  "es": null
+  "es": "Las vistas por las que se lee todo"
  },
  {
   "path": "database.js:DB_VIEWS.lead",
   "en": "Nothing queries a raw table if a view exists for it. A view decides a join once, instead of having it re-invented in every script, and it can be documented, versioned and pointed at.",
-  "es": null
+  "es": "Nada consulta una tabla en crudo si existe una vista para ella. Una vista decide un JOIN una sola vez, en lugar de reinventarlo en cada script, y se puede documentar, versionar y señalar."
  },
  {
   "path": "database.js:DB_WHY.title",
   "en": "Why a database, and not a very good spreadsheet",
-  "es": null
+  "es": "Por qué una base de datos, y no una hoja de cálculo muy buena"
  },
  {
   "path": "database.js:DB_WHY.cards[0].body",
   "en": "A header reading `T` could be temperature, time or a code. **Every column carries a native `COMMENT`** with its units and allowed values, and pgAdmin, this site and the AI agent read the same one.",
-  "es": null
+  "es": "Una cabecera que pone `T` puede ser temperatura, tiempo o un código. **Cada columna lleva un `COMMENT` nativo** con sus unidades y sus valores permitidos, y pgAdmin, esta web y el agente de IA leen el mismo."
  },
  {
   "path": "database.js:DB_WHY.cards[1].body",
   "en": "A measurement cannot exist without its synthesis (foreign key). A model cannot be registered as irreproducible without a written reason (`CHECK`). **The database enforces this**, not the scripts that write to it.",
-  "es": null
+  "es": "Una medida no puede existir sin su síntesis (clave foránea). Un modelo no se puede registrar como irreproducible sin un motivo escrito (`CHECK`). **Lo impone la base de datos**, no los scripts que escriben en ella."
  },
  {
   "path": "database.js:DB_WHY.cards[2].body",
   "en": "A notebook ingests the master Excel file; a workflow ingests instrument files. The notebook loads by `UPSERT` and never `DELETE`, so it **cannot erase what the workflow wrote overnight**.",
-  "es": null
+  "es": "Un cuaderno ingiere el Excel maestro; un workflow ingiere los ficheros de instrumento. El cuaderno carga por `UPSERT` y nunca por `DELETE`, así que **no puede borrar lo que el workflow escribió de madrugada**."
  },
  {
   "path": "database.js:DB_WHY.cards[3].body",
   "en": "Every automated action lands in `audit_log` with a typed verdict and cause; every agent exchange in `agent_chat_log`. Both are **written by code, never by an LLM**, so the system being recorded cannot edit its own record.",
-  "es": null
+  "es": "Cada acción automática aterriza en `audit_log` con veredicto y causa tipados; cada intercambio del agente, en `agent_chat_log`. Los dos se **escriben por código, nunca por un LLM**, así que el sistema registrado no puede editar su propio registro."
  },
  {
   "path": "database.js:DB_WHY.cards[4].body",
   "en": "The schema documents itself in a **table**: `data_dictionary` holds one row per column, so the site and the agent read it instead of carrying a copy. Coverage is checkable, and the target is 100 % because a gap makes **\"undocumented column\" and \"column that does not exist\" indistinguishable**.",
-  "es": null
+  "es": "El esquema se documenta a sí mismo en una **tabla**: `data_dictionary` guarda una fila por columna, así que la web y el agente la leen en vez de llevar una copia. La cobertura es comprobable, y el objetivo es el 100 % porque un hueco hace **indistinguibles \"columna sin documentar\" y \"columna que no existe\"**."
  },
  {
   "path": "model.js:MODEL_HERO.lead",
   "en": "Play with the synthesis conditions and watch the prediction move — then see what keeps this from being a loose pickle file on somebody’s laptop.",
-  "es": null
+  "es": "Juega con las condiciones de síntesis y mira cómo se mueve la predicción; luego mira qué impide que esto sea un fichero pickle suelto en el portátil de alguien."
  },
  {
   "path": "model.js:MODEL_LOOP.title",
   "en": "A compass, not an oracle",
-  "es": null
+  "es": "Una brújula, no un oráculo"
  },
  {
   "path": "model.js:MODEL_LOOP.metaphor",
   "en": "Think of the synthesis space as a map in the dark. The experiments already run light up a few patches of it. A predictive model is not a machine that tells you the answer — it is **a compass**: it points at the direction where walking would light up the most new ground.",
-  "es": null
+  "es": "Piensa en el espacio de síntesis como un mapa a oscuras. Los experimentos ya hechos iluminan unos pocos trozos. Un modelo predictivo no es una máquina que da la respuesta: es **una brújula**, y apunta hacia donde caminar iluminaría más terreno nuevo."
  },
  {
   "path": "model.js:MODEL_LOOP.method",
   "en": "And the direction it points is not \"where crystals are most likely\". An experiment run where the model is already confident confirms what it knew. The useful place is **where it hesitates**, because either outcome there corrects it. That is what the map below measures: the entropy of the predicted distribution, cell by cell.",
-  "es": null
+  "es": "Y la dirección que señala no es \"donde hay más probabilidad de cristales\". Un experimento hecho donde el modelo ya está seguro confirma lo que ya sabía. El sitio útil es **donde duda**, porque allí cualquiera de los dos resultados lo corrige. Eso es lo que mide el mapa de abajo: la entropía de la distribución predicha, casilla a casilla."
  },
  {
   "path": "model.js:MODEL_LOOP.readingPoints[0]",
   "en": "**Most of the plane has never been visited.** Even for Ca, the metal with the most history behind it, the syntheses pile up in a handful of cells.",
-  "es": null
+  "es": "**La mayor parte del plano no se ha visitado nunca.** Incluso para el Ca, el metal con más historia detrás, las síntesis se amontonan en un puñado de casillas."
  },
  {
   "path": "model.js:MODEL_LOOP.readingPoints[1]",
   "en": "**The model hesitates almost everywhere**, including where the laboratory has looked.",
-  "es": null
+  "es": "**El modelo duda casi en todas partes**, incluso donde el laboratorio sí ha mirado."
  },
  {
   "path": "model.js:MODEL_LOOP.readingPoints[2]",
   "en": "**Because conditions were swept while the chemistry changed alongside them**, so the record cannot separate the two.",
-  "es": null
+  "es": "**Porque las condiciones se barrieron mientras la química cambiaba a la vez**, así que el registro no puede separar las dos cosas."
  },
  {
   "path": "model.js:MODEL_LOOP.consequence",
   "en": "The map and the model diagnostics point at the same experiment from opposite ends: the next plate worth running is **one that varies conditions finely while holding the metal and linker fixed**.",
-  "es": null
+  "es": "El mapa y el diagnóstico del modelo señalan el mismo experimento desde extremos opuestos: la siguiente placa que merece la pena es **una que varíe las condiciones con finura manteniendo fijos el metal y el conector**."
  },
  {
   "path": "model.js:MODEL_REGISTRY.title",
   "en": "A model is not a file",
-  "es": null
+  "es": "Un modelo no es un fichero"
  },
  {
   "path": "model.js:MODEL_REGISTRY.lead",
   "en": "The usual way to keep a trained model is a `.pkl` in a folder, and it fails in a specific way: six months later the file is still there and **nothing around it is**. Which rows trained it, which columns, which version of the code, what it actually scored.",
-  "es": null
+  "es": "La forma habitual de guardar un modelo entrenado es un `.pkl` en una carpeta, y falla de una manera concreta: seis meses después el fichero sigue ahí y **no sigue nada de lo que había alrededor**. Qué filas lo entrenaron, qué columnas, qué versión del código, qué puntuó de verdad."
  },
  {
   "path": "model.js:MODEL_REGISTRY.ruling",
   "en": "So the model lives in the database as **five related tables**, and the binary is the least important of them. The other four hold the recipe, and with a complete recipe the binary can be rebuilt.",
-  "es": null
+  "es": "Así que el modelo vive en la base de datos como **cinco tablas relacionadas**, y el binario es la menos importante. Las otras cuatro guardan la receta, y con una receta completa el binario se puede reconstruir."
  },
  {
   "path": "model.js:MODEL_REGISTRY.tables[0].body",
   "en": "The literal SQL that selected the rows, plus its SHA-256. Two models sharing a query but differing in row count were **not** trained on the same thing, and the hash makes that difference detectable.",
-  "es": null
+  "es": "El SQL literal que seleccionó las filas, más su SHA-256. Dos modelos que comparten consulta pero difieren en número de filas **no** se entrenaron sobre lo mismo, y el hash hace detectable esa diferencia."
  },
  {
   "path": "model.js:MODEL_REGISTRY.tables[1].body",
   "en": "Algorithm, hyperparameters, random seed, library versions, and the exact git commit. Also the status — active, superseded, archived or **invalid** — and a `CHECK` that refuses to mark a model irreproducible without writing why.",
-  "es": null
+  "es": "Algoritmo, hiperparámetros, semilla aleatoria, versiones de las librerías y el commit exacto de git. También el estado (activo, superado, archivado o **inválido**) y un `CHECK` que se niega a marcar un modelo como irreproducible sin escribir por qué."
  },
  {
   "path": "model.js:MODEL_REGISTRY.tables[2].body",
   "en": "Every input column with its position in the contract, and every **excluded** one with the reason it was excluded. `reactor_volume_ml` is recorded as zero-variance, `fill_fraction` as perfectly collinear with it.",
-  "es": null
+  "es": "Cada columna de entrada con su posición en el contrato, y cada una **excluida** con el motivo de la exclusión. `reactor_volume_ml` queda registrada como varianza cero, y `fill_fraction` como perfectamente colineal con ella."
  },
  {
   "path": "model.js:MODEL_REGISTRY.tables[3].body",
   "en": "Metrics in long format — one row per metric, per class, per split — so adding a new metric never means altering the schema.",
-  "es": null
+  "es": "Métricas en formato largo, una fila por métrica, por clase y por partición, así que añadir una métrica nueva nunca obliga a alterar el esquema."
  },
  {
   "path": "model.js:MODEL_REGISTRY.tables[4].body",
   "en": "The serialised pipeline with a SHA-256 checked on every load. It sits in its own table so a light backup can skip it: it is the only part that a complete recipe can regenerate.",
-  "es": null
+  "es": "El pipeline serializado con un SHA-256 que se comprueba en cada carga. Vive en su propia tabla para que una copia de seguridad ligera pueda saltárselo: es la única parte que una receta completa puede regenerar."
  },
  {
   "path": "model.js:MODEL_REGISTRY.slot",
   "en": "One more thing decides which model the simulator is actually running: a **deployment slot**. The simulator does not name a model; it asks the database which one occupies the `primary` slot. When a model name was written into this file by hand instead, retraining to correct a unit error of a factor of a thousand left **the site serving the superseded model with nothing raising an error**: an obsolete model returns predictions as readily as a current one.",
-  "es": null
+  "es": "Una cosa más decide qué modelo está ejecutando el simulador de verdad: una **ranura de despliegue**. El simulador no nombra un modelo; le pregunta a la base de datos cuál ocupa la ranura `primary`. Cuando en su lugar se escribió a mano el nombre de un modelo en este fichero, reentrenar para corregir un error de unidades de un factor de mil dejó **la web sirviendo el modelo superado sin que nada diera error**: un modelo obsoleto devuelve predicciones con la misma facilidad que uno vigente."
  },
  {
   "path": "prep.js:DESCRIPTOR_GROUPS[0].blurb",
@@ -3302,22 +3302,22 @@
  {
   "path": "site.js:SCREENS[3].title",
   "en": "ETL & PXRD Signal Processing",
-  "es": null
+  "es": "ETL y procesado de la señal PXRD"
  },
  {
   "path": "site.js:SCREENS[4].title",
   "en": "Exploratory data analysis",
-  "es": null
+  "es": "Análisis exploratorio de datos"
  },
  {
   "path": "site.js:SCREENS[5].title",
   "en": "Training & Evaluation",
-  "es": null
+  "es": "Entrenamiento y evaluación"
  },
  {
   "path": "site.js:SCREENS[6].title",
   "en": "Simulator, Registry & Active Learning",
-  "es": null
+  "es": "Simulador, registro y aprendizaje activo"
  },
  {
   "path": "site.js:SCREENS[9].title",
@@ -3397,522 +3397,802 @@
  {
   "path": "site.js:WORKFLOW_SECTIONS[7].title",
   "en": "DB write & response",
-  "es": null
+  "es": "Escritura en la base y respuesta"
  },
  {
   "path": "site.js:WORKFLOW_SECTIONS[7].adds",
   "en": "The row itself, plus the reply to the caller",
-  "es": null
+  "es": "La propia fila, más la respuesta a quien llamó"
  },
  {
   "path": "site.js:WORKFLOW_SECTIONS[8].title",
   "en": "Governance — fallbacks, audit & errors",
-  "es": null
+  "es": "Gobernanza — fallbacks, auditoría y errores"
  },
  {
   "path": "site.js:WORKFLOW_SECTIONS[8].adds",
   "en": "audit_log with typed verdict, cause and result",
-  "es": null
+  "es": "audit_log con veredicto, causa y resultado tipados"
+ },
+ {
+  "path": "ui.js:UI.about.whereTheChemistryHappened.eyebrow",
+  "en": "Experience",
+  "es": "Experiencia"
  },
  {
   "path": "ui.js:UI.about.whereTheChemistryHappened.title",
   "en": "Where the chemistry happened",
-  "es": null
+  "es": "Dónde ocurrió la química"
+ },
+ {
+  "path": "ui.js:UI.about.training.eyebrow",
+  "en": "Education",
+  "es": "Formación"
+ },
+ {
+  "path": "ui.js:UI.about.training.title",
+  "en": "Training",
+  "es": "Formación"
+ },
+ {
+  "path": "ui.js:UI.about.publications.eyebrow",
+  "en": "Scientific production",
+  "es": "Producción científica"
+ },
+ {
+  "path": "ui.js:UI.about.publications.title",
+  "en": "Publications",
+  "es": "Publicaciones"
+ },
+ {
+  "path": "ui.js:UI.about.competitiveRDProjects.eyebrow",
+  "en": "Funded research",
+  "es": "Investigación financiada"
  },
  {
   "path": "ui.js:UI.about.competitiveRDProjects.title",
   "en": "Competitive R&D projects",
-  "es": null
+  "es": "Proyectos de I+D competitivos"
+ },
+ {
+  "path": "ui.js:UI.about.whatTheToolboxHolds.eyebrow",
+  "en": "Skills",
+  "es": "Competencias"
  },
  {
   "path": "ui.js:UI.about.whatTheToolboxHolds.title",
   "en": "What the toolbox holds",
-  "es": null
+  "es": "Qué hay en la caja de herramientas"
+ },
+ {
+  "path": "ui.js:UI.about.writingForAWider.eyebrow",
+  "en": "Outreach",
+  "es": "Divulgación"
  },
  {
   "path": "ui.js:UI.about.writingForAWider.title",
   "en": "Writing for a wider audience",
-  "es": null
+  "es": "Divulgación para público general"
  },
  {
   "path": "ui.js:UI.about.contact.eyebrow",
   "en": "Get in touch",
-  "es": null
+  "es": "Hablemos"
+ },
+ {
+  "path": "ui.js:UI.about.contact.title",
+  "en": "Contact",
+  "es": "Contacto"
  },
  {
   "path": "ui.js:UI.about.rubNSerranoNieto",
   "en": "Rubén Serrano Nieto",
-  "es": null
+  "es": "Rubén Serrano Nieto"
+ },
+ {
+  "path": "ui.js:UI.about.saySomething",
+  "en": "Say something",
+  "es": "Escríbeme"
  },
  {
   "path": "ui.js:UI.about.theContractsBehindThem",
   "en": "The contracts behind them",
-  "es": null
+  "es": "Los contratos que hay detrás"
  },
  {
   "path": "ui.js:UI.about.orTheDirectRoute",
   "en": "Or the direct route",
-  "es": null
+  "es": "O la vía directa"
  },
  {
   "path": "ui.js:UI.collection.whyThisExists.eyebrow",
   "en": "The problem, and the fix",
-  "es": null
+  "es": "El problema, y su solución"
  },
  {
   "path": "ui.js:UI.collection.whyThisExists.title",
   "en": "Why this exists",
-  "es": null
+  "es": "Por qué existe esto"
+ },
+ {
+  "path": "ui.js:UI.collection.theWorkflowCanvas.eyebrow",
+  "en": "Interactive",
+  "es": "Interactivo"
  },
  {
   "path": "ui.js:UI.collection.theWorkflowCanvas.title",
   "en": "The workflow canvas",
-  "es": null
+  "es": "El lienzo del workflow"
  },
  {
   "path": "ui.js:UI.collection.whatAIngestedMeasurement.eyebrow",
   "en": "Start from the goal",
-  "es": null
+  "es": "Empezar por el objetivo"
  },
  {
   "path": "ui.js:UI.collection.whatAIngestedMeasurement.title",
   "en": "What a ingested measurement looks like",
-  "es": null
+  "es": "Qué aspecto tiene una medida ingerida"
  },
  {
   "path": "ui.js:UI.collection.thePostgresqlSchema.eyebrow",
   "en": "Where it lands",
-  "es": null
+  "es": "Dónde aterriza"
  },
  {
   "path": "ui.js:UI.collection.thePostgresqlSchema.title",
   "en": "The PostgreSQL schema",
-  "es": null
+  "es": "El esquema de PostgreSQL"
  },
  {
   "path": "ui.js:UI.collection.notebooksBehindThisScreen.eyebrow",
   "en": "The code itself",
-  "es": null
+  "es": "El código en sí"
  },
  {
   "path": "ui.js:UI.collection.notebooksBehindThisScreen.title",
   "en": "Notebooks behind this screen",
-  "es": null
+  "es": "Los cuadernos detrás de esta pantalla"
  },
  {
   "path": "ui.js:UI.collection.theIngestionWorkflow",
   "en": "The Ingestion Workflow",
-  "es": null
+  "es": "El flujo de ingesta"
+ },
+ {
+  "path": "ui.js:UI.collection.headerMetadata",
+  "en": "Header metadata",
+  "es": "Metadatos de cabecera"
+ },
+ {
+  "path": "ui.js:UI.collection.rawData",
+  "en": "Raw data",
+  "es": "Datos en crudo"
  },
  {
   "path": "ui.js:UI.collection.ebTheSameRowOpened",
   "en": "The same row, opened up",
-  "es": null
+  "es": "La misma fila, por dentro"
  },
  {
   "path": "ui.js:UI.prep.oneRowPerSynthesis.eyebrow",
   "en": "What the table looks like",
-  "es": null
+  "es": "Qué aspecto tiene la tabla"
  },
  {
   "path": "ui.js:UI.prep.oneRowPerSynthesis.title",
   "en": "One row per synthesis",
-  "es": null
+  "es": "Una fila por síntesis"
  },
  {
   "path": "ui.js:UI.prep.whatEachColumnHolds.eyebrow",
   "en": "The variables, before anything is removed",
-  "es": null
+  "es": "Las variables, antes de quitar nada"
  },
  {
   "path": "ui.js:UI.prep.whatEachColumnHolds.title",
   "en": "What each column holds",
-  "es": null
+  "es": "Qué guarda cada columna"
+ },
+ {
+  "path": "ui.js:UI.prep.fromSpreadsheetToGoverned.eyebrow",
+  "en": "Notebook 01",
+  "es": "Cuaderno 01"
  },
  {
   "path": "ui.js:UI.prep.fromSpreadsheetToGoverned.title",
   "en": "From spreadsheet to governed table",
-  "es": null
+  "es": "De hoja de cálculo a tabla gobernada"
  },
  {
   "path": "ui.js:UI.prep.whyTheElementIs.eyebrow",
   "en": "From a chemical symbol to physics",
-  "es": null
+  "es": "Del símbolo químico a la física"
  },
  {
   "path": "ui.js:UI.prep.whyTheElementIs.title",
   "en": "Why the element is replaced by its properties",
-  "es": null
+  "es": "Por qué el elemento se sustituye por sus propiedades"
  },
  {
   "path": "ui.js:UI.prep.examplesOfSilentData.eyebrow",
   "en": "What the expert review found",
-  "es": null
+  "es": "Lo que encontró la revisión experta"
  },
  {
   "path": "ui.js:UI.prep.examplesOfSilentData.title",
   "en": "Examples of silent data bugs",
-  "es": null
+  "es": "Ejemplos de errores de datos silenciosos"
+ },
+ {
+  "path": "ui.js:UI.prep.pxrdDiffractogramsAsCore.eyebrow",
+  "en": "Analytical diagnostic",
+  "es": "Diagnóstico analítico"
  },
  {
   "path": "ui.js:UI.prep.pxrdDiffractogramsAsCore.title",
   "en": "PXRD diffractograms as core target",
-  "es": null
+  "es": "El difractograma PXRD como objetivo central"
  },
  {
   "path": "ui.js:UI.prep.fromRawSignalTo.eyebrow",
   "en": "Notebook 05 · the centrepiece",
-  "es": null
+  "es": "Cuaderno 05 · la pieza central"
  },
  {
   "path": "ui.js:UI.prep.fromRawSignalTo.title",
   "en": "From raw signal to 29 numbers",
-  "es": null
+  "es": "De la señal en crudo a 29 números"
  },
  {
   "path": "ui.js:UI.prep.labelerExplorer.eyebrow",
   "en": "The tools that produced the ground truth",
-  "es": null
+  "es": "Las herramientas que produjeron la verdad de referencia"
  },
  {
   "path": "ui.js:UI.prep.labelerExplorer.title",
   "en": "Labeler & Explorer",
-  "es": null
+  "es": "Etiquetador y explorador"
  },
  {
   "path": "ui.js:UI.prep.whatADiffractogramBecomes.eyebrow",
   "en": "PXRD Feature Vector",
-  "es": null
+  "es": "Vector de características PXRD"
  },
  {
   "path": "ui.js:UI.prep.whatADiffractogramBecomes.title",
   "en": "What a diffractogram becomes",
-  "es": null
+  "es": "En qué se convierte un difractograma"
  },
  {
   "path": "ui.js:UI.prep.readTheNotebooks.eyebrow",
   "en": "The code itself",
-  "es": null
+  "es": "El código en sí"
  },
  {
   "path": "ui.js:UI.prep.readTheNotebooks.title",
   "en": "Read the notebooks",
-  "es": null
+  "es": "Leer los cuadernos"
  },
  {
   "path": "ui.js:UI.prep.switchLane.eyebrow",
   "en": "The other half",
-  "es": null
+  "es": "La otra mitad"
+ },
+ {
+  "path": "ui.js:UI.prep.switchLane.title",
+  "en": "Switch lane",
+  "es": "Cambiar de vía"
  },
  {
   "path": "ui.js:UI.prep.etlPxrdSignalProcessing",
   "en": "ETL & PXRD Signal Processing",
-  "es": null
+  "es": "ETL y procesado de la señal PXRD"
  },
  {
   "path": "ui.js:UI.prep.paso1HeaderNormalisation",
   "en": "1 · Header normalisation",
-  "es": null
+  "es": "1 · Normalización de cabeceras"
  },
  {
   "path": "ui.js:UI.prep.paso2StoichiometricFeatureEngineering",
   "en": "2 · Stoichiometric feature engineering",
-  "es": null
+  "es": "2 · Ingeniería de características estequiométricas"
  },
  {
   "path": "ui.js:UI.prep.paso4AnMd5Business",
   "en": "4 · An MD5 business natural key",
-  "es": null
+  "es": "4 · Una clave natural de negocio con MD5"
  },
  {
   "path": "ui.js:UI.prep.paso5TheLoadIs",
   "en": "5 · The load is an UPSERT, never a replace",
-  "es": null
+  "es": "5 · La carga es un UPSERT, nunca un reemplazo"
  },
  {
   "path": "ui.js:UI.prep.whatTheThreeLayers",
   "en": "What the three layers mean",
-  "es": null
+  "es": "Qué significan las tres capas"
  },
  {
   "path": "ui.js:UI.prep.peakDetectionThe3",
   "en": "Peak detection: the 3σ threshold",
-  "es": null
+  "es": "Detección de picos: el umbral de 3σ"
  },
  {
   "path": "ui.js:UI.prep.howToReadIt",
   "en": "How to read it",
-  "es": null
+  "es": "Cómo leerla"
+ },
+ {
+  "path": "ui.js:UI.prep.ebCuration",
+  "en": "Curation",
+  "es": "Curación"
  },
  {
   "path": "ui.js:UI.prep.ebADecisionThatCould",
   "en": "A decision that could have been cheating",
-  "es": null
+  "es": "Una decisión que podría haber sido trampa"
  },
  {
   "path": "ui.js:UI.prep.ebFillingTheGaps",
   "en": "Filling the gaps",
-  "es": null
+  "es": "Rellenar los huecos"
+ },
+ {
+  "path": "ui.js:UI.prep.ebTakeaway",
+  "en": "Takeaway",
+  "es": "Para llevarse"
  },
  {
   "path": "ui.js:UI.database.whatIsInThere.eyebrow",
   "en": "At a glance",
-  "es": null
+  "es": "De un vistazo"
  },
  {
   "path": "ui.js:UI.database.whatIsInThere.title",
   "en": "What is in there",
-  "es": null
+  "es": "Qué hay dentro"
+ },
+ {
+  "path": "ui.js:UI.database.sevenFamiliesAndWhat.eyebrow",
+  "en": "The map",
+  "es": "El mapa"
  },
  {
   "path": "ui.js:UI.database.sevenFamiliesAndWhat.title",
   "en": "Seven families, and what feeds what",
-  "es": null
+  "es": "Siete familias, y qué alimenta a qué"
  },
  {
   "path": "ui.js:UI.database.oneSchemaDocumented",
   "en": "One Schema, Documented",
-  "es": null
+  "es": "Un esquema, documentado"
  },
  {
   "path": "ui.js:UI.database.ebTheCaseForIt",
   "en": "The case for it",
-  "es": null
+  "es": "El argumento a favor"
+ },
+ {
+  "path": "ui.js:UI.database.ebTheBoundary",
+  "en": "The boundary",
+  "es": "El límite"
+ },
+ {
+  "path": "ui.js:UI.database.ebTheSurface",
+  "en": "The surface",
+  "es": "La superficie"
  },
  {
   "path": "ui.js:UI.eda.theNotebookBehindThis.eyebrow",
   "en": "The code itself",
-  "es": null
+  "es": "El código en sí"
  },
  {
   "path": "ui.js:UI.eda.theNotebookBehindThis.title",
   "en": "The notebook behind this screen",
-  "es": null
+  "es": "El cuaderno detrás de esta pantalla"
+ },
+ {
+  "path": "ui.js:UI.eda.whatThisStageSettled.eyebrow",
+  "en": "Takeaway",
+  "es": "Para llevarse"
  },
  {
   "path": "ui.js:UI.eda.whatThisStageSettled.title",
   "en": "What this stage settled",
-  "es": null
+  "es": "Qué dejó zanjado esta etapa"
+ },
+ {
+  "path": "ui.js:UI.eda.dataUnderstanding",
+  "en": "Data Understanding",
+  "es": "Comprensión de los datos"
  },
  {
   "path": "ui.js:UI.eda.theDecisionHighThroughput",
   "en": "The decision: high-throughput syntheses only",
-  "es": null
+  "es": "La decisión: solo síntesis de alto rendimiento"
  },
  {
   "path": "ui.js:UI.eda.ebFirstTheName",
   "en": "First, the name",
-  "es": null
+  "es": "Primero, el nombre"
  },
  {
   "path": "ui.js:UI.eda.ebBeforeLoadingAnything",
   "en": "Before loading anything",
-  "es": null
+  "es": "Antes de cargar nada"
  },
  {
   "path": "ui.js:UI.eda.ebWhichRowsTheModel",
   "en": "Which rows the model sees",
-  "es": null
+  "es": "Qué filas ve el modelo"
+ },
+ {
+  "path": "ui.js:UI.eda.ebProfiling",
+  "en": "Profiling",
+  "es": "Perfilado"
  },
  {
   "path": "ui.js:UI.eda.ebOneGapDeservesIts",
   "en": "One gap deserves its own section",
-  "es": null
+  "es": "Un hueco que merece sección propia"
+ },
+ {
+  "path": "ui.js:UI.eda.ebTheTarget",
+  "en": "The target",
+  "es": "La variable objetivo"
+ },
+ {
+  "path": "ui.js:UI.eda.ebDistributions",
+  "en": "Distributions",
+  "es": "Distribuciones"
+ },
+ {
+  "path": "ui.js:UI.eda.ebAssociation",
+  "en": "Association",
+  "es": "Asociación"
+ },
+ {
+  "path": "ui.js:UI.eda.ebClassSeparation",
+  "en": "Class separation",
+  "es": "Separación de clases"
  },
  {
   "path": "ui.js:UI.eda.ebTheMostImportantSubsection",
   "en": "The most important subsection",
-  "es": null
+  "es": "La subsección más importante"
  },
  {
   "path": "ui.js:UI.eda.ebALastLookBefore",
   "en": "A last look before modeling",
-  "es": null
+  "es": "Una última mirada antes de modelar"
+ },
+ {
+  "path": "ui.js:UI.modeling.classificationAndWhyNot.eyebrow",
+  "en": "The framing",
+  "es": "El planteamiento"
  },
  {
   "path": "ui.js:UI.modeling.classificationAndWhyNot.title",
   "en": "Classification, and why not regression",
-  "es": null
+  "es": "Clasificación, y por qué no regresión"
+ },
+ {
+  "path": "ui.js:UI.modeling.tenModelsNotOne.eyebrow",
+  "en": "Experimental design",
+  "es": "Diseño experimental"
  },
  {
   "path": "ui.js:UI.modeling.tenModelsNotOne.title",
   "en": "Ten models, not one",
-  "es": null
+  "es": "Diez modelos, no uno"
+ },
+ {
+  "path": "ui.js:UI.modeling.whereTheModelStands.eyebrow",
+  "en": "Performance",
+  "es": "Rendimiento"
  },
  {
   "path": "ui.js:UI.modeling.whereTheModelStands.title",
   "en": "Where the model stands",
-  "es": null
+  "es": "Dónde está el modelo"
+ },
+ {
+  "path": "ui.js:UI.modeling.theMetricsAndWhy.eyebrow",
+  "en": "Evaluation",
+  "es": "Evaluación"
  },
  {
   "path": "ui.js:UI.modeling.theMetricsAndWhy.title",
   "en": "The metrics, and why accuracy misleads here",
-  "es": null
+  "es": "Las métricas, y por qué aquí la exactitud engaña"
+ },
+ {
+  "path": "ui.js:UI.modeling.whatTheseNumbersActually.eyebrow",
+  "en": "Results",
+  "es": "Resultados"
  },
  {
   "path": "ui.js:UI.modeling.whatTheseNumbersActually.title",
   "en": "What these numbers actually say",
-  "es": null
+  "es": "Qué dicen estos números en realidad"
  },
  {
   "path": "ui.js:UI.modeling.theNotebookBehindThis.eyebrow",
   "en": "The code itself",
-  "es": null
+  "es": "El código en sí"
  },
  {
   "path": "ui.js:UI.modeling.theNotebookBehindThis.title",
   "en": "The notebook behind this screen",
-  "es": null
+  "es": "El cuaderno detrás de esta pantalla"
+ },
+ {
+  "path": "ui.js:UI.modeling.whatTheModelingStage.eyebrow",
+  "en": "Takeaway",
+  "es": "Para llevarse"
  },
  {
   "path": "ui.js:UI.modeling.whatTheModelingStage.title",
   "en": "What the modeling stage established",
-  "es": null
+  "es": "Qué estableció la etapa de modelado"
  },
  {
   "path": "ui.js:UI.modeling.trainingEvaluation",
   "en": "Training & Evaluation",
-  "es": null
+  "es": "Entrenamiento y evaluación"
  },
  {
   "path": "ui.js:UI.modeling.whatAPlateIs",
   "en": "What a plate is",
-  "es": null
+  "es": "Qué es una placa"
  },
  {
   "path": "ui.js:UI.modeling.soTheSplitFollows",
   "en": "So the split follows the plate",
-  "es": null
+  "es": "Por eso la partición sigue a la placa"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebValidation",
+  "en": "Validation",
+  "es": "Validación"
  },
  {
   "path": "ui.js:UI.modeling.ebACriticismOfThe",
   "en": "A criticism of the problem, not the execution",
-  "es": null
+  "es": "Una crítica al problema, no a la ejecución"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebAssessment",
+  "en": "Assessment",
+  "es": "Valoración"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebErrorAnalysis",
+  "en": "Error analysis",
+  "es": "Análisis de errores"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebInterpretation",
+  "en": "Interpretation",
+  "es": "Interpretación"
  },
  {
   "path": "ui.js:UI.modeling.ebDirectionNotJustMagnitude",
   "en": "Direction, not just magnitude",
-  "es": null
+  "es": "Dirección, no solo magnitud"
  },
  {
   "path": "ui.js:UI.overview.threeSynchronizedPillars.eyebrow",
   "en": "What holds it up",
-  "es": null
+  "es": "Lo que lo sostiene"
  },
  {
   "path": "ui.js:UI.overview.threeSynchronizedPillars.title",
   "en": "Three synchronized pillars",
-  "es": null
+  "es": "Tres pilares sincronizados"
  },
  {
   "path": "ui.js:UI.overview.theTabsFollowTerm.eyebrow",
   "en": "How to read this site",
-  "es": null
+  "es": "Cómo leer esta web"
  },
  {
-  "path": "ui.js:UI.overview.theTabsFollowTerm.title",
-  "en": "The tabs follow <Term k=\"CRISP-DM\" /> in order",
-  "es": null
+  "path": "ui.js:UI.overview.theTabsFollowTerm.titleBefore",
+  "en": "The tabs follow",
+  "es": "Las pestañas siguen"
+ },
+ {
+  "path": "ui.js:UI.overview.theTabsFollowTerm.titleAfter",
+  "en": "in order",
+  "es": "en orden"
  },
  {
   "path": "ui.js:UI.overview.aboutTheAuthor.eyebrow",
   "en": "Who is behind it",
-  "es": null
+  "es": "Quién hay detrás"
  },
  {
   "path": "ui.js:UI.overview.aboutTheAuthor.title",
   "en": "About the author",
-  "es": null
+  "es": "Sobre el autor"
  },
  {
   "path": "ui.js:UI.overview.augmentedLaboratoryForChemistry",
   "en": "Augmented Laboratory for Chemistry & Materials",
-  "es": null
+  "es": "Laboratorio Aumentado para Química y Materiales"
+ },
+ {
+  "path": "ui.js:UI.overview.stack",
+  "en": "Stack",
+  "es": "Stack"
+ },
+ {
+  "path": "ui.js:UI.rag.whatIsActuallyIndexed.eyebrow",
+  "en": "The corpus",
+  "es": "El corpus"
  },
  {
   "path": "ui.js:UI.rag.whatIsActuallyIndexed.title",
   "en": "What is actually indexed",
-  "es": null
+  "es": "Qué hay indexado en realidad"
+ },
+ {
+  "path": "ui.js:UI.rag.sixStagesEndTo.eyebrow",
+  "en": "The workflow",
+  "es": "El flujo"
  },
  {
   "path": "ui.js:UI.rag.sixStagesEndTo.title",
   "en": "Six stages, end to end",
-  "es": null
+  "es": "Seis etapas, de principio a fin"
+ },
+ {
+  "path": "ui.js:UI.rag.theKnowledgeGraph.eyebrow",
+  "en": "Beyond vectors",
+  "es": "Más allá de los vectores"
  },
  {
   "path": "ui.js:UI.rag.theKnowledgeGraph.title",
   "en": "The knowledge graph",
-  "es": null
+  "es": "El grafo de conocimiento"
  },
  {
   "path": "ui.js:UI.rag.notebooksBehindThisScreen.eyebrow",
   "en": "The code itself",
-  "es": null
+  "es": "El código en sí"
  },
  {
   "path": "ui.js:UI.rag.notebooksBehindThisScreen.title",
   "en": "Notebooks behind this screen",
-  "es": null
+  "es": "Los cuadernos detrás de esta pantalla"
+ },
+ {
+  "path": "ui.js:UI.rag.scientificCoPilot",
+  "en": "Scientific Co-pilot",
+  "es": "Copiloto científico"
+ },
+ {
+  "path": "ui.js:UI.rag.theProblem",
+  "en": "The problem",
+  "es": "El problema"
  },
  {
   "path": "ui.js:UI.rag.theTechniqueBuiltEnd",
   "en": "The technique, built end to end",
-  "es": null
+  "es": "La técnica, construida de principio a fin"
  },
  {
   "path": "ui.js:UI.rag.whyItDidNot",
   "en": "Why it did not help much here",
-  "es": null
+  "es": "Por qué aquí no ayudó mucho"
  },
  {
   "path": "ui.js:UI.rag.soItIsBuilt",
   "en": "So it is built and not switched on",
-  "es": null
+  "es": "Por eso está construida y no activada"
+ },
+ {
+  "path": "ui.js:UI.rag.ebRetrieval",
+  "en": "Retrieval",
+  "es": "Recuperación"
+ },
+ {
+  "path": "ui.js:UI.rag.ebTheUpgrade",
+  "en": "The upgrade",
+  "es": "La mejora"
+ },
+ {
+  "path": "ui.js:UI.rag.ebCapabilities",
+  "en": "Capabilities",
+  "es": "Capacidades"
  },
  {
   "path": "ui.js:UI.science.mofsLabDailyLife",
   "en": "MOFs & Lab Daily-life",
-  "es": null
+  "es": "Los MOF y el día a día del laboratorio"
+ },
+ {
+  "path": "ui.js:UI.science.ebTheMaterial",
+  "en": "The material",
+  "es": "El material"
+ },
+ {
+  "path": "ui.js:UI.science.ebCharacterisation",
+  "en": "Characterisation",
+  "es": "Caracterización"
  },
  {
   "path": "ui.js:UI.science.ebInsideTheLab",
   "en": "Inside the lab",
-  "es": null
+  "es": "Dentro del laboratorio"
+ },
+ {
+  "path": "ui.js:UI.science.ebTheBottleneck",
+  "en": "The bottleneck",
+  "es": "El cuello de botella"
+ },
+ {
+  "path": "ui.js:UI.science.ebNext",
+  "en": "Next",
+  "es": "Siguiente"
  },
  {
   "path": "ui.js:UI.model.inSilicoSynthesis.eyebrow",
   "en": "The virtual lab",
-  "es": null
+  "es": "El laboratorio virtual"
+ },
+ {
+  "path": "ui.js:UI.model.inSilicoSynthesis.title",
+  "en": "In-silico synthesis",
+  "es": "Síntesis in silico"
+ },
+ {
+  "path": "ui.js:UI.model.whatWasTrainedAnd.eyebrow",
+  "en": "The registry",
+  "es": "El registro"
  },
  {
   "path": "ui.js:UI.model.whatWasTrainedAnd.title",
   "en": "What was trained, and what survived",
-  "es": null
+  "es": "Qué se entrenó, y qué sobrevivió"
  },
  {
   "path": "ui.js:UI.model.simulatorRegistryActiveLearning",
   "en": "Simulator, Registry & Active Learning",
-  "es": null
+  "es": "Simulador, registro y aprendizaje activo"
  },
  {
   "path": "ui.js:UI.model.theMapInThe",
   "en": "The map in the dark",
-  "es": null
+  "es": "El mapa a oscuras"
  },
  {
   "path": "ui.js:UI.model.whereItPoints",
   "en": "Where it points",
-  "es": null
+  "es": "Hacia dónde apunta"
  },
  {
   "path": "ui.js:UI.model.whatTheMapActually",
   "en": "What the map actually says",
-  "es": null
+  "es": "Qué dice el mapa en realidad"
  },
  {
   "path": "ui.js:UI.model.andItAgreesWith",
   "en": "And it agrees with the diagnosis",
-  "es": null
+  "es": "Y coincide con el diagnóstico"
+ },
+ {
+  "path": "ui.js:UI.model.ebGovernance",
+  "en": "Governance",
+  "es": "Gobernanza"
+ },
+ {
+  "path": "ui.js:UI.model.ebFeedback",
+  "en": "Feedback",
+  "es": "Retroalimentación"
  },
  {
   "path": "workflow.js:AREAS[0].subtitle",

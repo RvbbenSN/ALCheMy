@@ -2732,16 +2732,48 @@
   "en": "audit_log with typed verdict, cause and result"
  },
  {
+  "path": "ui.js:UI.about.whereTheChemistryHappened.eyebrow",
+  "en": "Experience"
+ },
+ {
   "path": "ui.js:UI.about.whereTheChemistryHappened.title",
   "en": "Where the chemistry happened"
+ },
+ {
+  "path": "ui.js:UI.about.training.eyebrow",
+  "en": "Education"
+ },
+ {
+  "path": "ui.js:UI.about.training.title",
+  "en": "Training"
+ },
+ {
+  "path": "ui.js:UI.about.publications.eyebrow",
+  "en": "Scientific production"
+ },
+ {
+  "path": "ui.js:UI.about.publications.title",
+  "en": "Publications"
+ },
+ {
+  "path": "ui.js:UI.about.competitiveRDProjects.eyebrow",
+  "en": "Funded research"
  },
  {
   "path": "ui.js:UI.about.competitiveRDProjects.title",
   "en": "Competitive R&D projects"
  },
  {
+  "path": "ui.js:UI.about.whatTheToolboxHolds.eyebrow",
+  "en": "Skills"
+ },
+ {
   "path": "ui.js:UI.about.whatTheToolboxHolds.title",
   "en": "What the toolbox holds"
+ },
+ {
+  "path": "ui.js:UI.about.writingForAWider.eyebrow",
+  "en": "Outreach"
  },
  {
   "path": "ui.js:UI.about.writingForAWider.title",
@@ -2752,8 +2784,16 @@
   "en": "Get in touch"
  },
  {
+  "path": "ui.js:UI.about.contact.title",
+  "en": "Contact"
+ },
+ {
   "path": "ui.js:UI.about.rubNSerranoNieto",
   "en": "Rubén Serrano Nieto"
+ },
+ {
+  "path": "ui.js:UI.about.saySomething",
+  "en": "Say something"
  },
  {
   "path": "ui.js:UI.about.theContractsBehindThem",
@@ -2770,6 +2810,10 @@
  {
   "path": "ui.js:UI.collection.whyThisExists.title",
   "en": "Why this exists"
+ },
+ {
+  "path": "ui.js:UI.collection.theWorkflowCanvas.eyebrow",
+  "en": "Interactive"
  },
  {
   "path": "ui.js:UI.collection.theWorkflowCanvas.title",
@@ -2804,6 +2848,14 @@
   "en": "The Ingestion Workflow"
  },
  {
+  "path": "ui.js:UI.collection.headerMetadata",
+  "en": "Header metadata"
+ },
+ {
+  "path": "ui.js:UI.collection.rawData",
+  "en": "Raw data"
+ },
+ {
   "path": "ui.js:UI.collection.ebTheSameRowOpened",
   "en": "The same row, opened up"
  },
@@ -2824,6 +2876,10 @@
   "en": "What each column holds"
  },
  {
+  "path": "ui.js:UI.prep.fromSpreadsheetToGoverned.eyebrow",
+  "en": "Notebook 01"
+ },
+ {
   "path": "ui.js:UI.prep.fromSpreadsheetToGoverned.title",
   "en": "From spreadsheet to governed table"
  },
@@ -2842,6 +2898,10 @@
  {
   "path": "ui.js:UI.prep.examplesOfSilentData.title",
   "en": "Examples of silent data bugs"
+ },
+ {
+  "path": "ui.js:UI.prep.pxrdDiffractogramsAsCore.eyebrow",
+  "en": "Analytical diagnostic"
  },
  {
   "path": "ui.js:UI.prep.pxrdDiffractogramsAsCore.title",
@@ -2884,6 +2944,10 @@
   "en": "The other half"
  },
  {
+  "path": "ui.js:UI.prep.switchLane.title",
+  "en": "Switch lane"
+ },
+ {
   "path": "ui.js:UI.prep.etlPxrdSignalProcessing",
   "en": "ETL & PXRD Signal Processing"
  },
@@ -2916,6 +2980,10 @@
   "en": "How to read it"
  },
  {
+  "path": "ui.js:UI.prep.ebCuration",
+  "en": "Curation"
+ },
+ {
   "path": "ui.js:UI.prep.ebADecisionThatCould",
   "en": "A decision that could have been cheating"
  },
@@ -2924,12 +2992,20 @@
   "en": "Filling the gaps"
  },
  {
+  "path": "ui.js:UI.prep.ebTakeaway",
+  "en": "Takeaway"
+ },
+ {
   "path": "ui.js:UI.database.whatIsInThere.eyebrow",
   "en": "At a glance"
  },
  {
   "path": "ui.js:UI.database.whatIsInThere.title",
   "en": "What is in there"
+ },
+ {
+  "path": "ui.js:UI.database.sevenFamiliesAndWhat.eyebrow",
+  "en": "The map"
  },
  {
   "path": "ui.js:UI.database.sevenFamiliesAndWhat.title",
@@ -2944,6 +3020,14 @@
   "en": "The case for it"
  },
  {
+  "path": "ui.js:UI.database.ebTheBoundary",
+  "en": "The boundary"
+ },
+ {
+  "path": "ui.js:UI.database.ebTheSurface",
+  "en": "The surface"
+ },
+ {
   "path": "ui.js:UI.eda.theNotebookBehindThis.eyebrow",
   "en": "The code itself"
  },
@@ -2952,8 +3036,16 @@
   "en": "The notebook behind this screen"
  },
  {
+  "path": "ui.js:UI.eda.whatThisStageSettled.eyebrow",
+  "en": "Takeaway"
+ },
+ {
   "path": "ui.js:UI.eda.whatThisStageSettled.title",
   "en": "What this stage settled"
+ },
+ {
+  "path": "ui.js:UI.eda.dataUnderstanding",
+  "en": "Data Understanding"
  },
  {
   "path": "ui.js:UI.eda.theDecisionHighThroughput",
@@ -2972,8 +3064,28 @@
   "en": "Which rows the model sees"
  },
  {
+  "path": "ui.js:UI.eda.ebProfiling",
+  "en": "Profiling"
+ },
+ {
   "path": "ui.js:UI.eda.ebOneGapDeservesIts",
   "en": "One gap deserves its own section"
+ },
+ {
+  "path": "ui.js:UI.eda.ebTheTarget",
+  "en": "The target"
+ },
+ {
+  "path": "ui.js:UI.eda.ebDistributions",
+  "en": "Distributions"
+ },
+ {
+  "path": "ui.js:UI.eda.ebAssociation",
+  "en": "Association"
+ },
+ {
+  "path": "ui.js:UI.eda.ebClassSeparation",
+  "en": "Class separation"
  },
  {
   "path": "ui.js:UI.eda.ebTheMostImportantSubsection",
@@ -2984,20 +3096,40 @@
   "en": "A last look before modeling"
  },
  {
+  "path": "ui.js:UI.modeling.classificationAndWhyNot.eyebrow",
+  "en": "The framing"
+ },
+ {
   "path": "ui.js:UI.modeling.classificationAndWhyNot.title",
   "en": "Classification, and why not regression"
+ },
+ {
+  "path": "ui.js:UI.modeling.tenModelsNotOne.eyebrow",
+  "en": "Experimental design"
  },
  {
   "path": "ui.js:UI.modeling.tenModelsNotOne.title",
   "en": "Ten models, not one"
  },
  {
+  "path": "ui.js:UI.modeling.whereTheModelStands.eyebrow",
+  "en": "Performance"
+ },
+ {
   "path": "ui.js:UI.modeling.whereTheModelStands.title",
   "en": "Where the model stands"
  },
  {
+  "path": "ui.js:UI.modeling.theMetricsAndWhy.eyebrow",
+  "en": "Evaluation"
+ },
+ {
   "path": "ui.js:UI.modeling.theMetricsAndWhy.title",
   "en": "The metrics, and why accuracy misleads here"
+ },
+ {
+  "path": "ui.js:UI.modeling.whatTheseNumbersActually.eyebrow",
+  "en": "Results"
  },
  {
   "path": "ui.js:UI.modeling.whatTheseNumbersActually.title",
@@ -3010,6 +3142,10 @@
  {
   "path": "ui.js:UI.modeling.theNotebookBehindThis.title",
   "en": "The notebook behind this screen"
+ },
+ {
+  "path": "ui.js:UI.modeling.whatTheModelingStage.eyebrow",
+  "en": "Takeaway"
  },
  {
   "path": "ui.js:UI.modeling.whatTheModelingStage.title",
@@ -3028,8 +3164,24 @@
   "en": "So the split follows the plate"
  },
  {
+  "path": "ui.js:UI.modeling.ebValidation",
+  "en": "Validation"
+ },
+ {
   "path": "ui.js:UI.modeling.ebACriticismOfThe",
   "en": "A criticism of the problem, not the execution"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebAssessment",
+  "en": "Assessment"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebErrorAnalysis",
+  "en": "Error analysis"
+ },
+ {
+  "path": "ui.js:UI.modeling.ebInterpretation",
+  "en": "Interpretation"
  },
  {
   "path": "ui.js:UI.modeling.ebDirectionNotJustMagnitude",
@@ -3048,8 +3200,12 @@
   "en": "How to read this site"
  },
  {
-  "path": "ui.js:UI.overview.theTabsFollowTerm.title",
-  "en": "The tabs follow <Term k=\"CRISP-DM\" /> in order"
+  "path": "ui.js:UI.overview.theTabsFollowTerm.titleBefore",
+  "en": "The tabs follow"
+ },
+ {
+  "path": "ui.js:UI.overview.theTabsFollowTerm.titleAfter",
+  "en": "in order"
  },
  {
   "path": "ui.js:UI.overview.aboutTheAuthor.eyebrow",
@@ -3064,12 +3220,28 @@
   "en": "Augmented Laboratory for Chemistry & Materials"
  },
  {
+  "path": "ui.js:UI.overview.stack",
+  "en": "Stack"
+ },
+ {
+  "path": "ui.js:UI.rag.whatIsActuallyIndexed.eyebrow",
+  "en": "The corpus"
+ },
+ {
   "path": "ui.js:UI.rag.whatIsActuallyIndexed.title",
   "en": "What is actually indexed"
  },
  {
+  "path": "ui.js:UI.rag.sixStagesEndTo.eyebrow",
+  "en": "The workflow"
+ },
+ {
   "path": "ui.js:UI.rag.sixStagesEndTo.title",
   "en": "Six stages, end to end"
+ },
+ {
+  "path": "ui.js:UI.rag.theKnowledgeGraph.eyebrow",
+  "en": "Beyond vectors"
  },
  {
   "path": "ui.js:UI.rag.theKnowledgeGraph.title",
@@ -3084,6 +3256,14 @@
   "en": "Notebooks behind this screen"
  },
  {
+  "path": "ui.js:UI.rag.scientificCoPilot",
+  "en": "Scientific Co-pilot"
+ },
+ {
+  "path": "ui.js:UI.rag.theProblem",
+  "en": "The problem"
+ },
+ {
   "path": "ui.js:UI.rag.theTechniqueBuiltEnd",
   "en": "The technique, built end to end"
  },
@@ -3096,16 +3276,52 @@
   "en": "So it is built and not switched on"
  },
  {
+  "path": "ui.js:UI.rag.ebRetrieval",
+  "en": "Retrieval"
+ },
+ {
+  "path": "ui.js:UI.rag.ebTheUpgrade",
+  "en": "The upgrade"
+ },
+ {
+  "path": "ui.js:UI.rag.ebCapabilities",
+  "en": "Capabilities"
+ },
+ {
   "path": "ui.js:UI.science.mofsLabDailyLife",
   "en": "MOFs & Lab Daily-life"
+ },
+ {
+  "path": "ui.js:UI.science.ebTheMaterial",
+  "en": "The material"
+ },
+ {
+  "path": "ui.js:UI.science.ebCharacterisation",
+  "en": "Characterisation"
  },
  {
   "path": "ui.js:UI.science.ebInsideTheLab",
   "en": "Inside the lab"
  },
  {
+  "path": "ui.js:UI.science.ebTheBottleneck",
+  "en": "The bottleneck"
+ },
+ {
+  "path": "ui.js:UI.science.ebNext",
+  "en": "Next"
+ },
+ {
   "path": "ui.js:UI.model.inSilicoSynthesis.eyebrow",
   "en": "The virtual lab"
+ },
+ {
+  "path": "ui.js:UI.model.inSilicoSynthesis.title",
+  "en": "In-silico synthesis"
+ },
+ {
+  "path": "ui.js:UI.model.whatWasTrainedAnd.eyebrow",
+  "en": "The registry"
  },
  {
   "path": "ui.js:UI.model.whatWasTrainedAnd.title",
@@ -3130,6 +3346,14 @@
  {
   "path": "ui.js:UI.model.andItAgreesWith",
   "en": "And it agrees with the diagnosis"
+ },
+ {
+  "path": "ui.js:UI.model.ebGovernance",
+  "en": "Governance"
+ },
+ {
+  "path": "ui.js:UI.model.ebFeedback",
+  "en": "Feedback"
  },
  {
   "path": "workflow.js:AREAS[0].subtitle",
