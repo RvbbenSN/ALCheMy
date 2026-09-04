@@ -169,7 +169,7 @@ const ETL_STEP_ICONS = { extract: Download, transform: Wand2, load: Database }
 export default function DataPreparation() {
   const { UI } = useBundle(UI_EN, UI_ES)
   const { ETL_DEFECTS, ETL_EXCLUSION, ETL_IMPUTATION, ETL_STOICHIOMETRY, ETL_TANNIC, ETL_THERMAL, ETL_ZERO_VS_NULL } = useBundle(SCREENS_EN, SCREENS_ES)
-  const { DESCRIPTOR_GROUPS, DESCRIPTOR_RECAP, ELEMENT_INTRO, LANES, LINKER_FEATURES, METAL_FEATURES, PREP_INTRO, PREP_TAKEAWAY, SYNTH_GROUPS, SYNTH_PREVIEW, WHY_PXRD } = useBundle(PREP_EN, PREP_ES)
+  const { DESCRIPTOR_GROUPS, DESCRIPTOR_RECAP, ELEMENT_INTRO, LANES, LINKER_FEATURES, METAL_FEATURES, PREP_INTRO, PREP_TAKEAWAY, PREP_UI, SYNTH_GROUPS, SYNTH_PREVIEW, WHY_PXRD } = useBundle(PREP_EN, PREP_ES)
 
   /* Si se llega con #descriptors (el enlace desde la pantalla 04), hay que
      abrir la via de caracterizacion: la seccion enlazada vive dentro de ella y
@@ -260,7 +260,7 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow={UI.prep.whatEachColumnHolds.eyebrow}>{UI.prep.whatEachColumnHolds.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              Forty-six columns in five blocks, plus the timestamps the database keeps on its own.
+              {PREP_UI.columnsIntro}
             </p>
             <div className="flex flex-col gap-4">
               {SYNTH_GROUPS.map((g) => {
@@ -287,18 +287,14 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow={UI.prep.fromSpreadsheetToGoverned.eyebrow}>{UI.prep.fromSpreadsheetToGoverned.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              Five years of handwritten synthesis conditions lived in one multi-tab Excel file with
-              arbitrary headers.
+              {PREP_UI.notebook01Intro}
             </p>
 
             <div className="flex flex-col gap-4">
               <Card>
                 <h3 className="text-base">{UI.prep.paso1HeaderNormalisation}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  A master mapping dictionary translates arbitrary spreadsheet headers into a strict SQL
-                  schema. Kept as an explicit dictionary rather than automatic slug-casing, so that
-                  renaming a column in the spreadsheet produces a visible failure instead of a silently
-                  new column.
+                  {PREP_UI.step1Body}
                 </p>
               </Card>
 
@@ -342,17 +338,14 @@ export default function DataPreparation() {
               <Card>
                 <h3 className="text-base">{UI.prep.paso4AnMd5Business}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  A checksum over six business fields — sample code, date, researcher, unit, metal centre
-                  and linker — gives every synthesis an identity derived from what it <em>is</em>, not from
-                  the row it happened to occupy. Two spreadsheets describing the same experiment collapse
-                  to the same key. See <Term k="MD5" />.
+                  <Rich>{PREP_UI.step4Before}</Rich> <Term k="MD5" />{PREP_UI.step4After}
                 </p>
               </Card>
 
               <Card accent>
                 <h3 className="text-base">{UI.prep.paso5TheLoadIs}</h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  The synthesis table is written by both this ETL notebook and the live ingestion pipeline. Using an UPSERT (on conflict: update) keyed on sample_code guarantees that batch updates never overwrite or erase newly ingested records.
+                  <Rich>{PREP_UI.step5Body}</Rich>
                 </p>
               </Card>
             </div>
@@ -364,7 +357,7 @@ export default function DataPreparation() {
               <Card>
                 <h3 className="flex items-center gap-2 text-base">
                   <Atom size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
-                  Metal featurization
+                  {PREP_UI.metalFeaturizationTitle}
                 </h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{ELEMENT_INTRO.problem}</Rich>
@@ -376,7 +369,7 @@ export default function DataPreparation() {
               <Card accent>
                 <h3 className="flex items-center gap-2 text-base">
                   <Link2 size={17} aria-hidden style={{ color: 'var(--accent-tertiary)' }} />
-                  Linker featurization
+                  {PREP_UI.linkerFeaturizationTitle}
                 </h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{ELEMENT_INTRO.payoff}</Rich>
@@ -388,7 +381,7 @@ export default function DataPreparation() {
               <div>
                 <h3 className="mb-3 flex items-center gap-2 text-base">
                   <Atom size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
-                  Eight numbers for the metal
+                  {PREP_UI.eightNumbersTitle}
                   <span className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                     mendeleev · pymatgen
                   </span>
@@ -398,7 +391,7 @@ export default function DataPreparation() {
               <div>
                 <h3 className="mb-3 flex items-center gap-2 text-base">
                   <Link2 size={17} aria-hidden style={{ color: 'var(--accent-tertiary)' }} />
-                  Six for the linker
+                  {PREP_UI.sixForLinkerTitle}
                   <span className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                     RDKit
                   </span>
@@ -411,7 +404,7 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow={UI.prep.examplesOfSilentData.eyebrow}>{UI.prep.examplesOfSilentData.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              A model can run smoothly on corrupted data without throwing errors. These examples show why revisions are neccesary.
+              {PREP_UI.defectsIntro}
             </p>
             <ol className="flex list-none flex-col gap-4 p-0">
               {ETL_DEFECTS.map((d) => (
@@ -427,11 +420,11 @@ export default function DataPreparation() {
                       <div>
                         <h3 className="text-base"><Rich>{d.defect}</Rich></h3>
                         <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                          <strong style={{ color: 'var(--text-primary)' }}>How it surfaced. </strong>
+                          <strong style={{ color: 'var(--text-primary)' }}>{PREP_UI.howItSurfacedLabel} </strong>
                           <Rich>{d.found}</Rich>
                         </p>
                         <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                          <strong style={{ color: 'var(--status-pure)' }}>Fix. </strong>
+                          <strong style={{ color: 'var(--status-pure)' }}>{PREP_UI.fixLabel} </strong>
                           <Rich>{d.fix}</Rich>
                         </p>
                       </div>
@@ -448,9 +441,7 @@ export default function DataPreparation() {
               </p>
               <Pullquote><Rich>{ETL_ZERO_VS_NULL.pullquote}</Rich></Pullquote>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                The check that proves defects 4 and 5 are genuinely fixed: the composition of the medium
-                now sums to 1.000. Before the correction the mean was 0.789 — and version 2 had no such
-                check, which is precisely why the fault survived.
+                <Rich>{PREP_UI.zeroVsNullCheck}</Rich>
               </p>
             </Card>
           </section>
@@ -483,8 +474,7 @@ export default function DataPreparation() {
               <p style={{ color: 'var(--text-secondary)' }}><Rich>{ETL_IMPUTATION.body}</Rich></p>
               <Pullquote tone="amorphous"><Rich>{ETL_IMPUTATION.leak}</Rich></Pullquote>
               <p className="mb-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                The alternative — explicitly flagging which values were missing, letting the model learn
-                from the fact of absence — was tested rather than assumed:
+                <Rich>{PREP_UI.imputationAlt}</Rich>
               </p>
               <ScrollTable head={ETL_IMPUTATION.tableHead} rows={ETL_IMPUTATION.tableRows} />
               <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -529,7 +519,7 @@ export default function DataPreparation() {
               <Card accent>
                 <h3 className="flex items-center gap-2 text-base">
                   <Ruler size={17} aria-hidden style={{ color: 'var(--accent-primary)' }} />
-                  Why it goes first
+                  {PREP_UI.whyItGoesFirstTitle}
                 </h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{WHY_PXRD.gate}</Rich>
@@ -541,7 +531,7 @@ export default function DataPreparation() {
               <Card>
                 <h3 className="flex items-center gap-2 text-base">
                   <Microscope size={17} aria-hidden style={{ color: 'var(--accent-tertiary)' }} />
-                  And why the model predicts it
+                  {PREP_UI.andWhyModelPredictsTitle}
                 </h3>
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Rich>{WHY_PXRD.why_model}</Rich>
@@ -553,38 +543,29 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow={UI.prep.fromRawSignalTo.eyebrow}>{UI.prep.fromRawSignalTo.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              A machine learning model cannot ingest thousands of raw (2theta, Intensity) points as tabular features. Here, each <strong>diffraction pattern is decomposed into its physical components </strong>—instrument background, diffuse amorphous halo, and Bragg peaks—extracting 29 quantitative descriptors that capture crystal order, peak geometry, and signal quality.
+              <Rich>{PREP_UI.pxrdDecompositionIntro}</Rich>
             </p>
             <PxrdChart />
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <Card accent>
                 <h3 className="text-base">{UI.prep.whatTheThreeLayers}</h3>
                 <ul className="mt-3 flex list-none flex-col gap-3 p-0 text-sm">
-                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>Dashed baseline — instrument noise.</strong>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      Measured directly from an empty sample holder on the same diffractometer (air
-                      scatter, detector drift), not fitted. Fitting a smooth curve instead — an{' '}
-                      <Term k="arPLS" /> baseline — works only while the halo is narrower than the scan;
-                      in a genuinely amorphous sample the fitted curve climbs onto the halo and carries
-                      it away, leaving <strong>0.4% of the area as halo</strong> on the amorphous example
-                      below when the sample is almost entirely halo.
+                  <li style={{ borderLeft: "2px solid var(--accent-primary)", paddingLeft: "0.75rem" }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{PREP_UI.layers[0].label}</strong>{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      <Rich>{PREP_UI.layers[0].before}</Rich> <Term k="arPLS" /> <Rich>{PREP_UI.layers[0].after}</Rich>
                     </span>
                   </li>
-                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>Diffuse halo — amorphous fraction.</strong>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      The broad hump from short-range disorder. It is true chemical signal, not
-                      background — measured correctly (baseline subtracted, not fitted), it comes back at{' '}
-                      <strong>18% of the total area</strong> on that same example, 94% of what the sample
-                      itself scattered. It is what separates a failed synthesis from a disordered solid.
+                  <li style={{ borderLeft: "2px solid var(--accent-primary)", paddingLeft: "0.75rem" }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{PREP_UI.layers[1].label}</strong>{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      <Rich>{PREP_UI.layers[1].body}</Rich>
                     </span>
                   </li>
-                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>Sharp Bragg peaks — crystalline order.</strong>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      Constructive interference from periodic (hkl) crystal planes. Their position,
-                      intensity and width (FWHM) are what identify the crystalline phase.
+                  <li style={{ borderLeft: "2px solid var(--accent-primary)", paddingLeft: "0.75rem" }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{PREP_UI.layers[2].label}</strong>{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      <Rich>{PREP_UI.layers[2].body}</Rich>
                     </span>
                   </li>
                 </ul>
@@ -592,26 +573,22 @@ export default function DataPreparation() {
               <Card accent>
                 <h3 className="text-base">{UI.prep.peakDetectionThe3}</h3>
                 <ul className="mt-3 flex list-none flex-col gap-3 p-0 text-sm">
-                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>Poisson noise scale.</strong>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      X-ray detection is photon counting, so noise follows Poisson statistics: its scale
-                      is the square root of the counts.
+                  <li style={{ borderLeft: "2px solid var(--accent-primary)", paddingLeft: "0.75rem" }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{PREP_UI.sigma[0].label}</strong>{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      <Rich>{PREP_UI.sigma[0].body}</Rich>
                     </span>
                   </li>
-                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>The 3σ floor.</strong>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      A local maximum only counts as a genuine reflection once its height clears three
-                      times the noise level above the local background.
+                  <li style={{ borderLeft: "2px solid var(--accent-primary)", paddingLeft: "0.75rem" }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{PREP_UI.sigma[1].label}</strong>{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      <Rich>{PREP_UI.sigma[1].body}</Rich>
                     </span>
                   </li>
-                  <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem' }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>Why not looser.</strong>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      Three sigma is the level for <em>one</em> comparison — scanning thousands of points
-                      for a maximum needs a stricter level, or noise gets misread as reflections. The
-                      threshold drawn here is the honest floor, not the final criterion.
+                  <li style={{ borderLeft: "2px solid var(--accent-primary)", paddingLeft: "0.75rem" }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{PREP_UI.sigma[2].label}</strong>{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      <Rich>{PREP_UI.sigma[2].body}</Rich>
                     </span>
                   </li>
                 </ul>
@@ -622,25 +599,20 @@ export default function DataPreparation() {
           <section>
             <SectionTitle eyebrow={UI.prep.labelerExplorer.eyebrow}>{UI.prep.labelerExplorer.title}</SectionTitle>
             <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-              Two Streamlit tools, built for this project. The <strong>labeler</strong> produced four
-              independent verdicts per pattern over 1,877 diffractograms — crystallinity class, incipient
-              subtype, oxide flag and suspected multiphase. The <strong>explorer</strong> is where the
-              signal-processing pipeline was tuned, curve by curve, before it was trusted on all of them.
-            </p>
-            <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{PREP_UI.labelerExplorerIntro}</Rich>
             </p>
             <div className="grid gap-6 lg:grid-cols-2">
               <ScreenRecording
                 src="/video/pxrd_labeler.mp4"
-                title="The labeler"
+                title={PREP_UI.labelerTitle}
                 duration="7:12"
-                note="One pattern at a time: the four verdicts on the right, written straight into pxrd_labels."
+                note={PREP_UI.labelerNote}
               />
               <ScreenRecording
                 src="/video/pxrd_explorer.mp4"
-                title="The explorer"
+                title={PREP_UI.explorerTitle}
                 duration="2:08"
-                note="Baseline, amorphous halo and Bragg peaks separated live, with every descriptor recomputed as the parameters move."
+                note={PREP_UI.explorerNote}
               />
             </div>
           </section>
@@ -659,8 +631,8 @@ export default function DataPreparation() {
             <div className="mb-6">
               <NotebookFigure
                 src="nb05-17.png"
-                alt="Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from"
-                caption="Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics."
+                alt={PREP_UI.descriptorFigureAlt}
+                caption={PREP_UI.descriptorFigureCaption}
                 source="notebook 05"
               />
             </div>
@@ -732,7 +704,7 @@ export default function DataPreparation() {
                 color: 'var(--text-secondary)',
               }}
             >
-              <strong style={{ color: 'var(--text-primary)' }}>A physical note on descriptor validity. </strong>
+              <strong style={{ color: 'var(--text-primary)' }}>{PREP_UI.physicalNoteLabel} </strong>
               <Rich>{DESCRIPTOR_RECAP.caveat}</Rich>
             </p>
           </section>
@@ -747,7 +719,7 @@ export default function DataPreparation() {
         </p>
         <NotebookList only="03" />
         <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-          The full set of seven notebooks is linked from the screen each one belongs to.
+          {PREP_UI.notebooksFootnote}
         </p>
       </section>
 
@@ -755,7 +727,7 @@ export default function DataPreparation() {
       <section>
         <SectionTitle eyebrow={UI.prep.switchLane.eyebrow}>{UI.prep.switchLane.title}</SectionTitle>
         <p className="mb-4 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          This screen has two halves and you have just finished one of them.
+          {PREP_UI.switchLaneIntro}
         </p>
         <LaneSwitch
           lane={lane}

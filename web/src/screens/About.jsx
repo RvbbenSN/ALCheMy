@@ -74,6 +74,7 @@ function ContactForm() {
   const { UI } = useBundle(UI_EN, UI_ES)
   /* Componente aparte del de la pantalla: pide su propio paquete. */
   const { SITE } = useBundle(SITE_EN, SITE_ES)
+  const { ABOUT_UI } = useBundle(ABOUT_EN, ABOUT_ES)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
 
@@ -86,17 +87,16 @@ function ContactForm() {
     <Card>
       <h3 className="text-base">{UI.about.saySomething}</h3>
       <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        Thoughts on the platform, a question about the chemistry, an opportunity — whatever it is, it
-        reaches <code><Rich>{SITE.email}</Rich></code>.
+        {ABOUT_UI.contactIntroBefore} <code><Rich>{SITE.email}</Rich></code>.
       </p>
 
       <label className="mt-4 block text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-        Subject
+        {ABOUT_UI.formSubjectLabel}
         <input
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          placeholder="A note about ALCheMy"
+          placeholder={ABOUT_UI.formSubjectPlaceholder}
           className="mt-1.5 w-full rounded-[var(--radius-badge)] p-2.5 text-sm"
           style={{
             border: '2px solid var(--surface-border)',
@@ -110,12 +110,12 @@ function ContactForm() {
       </label>
 
       <label className="mt-3 block text-xs uppercase tracking-wider" style={{ color: 'var(--accent-secondary-text)' }}>
-        Message
+        {ABOUT_UI.formMessageLabel}
         <textarea
           rows={5}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Write here…"
+          placeholder={ABOUT_UI.formMessagePlaceholder}
           className="mt-1.5 w-full rounded-[var(--radius-badge)] p-2.5 text-sm"
           style={{
             border: '2px solid var(--surface-border)',
@@ -139,10 +139,10 @@ function ContactForm() {
         }}
       >
         <Send size={15} aria-hidden />
-        Open in my mail app
+        {ABOUT_UI.formSendButton}
       </a>
       <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-        This opens your own mail client with the message ready to send. Nothing is stored here.
+        {ABOUT_UI.formFootnote}
       </p>
     </Card>
   )
@@ -151,7 +151,7 @@ function ContactForm() {
 export default function About() {
   const { UI } = useBundle(UI_EN, UI_ES)
   const { BIO_ABOUT, SITE } = useBundle(SITE_EN, SITE_ES)
-  const { EDUCATION, EXPERIENCE, HEADLINE, METRICS, FUNDING, OUTREACH, PROJECTS, PUBLICATIONS, PUBLICATION_SUMMARY, SKILLS } = useBundle(ABOUT_EN, ABOUT_ES)
+  const { ABOUT_UI, EDUCATION, EXPERIENCE, HEADLINE, METRICS, FUNDING, OUTREACH, PROJECTS, PUBLICATIONS, PUBLICATION_SUMMARY, SKILLS } = useBundle(ABOUT_EN, ABOUT_ES)
 
   return (
     <div className="flex flex-col gap-16">
@@ -171,7 +171,7 @@ export default function About() {
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
           <LinkButton href={SITE.cv} icon={Download} primary>
-            Download CV
+            {ABOUT_UI.downloadCv}
           </LinkButton>
           <LinkButton href={SITE.linkedin} icon={Contact}>
             LinkedIn
@@ -293,13 +293,13 @@ export default function About() {
                     className="inline-flex items-center gap-1 text-sm no-underline"
                     style={{ color: 'var(--accent-primary)' }}
                   >
-                    Read the paper
+                    {ABOUT_UI.readThePaper}
                     <ExternalLink size={13} aria-hidden />
                   </a>
                 )}
                 {typeof p.cites === 'number' && (
                   <span className="mono text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {p.cites} {p.cites === 1 ? 'citation' : 'citations'}
+                    {p.cites} {p.cites === 1 ? ABOUT_UI.citation : ABOUT_UI.citations}
                   </span>
                 )}
               </div>
@@ -319,8 +319,7 @@ export default function About() {
         <SectionTitle eyebrow={UI.about.competitiveRDProjects.eyebrow}>{UI.about.competitiveRDProjects.title}</SectionTitle>
         <Card>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Six competitive projects at European, national and regional level, contributing to data
-            analysis and technical reporting.
+            {ABOUT_UI.projectsIntro}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {PROJECTS.map((p) => (
@@ -355,8 +354,8 @@ export default function About() {
             ))}
           </ul>
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Combined budget of the projects funding that work: <strong><Rich>{FUNDING.total}</Rich></strong>. Principal
-            investigator in all of them: Dr. Patricia Horcajada.
+            {ABOUT_UI.fundingClosingBefore} <strong><Rich>{FUNDING.total}</Rich></strong>
+            {ABOUT_UI.fundingClosingAfter}
           </p>
         </Card>
       </section>
@@ -396,7 +395,7 @@ export default function About() {
                   className="mt-3 inline-flex items-center gap-1 text-sm no-underline"
                   style={{ color: 'var(--accent-primary)' }}
                 >
-                  Read it
+                  {ABOUT_UI.readIt}
                   <ExternalLink size={13} aria-hidden />
                 </a>
               )}
@@ -433,9 +432,7 @@ export default function About() {
               </a>
             </div>
             <p className="mt-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              The code behind this platform is on GitHub; the data it runs on is not, and neither are the
-              unpublished ligands. That distinction is deliberate and is explained on the screens
-              themselves.
+              {ABOUT_UI.finalNote}
             </p>
           </Card>
         </div>

@@ -61,6 +61,11 @@ export const MODEL_LOOP = {
      knowledge_map.json, que las cuenta. La primera version de este parrafo
      decia "54 de 63 casillas", que salia de contar ternas
      (temperatura, modulador, veredicto) en vez de casillas. Son 18. */
+  coverageOf: 'of',
+  coverageCellsRun: 'cells have been run',
+  coverageAndThatIsFor: '— and that is for',
+  coverageMetalWithHistory: ', the metal with the most history behind it',
+  coverageSyntheses: 'syntheses',
   readingPoints: [
     '**Most of the plane has never been visited.** Even for Ca, the metal with the most history behind it, the syntheses pile up in a handful of cells.',
     '**The model hesitates almost everywhere**, including where the laboratory has looked.',

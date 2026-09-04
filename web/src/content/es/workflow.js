@@ -137,9 +137,9 @@ export const AREAS = [
     "tableIntro": "Todos los parsers, tanto en Python como en JavaScript, devuelven la misma forma de diccionario, y `data_json` siempre contiene `header_metadata` y `raw_data`. Se guarda como **JSONB** con un índice GIN, así que un agente puede consultar cualquier técnica de manera uniforme.",
     "table": {
       "head": [
-        "Format",
-        "Instrument",
-        "Comments"
+        "Formato",
+        "Instrumento",
+        "Comentarios"
       ],
       "rows": [
         [

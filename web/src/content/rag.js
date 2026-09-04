@@ -162,6 +162,9 @@ export const RAG_AREAS = [
 ]
 
 /* Las capas de recuperacion, en el orden en que se anadieron. */
+export const RAG_WORKFLOW_INTRO =
+  'Two flows share one canvas: the top band indexes documents and runs by hand whenever the corpus grows; the bottom band answers a question and runs on every message. Pick a stage to fly to it, or take the last stop for the whole thing at once.'
+
 export const RAG_RETRIEVAL = {
   title: 'Three retrievers, not one',
   lead:

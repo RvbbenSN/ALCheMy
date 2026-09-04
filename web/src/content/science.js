@@ -16,12 +16,17 @@ export const SCIENCE_INTRO =
 export const MOF_DEF = {
   acronym: 'MOF',
   expansion: 'Metal-Organic Framework',
+  /* El titulo "What is a {acronym}?" iba escrito en el JSX, partido alrededor
+     de la sigla dinamica -- por eso no paso ninguna extraccion. */
+  titleBefore: 'What is a',
+  titleAfter: '?',
   iupac:
     'A coordination network with organic ligands containing potential voids.',
   iupacNote: 'IUPAC recommendation, 2013.',
   plain:
     'In a nutshell, **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold.',
   why: 'Because both parts can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today.',
+  renderingAlt: 'Rendering of metal nodes, shown as golden octahedra, linked by burgundy organic ligands into an extended porous framework',
 }
 
 export const MOF_FACTS = [
@@ -57,6 +62,7 @@ export const NOBEL = {
   title: 'Nobel Prize in Chemistry',
   laureates: 'Susumu Kitagawa, Richard Robson and Omar Yaghi',
   reason: 'For establishing the foundations of metal-organic frameworks and reticular chemistry.',
+  photoAlt: 'Illustrated portraits of the 2025 Nobel laureates in Chemistry',
   credit: '© Nobel Prize Outreach. Illustration: Niklas Elmehed.',
 }
 
@@ -70,6 +76,8 @@ export const WHY_CHARACTERISE = {
   /* Y esto va en la caja de nota, condensado. */
   consequence:
     'Every promising sample generates files from several instruments, each written in its own format. Multiply that by thousands of samples and it stops being a chemistry problem — it becomes a **data management and processing challenge**.',
+  gridIntro: 'The nine techniques behind this platform. Each answers one question; none answers two.',
+  metalNodesCaption: 'Metal nodes, drawn as octahedra, joined by organic linkers into an extended network.',
   /* Cifras auditadas el 2026-09-03. Las medidas salen de
      `characterization_measurements`. Los ficheros, de contar el data lake
      historico (`data/raw_datalake_historico`) descartando lo que no escribio un
@@ -174,6 +182,7 @@ export const BOTTLENECK = {
   hookTitle: 'Which leaves one problem unsolved',
   hook:
     'Thousands of instrument files, several formats... and nothing stopping the same file being saved twice under two names. What is needed is specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**',
+  linkText: 'The ingestion workflow',
 }
 
 /* --- La escala del dato ----------------------------------------------------

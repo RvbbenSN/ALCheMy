@@ -10,6 +10,11 @@ export const MODEL_LOOP = {
   "title": "Una brújula, no un oráculo",
   "metaphor": "Piensa en el espacio de síntesis como un mapa a oscuras. Los experimentos ya hechos iluminan unos pocos trozos. Un modelo predictivo no es una máquina que da la respuesta: es **una brújula**, y apunta hacia donde caminar iluminaría más terreno nuevo.",
   "method": "Y la dirección que señala no es \"donde hay más probabilidad de cristales\". Un experimento hecho donde el modelo ya está seguro confirma lo que ya sabía. El sitio útil es **donde duda**, porque allí cualquiera de los dos resultados lo corrige. Eso es lo que mide el mapa de abajo: la entropía de la distribución predicha, casilla a casilla.",
+  "coverageOf": "de",
+  "coverageCellsRun": "casillas se han probado",
+  "coverageAndThatIsFor": "— y eso es para",
+  "coverageMetalWithHistory": ", el metal con más historial detrás",
+  "coverageSyntheses": "syntheses",
   "readingPoints": [
     "**La mayor parte del plano no se ha visitado nunca.** Incluso para el Ca, el metal con más historia detrás, las síntesis se amontonan en un puñado de casillas.",
     "**El modelo duda casi en todas partes**, incluso donde el laboratorio sí ha mirado.",
@@ -25,7 +30,7 @@ export const MODEL_REGISTRY = {
   "tables": [
     {
       "name": "ml_datasets",
-      "head": "What it was trained on",
+      "head": "Con qué se entrenó",
       "body": "El SQL literal que seleccionó las filas, más su SHA-256. Dos modelos que comparten consulta pero difieren en número de filas **no** se entrenaron sobre lo mismo, y el hash hace detectable esa diferencia."
     },
     {
@@ -35,17 +40,17 @@ export const MODEL_REGISTRY = {
     },
     {
       "name": "ml_model_features",
-      "head": "Which columns went in, and which did not",
+      "head": "Qué columnas entraron, y cuáles no",
       "body": "Cada columna de entrada con su posición en el contrato, y cada una **excluida** con el motivo de la exclusión. `reactor_volume_ml` queda registrada como varianza cero, y `fill_fraction` como perfectamente colineal con ella."
     },
     {
       "name": "ml_model_metrics",
-      "head": "What it scored",
+      "head": "Qué puntuó",
       "body": "Métricas en formato largo, una fila por métrica, por clase y por partición, así que añadir una métrica nueva nunca obliga a alterar el esquema."
     },
     {
       "name": "ml_model_artifacts",
-      "head": "The binary, and its fingerprint",
+      "head": "El binario, y su huella",
       "body": "El pipeline serializado con un SHA-256 que se comprueba en cada carga. Vive en su propia tabla para que una copia de seguridad ligera pueda saltárselo: es la única parte que una receta completa puede regenerar."
     }
   ],

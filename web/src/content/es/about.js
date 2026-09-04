@@ -2,6 +2,25 @@
    se sobrescribe. Para corregir una frase, cambiarla en scripts/textos_es.json
    y volver a ejecutar el script. Lo que no este traducido sale en ingles. */
 
+export const ABOUT_UI = {
+  "downloadCv": "Download CV",
+  "readThePaper": "Leer el artículo",
+  "citation": "citation",
+  "citations": "citations",
+  "projectsIntro": "Seis proyectos competitivos a nivel europeo, nacional y regional, con aportación al análisis de datos y a la memoria técnica.",
+  "fundingClosingBefore": "Presupuesto combinado de los proyectos que financiaron ese trabajo:",
+  "fundingClosingAfter": ". Investigadora principal en todos ellos: Dra. Patricia Horcajada.",
+  "readIt": "Read it",
+  "finalNote": "El código de esta plataforma está en GitHub; los datos sobre los que corre no, y tampoco los ligandos sin publicar. Esa distinción es deliberada y se explica en las propias pantallas.",
+  "contactIntroBefore": "Ideas sobre la plataforma, una pregunta de química, una oportunidad — sea lo que sea, llega a",
+  "formSubjectLabel": "Subject",
+  "formSubjectPlaceholder": "Una nota sobre ALCheMy",
+  "formMessageLabel": "Message",
+  "formMessagePlaceholder": "Write here…",
+  "formSendButton": "Abrir en mi cliente de correo",
+  "formFootnote": "Esto abre tu propio cliente de correo con el mensaje listo para enviar. Aquí no se guarda nada."
+}
+
 export const EDUCATION = [
   {
     "when": "Abr 2026 — actualidad",

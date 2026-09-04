@@ -12,21 +12,22 @@ export const COLLECTION_PROBLEM = {
   "body1": "Miles de ficheros de instrumento en nueve formatos, ninguno enlazado con su síntesis. Procesar **6.073 ficheros en crudo** a mano significaría teclear sin fin y errores humanos inevitables.",
   "body2": "En su lugar, se encarga el workflow. Los ficheros que entran se autentican, se les toma huella contra duplicados y se enrutan por técnica: los parsers deterministas se ocupan de los datos tabulares, mientras agentes de IA especializados extraen informes PDF sin estructura e imágenes de microscopía, **registrando cada paso en una traza de auditoría**.",
   "builtWith": "Construido en **n8n**, una herramienta de automatización de flujos: cada caja del lienzo de abajo es un nodo real de una instancia en marcha.",
+  "seeOnGithub": "Ver el workflow en GitHub",
   "guaranteesTitle": "Qué garantiza el workflow",
   "guarantees": [
     {
       "icon": "link",
-      "lead": "Attribution",
+      "lead": "Atribución",
       "body": "Cada medida queda enlazada con la síntesis de la que salió, por código de muestra, y con la persona que la envió."
     },
     {
       "icon": "fingerprint",
-      "lead": "No duplicates",
+      "lead": "Sin duplicados",
       "body": "Una huella criptográfica del contenido del fichero rechaza una segunda copia antes de parsearla."
     },
     {
       "icon": "shapes",
-      "lead": "Uniform shape",
+      "lead": "Forma uniforme",
       "body": "Nueve formatos se convierten en una única forma de fila, así que una consulta puede abarcar varias técnicas sin saber nada de instrumentos."
     },
     {
@@ -38,6 +39,12 @@ export const COLLECTION_PROBLEM = {
 }
 
 export const COLLECTION_ROW_INTRO = "Todo camino por este workflow tiene que llegar a la escritura en la base llevando exactamente estos campos. Piensa en el elemento como una bola de nieve que rueda por el pipeline y va recogiendo más de esta forma en cada etapa. Si al llegar todavía falta un campo, la inserción falla en seco contra una restricción."
+
+export const COLLECTION_SCHEMA_NOTE = {
+  "before": "Todo camino por este workflow tiene que llegar a la escritura en la base llevando exactamente estos campos, y cada decisión automática que toma acaba en `audit_log` con un veredicto y una causa tipados.",
+  "linkText": "La pantalla 08 despieza el esquema",
+  "after": "— las tablas, qué guarda cada una, y cómo se alimentan entre sí."
+}
 
 export const COLLECTION_TREE = {
   "title": "Un ejemplo de fichero ingerido",

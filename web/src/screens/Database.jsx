@@ -44,7 +44,7 @@ function headline(t) {
 
 export default function DatabaseScreen() {
   const { UI } = useBundle(UI_EN, UI_ES)
-  const { DB_BOUNDARY, DB_HERO, DB_VIEWS, DB_WHY } = useBundle(DATABASE_EN, DATABASE_ES)
+  const { DB_BOUNDARY, DB_FAMILIES_INTRO, DB_HERO, DB_VIEWS, DB_WHY } = useBundle(DATABASE_EN, DATABASE_ES)
 
   const stats = headline(SCHEMA.totals)
   /* Las tablas que el agente puede leer a traves de sus funciones. Se derivan
@@ -101,8 +101,7 @@ export default function DatabaseScreen() {
       <section>
         <SectionTitle eyebrow={UI.database.sevenFamiliesAndWhat.eyebrow}>{UI.database.sevenFamiliesAndWhat.title}</SectionTitle>
         <p className="mb-5 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          Everything starts at the laboratory record and fans out from it. Pick a block to see its
-          tables, their size, and the description each one carries inside PostgreSQL.
+          {DB_FAMILIES_INTRO}
         </p>
         <SchemaMap />
       </section>
@@ -164,7 +163,7 @@ export default function DatabaseScreen() {
                 className="text-xs uppercase tracking-wider"
                 style={{ color: 'var(--text-muted)' }}
               >
-                The agent
+                {DB_BOUNDARY.agentLabel}
               </span>
             </div>
 
@@ -198,7 +197,7 @@ export default function DatabaseScreen() {
                 ))}
               </div>
               <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                Reached only through these {SCHEMA.functions.length} stored functions:
+                {DB_BOUNDARY.functionsIntroBefore} {SCHEMA.functions.length} {DB_BOUNDARY.functionsIntroAfter}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {SCHEMA.functions.map((f) => (

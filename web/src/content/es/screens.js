@@ -26,12 +26,16 @@ export const EDA_BIVARIATE = {
   ],
   "shapesLink": "De dónde salen esos 29 números, descriptor a descriptor",
   "ordering": "Sí ordenan las clases con limpieza: todos los descriptores probados suben o bajan **monótonamente** de amorfo a incipiente y de ahí a cristalino. Los números coinciden con los veredictos humanos en la dirección del efecto.",
-  "body": "Pero ordenar no es separar. En los diagramas de caja de abajo las cajas **se solapan en todas las variables probadas**: una muestra incipiente y una cristalina pueden compartir el mismo número de picos, la misma anchura, la misma entropía. Ese solape es la definición de un problema multivariante, y la razón de que haga falta un modelo y no un umbral."
+  "body": "Pero ordenar no es separar. En los diagramas de caja de abajo las cajas **se solapan en todas las variables probadas**: una muestra incipiente y una cristalina pueden compartir el mismo número de picos, la misma anchura, la misma entropía. Ese solape es la definición de un problema multivariante, y la razón de que haga falta un modelo y no un umbral.",
+  "distributionsNote": "Las medianas se separan; las *distribuciones* que hay detrás se solapan. Una variable puede desplazarse de clase en clase y aun así no llegar a clasificar ni una sola muestra."
 }
 
 export const EDA_CONFOUNDER = {
   "title": "El factor de confusión que casi arruina el análisis",
   "intro": "El registro contiene tres formas de fabricar un material, y una versión anterior de este análisis las mezcló sin mirar. Los números:",
+  "microwaveRowBefore": "Fíjate en la fila del microondas: el segmento amorfo no es pequeño, es",
+  "microwaveRowEmphasis": "inexistente",
+  "microwaveRowAfter": ".",
   "tableHead": [
     "Synthesis type",
     "Amorphous",
@@ -86,6 +90,10 @@ export const EDA_CONFOUNDER = {
 
 export const EDA_CORRELATION = {
   "title": "Correlación: dos preguntas distintas",
+  "featureMapFigureAlt": "Mapa de correlación entre variables",
+  "featureMapFigureCaption": "Variable contra variable. Los bloques rojos son en su mayoría propiedades del mismo metal, correlacionadas por física —no es un problema, sino la razón por la que la interpretación final se hace por bloque químico.",
+  "targetAssociationFigureAlt": "Asociación de cada variable con la clase objetivo, veinte variables numéricas principales",
+  "targetAssociationFigureCaption": "Asociación con el objetivo, medida por razón de correlación en vez de Pearson —el objetivo tiene tres categorías, no una magnitud.",
   "questions": [
     {
       "title": "¿Se mueven juntas dos variables de entrada?",
@@ -204,6 +212,7 @@ export const EDA_IMBALANCE = {
 export const EDA_INTRO = {
   "acronym": "EDA",
   "expansion": "Análisis Exploratorio de Datos",
+  "hook": "Todo lo que sigue cambió el plan antes de entrenar un solo modelo.",
   "steps": [
     {
       "key": "look",
@@ -239,13 +248,16 @@ export const EDA_INTRO = {
       "Hidden structure",
       "Filas que no son independientes entre sí, lo que hace que una partición aleatoria mienta"
     ]
-  ]
+  ],
+  "foundIntro": "Lo que este encontró, en orden:"
 }
 
 export const EDA_LEAKAGE = {
   "title": "Estructura oculta: por qué una partición aleatoria mentiría",
   "body": "Cada fila es **una síntesis**: un pocillo de una placa de 24, con sus condiciones y el veredicto de su difractograma. Esas filas **no son independientes entre sí**. Una placa es un lote preparado el mismo día, con el mismo conector, la misma rampa térmica y a menudo el mismo metal, barriendo una variable. Y las placas son homogéneas por dentro: conocer un pocillo te dice casi todo lo que hicieron sus 23 vecinos.",
   "consequence": "Una partición aleatoria pondría muestras de la misma placa en entrenamiento y en test. El modelo no necesitaría aprender nada de química: **le bastaría con reconocer la placa**. La puntuación saldría inflada y falsa. Por eso la validación agrupa por placa, y ninguna placa aparece nunca en los dos lados.",
+  "plateFigureAlt": "Distribución de muestras entre placas de alto rendimiento, y cómo de homogénea es cada placa",
+  "plateFigureCaption": "Las muestras se agrupan en placas, y las placas son internamente homogéneas. Conocer un pocillo de una placa dice casi todo lo que hicieron sus vecinos.",
   "reminder": "Esto se suma al desequilibrio de clases. Con el **64 % de las muestras incipientes** y placas enteras casi uniformes en una clase, una partición afortunada puede darle al conjunto de test una placa que sea 90 % incipiente, donde la línea base que no hace nada saca un 90 % y cualquier modelo parece brillante. Agrupar por placa impide que la partición elija su propia dificultad.",
   "drift": "También hay deriva temporal: las proporciones de clase cambian año a año, porque el laboratorio estaba aprendiendo. Cada barra lleva su recuento, porque **una proporción sin su tamaño de muestra engaña**: un año con siete muestras enseña una barra del 100 % que no significa nada."
 }
@@ -259,6 +271,8 @@ export const EDA_MISSING = {
     "Why",
     "What was done"
   ],
+  "figureAlt": "Gráfico de barras del porcentaje de valores ausentes por columna",
+  "figureCaption": "Ausencia de datos por columna. Las barras se parecen; las causas detrás no, y ese es justo el sentido de la tabla de abajo.",
   "tableRows": [
     [
       "Allen electronegativity",
@@ -312,6 +326,8 @@ export const EDA_MODULATORS = {
 export const EDA_PCA = {
   "title": "La proyección PCA",
   "disclaimer": "Esto es un diagnóstico, no un modelo.",
+  "figureAlt": "Proyección PCA de las síntesis, coloreada por clase de resultado con el esqueleto del ligando como forma del marcador",
+  "figureCaption": "El color es la clase de resultado, la forma del marcador el esqueleto del ligando. Los esqueletos ocupan regiones distintas —la química del ligando es buena parte de lo que separa el espacio— pero las clases en sí se solapan mucho.",
   "whatTitle": "Qué hace un PCA",
   "what": [
     "Cada síntesis es un punto en un espacio con una dimensión por variable, que no se puede mirar directamente.",
@@ -334,6 +350,25 @@ export const EDA_PCA = {
     "Llegar al 90 % de la varianza exige muchas componentes. La información está repartida entre muchas variables y no concentrada en dos o tres, así que reducir la dimensionalidad antes de modelar tiraría señal, y el PCA no se usa en el pipeline final."
   ]
 }
+
+export const EDA_TAKEAWAY = [
+  {
+    "label": "Qué muestras puede ver el modelo",
+    "body": "solo alto rendimiento, a un coste medido del 27 % de la clase cristalina."
+  },
+  {
+    "label": "Qué métrica es de fiar",
+    "body": "la exactitud no, porque un modelo que no aprende nada ya saca un 64 %."
+  },
+  {
+    "label": "Cómo partir los datos",
+    "body": "agrupados por placa, porque una partición aleatoria dejaría pasar al modelo con solo reconocer el lote."
+  },
+  {
+    "label": "Qué esperar",
+    "body": "ninguna variable sola separa las clases, y ningún plano tampoco — así que un modelo lineal no va a brillar, y el techo honesto es modesto."
+  }
+]
 
 export const ETL_DEFECTS = [
   {
@@ -488,25 +523,25 @@ export const MODEL_ASSESSMENT = {
     "items": [
       {
         "icon": "sweep",
-        "head": "One designed sweep",
+        "head": "Un barrido diseñado",
         "cost": "1–2 plates",
         "body": "Variar temperatura, tiempo y modulador con finura **dentro de un único sistema metal-conector**. Ataca el factor de confusión de frente y cuesta una o dos placas: con diferencia, la intervención más eficiente disponible."
       },
       {
         "icon": "minority",
-        "head": "More crystalline examples",
+        "head": "Más ejemplos cristalinos",
         "cost": "bench time",
         "body": "Con **167** en el conjunto de entrenamiento, la clase minoritaria es la restricción que limita todas las métricas de arriba. Nada algorítmico la esquiva."
       },
       {
         "icon": "record",
-        "head": "Finish the solvent record",
+        "head": "Terminar el registro de disolvente",
         "cost": "no experiments",
         "body": "El **18 %** de las filas no tiene el desglose, y ese bloque puntúa hoy como ruido. Su aportación real ni siquiera se puede medir hasta que el medio esté escrito por completo."
       },
       {
         "icon": "target",
-        "head": "Revisit the target",
+        "head": "Replantear el objetivo",
         "cost": "later",
         "body": "Un índice de cristalinidad continuo puede llevar más información que una clase de tres niveles, aunque las tres clases siguen siendo el juicio que la poyata registró de verdad."
       }
@@ -561,7 +596,11 @@ export const MODEL_ERRORS = {
   ],
   "amorphous": "En las muestras amorfas el comportamiento es el que uno esperaría: cuando falla, confunde \"nada\" con \"casi nada\", que en el propio difractograma es una cuestión de grado y algo en lo que dos expertos podrían discrepar. El error grave —llamar cristalina a una muestra amorfa— es raro.",
   "crystalline": "En las cristalinas, no. Aproximadamente una de cada seis se clasifica como amorfa, el error más grave posible. El modelo no reconoce bien la clase minoritaria y, cuando la pierde, la pierde del todo. Con 167 casos frente a 967 incipientes, y siendo la más heterogénea de las tres (muchas formas de cristalizar, una sola de no hacerlo), era previsible. Sigue siendo la principal debilidad del modelo.",
-  "usage": "Para el uso previsto, ordenar candidatos y llenar la siguiente placa, lo que importa es que los buenos candidatos suban en el ranking más que el que la etiqueta sea exacta. Pero el modelo comete un error grave en el **22 % de las muestras cristalinas**, y esa cifra hay que darla junto al agregado."
+  "usage": "Para el uso previsto, ordenar candidatos y llenar la siguiente placa, lo que importa es que los buenos candidatos suban en el ranking más que el que la etiqueta sea exacta. Pero el modelo comete un error grave en el **22 % de las muestras cristalinas**, y esa cifra hay que darla junto al agregado.",
+  "asHopedBadge": "Como se esperaba",
+  "mainWeaknessBadge": "La principal debilidad",
+  "confusionFigureAlt": "Matriz de confusión del modelo Random Forest sobre placas reservadas, como recuentos y normalizada por fila",
+  "confusionFigureCaption": "A la izquierda, recuentos brutos; a la derecha, normalizado por clase real para que cada fila se lea como sensibilidad (recall). La diagonal es donde el modelo acierta —y la fila cristalino es donde es más débil."
 }
 
 export const MODEL_FINDINGS = [
@@ -588,6 +627,10 @@ export const MODEL_FINDINGS = [
   }
 ]
 
+export const MODEL_FRAMING = "La variable objetivo es el mismo veredicto de tres clases que ya usaba la poyata al triar una placa de 24 pocillos: amorfo, incipiente, o una fase cristalina bien ordenada. Plantearlo como clasificación y no como regresión es una decisión que no se puede reparar después: no existe un \"grado de cristalinidad\" continuo que las etiquetas humanas registraran de verdad, e inventar uno significaría puntuar al modelo contra una cantidad que nadie midió."
+
+export const MODEL_HERO_LEAD = "Se entrenan diez familias de modelos sobre las mismas 1.516 síntesis y se comparan bajo un único esquema de validación, agrupado por placa. La cifra principal es **0,52 de F1 macro** frente a 0,26 de un modelo que siempre responde la clase mayoritaria."
+
 export const MODEL_LINEUP = {
   "intro": "Se comparan diez modelos, no uno. Distintas familias de modelos suponen cosas distintas sobre la forma de la frontera entre clases, y ante un problema nuevo no hay manera de saber de antemano qué suposición es la acertada.",
   "tableHead": [
@@ -595,23 +638,25 @@ export const MODEL_LINEUP = {
     "What it assumes",
     "Why it is here"
   ],
+  "comparisonFigureAlt": "Comparación de los diez modelos por F1 macro y MCC, solo síntesis de alto rendimiento",
+  "comparisonFigureCaption": "Los diez comparados bajo la misma validación cruzada agrupada. La línea base es el listón que todo lo demás tiene que superar —y Naive Bayes no lo supera.",
   "models": [
     {
-      "name": "Baseline (majority class)",
+      "name": "Línea base (clase mayoritaria)",
       "assumes": "Nada: siempre la clase más frecuente",
       "why": "El listón. Todo lo demás tiene que superarlo",
       "detail": "No mira ni una sola variable. Cuenta qué clase es la más común en los datos de entrenamiento y responde esa, siempre. Con estos datos dice INCIPIENTE a todo y acierta el 64 % de las veces. Por eso la exactitud es un titular inútil aquí, y por eso este modelo está en la lista: para darle un suelo a todos los demás números.",
       "code": "DummyClassifier(strategy='most_frequent')"
     },
     {
-      "name": "Logistic regression",
+      "name": "Regresión logística",
       "assumes": "Una frontera lineal",
       "why": "Referencia interpretable; si basta, gana",
       "detail": "Traza una superficie divisoria recta por el espacio de 39 dimensiones y lee el peso de cada variable como su tirón hacia una clase u otra. Si bastara con una recta, esta sería la respuesta a conservar: se pueden leer los coeficientes y discutir la química. Está aquí para averiguar si el problema necesita algo más complicado.",
       "code": "LogisticRegression(max_iter=2000, class_weight='balanced')"
     },
     {
-      "name": "k-nearest neighbours",
+      "name": "k vecinos más cercanos",
       "assumes": "Las muestras parecidas comparten resultado",
       "why": "Puramente local, sin modelo global",
       "detail": "No construye ningún modelo. Ante una síntesis nueva busca las quince más parecidas que ya hay en el registro y hace una votación. Eso lo convierte en una prueba directa de una intuición química —que condiciones parecidas dan productos parecidos— y es implacable con las variables mal escaladas, que es parte de lo que lo hizo útil para detectar los defectos de unidades.",
@@ -625,14 +670,14 @@ export const MODEL_LINEUP = {
       "code": "GaussianNB()"
     },
     {
-      "name": "SVM (RBF kernel)",
+      "name": "SVM (núcleo RBF)",
       "assumes": "Una frontera no lineal suave",
       "why": "Fuerte en dimensión media con pocas muestras",
       "detail": "Curva la frontera en vez de mantenerla recta, y solo le importan las muestras más cercanas al límite. Eso lo hace fuerte cuando hay muchas variables y pocas filas, que es exactamente este problema. El precio es que sus decisiones no se pueden leer como \"esta variable importó\".",
       "code": "SVC(kernel='rbf', probability=True, class_weight='balanced')"
     },
     {
-      "name": "Decision tree",
+      "name": "Árbol de decisión",
       "assumes": "Cortes por umbral, de uno en uno",
       "why": "Interpretable; la base de lo que viene después",
       "detail": "Hace una cadena de preguntas de sí o no sobre umbrales sueltos —¿está la temperatura por encima de 130?, ¿hay modulador carboxílico?— hasta llegar a un veredicto. Por sí solo sobreajusta mucho, pero es el ladrillo de los cuatro modelos que tiene debajo, y el único cuyo razonamiento se puede leer en voz alta.",
@@ -700,10 +745,21 @@ export const MODEL_METRICS = {
   "note": "El error relativo medio, el RMSE y el R² no aplican aquí. Pertenecen a la regresión y miden distancia a un número. En clasificación, o aciertas la clase o no."
 }
 
+export const MODEL_SCORECARD_INTRO = "Primero las cifras. Cada número de abajo está validado cruzadamente con las placas como grupos, y se muestra junto a la línea base trivial: sin esa referencia, un F1 de 0,52 podría significar cualquier cosa."
+
 export const MODEL_SHAP = {
   "title": "Cómo leer el gráfico SHAP",
   "body": "Cada punto es una síntesis. Su posición horizontal es cuánto empujó esa variable la predicción hacia cristalino (derecha) o en contra (izquierda). El color es el valor de la variable: rojo alto, azul bajo. Así que \"rojo a la derecha\" significa que los valores altos de esa variable favorecen la cristalización.",
-  "note": "Complementa a la importancia por permutación: aquella dice cuánto importa una variable, esta dice en qué dirección y para qué muestras."
+  "note": "Complementa a la importancia por permutación: aquella dice cuánto importa una variable, esta dice en qué dirección y para qué muestras.",
+  "permutationFigureAlt": "Importancia por permutación de las variables, coloreada por bloque químico",
+  "permutationFigureCaption": "Importancia por permutación, coloreada por bloque químico. La química del metal domina; el bloque de estequiometría y medio sale negativo, que es la definición operativa de ruido.",
+  "shapFigureAlt": "Gráfico resumen SHAP mostrando la dirección en que cada variable empuja la predicción",
+  "shapFigureCaption": "Valores SHAP: la posición horizontal es cuánto empujó una variable la predicción hacia cristalino, el color es el valor de la propia variable."
+}
+
+export const MODEL_TAKEAWAY = {
+  "body": "Hay señal predictiva real en cinco años de registros de laboratorio, y es modesta: aproximadamente el doble de la línea base trivial. La mayor parte de lo que distingue el modelo es qué sistema metal-conector se usó, no qué condiciones se aplicaron. El registro varió esas condiciones a lo largo de solo 9 temperaturas y 3 tiempos de reacción, demasiado poco para que su efecto se pueda aprender.",
+  "close": "Eso es un resultado negativo, y se convierte directamente en una instrucción experimental: la próxima campaña debería barrer temperatura y tiempo con mucha más amplitud de lo que hicieron los últimos cinco años."
 }
 
 export const MODEL_TWO = {
@@ -743,3 +799,5 @@ export const MODEL_VALIDATION = {
   ],
   "consequence": "Cuesta rendimiento. Una partición aleatoria daría un número más alto para un modelo que había aprendido menos."
 }
+
+export const MODEL_WEIGHTS_NOTE = "Todos los modelos que lo permiten llevan pesos de clase equilibrados, que compensan el desequilibrio de 6:1 penalizando más los errores en las clases minoritarias."

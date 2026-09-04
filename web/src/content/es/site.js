@@ -159,6 +159,15 @@ export const MODEL_NOTES = {
   "crystallinity_v2_mixed": "La puntuación más alta de esta tabla, y la razón de que la tabla exista. Mezclaba síntesis HTS, ST y de microondas, así que en parte estaba detectando el método de síntesis. Marcado como inválido en vez de borrado."
 }
 
+export const OVERVIEW_HERO = {
+  "leadBefore": "Un ecosistema de informática de materiales guiado por datos, construido sobre IA con agentes, ingeniería de datos y",
+  "leadAfter": " gobernado. Acelera el descubrimiento de materiales porosos avanzados, potenciando la química de ensayo y error con cribado in silico guiado.",
+  "ctaPrimary": "Prueba el simulador in silico",
+  "ctaSecondary": "Ver el flujo de principio a fin",
+  "kpiFootnote": "Recuentos leídos en vivo de PostgreSQL. Verificado el 2026-09-01.",
+  "crispBody": "Cada pestaña es una fase del ciclo de vida del dato, en el orden en que se tomaron de verdad las decisiones: cómo llegaron los datos, cómo se limpiaron, qué acabaron diciendo, y solo entonces qué podía aprender de ellos un modelo."
+}
+
 export const PILLARS = [
   {
     "key": "ingestion",

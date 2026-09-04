@@ -151,7 +151,7 @@ export default function Science() {
       {/* --- 1. Que es un MOF --- */}
       <section>
         <SectionTitle eyebrow={UI.science.ebTheMaterial}>
-          What is a {MOF_DEF.acronym}?
+          {MOF_DEF.titleBefore} {MOF_DEF.acronym}{MOF_DEF.titleAfter}
         </SectionTitle>
 
         <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
@@ -194,7 +194,7 @@ export default function Science() {
             </div>
             <img
               src="/nobel-2025.jpg"
-              alt="Illustrated portraits of the 2025 Nobel laureates in Chemistry"
+              alt={NOBEL.photoAlt}
               loading="lazy"
               className="mt-4"
               style={{
@@ -234,7 +234,7 @@ export default function Science() {
         <figure className="m-0 mt-8">
           <img
             src="/mof-formation.jpg"
-            alt="Rendering of metal nodes, shown as golden octahedra, linked by burgundy organic ligands into an extended porous framework"
+            alt={MOF_DEF.renderingAlt}
             loading="lazy"
             style={{
               display: 'block',
@@ -245,7 +245,7 @@ export default function Science() {
             }}
           />
           <figcaption className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Metal nodes, drawn as octahedra, joined by organic linkers into an extended network.
+            {WHY_CHARACTERISE.metalNodesCaption}
           </figcaption>
         </figure>
       </section>
@@ -278,7 +278,7 @@ export default function Science() {
         </Note>
 
         <p className="mb-4 mt-8 text-sm" style={{ color: 'var(--text-muted)' }}>
-          The nine techniques behind this platform. Each answers one question; none answers two.
+          {WHY_CHARACTERISE.gridIntro}
         </p>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {TECHNIQUES.map((t) => (
@@ -385,7 +385,7 @@ export default function Science() {
             className="mt-4 inline-flex items-center gap-1.5 text-sm no-underline"
             style={{ color: 'var(--accent-primary)' }}
           >
-            The ingestion workflow
+            {BOTTLENECK.linkText}
             <ChevronRight size={15} aria-hidden />
           </Link>
         </Card>

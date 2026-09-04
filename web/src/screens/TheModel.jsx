@@ -139,10 +139,10 @@ export default function TheModel() {
                   una vez ya, contando veredictos en vez de casillas. */}
               <li style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>
                 <strong style={{ color: 'var(--text-primary)' }}>
-                  {KMAP.coverage.tried} of {KMAP.coverage.total} cells have been run
+                  {KMAP.coverage.tried} {MODEL_LOOP.coverageOf} {KMAP.coverage.total} {MODEL_LOOP.coverageCellsRun}
                 </strong>{' '}
-                — and that is for {KMAP.metal}, the metal with the most history behind it
-                ({KMAP.nSyntheses} syntheses).
+                {MODEL_LOOP.coverageAndThatIsFor} {KMAP.metal}{MODEL_LOOP.coverageMetalWithHistory}
+                ({KMAP.nSyntheses} {MODEL_LOOP.coverageSyntheses}).
               </li>
               {MODEL_LOOP.readingPoints.map((p, i) => (
                 <li key={i} style={{ borderLeft: '2px solid var(--accent-primary)', paddingLeft: '0.75rem', color: 'var(--text-secondary)' }}>

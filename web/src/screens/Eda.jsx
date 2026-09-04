@@ -35,7 +35,7 @@ function Pullquote({ children, tone = 'accent' }) {
 export default function Eda() {
   const { UI } = useBundle(UI_EN, UI_ES)
   const { FUNNEL } = useBundle(SITE_EN, SITE_ES)
-  const { EDA_BIVARIATE, EDA_CONFOUNDER, EDA_INTRO, EDA_MODULATORS, EDA_FUNNEL_INTRO, EDA_CORRELATION, EDA_DISCRETE, EDA_IMBALANCE, EDA_LEAKAGE, EDA_MISSING, EDA_PCA } = useBundle(SCREENS_EN, SCREENS_ES)
+  const { EDA_BIVARIATE, EDA_CONFOUNDER, EDA_INTRO, EDA_MODULATORS, EDA_FUNNEL_INTRO, EDA_CORRELATION, EDA_DISCRETE, EDA_IMBALANCE, EDA_LEAKAGE, EDA_MISSING, EDA_PCA, EDA_TAKEAWAY } = useBundle(SCREENS_EN, SCREENS_ES)
 
   return (
     <div className="flex flex-col gap-16">
@@ -43,7 +43,7 @@ export default function Eda() {
         <Badge tone="accent">04 · Data Understanding</Badge>
         <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.eda.dataUnderstanding}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          Everything below changed the plan before a single model was trained.
+          {EDA_INTRO.hook}
         </p>
       </section>
 
@@ -82,7 +82,7 @@ export default function Eda() {
         </Card>
 
         <p className="mb-3 mt-6 text-sm" style={{ color: 'var(--text-muted)' }}>
-          What this one found, in order:
+          {EDA_INTRO.foundIntro}
         </p>
         <ol className="flex list-none flex-col gap-2 p-0">
           {EDA_INTRO.found.map(([what, why], i) => (
@@ -112,7 +112,7 @@ export default function Eda() {
         </p>
         <ConfounderFigure />
         <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-          Look at the microwave row: the amorphous segment is not small, it is <em>absent</em>.
+          {EDA_CONFOUNDER.microwaveRowBefore} <em>{EDA_CONFOUNDER.microwaveRowEmphasis}</em>{EDA_CONFOUNDER.microwaveRowAfter}
         </p>
         <div className="mt-6">
           <ScrollTable head={EDA_CONFOUNDER.tableHead} rows={EDA_CONFOUNDER.tableRows} />
@@ -183,8 +183,8 @@ export default function Eda() {
         <div className="mb-6">
           <NotebookFigure
             src="nb06-01.png"
-            alt="Bar chart of the percentage of missing values per column"
-            caption="Missingness by column. The bars look similar; the causes behind them are not, and that is the whole point of the table below."
+            alt={EDA_MISSING.figureAlt}
+            caption={EDA_MISSING.figureCaption}
             source="notebook 06 §5.3"
           />
         </div>
@@ -328,14 +328,14 @@ export default function Eda() {
         <div className="mt-8 flex flex-col gap-8">
           <NotebookFigure
             src="nb06-04.png"
-            alt="Feature-to-feature correlation map"
-            caption="Feature against feature. The red blocks are mostly properties of the same metal, correlated by physics — not a problem, but the reason the final interpretation is done by chemical block."
+            alt={EDA_CORRELATION.featureMapFigureAlt}
+            caption={EDA_CORRELATION.featureMapFigureCaption}
             source="notebook 06 §5.6"
           />
           <NotebookFigure
             src="nb06-05.png"
-            alt="Association of each feature with the target class, top twenty numeric features"
-            caption="Association with the target, measured by correlation ratio rather than Pearson — the target has three categories, not a magnitude."
+            alt={EDA_CORRELATION.targetAssociationFigureAlt}
+            caption={EDA_CORRELATION.targetAssociationFigureCaption}
             source="notebook 06 §5.6"
           />
         </div>
@@ -391,8 +391,7 @@ export default function Eda() {
             <Rich>{EDA_BIVARIATE.body}</Rich>
           </p>
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            The medians separate; the <em>distributions</em> behind them overlap. A variable can shift
-            class by class and still fail to classify any single sample.
+            <Rich>{EDA_BIVARIATE.distributionsNote}</Rich>
           </p>
         </Card>
       </section>
@@ -405,8 +404,8 @@ export default function Eda() {
           <div className="my-5">
             <NotebookFigure
               src="nb06-07.png"
-              alt="Distribution of samples across high-throughput plates, and how homogeneous each plate is"
-              caption="Samples cluster in plates, and plates are internally homogeneous. Knowing one well of a plate tells you most of what its neighbours did."
+              alt={EDA_LEAKAGE.plateFigureAlt}
+              caption={EDA_LEAKAGE.plateFigureCaption}
               source="notebook 06 §5.8"
             />
           </div>
@@ -474,8 +473,8 @@ export default function Eda() {
         <div className="mt-6">
           <NotebookFigure
             src="nb06-08.png"
-            alt="PCA projection of the syntheses, coloured by outcome class with linker scaffold as marker shape"
-            caption="Colour is the outcome class, marker shape the linker scaffold. The scaffolds occupy distinct regions — the linker chemistry is a large part of what separates the space — but the classes themselves overlap heavily."
+            alt={EDA_PCA.figureAlt}
+            caption={EDA_PCA.figureCaption}
             source="notebook 06 §5.9"
           />
         </div>
@@ -490,23 +489,12 @@ export default function Eda() {
         <SectionTitle eyebrow={UI.eda.whatThisStageSettled.eyebrow}>{UI.eda.whatThisStageSettled.title}</SectionTitle>
         <Card accent>
           <ul className="flex list-none flex-col gap-3 p-0" style={{ color: 'var(--text-secondary)' }}>
-            <li>
-              <strong style={{ color: 'var(--text-primary)' }}>Which samples the model may see:</strong>{' '}
-              high-throughput only, at a measured cost of 27% of the crystalline class.
-            </li>
-            <li>
-              <strong style={{ color: 'var(--text-primary)' }}>Which metric can be trusted:</strong> not
-              accuracy, because a model that learns nothing already scores 64%.
-            </li>
-            <li>
-              <strong style={{ color: 'var(--text-primary)' }}>How to split the data:</strong> grouped by
-              plate, because a random split would let the model pass by recognising the batch.
-            </li>
-            <li>
-              <strong style={{ color: 'var(--text-primary)' }}>What to expect:</strong> no single variable
-              separates the classes and no plane does either — so a linear model will not shine, and the
-              honest ceiling is modest.
-            </li>
+            {EDA_TAKEAWAY.map((t) => (
+              <li key={t.label}>
+                <strong style={{ color: 'var(--text-primary)' }}>{t.label}:</strong>{' '}
+                <Rich>{t.body}</Rich>
+              </li>
+            ))}
           </ul>
         </Card>
       </section>

@@ -239,10 +239,10 @@ export const DESCRIPTOR_GROUPS = [
 export const DESCRIPTOR_RECAP = {
   "head": [
     "Descriptor",
-    "What it measures",
-    "Amorphous",
-    "Incipient",
-    "Crystalline"
+    "Qué mide",
+    "Amorfo",
+    "Incipiente",
+    "Cristalino"
   ],
   "lead": "Un difractograma continuo de miles de puntos se comprime en un **vector fijo de 29 dimensiones**. Abajo está el desglose completo de estos descriptores físicos —agrupados por trazabilidad, geometría de picos, composición de fases y estadísticos globales— junto a los valores medianos sobre las 1.855 muestras etiquetadas por un experto.",
   "counts": "484 amorphous · 1,013 incipient · 358 crystalline",
@@ -425,6 +425,66 @@ export const PREP_TAKEAWAY = {
     }
   ],
   "close": "El conocimiento del dominio es insustituible durante la preparación de datos: solo un químico distingue un error imposible de un hallazgo científico genuino e inesperado."
+}
+
+export const PREP_UI = {
+  "columnsIntro": "Cuarenta y seis columnas en cinco bloques, más las marcas de tiempo que la base de datos lleva por su cuenta.",
+  "notebook01Intro": "Cinco años de condiciones de síntesis manuscritas vivían en un único fichero Excel de varias pestañas, con cabeceras arbitrarias.",
+  "step1Body": "Un diccionario maestro de correspondencias traduce las cabeceras arbitrarias de la hoja de cálculo a un esquema SQL estricto. Se mantiene como diccionario explícito en vez de normalizar automáticamente los nombres, para que renombrar una columna en la hoja de cálculo produzca un fallo visible en lugar de una columna nueva y silenciosa.",
+  "step4Before": "Una suma de verificación sobre seis campos de negocio —código de muestra, fecha, investigador, unidad, centro metálico y ligando— da a cada síntesis una identidad derivada de lo que *es*, no de la fila que le tocó ocupar. Dos hojas de cálculo que describen el mismo experimento colapsan a la misma clave. Ver",
+  "step4After": ".",
+  "step5Body": "La tabla de síntesis la escriben tanto este cuaderno ETL como la canalización de ingesta en vivo. Usar un UPSERT (si hay conflicto: actualizar) con clave sample_code garantiza que las actualizaciones por lotes nunca sobrescriban ni borren registros recién ingeridos.",
+  "metalFeaturizationTitle": "Vectorización del metal",
+  "linkerFeaturizationTitle": "Vectorización del ligando",
+  "eightNumbersTitle": "Ocho números para el metal",
+  "sixForLinkerTitle": "Seis para el ligando",
+  "defectsIntro": "Un modelo puede funcionar sin problemas sobre datos corruptos sin lanzar ningún error. Estos ejemplos muestran por qué las revisiones son necesarias.",
+  "howItSurfacedLabel": "Cómo salió a la luz.",
+  "fixLabel": "Solución.",
+  "zeroVsNullCheck": "La comprobación que demuestra que los defectos 4 y 5 están de verdad corregidos: la composición del medio ahora suma 1,000. Antes de la corrección la media era 0,789 —y la versión 2 no tenía ninguna comprobación así, que es precisamente por qué el fallo sobrevivió.",
+  "imputationAlt": "La alternativa —marcar explícitamente qué valores faltaban, dejando que el modelo aprenda del propio hecho de la ausencia— se puso a prueba en vez de darse por buena:",
+  "whyItGoesFirstTitle": "Por qué va primero",
+  "andWhyModelPredictsTitle": "Y por qué el modelo lo predice",
+  "pxrdDecompositionIntro": "Un modelo de aprendizaje automático no puede ingerir miles de puntos crudos (2theta, Intensidad) como variables tabulares. Aquí, cada **difractograma se descompone en sus componentes físicos**: fondo instrumental, halo amorfo difuso y picos de Bragg, extrayendo 29 descriptores cuantitativos que capturan el orden cristalino, la geometría de los picos y la calidad de la señal.",
+  "layers": [
+    {
+      "label": "Línea base discontinua — ruido del instrumento.",
+      "before": "Medida directamente sobre un portamuestras vacío en el mismo difractómetro (dispersión del aire, deriva del detector), no ajustada por curva. Ajustar una curva suave en su lugar —una línea base",
+      "after": "— solo funciona mientras el halo sea más estrecho que el barrido; en una muestra genuinamente amorfa la curva ajustada trepa sobre el halo y se lo lleva consigo, dejando **un 0,4% del área como halo** en el ejemplo amorfo de abajo, cuando la muestra es casi enteramente halo."
+    },
+    {
+      "label": "Halo difuso — fracción amorfa.",
+      "body": "La protuberancia ancha del desorden de corto alcance. Es señal química real, no fondo instrumental —medido correctamente (línea base restada, no ajustada), vuelve a aparecer como **un 18% del área total** en ese mismo ejemplo, el 94% de lo que la propia muestra dispersó. Es lo que separa una síntesis fallida de un sólido desordenado."
+    },
+    {
+      "label": "Picos de Bragg agudos — orden cristalino.",
+      "body": "Interferencia constructiva de planos cristalinos periódicos (hkl). Su posición, intensidad y anchura (FWHM) son lo que identifica la fase cristalina."
+    }
+  ],
+  "sigma": [
+    {
+      "label": "Escala del ruido de Poisson.",
+      "body": "La detección de rayos X es un conteo de fotones, así que el ruido sigue estadística de Poisson: su escala es la raíz cuadrada del número de cuentas."
+    },
+    {
+      "label": "El umbral de 3σ.",
+      "body": "Un máximo local solo cuenta como reflexión genuina cuando su altura supera tres veces el nivel de ruido por encima del fondo local."
+    },
+    {
+      "label": "Por qué no más laxo.",
+      "body": "Tres sigma es el nivel para *una* comparación —escanear miles de puntos en busca de un máximo necesita un nivel más estricto, o el ruido se confunde con reflexiones. El umbral fijado aquí es el suelo honesto, no el criterio final."
+    }
+  ],
+  "labelerExplorerIntro": "Dos herramientas de Streamlit, construidas para este proyecto. El **etiquetador** produjo cuatro veredictos independientes por patrón sobre 1877 difractogramas —clase de cristalinidad, subtipo incipiente, marca de óxido y sospecha de multifase. El **explorador** es donde la canalización de procesado de señal se ajustó, curva a curva, antes de confiarla a todas ellas.",
+  "labelerTitle": "El etiquetador",
+  "labelerNote": "Un patrón cada vez: los cuatro veredictos a la derecha, escritos directamente en pxrd_labels.",
+  "explorerTitle": "El explorador",
+  "explorerNote": "Línea base, halo amorfo y picos de Bragg separados en vivo, con cada descriptor recalculado según se mueven los parámetros.",
+  "descriptorFigureAlt": "Anatomía del vector de descriptores PXRD: un difractograma anotado que muestra de dónde sale cada uno de los 29 descriptores",
+  "descriptorFigureCaption": "Anatomía del vector de descriptores. Cada uno de los 29 números, mostrado sobre el barrido del que se midió, agrupados por trazabilidad, geometría de picos, composición de fase y estadística global.",
+  "physicalNoteLabel": "Una nota física sobre la validez de los descriptores.",
+  "notebooksFootnote": "El conjunto completo de siete cuadernos está enlazado desde la pantalla a la que pertenece cada uno.",
+  "switchLaneIntro": "Esta pantalla tiene dos mitades y acabas de terminar una de ellas."
 }
 
 export const SYNTH_GROUPS = [

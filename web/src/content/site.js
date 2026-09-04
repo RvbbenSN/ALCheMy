@@ -180,6 +180,18 @@ export const MODEL_NOTES = {
    quita un filtro cada vez y la cadena aterriza en las 1.516 filas registradas.
    Los dos primeros escalones cuentan trabajo de laboratorio; del tercero en
    adelante se cuentan filas de la tabla de rasgos, y el texto lo dice. */
+/* Texto de la portada (Overview) que estaba escrito directamente en el JSX y
+   por eso no paso ninguna de las dos rondas de extraccion (ni SectionTitle/h1,
+   ni content/): se quedaba en ingles en /es sin que nada avisara. */
+export const OVERVIEW_HERO = {
+  leadBefore: 'A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and governed',
+  leadAfter: '. It accelerates the discovery of advanced porous materials, enhancing trial-and-error chemistry with guided in-silico screening.',
+  ctaPrimary: 'Try the in-silico simulator',
+  ctaSecondary: 'See the end-to-end flow',
+  kpiFootnote: 'Counts read live from PostgreSQL. Verified 2026-09-01.',
+  crispBody: 'Each tab is one phase of the data lifecycle, in the order the decisions were actually made — how the data arrived, how it was cleaned, what it turned out to say, and only then what a model could learn from it.',
+}
+
 export const FUNNEL = [
   { n: '2,152', label: 'Rows in the feature table', why: 'Every synthesis the pipeline could turn into features' },
   { n: '1,839', label: 'With a labelled diffractogram', why: 'The rest never reached the diffractometer, or nobody has judged them yet' },

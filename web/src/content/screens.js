@@ -131,6 +131,7 @@ export const ETL_IMPUTATION = {
 export const EDA_INTRO = {
   acronym: 'EDA',
   expansion: 'Exploratory Data Analysis',
+  hook: 'Everything below changed the plan before a single model was trained.',
   /* Misma forma visual que los tres verbos del ETL en la pantalla 03: tres
      bloques con icono, uno por idea, en vez de dos tarjetas de parrafos. */
   steps: [
@@ -158,6 +159,7 @@ export const EDA_INTRO = {
     ['A 6 : 1 imbalance', 'Between the largest and smallest class, enough to make accuracy meaningless'],
     ['Hidden structure', 'Rows that are not independent of one another, which makes a random split lie'],
   ],
+  foundIntro: 'What this one found, in order:',
 }
 
 /* Antes habia dos secciones diciendo lo mismo con cifras que no cuadraban:
@@ -179,6 +181,9 @@ export const EDA_CONFOUNDER = {
   title: 'The confounder that nearly ruined the analysis',
   intro:
     'The record holds three ways of making a material, and version 2 of this analysis mixed them without looking. The numbers:',
+  microwaveRowBefore: 'Look at the microwave row: the amorphous segment is not small, it is',
+  microwaveRowEmphasis: 'absent',
+  microwaveRowAfter: '.',
   tableHead: ['Synthesis type', 'Amorphous', 'Crystalline', 'Incipient', '% crystalline'],
   tableRows: [
     ['HTS — combinatorial screening', '401', '169', '971', '11.0%'],
@@ -213,6 +218,8 @@ export const EDA_MISSING = {
   intro:
     'A single "9% missing" figure hides unrelated problems, and only some of them are what imputation assumes.',
   tableHead: ['Property', 'Who is missing', 'Why', 'What was done'],
+  figureAlt: 'Bar chart of the percentage of missing values per column',
+  figureCaption: 'Missingness by column. The bars look similar; the causes behind them are not, and that is the whole point of the table below.',
   tableRows: [
     [
       'Allen electronegativity',
@@ -311,6 +318,10 @@ export const EDA_DISCRETE = {
 
 export const EDA_CORRELATION = {
   title: 'Correlation: two different questions',
+  featureMapFigureAlt: 'Feature-to-feature correlation map',
+  featureMapFigureCaption: 'Feature against feature. The red blocks are mostly properties of the same metal, correlated by physics — not a problem, but the reason the final interpretation is done by chemical block.',
+  targetAssociationFigureAlt: 'Association of each feature with the target class, top twenty numeric features',
+  targetAssociationFigureCaption: 'Association with the target, measured by correlation ratio rather than Pearson — the target has three categories, not a magnitude.',
   questions: [
     {
       title: 'Do two input variables move together?',
@@ -348,6 +359,8 @@ export const EDA_LEAKAGE = {
   body: 'Each row is **one synthesis**: one well of a 24-well plate, with its conditions and the verdict on its diffractogram. Those rows are **not independent of one another**. A plate is a batch prepared on the same day, with the same linker, the same thermal ramp and often the same metal, sweeping one variable. And plates are internally homogeneous: knowing one well tells you most of what its 23 neighbours did.',
   consequence:
     'A random split would put samples from the same plate in both training and test. The model would not need to learn any chemistry: **recognising the plate would be enough**. The score would come out inflated and false. Validation therefore groups by plate, so no plate ever appears on both sides.',
+  plateFigureAlt: 'Distribution of samples across high-throughput plates, and how homogeneous each plate is',
+  plateFigureCaption: 'Samples cluster in plates, and plates are internally homogeneous. Knowing one well of a plate tells you most of what its neighbours did.',
   /* Recordatorio del desequilibrio, porque aqui es donde se combina con el
      agrupamiento y donde mas dano hace. */
   reminder:
@@ -359,6 +372,8 @@ export const EDA_LEAKAGE = {
 export const EDA_PCA = {
   title: 'The PCA projection',
   disclaimer: 'This is a diagnostic, not a model.',
+  figureAlt: 'PCA projection of the syntheses, coloured by outcome class with linker scaffold as marker shape',
+  figureCaption: 'Colour is the outcome class, marker shape the linker scaffold. The scaffolds occupy distinct regions — the linker chemistry is a large part of what separates the space — but the classes themselves overlap heavily.',
   whatTitle: 'What a PCA does',
   /* Antes era un parrafo de seis lineas. Lo que hay que llevarse son cuatro
      hechos sueltos, no un argumento encadenado. */
@@ -419,16 +434,61 @@ export const EDA_BIVARIATE = {
   ordering:
     'They do order the classes cleanly: every descriptor tested rises or falls **monotonically** from amorphous through incipient to crystalline. The numbers agree with the human verdicts on the direction of the effect.',
   body: 'But ordering is not separating. In the box plots below the boxes **overlap for every variable tested**: an incipient sample and a crystalline one can share the same peak count, the same width, the same entropy. That overlap is the definition of a multivariate problem, and the reason a model is needed instead of a threshold.',
+  distributionsNote: 'The medians separate; the *distributions* behind them overlap. A variable can shift class by class and still fail to classify any single sample.',
 }
+
+/* El cierre de la pantalla 04: cuatro conclusiones etiqueta+cuerpo, que en el
+   JSX vivian como <strong>Etiqueta:</strong> texto suelto. */
+export const EDA_TAKEAWAY = [
+  {
+    label: 'Which samples the model may see',
+    body: 'high-throughput only, at a measured cost of 27% of the crystalline class.',
+  },
+  {
+    label: 'Which metric can be trusted',
+    body: 'not accuracy, because a model that learns nothing already scores 64%.',
+  },
+  {
+    label: 'How to split the data',
+    body: 'grouped by plate, because a random split would let the model pass by recognising the batch.',
+  },
+  {
+    label: 'What to expect',
+    body: 'no single variable separates the classes and no plane does either — so a linear model will not shine, and the honest ceiling is modest.',
+  },
+]
 
 /* ==========================================================================
    05 · MODELING
    ========================================================================== */
 
+/* Texto de la pantalla 05 que vivia directamente en el JSX (hero, el
+   planteamiento, el pie de los diez modelos, la cifras-primero y el cierre):
+   ninguno paso por la extraccion de titulos porque son parrafos de cuerpo, ni
+   por la de content/ porque no vivian ahi. */
+export const MODEL_HERO_LEAD =
+  'Ten model families are trained on the same 1,516 syntheses and compared under one validation scheme, grouped by plate. The headline figure is **0.52 macro F1** against 0.26 for a model that always answers the majority class.'
+
+export const MODEL_FRAMING =
+  'The target is the same three-way verdict the bench already used when triaging a 24-well plate: amorphous, incipient, or a well-ordered crystalline phase. Framing it as classification rather than regression is a decision that cannot be repaired later — there is no continuous "degree of crystallinity" that the human labels actually recorded, and inventing one would mean scoring the model against a quantity nobody measured.'
+
+export const MODEL_WEIGHTS_NOTE =
+  'Every model that supports it carries balanced class weights, which offsets the 6:1 imbalance by penalising errors on the minority classes more heavily.'
+
+export const MODEL_SCORECARD_INTRO =
+  'The figures first. Every number below is cross-validated with plates as groups, and is shown against the trivial baseline — without that reference an F1 of 0.52 could mean anything.'
+
+export const MODEL_TAKEAWAY = {
+  body: 'There is real predictive signal in five years of laboratory records, and it is modest: roughly twice the trivial baseline. Most of what the model distinguishes is which metal-linker system was used rather than which conditions were applied. The record varied those conditions across only 9 temperatures and 3 reaction times, which is too narrow for their effect to be learnable.',
+  close: 'That is a negative result, and it converts directly into an experimental instruction: the next campaign should sweep temperature and time far more widely than the last five years did.',
+}
+
 export const MODEL_LINEUP = {
   intro:
     'Ten models are compared, not one. Different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right.',
   tableHead: ['Model', 'What it assumes', 'Why it is here'],
+  comparisonFigureAlt: 'Comparison of the ten models by macro F1 and MCC, high-throughput syntheses only',
+  comparisonFigureCaption: 'All ten compared under the same grouped cross-validation. The baseline is the bar everything else has to clear — and Naive Bayes does not clear it.',
   /* Cada fila se despliega: `detail` explica como funciona el modelo sin
      formulas, y `code` es la linea real con la que se instancia en el cuaderno
      06 -- con sus hiperparametros, no un ejemplo generico. */
@@ -607,6 +667,10 @@ export const MODEL_ERRORS = {
     'For crystalline samples it is not. Roughly one in six is classified as amorphous, the most serious error available. The model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient, and the most heterogeneous class of the three (many ways to crystallise, one way not to), this was predictable. It remains the model\'s main weakness.',
   usage:
     'For the intended use, ranking candidates and filling the next plate, what matters is that good candidates rise in the ranking rather than that the label is exact. But the model makes a serious mistake on **22% of crystalline samples**, and that figure has to be quoted alongside the aggregate.',
+  asHopedBadge: 'As hoped',
+  mainWeaknessBadge: 'The main weakness',
+  confusionFigureAlt: 'Confusion matrix of the Random Forest model on held-out plates, as counts and row-normalised',
+  confusionFigureCaption: 'Left, raw counts; right, normalised by true class so each row reads as recall. The diagonal is where the model is right — and the crystalline row is where it is weakest.',
 }
 
 export const MODEL_CHEMISTRY = {
@@ -703,4 +767,8 @@ export const MODEL_SHAP = {
   title: 'Reading the SHAP plot',
   body: 'Each point is one synthesis. Its horizontal position is how far that variable pushed the prediction towards crystalline (right) or against it (left). The colour is the value of the variable — red high, blue low. So "red on the right" means high values of this variable favour crystallisation.',
   note: 'It complements permutation importance: that says how much a variable matters, this says in which direction and for which samples.',
+  permutationFigureAlt: 'Permutation importance of the features, coloured by chemical block',
+  permutationFigureCaption: 'Permutation importance, coloured by chemical block. Metal chemistry dominates; the stoichiometry and medium block comes out negative, which is the operational definition of noise.',
+  shapFigureAlt: 'SHAP summary plot showing the direction in which each feature pushes the prediction',
+  shapFigureCaption: 'SHAP values: horizontal position is how far a feature pushed the prediction towards crystalline, colour is the value of the feature itself.',
 }

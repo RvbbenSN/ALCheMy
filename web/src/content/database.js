@@ -51,6 +51,9 @@ export const DB_BOUNDARY = {
   body:
     'The RAG assistant **never writes SQL**. Every one of its tools is a call to a stored function with typed parameters, so what it can ask is fixed by the schema rather than by how carefully a prompt was worded. `agent_verify_owner()` decides whether the answer carries exact values or coarse ones: it receives a token, hands on a **boolean**, and stores neither.',
   bracketTitle: 'What those functions can read',
+  agentLabel: 'The agent',
+  functionsIntroBefore: 'Reached only through these',
+  functionsIntroAfter: 'stored functions:',
 }
 
 export const DB_VIEWS = {
@@ -58,3 +61,7 @@ export const DB_VIEWS = {
   lead:
     'Nothing queries a raw table if a view exists for it. A view decides a join once, instead of having it re-invented in every script, and it can be documented, versioned and pointed at.',
 }
+
+/* Parrafo del bloque "Seven families" que vivia directamente en el JSX. */
+export const DB_FAMILIES_INTRO =
+  'Everything starts at the laboratory record and fans out from it. Pick a block to see its tables, their size, and the description each one carries inside PostgreSQL.'

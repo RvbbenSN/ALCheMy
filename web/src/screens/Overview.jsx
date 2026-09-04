@@ -39,7 +39,7 @@ const SCREEN_ICON = {
 
 export default function Overview() {
   const { UI } = useBundle(UI_EN, UI_ES)
-  const { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, PILLARS_INTRO, SCREENS } =
+  const { BIO_PULLQUOTE, BIO_SHORT, KPIS, OVERVIEW_HERO, PILLARS, PILLARS_INTRO, SCREENS } =
     useBundle(SITE_EN, SITE_ES)
 
   return (
@@ -63,14 +63,13 @@ export default function Overview() {
           style={{ fontFamily: 'var(--font-display)', letterSpacing: '2.5px' }}
         >{UI.overview.augmentedLaboratoryForChemistry}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and
-          governed <Term k="MLOps" />. It accelerates the discovery of advanced porous materials,
-          enhancing trial-and-error chemistry with guided in-silico screening.
+          {OVERVIEW_HERO.leadBefore} <Term k="MLOps" />
+          {OVERVIEW_HERO.leadAfter}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button href="/the-model">Try the in-silico simulator</Button>
+          <Button href="/the-model">{OVERVIEW_HERO.ctaPrimary}</Button>
           <Button href="/data-collection" variant="secondary">
-            See the end-to-end flow
+            {OVERVIEW_HERO.ctaSecondary}
           </Button>
         </div>
       </section>
@@ -83,7 +82,7 @@ export default function Overview() {
           ))}
         </div>
         <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-          Counts read live from PostgreSQL. Verified 2026-09-01.
+          {OVERVIEW_HERO.kpiFootnote}
         </p>
       </section>
 
@@ -121,9 +120,7 @@ export default function Overview() {
           {UI.overview.theTabsFollowTerm.titleAfter}
         </SectionTitle>
         <p className="mb-6 max-w-3xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Each tab is one phase of the data lifecycle, in the order
-          the decisions were actually made — how the data arrived, how it was cleaned, what it turned out
-          to say, and only then what a model could learn from it.
+          {OVERVIEW_HERO.crispBody}
         </p>
         <ol className="grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {SCREENS.map((s) => {

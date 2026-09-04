@@ -35,7 +35,7 @@ const OUT = path.resolve('scripts/textos_en.json')
 const CLAVES_TECNICAS = new Set([
   'key', 'icon', 'tone', 'slug', 'id', 'kind', 'n', 'name', 'code', 'formula',
   'crisp', 'lane', 'state', 'file', 'src', 'href', 'repo', 'github', 'linkedin',
-  'orcid', 'email', 'cv', 'value', 'head', 'rows', 'tableRows', 'tableHead',
+  'orcid', 'email', 'cv', 'value', 'rows', 'tableRows', 'tableHead',
   'formulas', 'fields', 'nodes', 'models', 'counts', 'inputs',
 ])
 
@@ -53,12 +53,32 @@ function esProsa(s) {
    mas cantan sin traducir. */
 const SIEMPRE_TRADUCIBLE = new Set(['ui.js'])
 
+/* Rutas concretas que los filtros generales excluirian con razon en casi
+   todos los casos, pero que aqui SI son texto visible:
+   - `name` protege los nombres reales de los nodos de n8n (no se tocan), pero
+     en TECHNIQUES y en MODEL_LINEUP.models la misma clave guarda el nombre
+     legible de una tecnica o de un modelo, que si se lee en pantalla.
+   - `guarantees[].lead` en collection.js son titulos de una o dos palabras
+     ("No duplicates"), y el filtro de tres palabras los descarta. */
+const RUTAS_FORZADAS = [
+  /^science\.js:TECHNIQUES\[\d+\]\.name$/,
+  /^screens\.js:MODEL_LINEUP\.models\[\d+\]\.name$/,
+  /^collection\.js:COLLECTION_PROBLEM\.guarantees\[\d+\]\.lead$/,
+  /^prep\.js:DESCRIPTOR_RECAP\.head\[\d+\]$/,
+  /^workflow\.js:AREAS\[\d+\]\.table\.head\[\d+\]$/,
+  /^prep\.js:PREP_UI\.(metalFeaturizationTitle|linkerFeaturizationTitle|fixLabel|labelerTitle|explorerTitle)$/,
+  /^model\.js:MODEL_LOOP\.coverageOf$/,
+  /^screens\.js:MODEL_ERRORS\.asHopedBadge$/,
+  /^screens\.js:EDA_CONFOUNDER\.microwaveRowEmphasis$/,
+]
+
 const textos = []
 
 function recorrer(valor, ruta, claveActual, todo = false) {
   if (typeof valor === 'string') {
-    if (!todo && CLAVES_TECNICAS.has(claveActual)) return
-    if (!todo && !esProsa(valor)) return
+    const forzada = RUTAS_FORZADAS.some((re) => re.test(ruta))
+    if (!todo && !forzada && CLAVES_TECNICAS.has(claveActual)) return
+    if (!todo && !forzada && !esProsa(valor)) return
     textos.push({ path: ruta, en: valor })
     return
   }

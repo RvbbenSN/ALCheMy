@@ -40,7 +40,7 @@ function N8nMark({ size = 18 }) {
 export default function DataCollection() {
   const { UI } = useBundle(UI_EN, UI_ES)
   const { SITE } = useBundle(SITE_EN, SITE_ES)
-  const { COLLECTION_CANVAS_INTRO, COLLECTION_HERO, COLLECTION_PROBLEM, COLLECTION_ROW_INTRO, COLLECTION_TREE, ROW_SHAPE } = useBundle(COLLECTION_EN, COLLECTION_ES)
+  const { COLLECTION_CANVAS_INTRO, COLLECTION_HERO, COLLECTION_PROBLEM, COLLECTION_ROW_INTRO, COLLECTION_SCHEMA_NOTE, COLLECTION_TREE, ROW_SHAPE } = useBundle(COLLECTION_EN, COLLECTION_ES)
 
   return (
     <div className="flex flex-col gap-16">
@@ -74,7 +74,7 @@ export default function DataCollection() {
             className="ml-1 inline-flex items-center gap-1 no-underline"
             style={{ color: 'var(--accent-primary)' }}
           >
-            See the workflow on GitHub
+            {COLLECTION_PROBLEM.seeOnGithub}
             <ExternalLink size={13} aria-hidden />
           </a>
         </p>
@@ -140,12 +140,11 @@ export default function DataCollection() {
       <section>
         <SectionTitle eyebrow={UI.collection.thePostgresqlSchema.eyebrow}>{UI.collection.thePostgresqlSchema.title}</SectionTitle>
         <p className="max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          Every row this workflow writes ends up in one governed schema, and every automated
-          decision it takes ends up in <code>audit_log</code> with a typed verdict and cause.{' '}
+          <Rich>{COLLECTION_SCHEMA_NOTE.before}</Rich>{' '}
           <Link to="/database" style={{ color: 'var(--accent-primary)' }}>
-            Screen 08 takes the schema apart
+            {COLLECTION_SCHEMA_NOTE.linkText}
           </Link>{' '}
-          — the tables, what each one holds, and how they feed each other.
+          {COLLECTION_SCHEMA_NOTE.after}
         </p>
       </section>
 

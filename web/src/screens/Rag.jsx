@@ -29,7 +29,7 @@ const RAG_AREA_ICON = {
 
 export default function Rag() {
   const { UI } = useBundle(UI_EN, UI_ES)
-  const { RAG_AREAS, RAG_CONTEXTUAL, RAG_HERO, RAG_NUMBERS, RAG_POWERS, RAG_RETRIEVAL } = useBundle(RAG_EN, RAG_ES)
+  const { RAG_AREAS, RAG_CONTEXTUAL, RAG_HERO, RAG_NUMBERS, RAG_POWERS, RAG_RETRIEVAL, RAG_WORKFLOW_INTRO } = useBundle(RAG_EN, RAG_ES)
 
   return (
     <div className="flex flex-col gap-16">
@@ -75,9 +75,7 @@ export default function Rag() {
       <section>
         <SectionTitle eyebrow={UI.rag.sixStagesEndTo.eyebrow}>{UI.rag.sixStagesEndTo.title}</SectionTitle>
         <p className="mb-4 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          Two flows share one canvas: the top band indexes documents and runs by hand whenever the
-          corpus grows; the bottom band answers a question and runs on every message. Pick a stage
-          to fly to it, or take the last stop for the whole thing at once.
+          {RAG_WORKFLOW_INTRO}
         </p>
         <div className="mt-6">
           <WorkflowMap

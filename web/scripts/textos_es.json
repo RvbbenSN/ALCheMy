@@ -1,5 +1,50 @@
 [
  {
+  "path": "about.js:ABOUT_UI.readThePaper",
+  "en": "Read the paper",
+  "es": "Leer el artículo"
+ },
+ {
+  "path": "about.js:ABOUT_UI.projectsIntro",
+  "en": "Six competitive projects at European, national and regional level, contributing to data analysis and technical reporting.",
+  "es": "Seis proyectos competitivos a nivel europeo, nacional y regional, con aportación al análisis de datos y a la memoria técnica."
+ },
+ {
+  "path": "about.js:ABOUT_UI.fundingClosingBefore",
+  "en": "Combined budget of the projects funding that work:",
+  "es": "Presupuesto combinado de los proyectos que financiaron ese trabajo:"
+ },
+ {
+  "path": "about.js:ABOUT_UI.fundingClosingAfter",
+  "en": ". Principal investigator in all of them: Dr. Patricia Horcajada.",
+  "es": ". Investigadora principal en todos ellos: Dra. Patricia Horcajada."
+ },
+ {
+  "path": "about.js:ABOUT_UI.finalNote",
+  "en": "The code behind this platform is on GitHub; the data it runs on is not, and neither are the unpublished ligands. That distinction is deliberate and is explained on the screens themselves.",
+  "es": "El código de esta plataforma está en GitHub; los datos sobre los que corre no, y tampoco los ligandos sin publicar. Esa distinción es deliberada y se explica en las propias pantallas."
+ },
+ {
+  "path": "about.js:ABOUT_UI.contactIntroBefore",
+  "en": "Thoughts on the platform, a question about the chemistry, an opportunity — whatever it is, it reaches",
+  "es": "Ideas sobre la plataforma, una pregunta de química, una oportunidad — sea lo que sea, llega a"
+ },
+ {
+  "path": "about.js:ABOUT_UI.formSubjectPlaceholder",
+  "en": "A note about ALCheMy",
+  "es": "Una nota sobre ALCheMy"
+ },
+ {
+  "path": "about.js:ABOUT_UI.formSendButton",
+  "en": "Open in my mail app",
+  "es": "Abrir en mi cliente de correo"
+ },
+ {
+  "path": "about.js:ABOUT_UI.formFootnote",
+  "en": "This opens your own mail client with the message ready to send. Nothing is stored here.",
+  "es": "Esto abre tu propio cliente de correo con el mensaje listo para enviar. Aquí no se guarda nada."
+ },
+ {
   "path": "about.js:EDUCATION[0].when",
   "en": "Apr 2026 — present",
   "es": "Abr 2026 — actualidad"
@@ -425,9 +470,19 @@
   "es": "Construido en **n8n**, una herramienta de automatización de flujos: cada caja del lienzo de abajo es un nodo real de una instancia en marcha."
  },
  {
+  "path": "collection.js:COLLECTION_PROBLEM.seeOnGithub",
+  "en": "See the workflow on GitHub",
+  "es": "Ver el workflow en GitHub"
+ },
+ {
   "path": "collection.js:COLLECTION_PROBLEM.guaranteesTitle",
   "en": "What the workflow guarantees",
   "es": "Qué garantiza el workflow"
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[0].lead",
+  "en": "Attribution",
+  "es": "Atribución"
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[0].body",
@@ -435,9 +490,19 @@
   "es": "Cada medida queda enlazada con la síntesis de la que salió, por código de muestra, y con la persona que la envió."
  },
  {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[1].lead",
+  "en": "No duplicates",
+  "es": "Sin duplicados"
+ },
+ {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[1].body",
   "en": "A cryptographic fingerprint of the file contents rejects a second copy before it is parsed.",
   "es": "Una huella criptográfica del contenido del fichero rechaza una segunda copia antes de parsearla."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[2].lead",
+  "en": "Uniform shape",
+  "es": "Forma uniforme"
  },
  {
   "path": "collection.js:COLLECTION_PROBLEM.guarantees[2].body",
@@ -458,6 +523,21 @@
   "path": "collection.js:COLLECTION_ROW_INTRO",
   "en": "Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint.",
   "es": "Todo camino por este workflow tiene que llegar a la escritura en la base llevando exactamente estos campos. Piensa en el elemento como una bola de nieve que rueda por el pipeline y va recogiendo más de esta forma en cada etapa. Si al llegar todavía falta un campo, la inserción falla en seco contra una restricción."
+ },
+ {
+  "path": "collection.js:COLLECTION_SCHEMA_NOTE.before",
+  "en": "Every row this workflow writes ends up in one governed schema, and every automated decision it takes ends up in `audit_log` with a typed verdict and cause.",
+  "es": "Todo camino por este workflow tiene que llegar a la escritura en la base llevando exactamente estos campos, y cada decisión automática que toma acaba en `audit_log` con un veredicto y una causa tipados."
+ },
+ {
+  "path": "collection.js:COLLECTION_SCHEMA_NOTE.linkText",
+  "en": "Screen 08 takes the schema apart",
+  "es": "La pantalla 08 despieza el esquema"
+ },
+ {
+  "path": "collection.js:COLLECTION_SCHEMA_NOTE.after",
+  "en": "— the tables, what each one holds, and how they feed each other.",
+  "es": "— las tablas, qué guarda cada una, y cómo se alimentan entre sí."
  },
  {
   "path": "collection.js:COLLECTION_TREE.title",
@@ -535,6 +615,16 @@
   "es": "Qué pueden leer esas funciones"
  },
  {
+  "path": "database.js:DB_BOUNDARY.functionsIntroBefore",
+  "en": "Reached only through these",
+  "es": "Solo se llega a través de estas"
+ },
+ {
+  "path": "database.js:DB_FAMILIES_INTRO",
+  "en": "Everything starts at the laboratory record and fans out from it. Pick a block to see its tables, their size, and the description each one carries inside PostgreSQL.",
+  "es": "Todo arranca en el registro de laboratorio y se abre en abanico desde ahí. Elige un bloque para ver sus tablas, su tamaño y la descripción que lleva cada una dentro de PostgreSQL."
+ },
+ {
   "path": "database.js:DB_HERO.lead",
   "en": "Five years of chemistry lived in one spreadsheet, a folder of instrument files, and a stack of handwritten notebooks. This is what it became: a single governed schema where every column has a documented meaning and every automated action leaves a trace.",
   "es": "Cinco años de química vivían en una hoja de cálculo, una carpeta de ficheros de instrumento y una pila de cuadernos manuscritos. Esto es en lo que se convirtió: un único esquema gobernado donde cada columna tiene un significado documentado y cada acción automática deja rastro."
@@ -555,9 +645,19 @@
   "es": "Por qué una base de datos, y no una hoja de cálculo muy buena"
  },
  {
+  "path": "database.js:DB_WHY.cards[0].head",
+  "en": "Columns that know what they mean",
+  "es": "Columnas que saben lo que significan"
+ },
+ {
   "path": "database.js:DB_WHY.cards[0].body",
   "en": "A header reading `T` could be temperature, time or a code. **Every column carries a native `COMMENT`** with its units and allowed values, and pgAdmin, this site and the AI agent read the same one.",
   "es": "Una cabecera que pone `T` puede ser temperatura, tiempo o un código. **Cada columna lleva un `COMMENT` nativo** con sus unidades y sus valores permitidos, y pgAdmin, esta web y el agente de IA leen el mismo."
+ },
+ {
+  "path": "database.js:DB_WHY.cards[1].head",
+  "en": "Rules that cannot be forgotten",
+  "es": "Reglas que no se pueden olvidar"
  },
  {
   "path": "database.js:DB_WHY.cards[1].body",
@@ -565,14 +665,29 @@
   "es": "Una medida no puede existir sin su síntesis (clave foránea). Un modelo no se puede registrar como irreproducible sin un motivo escrito (`CHECK`). **Lo impone la base de datos**, no los scripts que escriben en ella."
  },
  {
+  "path": "database.js:DB_WHY.cards[2].head",
+  "en": "Two writers at once",
+  "es": "Dos escritores a la vez"
+ },
+ {
   "path": "database.js:DB_WHY.cards[2].body",
   "en": "A notebook ingests the master Excel file; a workflow ingests instrument files. The notebook loads by `UPSERT` and never `DELETE`, so it **cannot erase what the workflow wrote overnight**.",
   "es": "Un cuaderno ingiere el Excel maestro; un workflow ingiere los ficheros de instrumento. El cuaderno carga por `UPSERT` y nunca por `DELETE`, así que **no puede borrar lo que el workflow escribió de madrugada**."
  },
  {
+  "path": "database.js:DB_WHY.cards[3].head",
+  "en": "A memory of what happened",
+  "es": "Una memoria de lo que pasó"
+ },
+ {
   "path": "database.js:DB_WHY.cards[3].body",
   "en": "Every automated action lands in `audit_log` with a typed verdict and cause; every agent exchange in `agent_chat_log`. Both are **written by code, never by an LLM**, so the system being recorded cannot edit its own record.",
   "es": "Cada acción automática aterriza en `audit_log` con veredicto y causa tipados; cada intercambio del agente, en `agent_chat_log`. Los dos se **escriben por código, nunca por un LLM**, así que el sistema registrado no puede editar su propio registro."
+ },
+ {
+  "path": "database.js:DB_WHY.cards[4].head",
+  "en": "Documentation that is itself data",
+  "es": "Documentación que es en sí misma un dato"
  },
  {
   "path": "database.js:DB_WHY.cards[4].body",
@@ -598,6 +713,26 @@
   "path": "model.js:MODEL_LOOP.method",
   "en": "And the direction it points is not \"where crystals are most likely\". An experiment run where the model is already confident confirms what it knew. The useful place is **where it hesitates**, because either outcome there corrects it. That is what the map below measures: the entropy of the predicted distribution, cell by cell.",
   "es": "Y la dirección que señala no es \"donde hay más probabilidad de cristales\". Un experimento hecho donde el modelo ya está seguro confirma lo que ya sabía. El sitio útil es **donde duda**, porque allí cualquiera de los dos resultados lo corrige. Eso es lo que mide el mapa de abajo: la entropía de la distribución predicha, casilla a casilla."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.coverageOf",
+  "en": "of",
+  "es": "de"
+ },
+ {
+  "path": "model.js:MODEL_LOOP.coverageCellsRun",
+  "en": "cells have been run",
+  "es": "casillas se han probado"
+ },
+ {
+  "path": "model.js:MODEL_LOOP.coverageAndThatIsFor",
+  "en": "— and that is for",
+  "es": "— y eso es para"
+ },
+ {
+  "path": "model.js:MODEL_LOOP.coverageMetalWithHistory",
+  "en": ", the metal with the most history behind it",
+  "es": ", el metal con más historial detrás"
  },
  {
   "path": "model.js:MODEL_LOOP.readingPoints[0]",
@@ -635,6 +770,11 @@
   "es": "Así que el modelo vive en la base de datos como **cinco tablas relacionadas**, y el binario es la menos importante. Las otras cuatro guardan la receta, y con una receta completa el binario se puede reconstruir."
  },
  {
+  "path": "model.js:MODEL_REGISTRY.tables[0].head",
+  "en": "What it was trained on",
+  "es": "Con qué se entrenó"
+ },
+ {
   "path": "model.js:MODEL_REGISTRY.tables[0].body",
   "en": "The literal SQL that selected the rows, plus its SHA-256. Two models sharing a query but differing in row count were **not** trained on the same thing, and the hash makes that difference detectable.",
   "es": "El SQL literal que seleccionó las filas, más su SHA-256. Dos modelos que comparten consulta pero difieren en número de filas **no** se entrenaron sobre lo mismo, y el hash hace detectable esa diferencia."
@@ -645,14 +785,29 @@
   "es": "Algoritmo, hiperparámetros, semilla aleatoria, versiones de las librerías y el commit exacto de git. También el estado (activo, superado, archivado o **inválido**) y un `CHECK` que se niega a marcar un modelo como irreproducible sin escribir por qué."
  },
  {
+  "path": "model.js:MODEL_REGISTRY.tables[2].head",
+  "en": "Which columns went in, and which did not",
+  "es": "Qué columnas entraron, y cuáles no"
+ },
+ {
   "path": "model.js:MODEL_REGISTRY.tables[2].body",
   "en": "Every input column with its position in the contract, and every **excluded** one with the reason it was excluded. `reactor_volume_ml` is recorded as zero-variance, `fill_fraction` as perfectly collinear with it.",
   "es": "Cada columna de entrada con su posición en el contrato, y cada una **excluida** con el motivo de la exclusión. `reactor_volume_ml` queda registrada como varianza cero, y `fill_fraction` como perfectamente colineal con ella."
  },
  {
+  "path": "model.js:MODEL_REGISTRY.tables[3].head",
+  "en": "What it scored",
+  "es": "Qué puntuó"
+ },
+ {
   "path": "model.js:MODEL_REGISTRY.tables[3].body",
   "en": "Metrics in long format — one row per metric, per class, per split — so adding a new metric never means altering the schema.",
   "es": "Métricas en formato largo, una fila por métrica, por clase y por partición, así que añadir una métrica nueva nunca obliga a alterar el esquema."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.tables[4].head",
+  "en": "The binary, and its fingerprint",
+  "es": "El binario, y su huella"
  },
  {
   "path": "model.js:MODEL_REGISTRY.tables[4].body",
@@ -693,6 +848,31 @@
   "path": "prep.js:DESCRIPTOR_GROUPS[3].blurb",
   "en": "Not measurements of the sample: what the pipeline did, and whether the result can be trusted.",
   "es": "No son medidas de la muestra: son lo que hizo el pipeline, y si el resultado es de fiar."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.head[0]",
+  "en": "Descriptor",
+  "es": "Descriptor"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.head[1]",
+  "en": "What it measures",
+  "es": "Qué mide"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.head[2]",
+  "en": "Amorphous",
+  "es": "Amorfo"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.head[3]",
+  "en": "Incipient",
+  "es": "Incipiente"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.head[4]",
+  "en": "Crystalline",
+  "es": "Cristalino"
  },
  {
   "path": "prep.js:DESCRIPTOR_RECAP.lead",
@@ -968,6 +1148,206 @@
   "path": "prep.js:PREP_TAKEAWAY.close",
   "en": "Domain knowledge is irreplaceable during data preparation: only a chemist can distinguish an impossible data error from a genuine, unexpected scientific discovery.",
   "es": "El conocimiento del dominio es insustituible durante la preparación de datos: solo un químico distingue un error imposible de un hallazgo científico genuino e inesperado."
+ },
+ {
+  "path": "prep.js:PREP_UI.columnsIntro",
+  "en": "Forty-six columns in five blocks, plus the timestamps the database keeps on its own.",
+  "es": "Cuarenta y seis columnas en cinco bloques, más las marcas de tiempo que la base de datos lleva por su cuenta."
+ },
+ {
+  "path": "prep.js:PREP_UI.notebook01Intro",
+  "en": "Five years of handwritten synthesis conditions lived in one multi-tab Excel file with arbitrary headers.",
+  "es": "Cinco años de condiciones de síntesis manuscritas vivían en un único fichero Excel de varias pestañas, con cabeceras arbitrarias."
+ },
+ {
+  "path": "prep.js:PREP_UI.step1Body",
+  "en": "A master mapping dictionary translates arbitrary spreadsheet headers into a strict SQL schema. Kept as an explicit dictionary rather than automatic slug-casing, so that renaming a column in the spreadsheet produces a visible failure instead of a silently new column.",
+  "es": "Un diccionario maestro de correspondencias traduce las cabeceras arbitrarias de la hoja de cálculo a un esquema SQL estricto. Se mantiene como diccionario explícito en vez de normalizar automáticamente los nombres, para que renombrar una columna en la hoja de cálculo produzca un fallo visible en lugar de una columna nueva y silenciosa."
+ },
+ {
+  "path": "prep.js:PREP_UI.step4Before",
+  "en": "A checksum over six business fields — sample code, date, researcher, unit, metal centre and linker — gives every synthesis an identity derived from what it *is*, not from the row it happened to occupy. Two spreadsheets describing the same experiment collapse to the same key. See",
+  "es": "Una suma de verificación sobre seis campos de negocio —código de muestra, fecha, investigador, unidad, centro metálico y ligando— da a cada síntesis una identidad derivada de lo que *es*, no de la fila que le tocó ocupar. Dos hojas de cálculo que describen el mismo experimento colapsan a la misma clave. Ver"
+ },
+ {
+  "path": "prep.js:PREP_UI.step5Body",
+  "en": "The synthesis table is written by both this ETL notebook and the live ingestion pipeline. Using an UPSERT (on conflict: update) keyed on sample_code guarantees that batch updates never overwrite or erase newly ingested records.",
+  "es": "La tabla de síntesis la escriben tanto este cuaderno ETL como la canalización de ingesta en vivo. Usar un UPSERT (si hay conflicto: actualizar) con clave sample_code garantiza que las actualizaciones por lotes nunca sobrescriban ni borren registros recién ingeridos."
+ },
+ {
+  "path": "prep.js:PREP_UI.metalFeaturizationTitle",
+  "en": "Metal featurization",
+  "es": "Vectorización del metal"
+ },
+ {
+  "path": "prep.js:PREP_UI.linkerFeaturizationTitle",
+  "en": "Linker featurization",
+  "es": "Vectorización del ligando"
+ },
+ {
+  "path": "prep.js:PREP_UI.eightNumbersTitle",
+  "en": "Eight numbers for the metal",
+  "es": "Ocho números para el metal"
+ },
+ {
+  "path": "prep.js:PREP_UI.sixForLinkerTitle",
+  "en": "Six for the linker",
+  "es": "Seis para el ligando"
+ },
+ {
+  "path": "prep.js:PREP_UI.defectsIntro",
+  "en": "A model can run smoothly on corrupted data without throwing errors. These examples show why revisions are necessary.",
+  "es": "Un modelo puede funcionar sin problemas sobre datos corruptos sin lanzar ningún error. Estos ejemplos muestran por qué las revisiones son necesarias."
+ },
+ {
+  "path": "prep.js:PREP_UI.howItSurfacedLabel",
+  "en": "How it surfaced.",
+  "es": "Cómo salió a la luz."
+ },
+ {
+  "path": "prep.js:PREP_UI.fixLabel",
+  "en": "Fix.",
+  "es": "Solución."
+ },
+ {
+  "path": "prep.js:PREP_UI.zeroVsNullCheck",
+  "en": "The check that proves defects 4 and 5 are genuinely fixed: the composition of the medium now sums to 1.000. Before the correction the mean was 0.789 — and version 2 had no such check, which is precisely why the fault survived.",
+  "es": "La comprobación que demuestra que los defectos 4 y 5 están de verdad corregidos: la composición del medio ahora suma 1,000. Antes de la corrección la media era 0,789 —y la versión 2 no tenía ninguna comprobación así, que es precisamente por qué el fallo sobrevivió."
+ },
+ {
+  "path": "prep.js:PREP_UI.imputationAlt",
+  "en": "The alternative — explicitly flagging which values were missing, letting the model learn from the fact of absence — was tested rather than assumed:",
+  "es": "La alternativa —marcar explícitamente qué valores faltaban, dejando que el modelo aprenda del propio hecho de la ausencia— se puso a prueba en vez de darse por buena:"
+ },
+ {
+  "path": "prep.js:PREP_UI.whyItGoesFirstTitle",
+  "en": "Why it goes first",
+  "es": "Por qué va primero"
+ },
+ {
+  "path": "prep.js:PREP_UI.andWhyModelPredictsTitle",
+  "en": "And why the model predicts it",
+  "es": "Y por qué el modelo lo predice"
+ },
+ {
+  "path": "prep.js:PREP_UI.pxrdDecompositionIntro",
+  "en": "A machine learning model cannot ingest thousands of raw (2theta, Intensity) points as tabular features. Here, each **diffraction pattern is decomposed into its physical components**—instrument background, diffuse amorphous halo, and Bragg peaks—extracting 29 quantitative descriptors that capture crystal order, peak geometry, and signal quality.",
+  "es": "Un modelo de aprendizaje automático no puede ingerir miles de puntos crudos (2theta, Intensidad) como variables tabulares. Aquí, cada **difractograma se descompone en sus componentes físicos**: fondo instrumental, halo amorfo difuso y picos de Bragg, extrayendo 29 descriptores cuantitativos que capturan el orden cristalino, la geometría de los picos y la calidad de la señal."
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[0].label",
+  "en": "Dashed baseline — instrument noise.",
+  "es": "Línea base discontinua — ruido del instrumento."
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[0].before",
+  "en": "Measured directly from an empty sample holder on the same diffractometer (air scatter, detector drift), not fitted. Fitting a smooth curve instead — an",
+  "es": "Medida directamente sobre un portamuestras vacío en el mismo difractómetro (dispersión del aire, deriva del detector), no ajustada por curva. Ajustar una curva suave en su lugar —una línea base"
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[0].after",
+  "en": "baseline — works only while the halo is narrower than the scan; in a genuinely amorphous sample the fitted curve climbs onto the halo and carries it away, leaving **0.4% of the area as halo** on the amorphous example below when the sample is almost entirely halo.",
+  "es": "— solo funciona mientras el halo sea más estrecho que el barrido; en una muestra genuinamente amorfa la curva ajustada trepa sobre el halo y se lo lleva consigo, dejando **un 0,4% del área como halo** en el ejemplo amorfo de abajo, cuando la muestra es casi enteramente halo."
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[1].label",
+  "en": "Diffuse halo — amorphous fraction.",
+  "es": "Halo difuso — fracción amorfa."
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[1].body",
+  "en": "The broad hump from short-range disorder. It is true chemical signal, not background — measured correctly (baseline subtracted, not fitted), it comes back at **18% of the total area** on that same example, 94% of what the sample itself scattered. It is what separates a failed synthesis from a disordered solid.",
+  "es": "La protuberancia ancha del desorden de corto alcance. Es señal química real, no fondo instrumental —medido correctamente (línea base restada, no ajustada), vuelve a aparecer como **un 18% del área total** en ese mismo ejemplo, el 94% de lo que la propia muestra dispersó. Es lo que separa una síntesis fallida de un sólido desordenado."
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[2].label",
+  "en": "Sharp Bragg peaks — crystalline order.",
+  "es": "Picos de Bragg agudos — orden cristalino."
+ },
+ {
+  "path": "prep.js:PREP_UI.layers[2].body",
+  "en": "Constructive interference from periodic (hkl) crystal planes. Their position, intensity and width (FWHM) are what identify the crystalline phase.",
+  "es": "Interferencia constructiva de planos cristalinos periódicos (hkl). Su posición, intensidad y anchura (FWHM) son lo que identifica la fase cristalina."
+ },
+ {
+  "path": "prep.js:PREP_UI.sigma[0].label",
+  "en": "Poisson noise scale.",
+  "es": "Escala del ruido de Poisson."
+ },
+ {
+  "path": "prep.js:PREP_UI.sigma[0].body",
+  "en": "X-ray detection is photon counting, so noise follows Poisson statistics: its scale is the square root of the counts.",
+  "es": "La detección de rayos X es un conteo de fotones, así que el ruido sigue estadística de Poisson: su escala es la raíz cuadrada del número de cuentas."
+ },
+ {
+  "path": "prep.js:PREP_UI.sigma[1].label",
+  "en": "The 3σ floor.",
+  "es": "El umbral de 3σ."
+ },
+ {
+  "path": "prep.js:PREP_UI.sigma[1].body",
+  "en": "A local maximum only counts as a genuine reflection once its height clears three times the noise level above the local background.",
+  "es": "Un máximo local solo cuenta como reflexión genuina cuando su altura supera tres veces el nivel de ruido por encima del fondo local."
+ },
+ {
+  "path": "prep.js:PREP_UI.sigma[2].label",
+  "en": "Why not looser.",
+  "es": "Por qué no más laxo."
+ },
+ {
+  "path": "prep.js:PREP_UI.sigma[2].body",
+  "en": "Three sigma is the level for *one* comparison — scanning thousands of points for a maximum needs a stricter level, or noise gets misread as reflections. The threshold drawn here is the honest floor, not the final criterion.",
+  "es": "Tres sigma es el nivel para *una* comparación —escanear miles de puntos en busca de un máximo necesita un nivel más estricto, o el ruido se confunde con reflexiones. El umbral fijado aquí es el suelo honesto, no el criterio final."
+ },
+ {
+  "path": "prep.js:PREP_UI.labelerExplorerIntro",
+  "en": "Two Streamlit tools, built for this project. The **labeler** produced four independent verdicts per pattern over 1,877 diffractograms — crystallinity class, incipient subtype, oxide flag and suspected multiphase. The **explorer** is where the signal-processing pipeline was tuned, curve by curve, before it was trusted on all of them.",
+  "es": "Dos herramientas de Streamlit, construidas para este proyecto. El **etiquetador** produjo cuatro veredictos independientes por patrón sobre 1877 difractogramas —clase de cristalinidad, subtipo incipiente, marca de óxido y sospecha de multifase. El **explorador** es donde la canalización de procesado de señal se ajustó, curva a curva, antes de confiarla a todas ellas."
+ },
+ {
+  "path": "prep.js:PREP_UI.labelerTitle",
+  "en": "The labeler",
+  "es": "El etiquetador"
+ },
+ {
+  "path": "prep.js:PREP_UI.labelerNote",
+  "en": "One pattern at a time: the four verdicts on the right, written straight into pxrd_labels.",
+  "es": "Un patrón cada vez: los cuatro veredictos a la derecha, escritos directamente en pxrd_labels."
+ },
+ {
+  "path": "prep.js:PREP_UI.explorerTitle",
+  "en": "The explorer",
+  "es": "El explorador"
+ },
+ {
+  "path": "prep.js:PREP_UI.explorerNote",
+  "en": "Baseline, amorphous halo and Bragg peaks separated live, with every descriptor recomputed as the parameters move.",
+  "es": "Línea base, halo amorfo y picos de Bragg separados en vivo, con cada descriptor recalculado según se mueven los parámetros."
+ },
+ {
+  "path": "prep.js:PREP_UI.descriptorFigureAlt",
+  "en": "Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from",
+  "es": "Anatomía del vector de descriptores PXRD: un difractograma anotado que muestra de dónde sale cada uno de los 29 descriptores"
+ },
+ {
+  "path": "prep.js:PREP_UI.descriptorFigureCaption",
+  "en": "Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics.",
+  "es": "Anatomía del vector de descriptores. Cada uno de los 29 números, mostrado sobre el barrido del que se midió, agrupados por trazabilidad, geometría de picos, composición de fase y estadística global."
+ },
+ {
+  "path": "prep.js:PREP_UI.physicalNoteLabel",
+  "en": "A physical note on descriptor validity.",
+  "es": "Una nota física sobre la validez de los descriptores."
+ },
+ {
+  "path": "prep.js:PREP_UI.notebooksFootnote",
+  "en": "The full set of seven notebooks is linked from the screen each one belongs to.",
+  "es": "El conjunto completo de siete cuadernos está enlazado desde la pantalla a la que pertenece cada uno."
+ },
+ {
+  "path": "prep.js:PREP_UI.switchLaneIntro",
+  "en": "This screen has two halves and you have just finished one of them.",
+  "es": "Esta pantalla tiene dos mitades y acabas de terminar una de ellas."
  },
  {
   "path": "prep.js:SYNTH_GROUPS[0].title",
@@ -1420,6 +1800,11 @@
   "es": "Conectado al nodo del almacén vectorial y **apagado a propósito**. El único reordenador que ofrece n8n es un servicio externo, y usarlo significaría enviar el texto de los pasajes recuperados, cuadernos internos incluidos, a un tercero. Se deja puesto y visiblemente desactivado, porque la decisión forma parte del diseño."
  },
  {
+  "path": "rag.js:RAG_WORKFLOW_INTRO",
+  "en": "Two flows share one canvas: the top band indexes documents and runs by hand whenever the corpus grows; the bottom band answers a question and runs on every message. Pick a stage to fly to it, or take the last stop for the whole thing at once.",
+  "es": "Dos flujos comparten un lienzo: la banda de arriba indexa documentos y se lanza a mano cada vez que crece el corpus; la banda de abajo responde a una pregunta y se lanza en cada mensaje. Elige una etapa para volar hasta ella, o toma la última parada para verlo todo junto de una vez."
+ },
+ {
   "path": "science.js:BOTTLENECK.title",
   "en": "Where the data problem begins",
   "es": "Donde empieza el problema de los datos"
@@ -1448,6 +1833,11 @@
   "path": "science.js:BOTTLENECK.hook",
   "en": "Thousands of instrument files, several formats... and nothing stopping the same file being saved twice under two names. What is needed is specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**",
   "es": "Miles de ficheros de instrumento, varios formatos... y nada que impida guardar el mismo fichero dos veces con dos nombres. Lo que hace falta es concreto: **una forma de dejar caer un fichero en algún sitio y que acabe en la base de datos, correctamente atribuido, sin que nadie teclee nada.**"
+ },
+ {
+  "path": "science.js:BOTTLENECK.linkText",
+  "en": "The ingestion workflow",
+  "es": "El flujo de ingesta"
  },
  {
   "path": "science.js:DATA_SCALE.title",
@@ -1485,6 +1875,11 @@
   "es": "Una estructura se puede diseñar sobre el papel, pero su **síntesis hay que descubrirla**. La receta ideal se encuentra cribando incontables ensayos de reacción. El pipeline es así:"
  },
  {
+  "path": "science.js:MOF_DEF.titleBefore",
+  "en": "What is a",
+  "es": "Qué es un"
+ },
+ {
   "path": "science.js:MOF_DEF.iupac",
   "en": "A coordination network with organic ligands containing potential voids.",
   "es": "Una red de coordinación con ligandos orgánicos que contiene huecos potenciales."
@@ -1503,6 +1898,11 @@
   "path": "science.js:MOF_DEF.why",
   "en": "Because both parts can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today.",
   "es": "Como las dos partes se pueden intercambiar por separado, la **misma arquitectura se puede reconstruir** con otro metal o con otro conector. Eso es lo que hace tan grande a la familia: son la clase más diversa de sólidos cristalinos extendidos que se conoce hoy."
+ },
+ {
+  "path": "science.js:MOF_DEF.renderingAlt",
+  "en": "Rendering of metal nodes, shown as golden octahedra, linked by burgundy organic ligands into an extended porous framework",
+  "es": "Representación de nodos metálicos, mostrados como octaedros dorados, unidos por ligandos orgánicos burdeos formando una red porosa extendida"
  },
  {
   "path": "science.js:MOF_FACTS[0].title",
@@ -1570,6 +1970,11 @@
   "es": "Por sentar las bases de las redes metal-orgánicas y de la química reticular."
  },
  {
+  "path": "science.js:NOBEL.photoAlt",
+  "en": "Illustrated portraits of the 2025 Nobel laureates in Chemistry",
+  "es": "Retratos ilustrados de los premiados con el Nobel de Química 2025"
+ },
+ {
   "path": "science.js:NOBEL.credit",
   "en": "© Nobel Prize Outreach. Illustration: Niklas Elmehed.",
   "es": "© Nobel Prize Outreach. Ilustración: Niklas Elmehed."
@@ -1585,6 +1990,11 @@
   "es": "Dos placas de 24 pocillos por semana, cinco años."
  },
  {
+  "path": "science.js:TECHNIQUES[0].name",
+  "en": "Powder X-ray diffraction",
+  "es": "Difracción de rayos X de polvo"
+ },
+ {
   "path": "science.js:TECHNIQUES[0].answers",
   "en": "Is it crystalline, and is it the phase I wanted?",
   "es": "¿Es cristalino, y es la fase que yo quería?"
@@ -1593,6 +2003,11 @@
   "path": "science.js:TECHNIQUES[0].body",
   "en": "X-rays scattered by an ordered lattice produce sharp peaks at specific angles. A disordered solid produces a broad hump instead. This is the first test any new sample faces, and the one this platform models.",
   "es": "Los rayos X dispersados por una red ordenada producen picos afilados a ángulos concretos. Un sólido desordenado produce en su lugar una joroba ancha. Es la primera prueba que pasa cualquier muestra nueva, y la que modela esta plataforma."
+ },
+ {
+  "path": "science.js:TECHNIQUES[1].name",
+  "en": "Thermogravimetric analysis",
+  "es": "Análisis termogravimétrico"
  },
  {
   "path": "science.js:TECHNIQUES[1].answers",
@@ -1605,6 +2020,11 @@
   "es": "Se calienta la muestra mientras se pesa. Las pérdidas de masa revelan las moléculas huésped saliendo de los poros y, al final, la propia red descomponiéndose."
  },
  {
+  "path": "science.js:TECHNIQUES[2].name",
+  "en": "Variable-temperature XRD",
+  "es": "DRX a temperatura variable"
+ },
+ {
   "path": "science.js:TECHNIQUES[2].answers",
   "en": "Does the structure survive heating?",
   "es": "¿Sobrevive la estructura al calentamiento?"
@@ -1613,6 +2033,11 @@
   "path": "science.js:TECHNIQUES[2].body",
   "en": "Diffraction measured while the temperature rises, showing whether the lattice holds, transforms or collapses.",
   "es": "Difracción medida mientras sube la temperatura, que muestra si la red aguanta, se transforma o colapsa."
+ },
+ {
+  "path": "science.js:TECHNIQUES[3].name",
+  "en": "Gas physisorption",
+  "es": "Fisisorción de gases"
  },
  {
   "path": "science.js:TECHNIQUES[3].answers",
@@ -1625,6 +2050,11 @@
   "es": "Se dosifica nitrógeno o CO₂ sobre el material y la cantidad adsorbida se convierte en superficie específica en metros cuadrados por gramo, más la distribución de tamaño de poro."
  },
  {
+  "path": "science.js:TECHNIQUES[4].name",
+  "en": "Infrared spectroscopy",
+  "es": "Espectroscopia infrarroja"
+ },
+ {
   "path": "science.js:TECHNIQUES[4].answers",
   "en": "Did the linker actually bind to the metal?",
   "es": "¿Se ha unido el conector al metal de verdad?"
@@ -1635,6 +2065,11 @@
   "es": "Los enlaces químicos absorben luz infrarroja a frecuencias características. Los desplazamientos de esas bandas distinguen un ligando coordinado del material de partida libre y sin reaccionar."
  },
  {
+  "path": "science.js:TECHNIQUES[5].name",
+  "en": "Inductively coupled plasma",
+  "es": "Plasma acoplado inductivamente"
+ },
+ {
   "path": "science.js:TECHNIQUES[5].answers",
   "en": "How much metal is in there?",
   "es": "¿Cuánto metal hay ahí dentro?"
@@ -1643,6 +2078,11 @@
   "path": "science.js:TECHNIQUES[5].body",
   "en": "The sample is vaporised in a plasma and the light it emits quantifies each element, giving the real metal-to-ligand ratio.",
   "es": "La muestra se vaporiza en un plasma y la luz que emite cuantifica cada elemento, lo que da la proporción real entre metal y ligando."
+ },
+ {
+  "path": "science.js:TECHNIQUES[6].name",
+  "en": "Elemental analysis",
+  "es": "Análisis elemental"
  },
  {
   "path": "science.js:TECHNIQUES[6].answers",
@@ -1660,6 +2100,11 @@
   "es": "SEM / TEM"
  },
  {
+  "path": "science.js:TECHNIQUES[7].name",
+  "en": "Electron microscopy",
+  "es": "Microscopía electrónica"
+ },
+ {
   "path": "science.js:TECHNIQUES[7].answers",
   "en": "What do the particles look like?",
   "es": "¿Qué aspecto tienen las partículas?"
@@ -1668,6 +2113,11 @@
   "path": "science.js:TECHNIQUES[7].body",
   "en": "Electron beams image crystal morphology and size, from the shape of a facet down to the nanometre scale.",
   "es": "Los haces de electrones toman imagen de la morfología y el tamaño de los cristales, desde la forma de una cara hasta la escala nanométrica."
+ },
+ {
+  "path": "science.js:TECHNIQUES[8].name",
+  "en": "Diffuse reflectance spectroscopy",
+  "es": "Espectroscopia de reflectancia difusa"
  },
  {
   "path": "science.js:TECHNIQUES[8].answers",
@@ -1730,6 +2180,16 @@
   "es": "Cada muestra prometedora genera ficheros de varios instrumentos, cada uno escrito en su propio formato. Multiplica eso por miles de muestras y deja de ser un problema de química: pasa a ser un **reto de gestión y procesado de datos**."
  },
  {
+  "path": "science.js:WHY_CHARACTERISE.gridIntro",
+  "en": "The nine techniques behind this platform. Each answers one question; none answers two.",
+  "es": "Las nueve técnicas detrás de esta plataforma. Cada una responde a una pregunta; ninguna responde a dos."
+ },
+ {
+  "path": "science.js:WHY_CHARACTERISE.metalNodesCaption",
+  "en": "Metal nodes, drawn as octahedra, joined by organic linkers into an extended network.",
+  "es": "Nudos metálicos, dibujados como octaedros, unidos por conectores orgánicos en una red extendida."
+ },
+ {
   "path": "science.js:WHY_CHARACTERISE.numbers[0][1]",
   "en": "raw instrument files",
   "es": "ficheros de instrumento en crudo"
@@ -1785,6 +2245,11 @@
   "es": "Pero ordenar no es separar. En los diagramas de caja de abajo las cajas **se solapan en todas las variables probadas**: una muestra incipiente y una cristalina pueden compartir el mismo número de picos, la misma anchura, la misma entropía. Ese solape es la definición de un problema multivariante, y la razón de que haga falta un modelo y no un umbral."
  },
  {
+  "path": "screens.js:EDA_BIVARIATE.distributionsNote",
+  "en": "The medians separate; the *distributions* behind them overlap. A variable can shift class by class and still fail to classify any single sample.",
+  "es": "Las medianas se separan; las *distribuciones* que hay detrás se solapan. Una variable puede desplazarse de clase en clase y aun así no llegar a clasificar ni una sola muestra."
+ },
+ {
   "path": "screens.js:EDA_CONFOUNDER.title",
   "en": "The confounder that nearly ruined the analysis",
   "es": "El factor de confusión que casi arruina el análisis"
@@ -1793,6 +2258,16 @@
   "path": "screens.js:EDA_CONFOUNDER.intro",
   "en": "The record holds three ways of making a material, and version 2 of this analysis mixed them without looking. The numbers:",
   "es": "El registro contiene tres formas de fabricar un material, y una versión anterior de este análisis las mezcló sin mirar. Los números:"
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.microwaveRowBefore",
+  "en": "Look at the microwave row: the amorphous segment is not small, it is",
+  "es": "Fíjate en la fila del microondas: el segmento amorfo no es pequeño, es"
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.microwaveRowEmphasis",
+  "en": "absent",
+  "es": "inexistente"
  },
  {
   "path": "screens.js:EDA_CONFOUNDER.points[0].body",
@@ -1843,6 +2318,26 @@
   "path": "screens.js:EDA_CORRELATION.title",
   "en": "Correlation: two different questions",
   "es": "Correlación: dos preguntas distintas"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.featureMapFigureAlt",
+  "en": "Feature-to-feature correlation map",
+  "es": "Mapa de correlación entre variables"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.featureMapFigureCaption",
+  "en": "Feature against feature. The red blocks are mostly properties of the same metal, correlated by physics — not a problem, but the reason the final interpretation is done by chemical block.",
+  "es": "Variable contra variable. Los bloques rojos son en su mayoría propiedades del mismo metal, correlacionadas por física —no es un problema, sino la razón por la que la interpretación final se hace por bloque químico."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.targetAssociationFigureAlt",
+  "en": "Association of each feature with the target class, top twenty numeric features",
+  "es": "Asociación de cada variable con la clase objetivo, veinte variables numéricas principales"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.targetAssociationFigureCaption",
+  "en": "Association with the target, measured by correlation ratio rather than Pearson — the target has three categories, not a magnitude.",
+  "es": "Asociación con el objetivo, medida por razón de correlación en vez de Pearson —el objetivo tiene tres categorías, no una magnitud."
  },
  {
   "path": "screens.js:EDA_CORRELATION.questions[0].title",
@@ -2020,6 +2515,11 @@
   "es": "Análisis Exploratorio de Datos"
  },
  {
+  "path": "screens.js:EDA_INTRO.hook",
+  "en": "Everything below changed the plan before a single model was trained.",
+  "es": "Todo lo que sigue cambió el plan antes de entrenar un solo modelo."
+ },
+ {
   "path": "screens.js:EDA_INTRO.steps[0].body",
   "en": "Plot every variable, count what is missing, check whether the classes are balanced and whether two columns say the same thing twice.",
   "es": "Representar todas las variables, contar lo que falta, comprobar si las clases están equilibradas y si dos columnas dicen lo mismo dos veces."
@@ -2070,6 +2570,11 @@
   "es": "Filas que no son independientes entre sí, lo que hace que una partición aleatoria mienta"
  },
  {
+  "path": "screens.js:EDA_INTRO.foundIntro",
+  "en": "What this one found, in order:",
+  "es": "Lo que este encontró, en orden:"
+ },
+ {
   "path": "screens.js:EDA_LEAKAGE.title",
   "en": "Hidden structure: why a random split would lie",
   "es": "Estructura oculta: por qué una partición aleatoria mentiría"
@@ -2085,6 +2590,16 @@
   "es": "Una partición aleatoria pondría muestras de la misma placa en entrenamiento y en test. El modelo no necesitaría aprender nada de química: **le bastaría con reconocer la placa**. La puntuación saldría inflada y falsa. Por eso la validación agrupa por placa, y ninguna placa aparece nunca en los dos lados."
  },
  {
+  "path": "screens.js:EDA_LEAKAGE.plateFigureAlt",
+  "en": "Distribution of samples across high-throughput plates, and how homogeneous each plate is",
+  "es": "Distribución de muestras entre placas de alto rendimiento, y cómo de homogénea es cada placa"
+ },
+ {
+  "path": "screens.js:EDA_LEAKAGE.plateFigureCaption",
+  "en": "Samples cluster in plates, and plates are internally homogeneous. Knowing one well of a plate tells you most of what its neighbours did.",
+  "es": "Las muestras se agrupan en placas, y las placas son internamente homogéneas. Conocer un pocillo de una placa dice casi todo lo que hicieron sus vecinos."
+ },
+ {
   "path": "screens.js:EDA_LEAKAGE.reminder",
   "en": "This compounds with the class imbalance. With **64% of samples incipient** and whole plates almost uniformly one class, a lucky split can hand the test set a plate that is 90% incipient, where the do-nothing baseline scores 90% and any model looks brilliant. Grouping by plate stops the split from choosing its own difficulty.",
   "es": "Esto se suma al desequilibrio de clases. Con el **64 % de las muestras incipientes** y placas enteras casi uniformes en una clase, una partición afortunada puede darle al conjunto de test una placa que sea 90 % incipiente, donde la línea base que no hace nada saca un 90 % y cualquier modelo parece brillante. Agrupar por placa impide que la partición elija su propia dificultad."
@@ -2098,6 +2613,16 @@
   "path": "screens.js:EDA_MISSING.intro",
   "en": "A single \"9% missing\" figure hides unrelated problems, and only some of them are what imputation assumes.",
   "es": "Una sola cifra de \"9 % ausente\" esconde problemas sin relación entre sí, y solo algunos son lo que la imputación da por supuesto."
+ },
+ {
+  "path": "screens.js:EDA_MISSING.figureAlt",
+  "en": "Bar chart of the percentage of missing values per column",
+  "es": "Gráfico de barras del porcentaje de valores ausentes por columna"
+ },
+ {
+  "path": "screens.js:EDA_MISSING.figureCaption",
+  "en": "Missingness by column. The bars look similar; the causes behind them are not, and that is the whole point of the table below.",
+  "es": "Ausencia de datos por columna. Las barras se parecen; las causas detrás no, y ese es justo el sentido de la tabla de abajo."
  },
  {
   "path": "screens.js:EDA_MODULATORS.title",
@@ -2128,6 +2653,16 @@
   "path": "screens.js:EDA_PCA.disclaimer",
   "en": "This is a diagnostic, not a model.",
   "es": "Esto es un diagnóstico, no un modelo."
+ },
+ {
+  "path": "screens.js:EDA_PCA.figureAlt",
+  "en": "PCA projection of the syntheses, coloured by outcome class with linker scaffold as marker shape",
+  "es": "Proyección PCA de las síntesis, coloreada por clase de resultado con el esqueleto del ligando como forma del marcador"
+ },
+ {
+  "path": "screens.js:EDA_PCA.figureCaption",
+  "en": "Colour is the outcome class, marker shape the linker scaffold. The scaffolds occupy distinct regions — the linker chemistry is a large part of what separates the space — but the classes themselves overlap heavily.",
+  "es": "El color es la clase de resultado, la forma del marcador el esqueleto del ligando. Los esqueletos ocupan regiones distintas —la química del ligando es buena parte de lo que separa el espacio— pero las clases en sí se solapan mucho."
  },
  {
   "path": "screens.js:EDA_PCA.whatTitle",
@@ -2203,6 +2738,46 @@
   "path": "screens.js:EDA_PCA.findings[2]",
   "en": "Reaching 90% of the variance takes many components. The information is spread across many variables rather than concentrated in two or three — so reducing dimensionality before modeling would throw away signal, and PCA is not used in the final pipeline.",
   "es": "Llegar al 90 % de la varianza exige muchas componentes. La información está repartida entre muchas variables y no concentrada en dos o tres, así que reducir la dimensionalidad antes de modelar tiraría señal, y el PCA no se usa en el pipeline final."
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[0].label",
+  "en": "Which samples the model may see",
+  "es": "Qué muestras puede ver el modelo"
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[0].body",
+  "en": "high-throughput only, at a measured cost of 27% of the crystalline class.",
+  "es": "solo alto rendimiento, a un coste medido del 27 % de la clase cristalina."
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[1].label",
+  "en": "Which metric can be trusted",
+  "es": "Qué métrica es de fiar"
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[1].body",
+  "en": "not accuracy, because a model that learns nothing already scores 64%.",
+  "es": "la exactitud no, porque un modelo que no aprende nada ya saca un 64 %."
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[2].label",
+  "en": "How to split the data",
+  "es": "Cómo partir los datos"
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[2].body",
+  "en": "grouped by plate, because a random split would let the model pass by recognising the batch.",
+  "es": "agrupados por placa, porque una partición aleatoria dejaría pasar al modelo con solo reconocer el lote."
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[3].label",
+  "en": "What to expect",
+  "es": "Qué esperar"
+ },
+ {
+  "path": "screens.js:EDA_TAKEAWAY[3].body",
+  "en": "no single variable separates the classes and no plane does either — so a linear model will not shine, and the honest ceiling is modest.",
+  "es": "ninguna variable sola separa las clases, y ningún plano tampoco — así que un modelo lineal no va a brillar, y el techo honesto es modesto."
  },
  {
   "path": "screens.js:ETL_DEFECTS[0].defect",
@@ -2490,9 +3065,19 @@
   "es": "Qué lo mejoraría, por orden de retorno esperado"
  },
  {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[0].head",
+  "en": "One designed sweep",
+  "es": "Un barrido diseñado"
+ },
+ {
   "path": "screens.js:MODEL_ASSESSMENT.next.items[0].body",
   "en": "Vary temperature, time and modulator finely **within a single metal-linker system**. It attacks the confounding head-on and costs one or two plates — by a wide margin the most efficient intervention available.",
   "es": "Variar temperatura, tiempo y modulador con finura **dentro de un único sistema metal-conector**. Ataca el factor de confusión de frente y cuesta una o dos placas: con diferencia, la intervención más eficiente disponible."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[1].head",
+  "en": "More crystalline examples",
+  "es": "Más ejemplos cristalinos"
  },
  {
   "path": "screens.js:MODEL_ASSESSMENT.next.items[1].body",
@@ -2500,9 +3085,19 @@
   "es": "Con **167** en el conjunto de entrenamiento, la clase minoritaria es la restricción que limita todas las métricas de arriba. Nada algorítmico la esquiva."
  },
  {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[2].head",
+  "en": "Finish the solvent record",
+  "es": "Terminar el registro de disolvente"
+ },
+ {
   "path": "screens.js:MODEL_ASSESSMENT.next.items[2].body",
   "en": "**18 %** of rows lack the breakdown, and that block currently scores as noise. Its real contribution cannot even be measured until the medium is written down completely.",
   "es": "El **18 %** de las filas no tiene el desglose, y ese bloque puntúa hoy como ruido. Su aportación real ni siquiera se puede medir hasta que el medio esté escrito por completo."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[3].head",
+  "en": "Revisit the target",
+  "es": "Replantear el objetivo"
  },
  {
   "path": "screens.js:MODEL_ASSESSMENT.next.items[3].body",
@@ -2590,6 +3185,26 @@
   "es": "Para el uso previsto, ordenar candidatos y llenar la siguiente placa, lo que importa es que los buenos candidatos suban en el ranking más que el que la etiqueta sea exacta. Pero el modelo comete un error grave en el **22 % de las muestras cristalinas**, y esa cifra hay que darla junto al agregado."
  },
  {
+  "path": "screens.js:MODEL_ERRORS.asHopedBadge",
+  "en": "As hoped",
+  "es": "Como se esperaba"
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.mainWeaknessBadge",
+  "en": "The main weakness",
+  "es": "La principal debilidad"
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.confusionFigureAlt",
+  "en": "Confusion matrix of the Random Forest model on held-out plates, as counts and row-normalised",
+  "es": "Matriz de confusión del modelo Random Forest sobre placas reservadas, como recuentos y normalizada por fila"
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.confusionFigureCaption",
+  "en": "Left, raw counts; right, normalised by true class so each row reads as recall. The diagonal is where the model is right — and the crystalline row is where it is weakest.",
+  "es": "A la izquierda, recuentos brutos; a la derecha, normalizado por clase real para que cada fila se lea como sensibilidad (recall). La diagonal es donde el modelo acierta —y la fila cristalino es donde es más débil."
+ },
+ {
   "path": "screens.js:MODEL_FINDINGS[0].title",
   "en": "There is real predictive signal, and it is modest",
   "es": "Hay señal predictiva real, y es modesta"
@@ -2645,9 +3260,34 @@
   "es": "Supone que las variables son independientes dada la clase, y el mapa de correlación enseña bloques marcados. Su fracaso mide cuánto importa esa correlación, que es por lo que está en la lista."
  },
  {
+  "path": "screens.js:MODEL_FRAMING",
+  "en": "The target is the same three-way verdict the bench already used when triaging a 24-well plate: amorphous, incipient, or a well-ordered crystalline phase. Framing it as classification rather than regression is a decision that cannot be repaired later — there is no continuous \"degree of crystallinity\" that the human labels actually recorded, and inventing one would mean scoring the model against a quantity nobody measured.",
+  "es": "La variable objetivo es el mismo veredicto de tres clases que ya usaba la poyata al triar una placa de 24 pocillos: amorfo, incipiente, o una fase cristalina bien ordenada. Plantearlo como clasificación y no como regresión es una decisión que no se puede reparar después: no existe un \"grado de cristalinidad\" continuo que las etiquetas humanas registraran de verdad, e inventar uno significaría puntuar al modelo contra una cantidad que nadie midió."
+ },
+ {
+  "path": "screens.js:MODEL_HERO_LEAD",
+  "en": "Ten model families are trained on the same 1,516 syntheses and compared under one validation scheme, grouped by plate. The headline figure is **0.52 macro F1** against 0.26 for a model that always answers the majority class.",
+  "es": "Se entrenan diez familias de modelos sobre las mismas 1.516 síntesis y se comparan bajo un único esquema de validación, agrupado por placa. La cifra principal es **0,52 de F1 macro** frente a 0,26 de un modelo que siempre responde la clase mayoritaria."
+ },
+ {
   "path": "screens.js:MODEL_LINEUP.intro",
   "en": "Ten models are compared, not one. Different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right.",
   "es": "Se comparan diez modelos, no uno. Distintas familias de modelos suponen cosas distintas sobre la forma de la frontera entre clases, y ante un problema nuevo no hay manera de saber de antemano qué suposición es la acertada."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.comparisonFigureAlt",
+  "en": "Comparison of the ten models by macro F1 and MCC, high-throughput syntheses only",
+  "es": "Comparación de los diez modelos por F1 macro y MCC, solo síntesis de alto rendimiento"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.comparisonFigureCaption",
+  "en": "All ten compared under the same grouped cross-validation. The baseline is the bar everything else has to clear — and Naive Bayes does not clear it.",
+  "es": "Los diez comparados bajo la misma validación cruzada agrupada. La línea base es el listón que todo lo demás tiene que superar —y Naive Bayes no lo supera."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[0].name",
+  "en": "Baseline (majority class)",
+  "es": "Línea base (clase mayoritaria)"
  },
  {
   "path": "screens.js:MODEL_LINEUP.models[0].assumes",
@@ -2665,6 +3305,11 @@
   "es": "No mira ni una sola variable. Cuenta qué clase es la más común en los datos de entrenamiento y responde esa, siempre. Con estos datos dice INCIPIENTE a todo y acierta el 64 % de las veces. Por eso la exactitud es un titular inútil aquí, y por eso este modelo está en la lista: para darle un suelo a todos los demás números."
  },
  {
+  "path": "screens.js:MODEL_LINEUP.models[1].name",
+  "en": "Logistic regression",
+  "es": "Regresión logística"
+ },
+ {
   "path": "screens.js:MODEL_LINEUP.models[1].assumes",
   "en": "A linear boundary",
   "es": "Una frontera lineal"
@@ -2678,6 +3323,11 @@
   "path": "screens.js:MODEL_LINEUP.models[1].detail",
   "en": "Draws a straight dividing surface through the 39-dimensional space and reads each variable’s weight as its pull towards one class or another. If a straight line were enough, this would be the answer to keep: you can read the coefficients and argue about the chemistry. It is here to find out whether the problem needs anything more complicated.",
   "es": "Traza una superficie divisoria recta por el espacio de 39 dimensiones y lee el peso de cada variable como su tirón hacia una clase u otra. Si bastara con una recta, esta sería la respuesta a conservar: se pueden leer los coeficientes y discutir la química. Está aquí para averiguar si el problema necesita algo más complicado."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[2].name",
+  "en": "k-nearest neighbours",
+  "es": "k vecinos más cercanos"
  },
  {
   "path": "screens.js:MODEL_LINEUP.models[2].assumes",
@@ -2695,6 +3345,11 @@
   "es": "No construye ningún modelo. Ante una síntesis nueva busca las quince más parecidas que ya hay en el registro y hace una votación. Eso lo convierte en una prueba directa de una intuición química —que condiciones parecidas dan productos parecidos— y es implacable con las variables mal escaladas, que es parte de lo que lo hizo útil para detectar los defectos de unidades."
  },
  {
+  "path": "screens.js:MODEL_LINEUP.models[3].name",
+  "en": "Naive Bayes",
+  "es": "Naive Bayes"
+ },
+ {
   "path": "screens.js:MODEL_LINEUP.models[3].assumes",
   "en": "Variables independent given the class",
   "es": "Variables independientes dada la clase"
@@ -2708,6 +3363,11 @@
   "path": "screens.js:MODEL_LINEUP.models[3].detail",
   "en": "Assumes every variable contributes independently, which in this data is plainly false: the electronegativity and the hardness of a cation are tied together by physics. It is on the list precisely so that assumption can fail visibly. It scores below the trivial baseline, and that gap is a measurement of how much the correlation structure matters.",
   "es": "Supone que cada variable contribuye de forma independiente, lo que con estos datos es sencillamente falso: la electronegatividad y la dureza de un catión están atadas por la física. Está en la lista precisamente para que esa suposición falle a la vista. Puntúa por debajo de la línea base trivial, y esa diferencia es una medida de cuánto importa la estructura de correlación."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[4].name",
+  "en": "SVM (RBF kernel)",
+  "es": "SVM (núcleo RBF)"
  },
  {
   "path": "screens.js:MODEL_LINEUP.models[4].assumes",
@@ -2725,6 +3385,11 @@
   "es": "Curva la frontera en vez de mantenerla recta, y solo le importan las muestras más cercanas al límite. Eso lo hace fuerte cuando hay muchas variables y pocas filas, que es exactamente este problema. El precio es que sus decisiones no se pueden leer como \"esta variable importó\"."
  },
  {
+  "path": "screens.js:MODEL_LINEUP.models[5].name",
+  "en": "Decision tree",
+  "es": "Árbol de decisión"
+ },
+ {
   "path": "screens.js:MODEL_LINEUP.models[5].assumes",
   "en": "Threshold cuts, one at a time",
   "es": "Cortes por umbral, de uno en uno"
@@ -2738,6 +3403,11 @@
   "path": "screens.js:MODEL_LINEUP.models[5].detail",
   "en": "Asks a chain of yes/no questions about single thresholds — is the temperature above 130, is there carboxylic modulator — until it reaches a verdict. Alone it overfits badly, but it is the building block of the four models below it, and it is the only one whose reasoning you can read out loud.",
   "es": "Hace una cadena de preguntas de sí o no sobre umbrales sueltos —¿está la temperatura por encima de 130?, ¿hay modulador carboxílico?— hasta llegar a un veredicto. Por sí solo sobreajusta mucho, pero es el ladrillo de los cuatro modelos que tiene debajo, y el único cuyo razonamiento se puede leer en voz alta."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[6].name",
+  "en": "Random Forest",
+  "es": "Random Forest"
  },
  {
   "path": "screens.js:MODEL_LINEUP.models[6].assumes",
@@ -2755,6 +3425,11 @@
   "es": "Hace crecer cientos de árboles, cada uno sobre una porción aleatoria de las filas y de las columnas, y los promedia. La aleatoriedad es la clave: los árboles individuales sobreajustan en direcciones distintas y los errores se cancelan. Es el modelo que está desplegado aquí, elegido por ser el que mejor rinde y a la vez el más difícil de estropear ajustándolo mal."
  },
  {
+  "path": "screens.js:MODEL_LINEUP.models[7].name",
+  "en": "HistGradientBoosting",
+  "es": "HistGradientBoosting"
+ },
+ {
   "path": "screens.js:MODEL_LINEUP.models[7].assumes",
   "en": "Sequential trees correcting each other",
   "es": "Árboles secuenciales que se corrigen entre sí"
@@ -2770,6 +3445,11 @@
   "es": "En vez de promediar árboles independientes, cada árbol nuevo se ajusta a los errores que dejaron los anteriores. Primero agrupa las variables en intervalos, lo que lo hace rápido, y acepta valores ausentes sin imputarlos, algo relevante aquí, donde un pKa nulo significa \"sin ácido carboxílico\" y no \"desconocido\"."
  },
  {
+  "path": "screens.js:MODEL_LINEUP.models[8].name",
+  "en": "LightGBM",
+  "es": "LightGBM"
+ },
+ {
   "path": "screens.js:MODEL_LINEUP.models[8].why",
   "en": "The industry reference",
   "es": "La referencia del sector"
@@ -2778,6 +3458,11 @@
   "path": "screens.js:MODEL_LINEUP.models[8].detail",
   "en": "The same idea as above with a different growth strategy: it extends whichever leaf reduces the error most, rather than growing level by level. Fast and usually at the top of tabular benchmarks, which is why it is the yardstick. It is the model serving the actionable half of this project.",
   "es": "La misma idea que el anterior con otra estrategia de crecimiento: extiende la hoja que más reduce el error, en vez de crecer nivel a nivel. Rápido y normalmente en lo alto de los benchmarks tabulares, que es por lo que sirve de vara de medir. Es el modelo que sirve la mitad accionable de este proyecto."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[9].name",
+  "en": "XGBoost",
+  "es": "XGBoost"
  },
  {
   "path": "screens.js:MODEL_LINEUP.models[9].assumes",
@@ -2795,6 +3480,11 @@
   "es": "El error relativo medio, el RMSE y el R² no aplican aquí. Pertenecen a la regresión y miden distancia a un número. En clasificación, o aciertas la clase o no."
  },
  {
+  "path": "screens.js:MODEL_SCORECARD_INTRO",
+  "en": "The figures first. Every number below is cross-validated with plates as groups, and is shown against the trivial baseline — without that reference an F1 of 0.52 could mean anything.",
+  "es": "Primero las cifras. Cada número de abajo está validado cruzadamente con las placas como grupos, y se muestra junto a la línea base trivial: sin esa referencia, un F1 de 0,52 podría significar cualquier cosa."
+ },
+ {
   "path": "screens.js:MODEL_SHAP.title",
   "en": "Reading the SHAP plot",
   "es": "Cómo leer el gráfico SHAP"
@@ -2808,6 +3498,36 @@
   "path": "screens.js:MODEL_SHAP.note",
   "en": "It complements permutation importance: that says how much a variable matters, this says in which direction and for which samples.",
   "es": "Complementa a la importancia por permutación: aquella dice cuánto importa una variable, esta dice en qué dirección y para qué muestras."
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.permutationFigureAlt",
+  "en": "Permutation importance of the features, coloured by chemical block",
+  "es": "Importancia por permutación de las variables, coloreada por bloque químico"
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.permutationFigureCaption",
+  "en": "Permutation importance, coloured by chemical block. Metal chemistry dominates; the stoichiometry and medium block comes out negative, which is the operational definition of noise.",
+  "es": "Importancia por permutación, coloreada por bloque químico. La química del metal domina; el bloque de estequiometría y medio sale negativo, que es la definición operativa de ruido."
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.shapFigureAlt",
+  "en": "SHAP summary plot showing the direction in which each feature pushes the prediction",
+  "es": "Gráfico resumen SHAP mostrando la dirección en que cada variable empuja la predicción"
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.shapFigureCaption",
+  "en": "SHAP values: horizontal position is how far a feature pushed the prediction towards crystalline, colour is the value of the feature itself.",
+  "es": "Valores SHAP: la posición horizontal es cuánto empujó una variable la predicción hacia cristalino, el color es el valor de la propia variable."
+ },
+ {
+  "path": "screens.js:MODEL_TAKEAWAY.body",
+  "en": "There is real predictive signal in five years of laboratory records, and it is modest: roughly twice the trivial baseline. Most of what the model distinguishes is which metal-linker system was used rather than which conditions were applied. The record varied those conditions across only 9 temperatures and 3 reaction times, which is too narrow for their effect to be learnable.",
+  "es": "Hay señal predictiva real en cinco años de registros de laboratorio, y es modesta: aproximadamente el doble de la línea base trivial. La mayor parte de lo que distingue el modelo es qué sistema metal-conector se usó, no qué condiciones se aplicaron. El registro varió esas condiciones a lo largo de solo 9 temperaturas y 3 tiempos de reacción, demasiado poco para que su efecto se pueda aprender."
+ },
+ {
+  "path": "screens.js:MODEL_TAKEAWAY.close",
+  "en": "That is a negative result, and it converts directly into an experimental instruction: the next campaign should sweep temperature and time far more widely than the last five years did.",
+  "es": "Eso es un resultado negativo, y se convierte directamente en una instrucción experimental: la próxima campaña debería barrer temperatura y tiempo con mucha más amplitud de lo que hicieron los últimos cinco años."
  },
  {
   "path": "screens.js:MODEL_TWO.title",
@@ -2898,6 +3618,11 @@
   "path": "screens.js:MODEL_VALIDATION.consequence",
   "en": "It costs performance. A random split would report a higher number for a model that had learned less.",
   "es": "Cuesta rendimiento. Una partición aleatoria daría un número más alto para un modelo que había aprendido menos."
+ },
+ {
+  "path": "screens.js:MODEL_WEIGHTS_NOTE",
+  "en": "Every model that supports it carries balanced class weights, which offsets the 6:1 imbalance by penalising errors on the minority classes more heavily.",
+  "es": "Todos los modelos que lo permiten llevan pesos de clase equilibrados, que compensan el desequilibrio de 6:1 penalizando más los errores en las clases minoritarias."
  },
  {
   "path": "site.js:BIO_ABOUT[0]",
@@ -3193,6 +3918,36 @@
   "path": "site.js:MODEL_NOTES.crystallinity_v2_mixed",
   "en": "The highest score on this table, and the reason the table exists. It mixed HTS, ST and microwave syntheses, so it was partly detecting the synthesis method. Marked invalid rather than deleted.",
   "es": "La puntuación más alta de esta tabla, y la razón de que la tabla exista. Mezclaba síntesis HTS, ST y de microondas, así que en parte estaba detectando el método de síntesis. Marcado como inválido en vez de borrado."
+ },
+ {
+  "path": "site.js:OVERVIEW_HERO.leadBefore",
+  "en": "A materials-informatics and data-driven ecosystem built on agentic AI, data engineering and governed",
+  "es": "Un ecosistema de informática de materiales guiado por datos, construido sobre IA con agentes, ingeniería de datos y"
+ },
+ {
+  "path": "site.js:OVERVIEW_HERO.leadAfter",
+  "en": ". It accelerates the discovery of advanced porous materials, enhancing trial-and-error chemistry with guided in-silico screening.",
+  "es": " gobernado. Acelera el descubrimiento de materiales porosos avanzados, potenciando la química de ensayo y error con cribado in silico guiado."
+ },
+ {
+  "path": "site.js:OVERVIEW_HERO.ctaPrimary",
+  "en": "Try the in-silico simulator",
+  "es": "Prueba el simulador in silico"
+ },
+ {
+  "path": "site.js:OVERVIEW_HERO.ctaSecondary",
+  "en": "See the end-to-end flow",
+  "es": "Ver el flujo de principio a fin"
+ },
+ {
+  "path": "site.js:OVERVIEW_HERO.kpiFootnote",
+  "en": "Counts read live from PostgreSQL. Verified 2026-09-01.",
+  "es": "Recuentos leídos en vivo de PostgreSQL. Verificado el 2026-09-01."
+ },
+ {
+  "path": "site.js:OVERVIEW_HERO.crispBody",
+  "en": "Each tab is one phase of the data lifecycle, in the order the decisions were actually made — how the data arrived, how it was cleaned, what it turned out to say, and only then what a model could learn from it.",
+  "es": "Cada pestaña es una fase del ciclo de vida del dato, en el orden en que se tomaron de verdad las decisiones: cómo llegaron los datos, cómo se limpiaron, qué acabaron diciendo, y solo entonces qué podía aprender de ellos un modelo."
  },
  {
   "path": "site.js:PILLARS[0].title",
@@ -4313,6 +5068,21 @@
   "path": "workflow.js:AREAS[3].tableIntro",
   "en": "Every parser — Python and JavaScript alike — returns the same dictionary shape, and `data_json` always holds `header_metadata` and `raw_data`. Stored as **JSONB** with a GIN index, so an agent can query any technique uniformly.",
   "es": "Todos los parsers, tanto en Python como en JavaScript, devuelven la misma forma de diccionario, y `data_json` siempre contiene `header_metadata` y `raw_data`. Se guarda como **JSONB** con un índice GIN, así que un agente puede consultar cualquier técnica de manera uniforme."
+ },
+ {
+  "path": "workflow.js:AREAS[3].table.head[0]",
+  "en": "Format",
+  "es": "Formato"
+ },
+ {
+  "path": "workflow.js:AREAS[3].table.head[1]",
+  "en": "Instrument",
+  "es": "Instrumento"
+ },
+ {
+  "path": "workflow.js:AREAS[3].table.head[2]",
+  "en": "Comments",
+  "es": "Comentarios"
  },
  {
   "path": "workflow.js:AREAS[4].subtitle",

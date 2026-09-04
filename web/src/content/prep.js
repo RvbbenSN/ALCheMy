@@ -17,6 +17,79 @@
    reales, con los codigos de muestra y los ligandos sustituidos.
    -------------------------------------------------------------------------- */
 
+/* Texto de la pantalla 03 escrito directamente en el JSX en sesiones
+   anteriores a que existiera el paquete de idioma: titulos de tarjeta,
+   parrafos de introduccion y las viñetas de las dos tarjetas "What the three
+   layers mean" / "Peak detection". Los Term y <em>/<strong> incrustados se
+   resuelven con la negrita o la cursiva de Rich, o partiendo el texto en
+   before/after alrededor del <Term> cuando no hay alternativa. */
+export const PREP_UI = {
+  columnsIntro: 'Forty-six columns in five blocks, plus the timestamps the database keeps on its own.',
+  notebook01Intro: 'Five years of handwritten synthesis conditions lived in one multi-tab Excel file with arbitrary headers.',
+  step1Body: 'A master mapping dictionary translates arbitrary spreadsheet headers into a strict SQL schema. Kept as an explicit dictionary rather than automatic slug-casing, so that renaming a column in the spreadsheet produces a visible failure instead of a silently new column.',
+  step4Before: 'A checksum over six business fields — sample code, date, researcher, unit, metal centre and linker — gives every synthesis an identity derived from what it *is*, not from the row it happened to occupy. Two spreadsheets describing the same experiment collapse to the same key. See',
+  step4After: '.',
+  step5Body: 'The synthesis table is written by both this ETL notebook and the live ingestion pipeline. Using an UPSERT (on conflict: update) keyed on sample_code guarantees that batch updates never overwrite or erase newly ingested records.',
+
+  metalFeaturizationTitle: 'Metal featurization',
+  linkerFeaturizationTitle: 'Linker featurization',
+  eightNumbersTitle: 'Eight numbers for the metal',
+  sixForLinkerTitle: 'Six for the linker',
+
+  defectsIntro: 'A model can run smoothly on corrupted data without throwing errors. These examples show why revisions are necessary.',
+  howItSurfacedLabel: 'How it surfaced.',
+  fixLabel: 'Fix.',
+  zeroVsNullCheck: 'The check that proves defects 4 and 5 are genuinely fixed: the composition of the medium now sums to 1.000. Before the correction the mean was 0.789 — and version 2 had no such check, which is precisely why the fault survived.',
+  imputationAlt: 'The alternative — explicitly flagging which values were missing, letting the model learn from the fact of absence — was tested rather than assumed:',
+
+  whyItGoesFirstTitle: 'Why it goes first',
+  andWhyModelPredictsTitle: 'And why the model predicts it',
+  pxrdDecompositionIntro: 'A machine learning model cannot ingest thousands of raw (2theta, Intensity) points as tabular features. Here, each **diffraction pattern is decomposed into its physical components**—instrument background, diffuse amorphous halo, and Bragg peaks—extracting 29 quantitative descriptors that capture crystal order, peak geometry, and signal quality.',
+
+  layers: [
+    {
+      label: 'Dashed baseline — instrument noise.',
+      before: 'Measured directly from an empty sample holder on the same diffractometer (air scatter, detector drift), not fitted. Fitting a smooth curve instead — an',
+      after: 'baseline — works only while the halo is narrower than the scan; in a genuinely amorphous sample the fitted curve climbs onto the halo and carries it away, leaving **0.4% of the area as halo** on the amorphous example below when the sample is almost entirely halo.',
+    },
+    {
+      label: 'Diffuse halo — amorphous fraction.',
+      body: 'The broad hump from short-range disorder. It is true chemical signal, not background — measured correctly (baseline subtracted, not fitted), it comes back at **18% of the total area** on that same example, 94% of what the sample itself scattered. It is what separates a failed synthesis from a disordered solid.',
+    },
+    {
+      label: 'Sharp Bragg peaks — crystalline order.',
+      body: 'Constructive interference from periodic (hkl) crystal planes. Their position, intensity and width (FWHM) are what identify the crystalline phase.',
+    },
+  ],
+  sigma: [
+    {
+      label: 'Poisson noise scale.',
+      body: 'X-ray detection is photon counting, so noise follows Poisson statistics: its scale is the square root of the counts.',
+    },
+    {
+      label: 'The 3σ floor.',
+      body: 'A local maximum only counts as a genuine reflection once its height clears three times the noise level above the local background.',
+    },
+    {
+      label: 'Why not looser.',
+      body: 'Three sigma is the level for *one* comparison — scanning thousands of points for a maximum needs a stricter level, or noise gets misread as reflections. The threshold drawn here is the honest floor, not the final criterion.',
+    },
+  ],
+
+  labelerExplorerIntro: 'Two Streamlit tools, built for this project. The **labeler** produced four independent verdicts per pattern over 1,877 diffractograms — crystallinity class, incipient subtype, oxide flag and suspected multiphase. The **explorer** is where the signal-processing pipeline was tuned, curve by curve, before it was trusted on all of them.',
+  labelerTitle: 'The labeler',
+  labelerNote: 'One pattern at a time: the four verdicts on the right, written straight into pxrd_labels.',
+  explorerTitle: 'The explorer',
+  explorerNote: 'Baseline, amorphous halo and Bragg peaks separated live, with every descriptor recomputed as the parameters move.',
+
+  descriptorFigureAlt: 'Anatomy of the PXRD descriptor vector: an annotated diffractogram showing where each of the 29 descriptors comes from',
+  descriptorFigureCaption: 'Anatomy of the descriptor vector. Every one of the 29 numbers, shown on the scan it was measured from, grouped by traceability, peak geometry, phase composition and global statistics.',
+  physicalNoteLabel: 'A physical note on descriptor validity.',
+
+  notebooksFootnote: 'The full set of seven notebooks is linked from the screen each one belongs to.',
+  switchLaneIntro: 'This screen has two halves and you have just finished one of them.',
+}
+
 export const PREP_INTRO = {
   /* Que es un ETL, antes de nada. El titulo de la pantalla lo usa como si fuese
      obvio, y para un quimico no lo es. Antes era un unico parrafo con los tres

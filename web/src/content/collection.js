@@ -26,6 +26,7 @@ export const COLLECTION_PROBLEM = {
     'Instead, the workflow takes over. Incoming files are authenticated, fingerprinted against duplicates, and routed by technique: deterministic parsers handle tabular data, while specialized AI agents extract unstructured PDF reports and microscopy images, **logging every step to an audit trail**.',
   builtWith:
     'Built in **n8n**, a workflow automation tool: every box on the canvas below is a real node in a running instance.',
+  seeOnGithub: 'See the workflow on GitHub',
   guaranteesTitle: 'What the workflow guarantees',
   guarantees: [
     {
@@ -53,6 +54,14 @@ export const COLLECTION_PROBLEM = {
 
 export const COLLECTION_CANVAS_INTRO =
   'The flow as it is — **79 nodes**, **114 connections**, nine areas. Pick a stop and the map flies to it, with the card below the map saying what that area adds to the row and why.'
+
+/* Parrafo con un <Link> incrustado (a la pantalla 08): va partido en tres
+   trozos para que la traduccion no tenga que tocar el JSX que lo rodea. */
+export const COLLECTION_SCHEMA_NOTE = {
+  before: 'Every row this workflow writes ends up in one governed schema, and every automated decision it takes ends up in `audit_log` with a typed verdict and cause.',
+  linkText: 'Screen 08 takes the schema apart',
+  after: '— the tables, what each one holds, and how they feed each other.',
+}
 
 export const COLLECTION_ROW_INTRO =
   'Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint.'

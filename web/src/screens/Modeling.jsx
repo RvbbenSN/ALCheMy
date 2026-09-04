@@ -37,7 +37,11 @@ function Pullquote({ children, tone = 'accent' }) {
 
 export default function Modeling() {
   const { UI } = useBundle(UI_EN, UI_ES)
-  const { MODEL_ASSESSMENT, MODEL_CHEMISTRY, MODEL_ERRORS, MODEL_FINDINGS, MODEL_LINEUP, MODEL_METRICS, MODEL_SHAP, MODEL_TWO, MODEL_VALIDATION } = useBundle(SCREENS_EN, SCREENS_ES)
+  const {
+    MODEL_ASSESSMENT, MODEL_CHEMISTRY, MODEL_ERRORS, MODEL_FINDINGS, MODEL_FRAMING,
+    MODEL_HERO_LEAD, MODEL_LINEUP, MODEL_METRICS, MODEL_SCORECARD_INTRO, MODEL_SHAP,
+    MODEL_TAKEAWAY, MODEL_TWO, MODEL_VALIDATION, MODEL_WEIGHTS_NOTE,
+  } = useBundle(SCREENS_EN, SCREENS_ES)
 
   return (
     <div className="flex flex-col gap-16">
@@ -45,9 +49,7 @@ export default function Modeling() {
         <Badge tone="accent">05 · Modeling &amp; Evaluation</Badge>
         <h1 className="mt-4 text-3xl uppercase md:text-5xl" style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>{UI.modeling.trainingEvaluation}</h1>
         <p className="mt-6 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-          Ten model families are trained on the same 1,516 syntheses and compared under one validation
-          scheme, grouped by plate. The headline figure is <strong>0.52 macro F1</strong> against 0.26
-          for a model that always answers the majority class.
+          <Rich>{MODEL_HERO_LEAD}</Rich>
         </p>
       </section>
 
@@ -56,11 +58,7 @@ export default function Modeling() {
         <SectionTitle eyebrow={UI.modeling.classificationAndWhyNot.eyebrow}>{UI.modeling.classificationAndWhyNot.title}</SectionTitle>
         <Card>
           <p style={{ color: 'var(--text-secondary)' }}>
-            The target is the same three-way verdict the bench already used when triaging a 24-well plate:
-            amorphous, incipient, or a well-ordered crystalline phase. Framing it as classification rather
-            than regression is a decision that cannot be repaired later — there is no continuous
-            &ldquo;degree of crystallinity&rdquo; that the human labels actually recorded, and inventing
-            one would mean scoring the model against a quantity nobody measured.
+            <Rich>{MODEL_FRAMING}</Rich>
           </p>
         </Card>
       </section>
@@ -119,14 +117,13 @@ export default function Modeling() {
         <div className="mt-6">
           <NotebookFigure
             src="nb06-09.png"
-            alt="Comparison of the ten models by macro F1 and MCC, high-throughput syntheses only"
-            caption="All ten compared under the same grouped cross-validation. The baseline is the bar everything else has to clear — and Naive Bayes does not clear it."
+            alt={MODEL_LINEUP.comparisonFigureAlt}
+            caption={MODEL_LINEUP.comparisonFigureCaption}
             source="notebook 06 §8"
           />
         </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Every model that supports it carries balanced class weights, which offsets the 6:1 imbalance
-          by penalising errors on the minority classes more heavily.
+          <Rich>{MODEL_WEIGHTS_NOTE}</Rich>
         </p>
       </section>
 
@@ -197,8 +194,7 @@ export default function Modeling() {
       <section>
         <SectionTitle eyebrow={UI.modeling.whereTheModelStands.eyebrow}>{UI.modeling.whereTheModelStands.title}</SectionTitle>
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-          The figures first. Every number below is cross-validated with plates as groups, and is shown
-          against the trivial baseline — without that reference an F1 of 0.52 could mean anything.
+          <Rich>{MODEL_SCORECARD_INTRO}</Rich>
         </p>
         <ModelScorecard />
       </section>
@@ -347,13 +343,13 @@ export default function Modeling() {
         <ScrollTable head={MODEL_ERRORS.tableHead} rows={MODEL_ERRORS.tableRows} />
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Card>
-            <Badge tone="pure">As hoped</Badge>
+            <Badge tone="pure">{MODEL_ERRORS.asHopedBadge}</Badge>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{MODEL_ERRORS.amorphous}</Rich>
             </p>
           </Card>
           <Card>
-            <Badge tone="amorphous">The main weakness</Badge>
+            <Badge tone="amorphous">{MODEL_ERRORS.mainWeaknessBadge}</Badge>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <Rich>{MODEL_ERRORS.crystalline}</Rich>
             </p>
@@ -362,8 +358,8 @@ export default function Modeling() {
         <div className="my-6">
           <NotebookFigure
             src="nb06-10.png"
-            alt="Confusion matrix of the Random Forest model on held-out plates, as counts and row-normalised"
-            caption="Left, raw counts; right, normalised by true class so each row reads as recall. The diagonal is where the model is right — and the crystalline row is where it is weakest."
+            alt={MODEL_ERRORS.confusionFigureAlt}
+            caption={MODEL_ERRORS.confusionFigureCaption}
             source="notebook 06 §8.3"
           />
         </div>
@@ -409,14 +405,14 @@ export default function Modeling() {
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
           <NotebookFigure
             src="nb06-11.png"
-            alt="Permutation importance of the features, coloured by chemical block"
-            caption="Permutation importance, coloured by chemical block. Metal chemistry dominates; the stoichiometry and medium block comes out negative, which is the operational definition of noise."
+            alt={MODEL_SHAP.permutationFigureAlt}
+            caption={MODEL_SHAP.permutationFigureCaption}
             source="notebook 06 §8.4"
           />
           <NotebookFigure
             src="nb06-12.png"
-            alt="SHAP summary plot showing the direction in which each feature pushes the prediction"
-            caption="SHAP values: horizontal position is how far a feature pushed the prediction towards crystalline, colour is the value of the feature itself."
+            alt={MODEL_SHAP.shapFigureAlt}
+            caption={MODEL_SHAP.shapFigureCaption}
             source="notebook 06 §8.4"
           />
         </div>
@@ -431,15 +427,10 @@ export default function Modeling() {
         <SectionTitle eyebrow={UI.modeling.whatTheModelingStage.eyebrow}>{UI.modeling.whatTheModelingStage.title}</SectionTitle>
         <Card accent>
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-            There is real predictive signal in five years of laboratory records, and it is modest:
-            roughly twice the trivial baseline. Most of what the model distinguishes is which
-            metal-linker system was used rather than which conditions were applied. The record varied
-            those conditions across only 9 temperatures and 3 reaction times, which is too narrow for
-            their effect to be learnable.
+            <Rich>{MODEL_TAKEAWAY.body}</Rich>
           </p>
           <p className="mt-4 text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-            That is a negative result, and it converts directly into an experimental instruction: the next
-            campaign should sweep temperature and time far more widely than the last five years did.
+            <Rich>{MODEL_TAKEAWAY.close}</Rich>
           </p>
         </Card>
       </section>

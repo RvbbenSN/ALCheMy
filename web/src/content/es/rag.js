@@ -336,3 +336,5 @@ export const RAG_RETRIEVAL = {
     }
   ]
 }
+
+export const RAG_WORKFLOW_INTRO = "Dos flujos comparten un lienzo: la banda de arriba indexa documentos y se lanza a mano cada vez que crece el corpus; la banda de abajo responde a una pregunta y se lanza en cada mensaje. Elige una etapa para volar hasta ella, o toma la última parada para verlo todo junto de una vez."

@@ -7,6 +7,29 @@
    proyectos. Los datos duros se leen; los parrafos se saltan.
    -------------------------------------------------------------------------- */
 
+/* Texto suelto de la pantalla que vivia directamente en el JSX: el
+   formulario de contacto entero, los botones de enlace, y varios pies de
+   parrafo. Ninguno paso por la extraccion de titulos (no son SectionTitle/h1)
+   ni por la ronda normal de content/ (no vivian ahi todavia). */
+export const ABOUT_UI = {
+  downloadCv: 'Download CV',
+  readThePaper: 'Read the paper',
+  citation: 'citation',
+  citations: 'citations',
+  projectsIntro: 'Six competitive projects at European, national and regional level, contributing to data analysis and technical reporting.',
+  fundingClosingBefore: 'Combined budget of the projects funding that work:',
+  fundingClosingAfter: '. Principal investigator in all of them: Dr. Patricia Horcajada.',
+  readIt: 'Read it',
+  finalNote: 'The code behind this platform is on GitHub; the data it runs on is not, and neither are the unpublished ligands. That distinction is deliberate and is explained on the screens themselves.',
+  contactIntroBefore: 'Thoughts on the platform, a question about the chemistry, an opportunity — whatever it is, it reaches',
+  formSubjectLabel: 'Subject',
+  formSubjectPlaceholder: 'A note about ALCheMy',
+  formMessageLabel: 'Message',
+  formMessagePlaceholder: 'Write here…',
+  formSendButton: 'Open in my mail app',
+  formFootnote: 'This opens your own mail client with the message ready to send. Nothing is stored here.',
+}
+
 export const HEADLINE =
   'PhD in Chemistry · Applied AI & Data Science · Advanced Materials'
 

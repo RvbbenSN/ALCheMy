@@ -8,7 +8,8 @@ export const BOTTLENECK = {
   "problem": "Nada de eso es raro, es como trabaja la mayoría de los laboratorios. Pero significa que una pregunta sencilla — *¿qué condiciones han producido alguna vez un material prometedor?* — solo se responde tan bien como recuerde alguien dónde se guardaron las cosas.",
   "turn": "La solución es una **base de datos gobernada**: una fila por síntesis, una fila por medida, cada fichero con su huella y su autoría. Una vez que el registro es una tabla, la pregunta de arriba se convierte en una consulta, y un modelo puede aprender de todo el registro.",
   "hookTitle": "Lo que deja un problema sin resolver",
-  "hook": "Miles de ficheros de instrumento, varios formatos... y nada que impida guardar el mismo fichero dos veces con dos nombres. Lo que hace falta es concreto: **una forma de dejar caer un fichero en algún sitio y que acabe en la base de datos, correctamente atribuido, sin que nadie teclee nada.**"
+  "hook": "Miles de ficheros de instrumento, varios formatos... y nada que impida guardar el mismo fichero dos veces con dos nombres. Lo que hace falta es concreto: **una forma de dejar caer un fichero en algún sitio y que acabe en la base de datos, correctamente atribuido, sin que nadie teclee nada.**",
+  "linkText": "El flujo de ingesta"
 }
 
 export const DATA_SCALE = {
@@ -28,10 +29,13 @@ export const LAB_INTRO = {
 export const MOF_DEF = {
   "acronym": "MOF",
   "expansion": "Metal-Organic Framework",
+  "titleBefore": "Qué es un",
+  "titleAfter": "?",
   "iupac": "Una red de coordinación con ligandos orgánicos que contiene huecos potenciales.",
   "iupacNote": "Recomendación de la IUPAC, 2013.",
   "plain": "En pocas palabras, **los iones o clústeres metálicos** hacen de nudos, **las moléculas orgánicas** hacen de vigas, y juntos levantan un andamio rígido.",
-  "why": "Como las dos partes se pueden intercambiar por separado, la **misma arquitectura se puede reconstruir** con otro metal o con otro conector. Eso es lo que hace tan grande a la familia: son la clase más diversa de sólidos cristalinos extendidos que se conoce hoy."
+  "why": "Como las dos partes se pueden intercambiar por separado, la **misma arquitectura se puede reconstruir** con otro metal o con otro conector. Eso es lo que hace tan grande a la familia: son la clase más diversa de sólidos cristalinos extendidos que se conoce hoy.",
+  "renderingAlt": "Representación de nodos metálicos, mostrados como octaedros dorados, unidos por ligandos orgánicos burdeos formando una red porosa extendida"
 }
 
 export const MOF_FACTS = [
@@ -67,6 +71,7 @@ export const NOBEL = {
   "title": "Premio Nobel de Química",
   "laureates": "Susumu Kitagawa, Richard Robson y Omar Yaghi",
   "reason": "Por sentar las bases de las redes metal-orgánicas y de la química reticular.",
+  "photoAlt": "Retratos ilustrados de los premiados con el Nobel de Química 2025",
   "credit": "© Nobel Prize Outreach. Ilustración: Niklas Elmehed."
 }
 
@@ -83,7 +88,7 @@ export const TECHNIQUES = [
   {
     "abbr": "PXRD",
     "icon": "waves",
-    "name": "Powder X-ray diffraction",
+    "name": "Difracción de rayos X de polvo",
     "answers": "¿Es cristalino, y es la fase que yo quería?",
     "body": "Los rayos X dispersados por una red ordenada producen picos afilados a ángulos concretos. Un sólido desordenado produce en su lugar una joroba ancha. Es la primera prueba que pasa cualquier muestra nueva, y la que modela esta plataforma.",
     "primary": true
@@ -91,56 +96,56 @@ export const TECHNIQUES = [
   {
     "abbr": "TGA",
     "icon": "flame",
-    "name": "Thermogravimetric analysis",
+    "name": "Análisis termogravimétrico",
     "answers": "¿Cuánto disolvente hay atrapado dentro, y cuánto calor aguanta?",
     "body": "Se calienta la muestra mientras se pesa. Las pérdidas de masa revelan las moléculas huésped saliendo de los poros y, al final, la propia red descomponiéndose."
   },
   {
     "abbr": "VT-XRD",
     "icon": "thermometer",
-    "name": "Variable-temperature XRD",
+    "name": "DRX a temperatura variable",
     "answers": "¿Sobrevive la estructura al calentamiento?",
     "body": "Difracción medida mientras sube la temperatura, que muestra si la red aguanta, se transforma o colapsa."
   },
   {
     "abbr": "BET",
     "icon": "wind",
-    "name": "Gas physisorption",
+    "name": "Fisisorción de gases",
     "answers": "¿Cuánto espacio vacío es accesible de verdad?",
     "body": "Se dosifica nitrógeno o CO₂ sobre el material y la cantidad adsorbida se convierte en superficie específica en metros cuadrados por gramo, más la distribución de tamaño de poro."
   },
   {
     "abbr": "FTIR",
     "icon": "audio",
-    "name": "Infrared spectroscopy",
+    "name": "Espectroscopia infrarroja",
     "answers": "¿Se ha unido el conector al metal de verdad?",
     "body": "Los enlaces químicos absorben luz infrarroja a frecuencias características. Los desplazamientos de esas bandas distinguen un ligando coordinado del material de partida libre y sin reaccionar."
   },
   {
     "abbr": "ICP-OES",
     "icon": "sparkles",
-    "name": "Inductively coupled plasma",
+    "name": "Plasma acoplado inductivamente",
     "answers": "¿Cuánto metal hay ahí dentro?",
     "body": "La muestra se vaporiza en un plasma y la luz que emite cuantifica cada elemento, lo que da la proporción real entre metal y ligando."
   },
   {
     "abbr": "EA",
     "icon": "atom",
-    "name": "Elemental analysis",
+    "name": "Análisis elemental",
     "answers": "¿Coincide la composición orgánica con la fórmula?",
     "body": "El análisis por combustión devuelve los porcentajes de carbono, hidrógeno, nitrógeno y azufre, que se comparan con la fórmula propuesta."
   },
   {
     "abbr": "SEM / TEM",
     "icon": "microscope",
-    "name": "Electron microscopy",
+    "name": "Microscopía electrónica",
     "answers": "¿Qué aspecto tienen las partículas?",
     "body": "Los haces de electrones toman imagen de la morfología y el tamaño de los cristales, desde la forma de una cara hasta la escala nanométrica."
   },
   {
     "abbr": "UV-Vis",
     "icon": "sun",
-    "name": "Diffuse reflectance spectroscopy",
+    "name": "Espectroscopia de reflectancia difusa",
     "answers": "¿Puede absorber luz, y a qué energía?",
     "body": "La absorción óptica da el band gap, que decide si un material puede impulsar una reacción fotocatalítica."
   }
@@ -224,6 +229,8 @@ export const WHY_CHARACTERISE = {
   "title": "Por qué un solo material necesita una docena de medidas",
   "lead": "Fabricar un sólido no es lo mismo que saber qué es. **A un polvo recién formado hay que interrogarlo** desde varios ángulos antes de poder afirmar nada sobre él.",
   "consequence": "Cada muestra prometedora genera ficheros de varios instrumentos, cada uno escrito en su propio formato. Multiplica eso por miles de muestras y deja de ser un problema de química: pasa a ser un **reto de gestión y procesado de datos**.",
+  "gridIntro": "Las nueve técnicas detrás de esta plataforma. Cada una responde a una pregunta; ninguna responde a dos.",
+  "metalNodesCaption": "Nudos metálicos, dibujados como octaedros, unidos por conectores orgánicos en una red extendida.",
   "numbers": [
     [
       "6,073",
