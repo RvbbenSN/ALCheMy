@@ -3,80 +3,80 @@
    y volver a ejecutar el script. Lo que no este traducido sale en ingles. */
 
 export const BOTTLENECK = {
-  "title": "Where the data problem begins",
-  "scale": "Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,073 instrument files**, across folders, notebooks and local disks.",
-  "problem": "Nothing about that is unusual, it is how most laboratories work. But it means a simple question — *which conditions have ever produced a promising material?* — and the answer is only as good as someone's memory of where things were saved.",
-  "turn": "The fix is a **governed database**: one row per synthesis, one row per measurement, every file fingerprinted and attributed. Once the record is a table, the question above becomes a query — and a model can learn from the whole record.",
-  "hookTitle": "Which leaves one problem unsolved",
-  "hook": "Thousands of instrument files, several formats... and nothing stopping the same file being saved twice under two names. What is needed is specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**"
+  "title": "Donde empieza el problema de los datos",
+  "scale": "Dos placas por semana, 24 condiciones cada una, durante cinco años. El diagrama de arriba es lo que eso produce: **2.167 síntesis**, **6.073 ficheros de instrumento**, repartidos entre carpetas, cuadernos y discos locales.",
+  "problem": "Nada de eso es raro, es como trabaja la mayoría de los laboratorios. Pero significa que una pregunta sencilla — *¿qué condiciones han producido alguna vez un material prometedor?* — solo se responde tan bien como recuerde alguien dónde se guardaron las cosas.",
+  "turn": "La solución es una **base de datos gobernada**: una fila por síntesis, una fila por medida, cada fichero con su huella y su autoría. Una vez que el registro es una tabla, la pregunta de arriba se convierte en una consulta, y un modelo puede aprender de todo el registro.",
+  "hookTitle": "Lo que deja un problema sin resolver",
+  "hook": "Miles de ficheros de instrumento, varios formatos... y nada que impida guardar el mismo fichero dos veces con dos nombres. Lo que hace falta es concreto: **una forma de dejar caer un fichero en algún sitio y que acabe en la base de datos, correctamente atribuido, sin que nadie teclee nada.**"
 }
 
 export const DATA_SCALE = {
-  "title": "How much data one laboratory produces",
-  "lead": "On the left, every synthesis ever performed. In the middle, every measurement taken on those samples, by technique. On the right, the one place all of it has to end up. **A true challenge of scale.**",
+  "title": "Cuántos datos produce un solo laboratorio",
+  "lead": "A la izquierda, todas las síntesis realizadas. En el medio, todas las medidas tomadas sobre esas muestras, por técnica. A la derecha, el único sitio donde tiene que acabar todo. **Un auténtico reto de escala.**",
   "bracketLabel": "measurements",
-  "databaseLabel": "One governed database",
-  "databaseNote": "One row per synthesis, one row per measurement, every file fingerprinted.",
-  "footnote": "Measurement counts read from the database on 3 September 2026; ICP and EA, shown dashed, are still PDF reports awaiting the AI branch, so that circle counts files, not rows. Circle size scales with the count so the small techniques stay legible — read the numbers, not the areas."
+  "databaseLabel": "Una base de datos gobernada",
+  "databaseNote": "Una fila por síntesis, una fila por medida, cada fichero con su huella.",
+  "footnote": "Recuentos de medidas leídos de la base el 3 de septiembre de 2026; ICP y AE, en trazo discontinuo, siguen siendo informes PDF a la espera de la rama de IA, así que ese círculo cuenta ficheros y no filas. El tamaño del círculo escala con el recuento para que las técnicas pequeñas sigan siendo legibles: lee los números, no las áreas."
 }
 
 export const LAB_INTRO = {
-  "title": "What a week at the bench actually looks like",
-  "lead": "A structure can be designed on paper, but its **synthesis must be discovered**. The ideal recipe is found by screening countless reaction trials. This is how pipeline looks like:"
+  "title": "Cómo es de verdad una semana de poyata",
+  "lead": "Una estructura se puede diseñar sobre el papel, pero su **síntesis hay que descubrirla**. La receta ideal se encuentra cribando incontables ensayos de reacción. El pipeline es así:"
 }
 
 export const MOF_DEF = {
   "acronym": "MOF",
   "expansion": "Metal-Organic Framework",
-  "iupac": "A coordination network with organic ligands containing potential voids.",
-  "iupacNote": "IUPAC recommendation, 2013.",
-  "plain": "In a nutshell, **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold.",
-  "why": "Because both parts can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today."
+  "iupac": "Una red de coordinación con ligandos orgánicos que contiene huecos potenciales.",
+  "iupacNote": "Recomendación de la IUPAC, 2013.",
+  "plain": "En pocas palabras, **los iones o clústeres metálicos** hacen de nudos, **las moléculas orgánicas** hacen de vigas, y juntos levantan un andamio rígido.",
+  "why": "Como las dos partes se pueden intercambiar por separado, la **misma arquitectura se puede reconstruir** con otro metal o con otro conector. Eso es lo que hace tan grande a la familia: son la clase más diversa de sólidos cristalinos extendidos que se conoce hoy."
 }
 
 export const MOF_FACTS = [
   {
     "icon": "grid",
-    "title": "Built like a scaffold",
-    "body": "**Metal nodes joined by organic linkers** into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed"
+    "title": "Construidos como un andamio",
+    "body": "**Nudos metálicos unidos por conectores orgánicos** en una red periódica. Tratarlos como redes abstractas, de nudos y aristas, es lo que permite diseñar una estructura"
   },
   {
     "icon": "expand",
-    "title": "Surface areas without precedent",
-    "body": "A single gram can present the **surface area of a football pitch**. That is what makes them useful for storing gases, capturing CO₂ or hosting catalytic sites."
+    "title": "Superficies sin precedente",
+    "body": "Un solo gramo puede presentar la **superficie de un campo de fútbol**. Eso es lo que los hace útiles para almacenar gases, capturar CO₂ o alojar centros catalíticos."
   },
   {
     "icon": "sliders",
-    "title": "Tunable by design",
-    "body": "Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the **isoreticular principle**."
+    "title": "Ajustables por diseño",
+    "body": "Cambia el conector y el poro cambia de tamaño, forma y química mientras la topología sobrevive. Es el **principio isorreticular**."
   },
   {
     "icon": "flask",
-    "title": "Applied to real problems",
-    "body": "**Wide range of promising applications**. Green hydrogen production, water remediation, CO₂ conversion into cyclic carbonates, and polymerisation catalysis, among others."
+    "title": "Aplicados a problemas reales",
+    "body": "**Un abanico amplio de aplicaciones prometedoras**. Producción de hidrógeno verde, remediación de aguas, conversión de CO₂ en carbonatos cíclicos y catálisis de polimerización, entre otras."
   }
 ]
 
 export const MOF_NAMING = {
-  "title": "A note on the names",
-  "body": "Frameworks are usually named after the institution that first reported them: MIL-n from the Materials Institute Lavoisier, UiO-n from the University of Oslo, HKUST-n from Hong Kong. IEF-n is the series from the IMDEA Energy Institute — where the syntheses behind this platform were made."
+  "title": "Una nota sobre los nombres",
+  "body": "Las redes suelen llevar el nombre de la institución que las publicó primero: MIL-n del Materials Institute Lavoisier, UiO-n de la Universidad de Oslo, HKUST-n de Hong Kong. IEF-n es la serie del Instituto IMDEA Energía, donde se hicieron las síntesis que hay detrás de esta plataforma."
 }
 
 export const NOBEL = {
   "year": "2025",
-  "title": "Nobel Prize in Chemistry",
-  "laureates": "Susumu Kitagawa, Richard Robson and Omar Yaghi",
-  "reason": "For establishing the foundations of metal-organic frameworks and reticular chemistry.",
-  "credit": "© Nobel Prize Outreach. Illustration: Niklas Elmehed."
+  "title": "Premio Nobel de Química",
+  "laureates": "Susumu Kitagawa, Richard Robson y Omar Yaghi",
+  "reason": "Por sentar las bases de las redes metal-orgánicas y de la química reticular.",
+  "credit": "© Nobel Prize Outreach. Ilustración: Niklas Elmehed."
 }
 
-export const SCIENCE_INTRO = "Ever wondered what happens when you build crystalline materials like molecular *Lego*? Step inside the chemistry of Metal-Organic Frameworks (MOFs) and see why characterizing them requires an entire suite of analytical techniques."
+export const SCIENCE_INTRO = "¿Alguna vez te has preguntado qué pasa cuando construyes materiales cristalinos como si fueran *Lego* molecular? Asómate a la química de las redes metal-orgánicas (MOF) y descubre por qué caracterizarlas exige toda una batería de técnicas analíticas."
 
 export const SYNTHESIS_NODE = {
   "label": "Syntheses",
   "icon": "flask",
   "count": 2167,
-  "note": "Two 24-well plates a week, five years."
+  "note": "Dos placas de 24 pocillos por semana, cinco años."
 }
 
 export const TECHNIQUES = [
@@ -84,65 +84,65 @@ export const TECHNIQUES = [
     "abbr": "PXRD",
     "icon": "waves",
     "name": "Powder X-ray diffraction",
-    "answers": "Is it crystalline, and is it the phase I wanted?",
-    "body": "X-rays scattered by an ordered lattice produce sharp peaks at specific angles. A disordered solid produces a broad hump instead. This is the first test any new sample faces, and the one this platform models.",
+    "answers": "¿Es cristalino, y es la fase que yo quería?",
+    "body": "Los rayos X dispersados por una red ordenada producen picos afilados a ángulos concretos. Un sólido desordenado produce en su lugar una joroba ancha. Es la primera prueba que pasa cualquier muestra nueva, y la que modela esta plataforma.",
     "primary": true
   },
   {
     "abbr": "TGA",
     "icon": "flame",
     "name": "Thermogravimetric analysis",
-    "answers": "How much solvent is trapped inside, and how hot can it get?",
-    "body": "The sample is heated while being weighed. Mass losses reveal guest molecules leaving the pores and, eventually, the framework itself decomposing."
+    "answers": "¿Cuánto disolvente hay atrapado dentro, y cuánto calor aguanta?",
+    "body": "Se calienta la muestra mientras se pesa. Las pérdidas de masa revelan las moléculas huésped saliendo de los poros y, al final, la propia red descomponiéndose."
   },
   {
     "abbr": "VT-XRD",
     "icon": "thermometer",
     "name": "Variable-temperature XRD",
-    "answers": "Does the structure survive heating?",
-    "body": "Diffraction measured while the temperature rises, showing whether the lattice holds, transforms or collapses."
+    "answers": "¿Sobrevive la estructura al calentamiento?",
+    "body": "Difracción medida mientras sube la temperatura, que muestra si la red aguanta, se transforma o colapsa."
   },
   {
     "abbr": "BET",
     "icon": "wind",
     "name": "Gas physisorption",
-    "answers": "How much empty space is really accessible?",
-    "body": "Nitrogen or CO₂ is dosed onto the material and the uptake converted into a specific surface area in square metres per gram, plus the pore size distribution."
+    "answers": "¿Cuánto espacio vacío es accesible de verdad?",
+    "body": "Se dosifica nitrógeno o CO₂ sobre el material y la cantidad adsorbida se convierte en superficie específica en metros cuadrados por gramo, más la distribución de tamaño de poro."
   },
   {
     "abbr": "FTIR",
     "icon": "audio",
     "name": "Infrared spectroscopy",
-    "answers": "Did the linker actually bind to the metal?",
-    "body": "Chemical bonds absorb infrared light at characteristic frequencies. Shifts in those bands distinguish a coordinated ligand from free, unreacted starting material."
+    "answers": "¿Se ha unido el conector al metal de verdad?",
+    "body": "Los enlaces químicos absorben luz infrarroja a frecuencias características. Los desplazamientos de esas bandas distinguen un ligando coordinado del material de partida libre y sin reaccionar."
   },
   {
     "abbr": "ICP-OES",
     "icon": "sparkles",
     "name": "Inductively coupled plasma",
-    "answers": "How much metal is in there?",
-    "body": "The sample is vaporised in a plasma and the light it emits quantifies each element, giving the real metal-to-ligand ratio."
+    "answers": "¿Cuánto metal hay ahí dentro?",
+    "body": "La muestra se vaporiza en un plasma y la luz que emite cuantifica cada elemento, lo que da la proporción real entre metal y ligando."
   },
   {
     "abbr": "EA",
     "icon": "atom",
     "name": "Elemental analysis",
-    "answers": "Does the organic composition match the formula?",
-    "body": "Combustion analysis returns carbon, hydrogen, nitrogen and sulfur percentages, which are compared against the proposed formula."
+    "answers": "¿Coincide la composición orgánica con la fórmula?",
+    "body": "El análisis por combustión devuelve los porcentajes de carbono, hidrógeno, nitrógeno y azufre, que se comparan con la fórmula propuesta."
   },
   {
     "abbr": "SEM / TEM",
     "icon": "microscope",
     "name": "Electron microscopy",
-    "answers": "What do the particles look like?",
-    "body": "Electron beams image crystal morphology and size, from the shape of a facet down to the nanometre scale."
+    "answers": "¿Qué aspecto tienen las partículas?",
+    "body": "Los haces de electrones toman imagen de la morfología y el tamaño de los cristales, desde la forma de una cara hasta la escala nanométrica."
   },
   {
     "abbr": "UV-Vis",
     "icon": "sun",
     "name": "Diffuse reflectance spectroscopy",
-    "answers": "Can it absorb light, and at what energy?",
-    "body": "Optical absorption gives the band gap, which decides whether a material can drive a photocatalytic reaction."
+    "answers": "¿Puede absorber luz, y a qué energía?",
+    "body": "La absorción óptica da el band gap, que decide si un material puede impulsar una reacción fotocatalítica."
   }
 ]
 
@@ -152,7 +152,7 @@ export const TECHNIQUE_COUNTS = [
     "label": "PXRD",
     "icon": "waves",
     "count": 1879,
-    "note": "Routine on everything"
+    "note": "Rutinaria en todo"
   },
   {
     "key": "sem",
@@ -173,7 +173,7 @@ export const TECHNIQUE_COUNTS = [
     "label": "FTIR",
     "icon": "audio",
     "count": 77,
-    "note": "Did the linker bind?"
+    "note": "¿Se unió el conector?"
   },
   {
     "key": "ads",
@@ -187,7 +187,7 @@ export const TECHNIQUE_COUNTS = [
     "label": "UV-Vis",
     "icon": "sun",
     "count": 44,
-    "note": "Optical band gap"
+    "note": "Band gap óptico"
   },
   {
     "key": "tga",
@@ -201,33 +201,33 @@ export const TECHNIQUE_COUNTS = [
     "label": "VT-XRD",
     "icon": "thermometer",
     "count": 26,
-    "note": "Structure while heated"
+    "note": "Estructura durante el calentamiento"
   },
   {
     "key": "scxrd",
     "label": "SC-XRD",
     "icon": "gem",
     "count": 10,
-    "note": "Full structure solved"
+    "note": "Estructura resuelta por completo"
   },
   {
     "key": "icpea",
     "label": "ICP · EA",
     "icon": "droplet",
     "count": 28,
-    "note": "Composition, as PDF",
+    "note": "Composición, en PDF",
     "pending": true
   }
 ]
 
 export const WHY_CHARACTERISE = {
-  "title": "Why one material needs a dozen measurements",
-  "lead": "Making a solid is not the same as knowing what it is. **A newly formed powder has to be interrogated** from several angles before anything can be claimed about it.",
-  "consequence": "Every promising sample generates files from several instruments, each written in its own format. Multiply that by thousands of samples and it stops being a chemistry problem — it becomes a **data management and processing challenge**.",
+  "title": "Por qué un solo material necesita una docena de medidas",
+  "lead": "Fabricar un sólido no es lo mismo que saber qué es. **A un polvo recién formado hay que interrogarlo** desde varios ángulos antes de poder afirmar nada sobre él.",
+  "consequence": "Cada muestra prometedora genera ficheros de varios instrumentos, cada uno escrito en su propio formato. Multiplica eso por miles de muestras y deja de ser un problema de química: pasa a ser un **reto de gestión y procesado de datos**.",
   "numbers": [
     [
       "6,073",
-      "raw instrument files"
+      "ficheros de instrumento en crudo"
     ],
     [
       "3,926",

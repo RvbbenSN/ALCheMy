@@ -6,14 +6,14 @@ export const AREAS = [
   {
     "n": 1,
     "title": "Entry",
-    "subtitle": "Three ingestion lanes",
-    "objective": "Accept a file plus basic metadata from whichever source triggered the run, and normalise it into one common shape before anything downstream has to care which lane it came from.",
+    "subtitle": "Tres vías de ingesta",
+    "objective": "Aceptar un fichero más sus metadatos básicos venga de donde venga la ejecución, y normalizarlo a una forma común antes de que nada aguas abajo tenga que preocuparse de por qué vía entró.",
     "adds": [
-      "technique, sample_code, researcher_email, researcher_name, operator_name, measurement_tag — raw, as submitted",
-      "file_name and raw_file_path (folder-watcher lane only; the others fill these in once the file is written to disk)",
-      "The binary itself, always ending up under $binary.data_file"
+      "technique, sample_code, researcher_email, researcher_name, operator_name, measurement_tag — en crudo, tal como se enviaron",
+      "file_name y raw_file_path (solo en la vía del vigilante de carpeta; las otras los rellenan cuando el fichero se escribe en disco)",
+      "El propio binario, que siempre acaba bajo $binary.data_file"
     ],
-    "note": "The raw webhook node renames the upload to data_file0 — n8n adds a numeric suffix to multipart uploads. Normalize Webhook Body copies it back so nothing downstream needs to know.",
+    "note": "El nodo Webhook en crudo renombra la subida a data_file0: n8n añade un sufijo numérico a las subidas multipart. Normalize Webhook Body lo copia de vuelta para que nada aguas abajo tenga que saberlo.",
     "nodes": [
       {
         "name": "Manual trigger",
@@ -47,16 +47,16 @@ export const AREAS = [
   },
   {
     "n": 2,
-    "title": "Tags, sample code & whitelist",
-    "subtitle": "Normalise, then authorise",
-    "objective": "Make every field look the same regardless of origin lane, reject anything without a sample code — it is the database lookup key — and gate on researcher authorisation.",
+    "title": "Etiquetas, código de muestra y lista blanca",
+    "subtitle": "Normalizar, luego autorizar",
+    "objective": "Hacer que todos los campos tengan el mismo aspecto venga de la vía que venga, rechazar cualquier cosa sin código de muestra (es la clave de búsqueda en la base) y filtrar por la autorización del investigador.",
     "adds": [
-      "technique normalised (UV-Vis → UV_VIS, ICP-OES → ICP_OES)",
-      "sample_code regex-extracted from the filename when not submitted explicitly",
-      "researcher_email lowercased and trimmed",
-      "instrument_name gets a technique-based guess, overwritten later by the real parsed value"
+      "technique normalizada (UV-Vis → UV_VIS, ICP-OES → ICP_OES)",
+      "sample_code extraído del nombre de fichero por expresión regular cuando no se envía explícitamente",
+      "researcher_email en minúsculas y sin espacios sobrantes",
+      "instrument_name recibe una estimación según la técnica, que luego sobrescribe el valor real parseado"
     ],
-    "note": "Auto-enrolment adds a new email as active, but deliberately does not re-activate one an administrator revoked by hand.",
+    "note": "El auto-registro da de alta un correo nuevo como activo, pero a propósito no reactiva uno que un administrador revocó a mano.",
     "nodes": [
       {
         "name": "Homogenize Tags — All Entries",
@@ -87,14 +87,14 @@ export const AREAS = [
   {
     "n": 3,
     "title": "Quality gate",
-    "subtitle": "Reject before spending compute",
-    "objective": "Reject oversized or duplicate files before any parsing happens, and get the real bytes into a form the Python sandbox can actually read.",
+    "subtitle": "Rechazar antes de gastar cómputo",
+    "objective": "Rechazar los ficheros demasiado grandes o duplicados antes de parsear nada, y dejar los bytes reales en una forma que el sandbox de Python pueda leer de verdad.",
     "adds": [
       "file_ext, is_archive",
-      "data_file_base64 — the native Python runner cannot read $binary when binaries are stored in filesystem mode",
-      "file_hash — the real MD5 of the decoded bytes"
+      "data_file_base64 — el runner nativo de Python no puede leer $binary cuando los binarios se guardan en modo sistema de ficheros",
+      "file_hash — el MD5 real de los bytes decodificados"
     ],
-    "note": "That last line was a genuine bug: the hash was being computed over the binary metadata marker rather than the file contents, so every file looked unique and deduplication silently did nothing.",
+    "note": "Esa última línea fue un fallo de verdad: el hash se calculaba sobre el marcador de metadatos del binario y no sobre el contenido del fichero, así que todos los ficheros parecían únicos y la deduplicación no hacía nada, en silencio.",
     "nodes": [
       {
         "name": "Check File Size",
@@ -128,13 +128,13 @@ export const AREAS = [
   },
   {
     "n": 4,
-    "title": "Routing by technique",
-    "subtitle": "Three extraction strategies",
-    "objective": "Decide which of the three extraction strategies applies: a deterministic parser, AI over a PDF, or rejection as unrecognised.",
+    "title": "Enrutado por técnica",
+    "subtitle": "Tres estrategias de extracción",
+    "objective": "Decidir cuál de las tres estrategias de extracción corresponde: un parser determinista, IA sobre un PDF, o rechazo por técnica no reconocida.",
     "adds": [
-      "Nothing new — this area only reads the technique field set back in area 2."
+      "Nada nuevo: esta área solo lee el campo technique que fijó el área 2."
     ],
-    "tableIntro": "Every parser — Python and JavaScript alike — returns the same dictionary shape, and `data_json` always holds `header_metadata` and `raw_data`. Stored as **JSONB** with a GIN index, so an agent can query any technique uniformly.",
+    "tableIntro": "Todos los parsers, tanto en Python como en JavaScript, devuelven la misma forma de diccionario, y `data_json` siempre contiene `header_metadata` y `raw_data`. Se guarda como **JSONB** con un índice GIN, así que un agente puede consultar cualquier técnica de manera uniforme.",
     "table": {
       "head": [
         "Format",
@@ -197,13 +197,13 @@ export const AREAS = [
   {
     "n": 5,
     "title": "Deterministic parsers",
-    "subtitle": "Seven techniques, zero AI · autonomy L4",
-    "objective": "For every technique with a well-understood file format, extract every real instrument-recorded value with no AI involvement whatsoever — the cheapest, fastest and most trustworthy path.",
+    "subtitle": "Siete técnicas, cero IA · autonomía L4",
+    "objective": "Para cada técnica con un formato de fichero bien conocido, extraer todos los valores reales registrados por el instrumento sin intervención ninguna de IA: el camino más barato, más rápido y más fiable.",
     "adds": [
-      "The real parsed values overwrite the earlier guesses: sample_code, technique, measurement_tag, operator_name, instrument_name, file paths",
-      "The full data_json payload: header_metadata plus raw_data"
+      "Los valores reales parseados sobrescriben las estimaciones previas: sample_code, technique, measurement_tag, operator_name, instrument_name, rutas de fichero",
+      "La carga completa de data_json: header_metadata más raw_data"
     ],
-    "note": "One standalone Python module per technique and extension, each verified against real data-lake files inside the actual runner container.",
+    "note": "Un módulo de Python independiente por técnica y extensión, cada uno verificado contra ficheros reales del data lake dentro del contenedor del runner.",
     "nodes": [
       {
         "name": "Parse PXRD (.xrdml)",
@@ -237,15 +237,15 @@ export const AREAS = [
   },
   {
     "n": 6,
-    "title": "AI extraction — PDF reports",
-    "subtitle": "ICP-OES and elemental analysis",
-    "objective": "Extract elemental composition tables from reports that only exist as PDFs, with a human-in-the-loop safety net for when the model is not confident.",
+    "title": "Extracción por IA — informes PDF",
+    "subtitle": "ICP-OES y análisis elemental",
+    "objective": "Extraer tablas de composición elemental de informes que solo existen como PDF, con una red de seguridad con persona en el bucle para cuando el modelo no tiene confianza.",
     "adds": [
-      "elemental_ratios for ICP; chns_averages and triplicate_runs for EA",
-      "confidence and reasoning",
-      "Restored afterwards: the agent output does not carry researcher identity, file paths or the hash — they are pulled back from before the agent ran"
+      "elemental_ratios para ICP; chns_averages y triplicate_runs para AE",
+      "confianza y razonamiento",
+      "Restaurados después: la salida del agente no lleva la identidad del investigador, las rutas de fichero ni el hash, así que se recuperan de antes de que corriera el agente"
     ],
-    "note": "Below 85% confidence the run pauses and emails a human rather than guessing. An unanswered question is better than a confident wrong number in a governed table.",
+    "note": "Por debajo del 85 % de confianza la ejecución se detiene y escribe a una persona en vez de adivinar. Una pregunta sin responder es mejor que un número equivocado con aplomo en una tabla gobernada.",
     "nodes": [
       {
         "name": "AI Agent — PDF Parser",
@@ -271,13 +271,13 @@ export const AREAS = [
   },
   {
     "n": 7,
-    "title": "AI extraction — microscopy",
+    "title": "Extracción por IA — microscopía",
     "subtitle": "SEM / FESEM / TEM",
-    "objective": "The deterministic parser already pulled every real instrument value from the companion sidecar. The AI step only adds a qualitative morphology description and a literal transcription of any scale-bar caption.",
+    "objective": "El parser determinista ya sacó todos los valores reales del instrumento del fichero acompañante. El paso de IA solo añade una descripción cualitativa de la morfología y la transcripción literal de la leyenda de la barra de escala, si la hay.",
     "adds": [
-      "data_json.raw_data.ai_vision_analysis, merged into the deterministic payload — never replacing it"
+      "data_json.raw_data.ai_vision_analysis, fundido con la carga determinista, nunca en su lugar"
     ],
-    "note": "Deliberately never a fabricated numeric particle size. The vision agent describes what the image looks like; it does not measure.",
+    "note": "Nunca un tamaño de partícula numérico inventado, y es deliberado. El agente de visión describe qué aspecto tiene la imagen; no mide.",
     "nodes": [
       {
         "name": "Convert B64 to Binary",
@@ -295,11 +295,11 @@ export const AREAS = [
   },
   {
     "n": 8,
-    "title": "Database write & response",
-    "subtitle": "Where a missing field becomes a hard failure",
-    "objective": "Insert the finished row and tell the caller what happened. This is the point where a field that is still missing stops being a gap and becomes a constraint violation.",
+    "title": "Escritura en la base y respuesta",
+    "subtitle": "Donde un campo ausente pasa a ser un fallo en seco",
+    "objective": "Insertar la fila terminada y decirle a quien llamó qué ha pasado. Es el punto donde un campo que sigue faltando deja de ser un hueco y pasa a ser una violación de restricción.",
     "adds": [
-      "The row itself, plus the reply to whoever triggered the run"
+      "La propia fila, más la respuesta a quien disparó la ejecución"
     ],
     "nodes": [
       {
@@ -323,12 +323,12 @@ export const AREAS = [
   {
     "n": 9,
     "title": "Governance",
-    "subtitle": "Fallbacks, audit trail & error response",
-    "objective": "Every rejection from any point in the pipeline lands here. It always writes the audit log with a typed verdict, cause and result, and then answers according to origin.",
+    "subtitle": "Fallbacks, traza de auditoría y respuesta de error",
+    "objective": "Todo rechazo desde cualquier punto del pipeline aterriza aquí. Siempre escribe en el log de auditoría con veredicto, causa y resultado tipados, y luego responde según el origen.",
     "adds": [
-      "audit_log row — written deterministically, never by an LLM"
+      "Fila en audit_log — escrita de forma determinista, nunca por un LLM"
     ],
-    "note": "This used to be a separate sub-workflow called eleven times. Consolidated into two shared nodes, because a webhook response cannot be sent from outside the workflow that owns the trigger — and because sharing nodes beats duplicating them.",
+    "note": "Esto era antes un subflujo aparte al que se llamaba once veces. Se consolidó en dos nodos compartidos, porque una respuesta de webhook no se puede enviar desde fuera del flujo que posee el disparador, y porque compartir nodos es mejor que duplicarlos.",
     "nodes": [
       {
         "name": "Set Error Payload",

@@ -1082,657 +1082,657 @@
  {
   "path": "rag.js:RAG_AREAS[0].subtitle",
   "en": "Two folders, two clearances",
-  "es": null
+  "es": "Dos carpetas, dos niveles de acceso"
  },
  {
   "path": "rag.js:RAG_AREAS[0].objective",
   "en": "Read every PDF in the corpus and stamp it with a sensitivity label before anything else happens to it.",
-  "es": null
+  "es": "Leer cada PDF del corpus y sellarlo con una etiqueta de sensibilidad antes de que le pase nada más."
  },
  {
   "path": "rag.js:RAG_AREAS[0].adds[0]",
   "en": "`sensitivity` - PUBLIC or INTERNAL, decided by the folder the file was sitting in",
-  "es": null
+  "es": "`sensitivity` - PUBLIC o INTERNAL, según la carpeta en la que estuviera el fichero"
  },
  {
   "path": "rag.js:RAG_AREAS[0].adds[1]",
   "en": "`doc_type` - PAPER, SUPPORTING_INFORMATION or LAB_NOTEBOOK",
-  "es": null
+  "es": "`doc_type` - PAPER, SUPPORTING_INFORMATION o LAB_NOTEBOOK"
  },
  {
   "path": "rag.js:RAG_AREAS[0].adds[2]",
   "en": "`file_name` and `file_path`, so any passage can be traced back to its source",
-  "es": null
+  "es": "`file_name` y `file_path`, para poder rastrear cualquier pasaje hasta su fuente"
  },
  {
   "path": "rag.js:RAG_AREAS[0].note",
   "en": "The label comes from the folder, not from a field somebody fills in. A structural rule cannot be forgotten on a busy day - and this one decides what the assistant may repeat to a stranger.",
-  "es": null
+  "es": "La etiqueta viene de la carpeta, no de un campo que alguien rellena. Una regla estructural no se puede olvidar en un día ajetreado, y esta decide qué puede repetirle el asistente a un desconocido."
  },
  {
   "path": "rag.js:RAG_AREAS[1].subtitle",
   "en": "The MD5 gate",
-  "es": null
+  "es": "La barrera del MD5"
  },
  {
   "path": "rag.js:RAG_AREAS[1].objective",
   "en": "Compare the checksum of every file against what is already indexed, and let through only what is new.",
-  "es": null
+  "es": "Comparar la suma de comprobación de cada fichero con lo que ya está indexado, y dejar pasar solo lo nuevo."
  },
  {
   "path": "rag.js:RAG_AREAS[1].adds[0]",
   "en": "The binary MD5 of each file",
-  "es": null
+  "es": "El MD5 binario de cada fichero"
  },
  {
   "path": "rag.js:RAG_AREAS[1].adds[1]",
   "en": "A Merge in *keep non-matches* mode: what is already registered simply does not continue",
-  "es": null
+  "es": "Un Merge en modo *quedarse con lo que no casa*: lo ya registrado sencillamente no continúa"
  },
  {
   "path": "rag.js:RAG_AREAS[1].note",
   "en": "This is what makes the ingestion idempotent. Re-running it over the whole corpus costs a few seconds of hashing instead of re-embedding 87,765 passages - and, more importantly, it cannot silently double the corpus and fill retrieval with near-identical neighbours.",
-  "es": null
+  "es": "Esto es lo que hace idempotente la ingesta. Volver a lanzarla sobre el corpus entero cuesta unos segundos de hashing en vez de reembeber 87.765 pasajes y, más importante, no puede duplicar el corpus en silencio y llenar la recuperación de vecinos casi idénticos."
  },
  {
   "path": "rag.js:RAG_AREAS[2].subtitle",
   "en": "Split, embed, store",
-  "es": null
+  "es": "Trocear, embeber, guardar"
  },
  {
   "path": "rag.js:RAG_AREAS[2].objective",
   "en": "Turn each document into passages a model can retrieve, and write them to pgvector beside their catalogue entry.",
-  "es": null
+  "es": "Convertir cada documento en pasajes que un modelo pueda recuperar, y escribirlos en pgvector junto a su entrada de catálogo."
  },
  {
   "path": "rag.js:RAG_AREAS[2].adds[0]",
   "en": "Passages of **1,200 characters with 250 of overlap** - 87,765 of them",
-  "es": null
+  "es": "Pasajes de **1.200 caracteres con 250 de solape**: 87.765 en total"
  },
  {
   "path": "rag.js:RAG_AREAS[2].adds[1]",
   "en": "One 1,024-dimension vector each, from `bge-m3` running locally in Ollama",
-  "es": null
+  "es": "Un vector de 1.024 dimensiones cada uno, de `bge-m3` corriendo en local con Ollama"
  },
  {
   "path": "rag.js:RAG_AREAS[2].adds[2]",
   "en": "A row in `rag_documents` per source file, one in `rag_chunks` per passage",
-  "es": null
+  "es": "Una fila en `rag_documents` por fichero fuente, y una en `rag_chunks` por pasaje"
  },
  {
   "path": "rag.js:RAG_AREAS[2].note",
   "en": "The embeddings node is shared with the query side on purpose. If indexing and searching used different models, the store would return plausible nonsense and never raise an error. Sharing one node makes that mismatch structurally impossible.",
-  "es": null
+  "es": "El nodo de embeddings se comparte con el lado de la consulta a propósito. Si indexar y buscar usaran modelos distintos, el almacén devolvería tonterías verosímiles sin dar nunca un error. Compartir un solo nodo hace ese desajuste estructuralmente imposible."
  },
  {
   "path": "rag.js:RAG_AREAS[3].subtitle",
   "en": "Who is asking",
-  "es": null
+  "es": "Quién pregunta"
  },
  {
   "path": "rag.js:RAG_AREAS[3].objective",
   "en": "Identify the caller and settle what they are allowed to see, before a single token reaches a language model.",
-  "es": null
+  "es": "Identificar a quien llama y resolver qué puede ver, antes de que un solo token llegue a un modelo de lenguaje."
  },
  {
   "path": "rag.js:RAG_AREAS[3].adds[0]",
   "en": "A caller identity and session id, carried into every downstream tool call",
-  "es": null
+  "es": "Una identidad de quien llama y un id de sesión, que viajan a todas las llamadas de herramienta aguas abajo"
  },
  {
   "path": "rag.js:RAG_AREAS[3].adds[1]",
   "en": "A verdict against `authorized_researchers`",
-  "es": null
+  "es": "Un veredicto contra `authorized_researchers`"
  },
  {
   "path": "rag.js:RAG_AREAS[3].adds[2]",
   "en": "A logged, answered refusal for anyone who does not clear it",
-  "es": null
+  "es": "Un rechazo registrado y respondido para quien no lo supere"
  },
  {
   "path": "rag.js:RAG_AREAS[3].note",
   "en": "A denied request is written to the log and gets a reply. Silent failure is the enemy here: an assistant that simply stops looks identical to one that is broken.",
-  "es": null
+  "es": "Una petición denegada se escribe en el log y recibe respuesta. El fallo silencioso es el enemigo aquí: un asistente que simplemente se para es indistinguible de uno roto."
  },
  {
   "path": "rag.js:RAG_AREAS[4].subtitle",
   "en": "Gemini, with a local understudy",
-  "es": null
+  "es": "Gemini, con un suplente local"
  },
  {
   "path": "rag.js:RAG_AREAS[4].objective",
   "en": "Answer the question using the tools, and keep answering when the cloud model is not there.",
-  "es": null
+  "es": "Responder a la pregunta usando las herramientas, y seguir respondiendo cuando el modelo en la nube no está."
  },
  {
   "path": "rag.js:RAG_AREAS[4].adds[0]",
   "en": "A windowed conversation memory, shared by both agents",
-  "es": null
+  "es": "Una memoria de conversación por ventana, compartida por los dos agentes"
  },
  {
   "path": "rag.js:RAG_AREAS[4].adds[1]",
   "en": "A complete second Agent node wired to **Qwen3 14B** in local Ollama, hanging off the error output of the first",
-  "es": null
+  "es": "Un segundo nodo Agent completo conectado a **Qwen3 14B** en Ollama local, colgando de la salida de error del primero"
  },
  {
   "path": "rag.js:RAG_AREAS[4].adds[2]",
   "en": "A row in `agent_chat_log` for every exchange, written before the reply goes back",
-  "es": null
+  "es": "Una fila en `agent_chat_log` por cada intercambio, escrita antes de devolver la respuesta"
  },
  {
   "path": "rag.js:RAG_AREAS[4].note",
   "en": "The Agent node refuses two language models at once - \"Only 1 ai_languageModel sub-nodes are/is allowed to be connected\" - and the documented fallback switch does not exist in this installation. So the fallback is built at workflow level instead, and it was verified by forcing a real Gemini failure rather than by assuming.",
-  "es": null
+  "es": "El nodo Agent se niega a aceptar dos modelos de lenguaje a la vez (\"Only 1 ai_languageModel sub-nodes are/is allowed to be connected\") y el conmutador de fallback documentado no existe en esta instalación. Así que el fallback se construye a nivel de flujo, y se verificó forzando un fallo real de Gemini en vez de darlo por hecho."
  },
  {
   "path": "rag.js:RAG_AREAS[5].subtitle",
   "en": "Nine powers, one switched off",
-  "es": null
+  "es": "Nueve poderes, uno apagado"
  },
  {
   "path": "rag.js:RAG_AREAS[5].objective",
   "en": "Give the assistant everything it needs to answer, and nothing it needs to invent.",
-  "es": null
+  "es": "Darle al asistente todo lo que necesita para responder, y nada que necesite inventarse."
  },
  {
   "path": "rag.js:RAG_AREAS[5].adds[0]",
   "en": "Six tools that read the laboratory: syntheses, characterisation, one full sample, statistics, the bibliography and the schema dictionary",
-  "es": null
+  "es": "Seis herramientas que leen el laboratorio: síntesis, caracterización, una muestra completa, estadísticas, la bibliografía y el diccionario del esquema"
  },
  {
   "path": "rag.js:RAG_AREAS[5].adds[1]",
   "en": "One semantic search across the 87,765 passages",
-  "es": null
+  "es": "Una búsqueda semántica sobre los 87.765 pasajes"
  },
  {
   "path": "rag.js:RAG_AREAS[5].adds[2]",
   "en": "Two that walk the knowledge graph: resolve the node, then explore up to three hops",
-  "es": null
+  "es": "Dos que recorren el grafo de conocimiento: resolver el nodo, y luego explorar hasta tres saltos"
  },
  {
   "path": "rag.js:RAG_AREAS[5].note",
   "en": "Every one is a call to a stored SQL function with typed parameters - the assistant never writes SQL. What it can ask is bounded by the database rather than by how well the prompt is worded. The Cohere reranker is wired and deliberately disabled: it is the one component that would send passage text to a third party.",
-  "es": null
+  "es": "Cada una es una llamada a una función SQL almacenada con parámetros tipados: el asistente nunca escribe SQL. Lo que puede preguntar lo acota la base de datos y no lo bien redactado que esté el prompt. El reordenador de Cohere está conectado y desactivado a propósito: es el único componente que enviaría texto de los pasajes a un tercero."
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.title",
   "en": "Contextual retrieval, and an honest result",
-  "es": null
+  "es": "Recuperación contextual, y un resultado honesto"
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.problem",
   "en": "Chunking destroys context. Cut a paper into 1,200-character passages and a sentence like *\"the yield rose to 68 % under these conditions\"* loses which compound, which conditions, which paper. Retrieval then returns something locally relevant and globally meaningless.",
-  "es": null
+  "es": "Trocear destruye el contexto. Corta un artículo en pasajes de 1.200 caracteres y una frase como *\"el rendimiento subió al 68 % en estas condiciones\"* pierde de qué compuesto, qué condiciones y qué artículo habla. La recuperación devuelve entonces algo relevante en local y sin sentido en global."
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.technique",
   "en": "The fix, published by **Anthropic as contextual retrieval**, is to have an LLM write one short sentence situating each passage inside its own document, prepend it, and embed *that*. It is built here end to end: `rag_chunk_context` holds **87,765 context sentences**, one per passage, and `rag_chunks.embedding_v2` holds the re-embedding of passage-plus-context.",
-  "es": null
+  "es": "La solución, publicada por **Anthropic como recuperación contextual**, es que un LLM escriba una frase corta que sitúe cada pasaje dentro de su propio documento, anteponerla y embeber *eso*. Está construida aquí de principio a fin: `rag_chunk_context` guarda **87.765 frases de contexto**, una por pasaje, y `rag_chunks.embedding_v2` guarda el reembebido de pasaje más contexto."
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.result",
   "en": "**The gain was modest.** Compared live against the original embeddings on real questions, similarities came out 0.005-0.01 higher and only one or two of every four retrieved passages changed. Nothing like the improvement the technique reports.",
-  "es": null
+  "es": "**La ganancia fue modesta.** Comparada en vivo contra los embeddings originales sobre preguntas reales, las similitudes salieron entre 0,005 y 0,01 más altas y solo cambiaron uno o dos de cada cuatro pasajes recuperados. Nada que ver con la mejora que reporta la técnica."
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.why",
   "en": "The explanation is the corpus, not the method. The published measurements come from material whose fragments lean heavily on their surroundings. A chemistry paper is written in paragraphs that already name their own compound and their own conditions, so there was less missing context to restore. **The technique is sound; this corpus had little room for it to help.**",
-  "es": null
+  "es": "La explicación es el corpus, no el método. Las medidas publicadas vienen de material cuyos fragmentos se apoyan mucho en lo que tienen alrededor. Un artículo de química está escrito en párrafos que ya nombran su propio compuesto y sus propias condiciones, así que había menos contexto que restaurar. **La técnica es buena; este corpus tenía poco margen para que ayudara.**"
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.decision",
   "en": "So `embedding_v2` is built, populated, and deliberately **not promoted** to the default search. Switching it on is one line. What is missing is the measurement that would justify it: the same comparison over enough questions to tell a real gain from noise.",
-  "es": null
+  "es": "Así que `embedding_v2` está construido, poblado y deliberadamente **sin promover** a búsqueda por defecto. Activarlo es una línea. Lo que falta es la medida que lo justificaría: la misma comparación sobre suficientes preguntas como para distinguir una ganancia real del ruido."
  },
  {
   "path": "rag.js:RAG_CONTEXTUAL.caveat",
   "en": "One concrete thing stands between it and production: **`embedding_v2` has no HNSW index.** The original column has one; its contextual twin does not, so a query against it would scan all 87,765 vectors. The work is done and the plumbing is not.",
-  "es": null
+  "es": "Hay una cosa concreta entre él y producción: **`embedding_v2` no tiene índice HNSW.** La columna original sí lo tiene; su gemela contextual no, así que una consulta contra ella recorrería los 87.765 vectores. El trabajo está hecho y la fontanería no."
  },
  {
   "path": "rag.js:RAG_HERO.lead",
   "en": "A laboratory assistant grounded in 958 indexed documents and 87,765 passages, wired to the same database the rest of this site describes - and built so that it cannot repeat an unpublished ligand name to a stranger.",
-  "es": null
+  "es": "Un asistente de laboratorio apoyado en 958 documentos indexados y 87.765 pasajes, conectado a la misma base de datos que describe el resto de esta web, y construido para que no pueda repetirle a un desconocido el nombre de un ligando sin publicar."
  },
  {
   "path": "rag.js:RAG_HERO.sub",
   "en": "The chat is not opened on this site.",
-  "es": null
+  "es": "El chat no está abierto en esta web."
  },
  {
   "path": "rag.js:RAG_NUMBERS[0].why",
   "en": "955 papers, 2 digitised lab notebooks, 1 supporting information",
-  "es": null
+  "es": "955 artículos, 2 cuadernos de laboratorio digitalizados, 1 información de apoyo"
  },
  {
   "path": "rag.js:RAG_NUMBERS[1].why",
   "en": "1,200 characters each with 250 of overlap; 1,021 on average",
-  "es": null
+  "es": "1.200 caracteres cada uno con 250 de solape; 1.021 de media"
  },
  {
   "path": "rag.js:RAG_NUMBERS[2].label",
   "en": "Dimensions per vector",
-  "es": null
+  "es": "Dimensiones por vector"
  },
  {
   "path": "rag.js:RAG_NUMBERS[2].why",
   "en": "`bge-m3`, run locally, so no passage ever leaves the machine",
-  "es": null
+  "es": "`bge-m3`, ejecutado en local, así que ningún pasaje sale nunca de la máquina"
  },
  {
   "path": "rag.js:RAG_NUMBERS[3].label",
   "en": "Nodes in the knowledge graph",
-  "es": null
+  "es": "Nodos en el grafo de conocimiento"
  },
  {
   "path": "rag.js:RAG_NUMBERS[3].why",
   "en": "3,251 measurements, 3,213 samples, 23 metals, 10 modulators, 9 ligands",
-  "es": null
+  "es": "3.251 medidas, 3.213 muestras, 23 metales, 10 moduladores, 9 ligandos"
  },
  {
   "path": "rag.js:RAG_POWERS.title",
   "en": "What the assistant can actually do",
-  "es": null
+  "es": "Qué puede hacer el asistente en realidad"
  },
  {
   "path": "rag.js:RAG_POWERS.lead",
   "en": "Nine tools, each one a stored SQL function with typed parameters. **The assistant never writes SQL**, so the boundary of what it can ask is enforced by the database rather than by the wording of a prompt.",
-  "es": null
+  "es": "Nueve herramientas, cada una una función SQL almacenada con parámetros tipados. **El asistente nunca escribe SQL**, así que el límite de lo que puede preguntar lo impone la base de datos y no la redacción de un prompt."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[0][1]",
   "en": "Find syntheses by metal, linker, temperature window or date range. Every filter optional.",
-  "es": null
+  "es": "Busca síntesis por metal, conector, ventana de temperatura o rango de fechas. Todos los filtros son opcionales."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[1][1]",
   "en": "The complete record of one sample: solvents, thermal ramp, modulators, masses.",
-  "es": null
+  "es": "El registro completo de una muestra: disolventes, rampa térmica, moduladores, masas."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[2][1]",
   "en": "Which measurements a sample has, on which instrument and by whom - never the curves themselves.",
-  "es": null
+  "es": "Qué medidas tiene una muestra, en qué instrumento y por quién; nunca las curvas en sí."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[3][1]",
   "en": "Counts grouped by one of seven allowed dimensions. Not free aggregation: an explicit list.",
-  "es": null
+  "es": "Recuentos agrupados por una de siete dimensiones permitidas. No es agregación libre: es una lista explícita."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[4][1]",
   "en": "Which documents exist and how to cite them - authors, year, journal, DOI.",
-  "es": null
+  "es": "Qué documentos existen y cómo citarlos: autores, año, revista, DOI."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[5][1]",
   "en": "Semantic search across the 87,765 passages. For concepts and methods, never for numeric facts.",
-  "es": null
+  "es": "Búsqueda semántica sobre los 87.765 pasajes. Para conceptos y métodos, nunca para datos numéricos."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[6][1]",
   "en": "The schema, as data. It reads what a column means instead of inferring it from the name.",
-  "es": null
+  "es": "El esquema, como datos. Lee lo que significa una columna en vez de deducirlo del nombre."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[7][1]",
   "en": "Resolve free text - a code, a ligand, a metal - to an exact graph node id.",
-  "es": null
+  "es": "Resuelve texto libre (un código, un ligando, un metal) a un id exacto de nodo del grafo."
  },
  {
   "path": "rag.js:RAG_POWERS.tools[8][1]",
   "en": "Walk up to three hops: what two samples have in common, what shares a ligand with this one.",
-  "es": null
+  "es": "Recorre hasta tres saltos: qué tienen en común dos muestras, qué comparte ligando con esta."
  },
  {
   "path": "rag.js:RAG_POWERS.boundary",
   "en": "The split between the last two is deliberate. An assistant that guesses node ids invents relationships; forcing it to resolve the id first means a wrong guess **fails loudly instead of returning a confident answer about a sample that does not exist**.",
-  "es": null
+  "es": "La separación entre las dos últimas es deliberada. Un asistente que adivina ids de nodo se inventa relaciones; obligarle a resolver el id primero hace que una suposición equivocada **falle a la vista en vez de devolver una respuesta con aplomo sobre una muestra que no existe**."
  },
  {
   "path": "rag.js:RAG_RETRIEVAL.title",
   "en": "Three retrievers, not one",
-  "es": null
+  "es": "Tres recuperadores, no uno"
  },
  {
   "path": "rag.js:RAG_RETRIEVAL.lead",
   "en": "A vector search alone fails in a predictable way: ask it for a sample code and it returns passages *about* similar things that do not contain the code. Each layer below exists because the previous one missed something specific.",
-  "es": null
+  "es": "Una búsqueda vectorial sola falla de forma predecible: pídele un código de muestra y devuelve pasajes *sobre* cosas parecidas que no contienen el código. Cada capa de abajo existe porque la anterior se dejaba algo concreto."
  },
  {
   "path": "rag.js:RAG_RETRIEVAL.layers[0].body",
   "en": "Cosine distance over the 1,024-dimension `bge-m3` vectors, with an **HNSW index** so a search does not read all 87,765 rows. This is what finds a concept described in words the question never used.",
-  "es": null
+  "es": "Distancia coseno sobre los vectores de 1.024 dimensiones de `bge-m3`, con un **índice HNSW** para que una búsqueda no lea las 87.765 filas. Esto es lo que encuentra un concepto descrito con palabras que la pregunta no usó."
  },
  {
   "path": "rag.js:RAG_RETRIEVAL.layers[1].body",
   "en": "A generated `tsvector` column with a GIN index over the same passages. This is what finds the literal string of a sample code - precisely what the dense search is worst at, because an identifier carries no semantics to be similar to.",
-  "es": null
+  "es": "Una columna `tsvector` generada, con índice GIN sobre los mismos pasajes. Esto es lo que encuentra la cadena literal de un código de muestra, justo en lo que peor está la búsqueda densa, porque un identificador no lleva semántica a la que parecerse."
  },
  {
   "path": "rag.js:RAG_RETRIEVAL.layers[2].body",
   "en": "The `rag_hybrid_search()` function merges both rankings with **Reciprocal Rank Fusion**: a passage that does well in both lists outranks one that dominates a single list. Verified with a question whose top hit scored twice the rest - the signature of a passage that won on both sides at once.",
-  "es": null
+  "es": "La función `rag_hybrid_search()` fusiona ambos rankings con **Reciprocal Rank Fusion**: un pasaje que va bien en las dos listas supera a uno que domina una sola. Verificado con una pregunta cuyo primer resultado puntuó el doble que el resto, la firma de un pasaje que ganó por los dos lados a la vez."
  },
  {
   "path": "rag.js:RAG_RETRIEVAL.layers[3].body",
   "en": "Wired into the vector store node and **switched off on purpose**. The only reranker n8n offers is an external service, and using it would mean sending the text of retrieved passages - internal notebooks included - to a third party. Left in place and visibly disabled, because the decision is part of the design.",
-  "es": null
+  "es": "Conectado al nodo del almacén vectorial y **apagado a propósito**. El único reordenador que ofrece n8n es un servicio externo, y usarlo significaría enviar el texto de los pasajes recuperados, cuadernos internos incluidos, a un tercero. Se deja puesto y visiblemente desactivado, porque la decisión forma parte del diseño."
  },
  {
   "path": "science.js:BOTTLENECK.title",
   "en": "Where the data problem begins",
-  "es": null
+  "es": "Donde empieza el problema de los datos"
  },
  {
   "path": "science.js:BOTTLENECK.scale",
   "en": "Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,073 instrument files**, across folders, notebooks and local disks.",
-  "es": null
+  "es": "Dos placas por semana, 24 condiciones cada una, durante cinco años. El diagrama de arriba es lo que eso produce: **2.167 síntesis**, **6.073 ficheros de instrumento**, repartidos entre carpetas, cuadernos y discos locales."
  },
  {
   "path": "science.js:BOTTLENECK.problem",
   "en": "Nothing about that is unusual, it is how most laboratories work. But it means a simple question — *which conditions have ever produced a promising material?* — and the answer is only as good as someone's memory of where things were saved.",
-  "es": null
+  "es": "Nada de eso es raro, es como trabaja la mayoría de los laboratorios. Pero significa que una pregunta sencilla — *¿qué condiciones han producido alguna vez un material prometedor?* — solo se responde tan bien como recuerde alguien dónde se guardaron las cosas."
  },
  {
   "path": "science.js:BOTTLENECK.turn",
   "en": "The fix is a **governed database**: one row per synthesis, one row per measurement, every file fingerprinted and attributed. Once the record is a table, the question above becomes a query — and a model can learn from the whole record.",
-  "es": null
+  "es": "La solución es una **base de datos gobernada**: una fila por síntesis, una fila por medida, cada fichero con su huella y su autoría. Una vez que el registro es una tabla, la pregunta de arriba se convierte en una consulta, y un modelo puede aprender de todo el registro."
  },
  {
   "path": "science.js:BOTTLENECK.hookTitle",
   "en": "Which leaves one problem unsolved",
-  "es": null
+  "es": "Lo que deja un problema sin resolver"
  },
  {
   "path": "science.js:BOTTLENECK.hook",
   "en": "Thousands of instrument files, several formats... and nothing stopping the same file being saved twice under two names. What is needed is specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**",
-  "es": null
+  "es": "Miles de ficheros de instrumento, varios formatos... y nada que impida guardar el mismo fichero dos veces con dos nombres. Lo que hace falta es concreto: **una forma de dejar caer un fichero en algún sitio y que acabe en la base de datos, correctamente atribuido, sin que nadie teclee nada.**"
  },
  {
   "path": "science.js:DATA_SCALE.title",
   "en": "How much data one laboratory produces",
-  "es": null
+  "es": "Cuántos datos produce un solo laboratorio"
  },
  {
   "path": "science.js:DATA_SCALE.lead",
   "en": "On the left, every synthesis ever performed. In the middle, every measurement taken on those samples, by technique. On the right, the one place all of it has to end up. **A true challenge of scale.**",
-  "es": null
+  "es": "A la izquierda, todas las síntesis realizadas. En el medio, todas las medidas tomadas sobre esas muestras, por técnica. A la derecha, el único sitio donde tiene que acabar todo. **Un auténtico reto de escala.**"
  },
  {
   "path": "science.js:DATA_SCALE.databaseLabel",
   "en": "One governed database",
-  "es": null
+  "es": "Una base de datos gobernada"
  },
  {
   "path": "science.js:DATA_SCALE.databaseNote",
   "en": "One row per synthesis, one row per measurement, every file fingerprinted.",
-  "es": null
+  "es": "Una fila por síntesis, una fila por medida, cada fichero con su huella."
  },
  {
   "path": "science.js:DATA_SCALE.footnote",
   "en": "Measurement counts read from the database on 3 September 2026; ICP and EA, shown dashed, are still PDF reports awaiting the AI branch, so that circle counts files, not rows. Circle size scales with the count so the small techniques stay legible — read the numbers, not the areas.",
-  "es": null
+  "es": "Recuentos de medidas leídos de la base el 3 de septiembre de 2026; ICP y AE, en trazo discontinuo, siguen siendo informes PDF a la espera de la rama de IA, así que ese círculo cuenta ficheros y no filas. El tamaño del círculo escala con el recuento para que las técnicas pequeñas sigan siendo legibles: lee los números, no las áreas."
  },
  {
   "path": "science.js:LAB_INTRO.title",
   "en": "What a week at the bench actually looks like",
-  "es": null
+  "es": "Cómo es de verdad una semana de poyata"
  },
  {
   "path": "science.js:LAB_INTRO.lead",
   "en": "A structure can be designed on paper, but its **synthesis must be discovered**. The ideal recipe is found by screening countless reaction trials. This is how pipeline looks like:",
-  "es": null
+  "es": "Una estructura se puede diseñar sobre el papel, pero su **síntesis hay que descubrirla**. La receta ideal se encuentra cribando incontables ensayos de reacción. El pipeline es así:"
  },
  {
   "path": "science.js:MOF_DEF.iupac",
   "en": "A coordination network with organic ligands containing potential voids.",
-  "es": null
+  "es": "Una red de coordinación con ligandos orgánicos que contiene huecos potenciales."
  },
  {
   "path": "science.js:MOF_DEF.iupacNote",
   "en": "IUPAC recommendation, 2013.",
-  "es": null
+  "es": "Recomendación de la IUPAC, 2013."
  },
  {
   "path": "science.js:MOF_DEF.plain",
   "en": "In a nutshell, **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold.",
-  "es": null
+  "es": "En pocas palabras, **los iones o clústeres metálicos** hacen de nudos, **las moléculas orgánicas** hacen de vigas, y juntos levantan un andamio rígido."
  },
  {
   "path": "science.js:MOF_DEF.why",
   "en": "Because both parts can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today.",
-  "es": null
+  "es": "Como las dos partes se pueden intercambiar por separado, la **misma arquitectura se puede reconstruir** con otro metal o con otro conector. Eso es lo que hace tan grande a la familia: son la clase más diversa de sólidos cristalinos extendidos que se conoce hoy."
  },
  {
   "path": "science.js:MOF_FACTS[0].title",
   "en": "Built like a scaffold",
-  "es": null
+  "es": "Construidos como un andamio"
  },
  {
   "path": "science.js:MOF_FACTS[0].body",
   "en": "**Metal nodes joined by organic linkers** into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed",
-  "es": null
+  "es": "**Nudos metálicos unidos por conectores orgánicos** en una red periódica. Tratarlos como redes abstractas, de nudos y aristas, es lo que permite diseñar una estructura"
  },
  {
   "path": "science.js:MOF_FACTS[1].title",
   "en": "Surface areas without precedent",
-  "es": null
+  "es": "Superficies sin precedente"
  },
  {
   "path": "science.js:MOF_FACTS[1].body",
   "en": "A single gram can present the **surface area of a football pitch**. That is what makes them useful for storing gases, capturing CO₂ or hosting catalytic sites.",
-  "es": null
+  "es": "Un solo gramo puede presentar la **superficie de un campo de fútbol**. Eso es lo que los hace útiles para almacenar gases, capturar CO₂ o alojar centros catalíticos."
  },
  {
   "path": "science.js:MOF_FACTS[2].title",
   "en": "Tunable by design",
-  "es": null
+  "es": "Ajustables por diseño"
  },
  {
   "path": "science.js:MOF_FACTS[2].body",
   "en": "Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the **isoreticular principle**.",
-  "es": null
+  "es": "Cambia el conector y el poro cambia de tamaño, forma y química mientras la topología sobrevive. Es el **principio isorreticular**."
  },
  {
   "path": "science.js:MOF_FACTS[3].title",
   "en": "Applied to real problems",
-  "es": null
+  "es": "Aplicados a problemas reales"
  },
  {
   "path": "science.js:MOF_FACTS[3].body",
   "en": "**Wide range of promising applications**. Green hydrogen production, water remediation, CO₂ conversion into cyclic carbonates, and polymerisation catalysis, among others.",
-  "es": null
+  "es": "**Un abanico amplio de aplicaciones prometedoras**. Producción de hidrógeno verde, remediación de aguas, conversión de CO₂ en carbonatos cíclicos y catálisis de polimerización, entre otras."
  },
  {
   "path": "science.js:MOF_NAMING.title",
   "en": "A note on the names",
-  "es": null
+  "es": "Una nota sobre los nombres"
  },
  {
   "path": "science.js:MOF_NAMING.body",
   "en": "Frameworks are usually named after the institution that first reported them: MIL-n from the Materials Institute Lavoisier, UiO-n from the University of Oslo, HKUST-n from Hong Kong. IEF-n is the series from the IMDEA Energy Institute — where the syntheses behind this platform were made.",
-  "es": null
+  "es": "Las redes suelen llevar el nombre de la institución que las publicó primero: MIL-n del Materials Institute Lavoisier, UiO-n de la Universidad de Oslo, HKUST-n de Hong Kong. IEF-n es la serie del Instituto IMDEA Energía, donde se hicieron las síntesis que hay detrás de esta plataforma."
  },
  {
   "path": "science.js:NOBEL.title",
   "en": "Nobel Prize in Chemistry",
-  "es": null
+  "es": "Premio Nobel de Química"
  },
  {
   "path": "science.js:NOBEL.laureates",
   "en": "Susumu Kitagawa, Richard Robson and Omar Yaghi",
-  "es": null
+  "es": "Susumu Kitagawa, Richard Robson y Omar Yaghi"
  },
  {
   "path": "science.js:NOBEL.reason",
   "en": "For establishing the foundations of metal-organic frameworks and reticular chemistry.",
-  "es": null
+  "es": "Por sentar las bases de las redes metal-orgánicas y de la química reticular."
  },
  {
   "path": "science.js:NOBEL.credit",
   "en": "© Nobel Prize Outreach. Illustration: Niklas Elmehed.",
-  "es": null
+  "es": "© Nobel Prize Outreach. Ilustración: Niklas Elmehed."
  },
  {
   "path": "science.js:SCIENCE_INTRO",
   "en": "Ever wondered what happens when you build crystalline materials like molecular *Lego*? Step inside the chemistry of Metal-Organic Frameworks (MOFs) and see why characterizing them requires an entire suite of analytical techniques.",
-  "es": null
+  "es": "¿Alguna vez te has preguntado qué pasa cuando construyes materiales cristalinos como si fueran *Lego* molecular? Asómate a la química de las redes metal-orgánicas (MOF) y descubre por qué caracterizarlas exige toda una batería de técnicas analíticas."
  },
  {
   "path": "science.js:SYNTHESIS_NODE.note",
   "en": "Two 24-well plates a week, five years.",
-  "es": null
+  "es": "Dos placas de 24 pocillos por semana, cinco años."
  },
  {
   "path": "science.js:TECHNIQUES[0].answers",
   "en": "Is it crystalline, and is it the phase I wanted?",
-  "es": null
+  "es": "¿Es cristalino, y es la fase que yo quería?"
  },
  {
   "path": "science.js:TECHNIQUES[0].body",
   "en": "X-rays scattered by an ordered lattice produce sharp peaks at specific angles. A disordered solid produces a broad hump instead. This is the first test any new sample faces, and the one this platform models.",
-  "es": null
+  "es": "Los rayos X dispersados por una red ordenada producen picos afilados a ángulos concretos. Un sólido desordenado produce en su lugar una joroba ancha. Es la primera prueba que pasa cualquier muestra nueva, y la que modela esta plataforma."
  },
  {
   "path": "science.js:TECHNIQUES[1].answers",
   "en": "How much solvent is trapped inside, and how hot can it get?",
-  "es": null
+  "es": "¿Cuánto disolvente hay atrapado dentro, y cuánto calor aguanta?"
  },
  {
   "path": "science.js:TECHNIQUES[1].body",
   "en": "The sample is heated while being weighed. Mass losses reveal guest molecules leaving the pores and, eventually, the framework itself decomposing.",
-  "es": null
+  "es": "Se calienta la muestra mientras se pesa. Las pérdidas de masa revelan las moléculas huésped saliendo de los poros y, al final, la propia red descomponiéndose."
  },
  {
   "path": "science.js:TECHNIQUES[2].answers",
   "en": "Does the structure survive heating?",
-  "es": null
+  "es": "¿Sobrevive la estructura al calentamiento?"
  },
  {
   "path": "science.js:TECHNIQUES[2].body",
   "en": "Diffraction measured while the temperature rises, showing whether the lattice holds, transforms or collapses.",
-  "es": null
+  "es": "Difracción medida mientras sube la temperatura, que muestra si la red aguanta, se transforma o colapsa."
  },
  {
   "path": "science.js:TECHNIQUES[3].answers",
   "en": "How much empty space is really accessible?",
-  "es": null
+  "es": "¿Cuánto espacio vacío es accesible de verdad?"
  },
  {
   "path": "science.js:TECHNIQUES[3].body",
   "en": "Nitrogen or CO₂ is dosed onto the material and the uptake converted into a specific surface area in square metres per gram, plus the pore size distribution.",
-  "es": null
+  "es": "Se dosifica nitrógeno o CO₂ sobre el material y la cantidad adsorbida se convierte en superficie específica en metros cuadrados por gramo, más la distribución de tamaño de poro."
  },
  {
   "path": "science.js:TECHNIQUES[4].answers",
   "en": "Did the linker actually bind to the metal?",
-  "es": null
+  "es": "¿Se ha unido el conector al metal de verdad?"
  },
  {
   "path": "science.js:TECHNIQUES[4].body",
   "en": "Chemical bonds absorb infrared light at characteristic frequencies. Shifts in those bands distinguish a coordinated ligand from free, unreacted starting material.",
-  "es": null
+  "es": "Los enlaces químicos absorben luz infrarroja a frecuencias características. Los desplazamientos de esas bandas distinguen un ligando coordinado del material de partida libre y sin reaccionar."
  },
  {
   "path": "science.js:TECHNIQUES[5].answers",
   "en": "How much metal is in there?",
-  "es": null
+  "es": "¿Cuánto metal hay ahí dentro?"
  },
  {
   "path": "science.js:TECHNIQUES[5].body",
   "en": "The sample is vaporised in a plasma and the light it emits quantifies each element, giving the real metal-to-ligand ratio.",
-  "es": null
+  "es": "La muestra se vaporiza en un plasma y la luz que emite cuantifica cada elemento, lo que da la proporción real entre metal y ligando."
  },
  {
   "path": "science.js:TECHNIQUES[6].answers",
   "en": "Does the organic composition match the formula?",
-  "es": null
+  "es": "¿Coincide la composición orgánica con la fórmula?"
  },
  {
   "path": "science.js:TECHNIQUES[6].body",
   "en": "Combustion analysis returns carbon, hydrogen, nitrogen and sulfur percentages, which are compared against the proposed formula.",
-  "es": null
+  "es": "El análisis por combustión devuelve los porcentajes de carbono, hidrógeno, nitrógeno y azufre, que se comparan con la fórmula propuesta."
  },
  {
   "path": "science.js:TECHNIQUES[7].abbr",
   "en": "SEM / TEM",
-  "es": null
+  "es": "SEM / TEM"
  },
  {
   "path": "science.js:TECHNIQUES[7].answers",
   "en": "What do the particles look like?",
-  "es": null
+  "es": "¿Qué aspecto tienen las partículas?"
  },
  {
   "path": "science.js:TECHNIQUES[7].body",
   "en": "Electron beams image crystal morphology and size, from the shape of a facet down to the nanometre scale.",
-  "es": null
+  "es": "Los haces de electrones toman imagen de la morfología y el tamaño de los cristales, desde la forma de una cara hasta la escala nanométrica."
  },
  {
   "path": "science.js:TECHNIQUES[8].answers",
   "en": "Can it absorb light, and at what energy?",
-  "es": null
+  "es": "¿Puede absorber luz, y a qué energía?"
  },
  {
   "path": "science.js:TECHNIQUES[8].body",
   "en": "Optical absorption gives the band gap, which decides whether a material can drive a photocatalytic reaction.",
-  "es": null
+  "es": "La absorción óptica da el band gap, que decide si un material puede impulsar una reacción fotocatalítica."
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[0].note",
   "en": "Routine on everything",
-  "es": null
+  "es": "Rutinaria en todo"
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[3].note",
   "en": "Did the linker bind?",
-  "es": null
+  "es": "¿Se unió el conector?"
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[5].note",
   "en": "Optical band gap",
-  "es": null
+  "es": "Band gap óptico"
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[7].note",
   "en": "Structure while heated",
-  "es": null
+  "es": "Estructura durante el calentamiento"
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[8].note",
   "en": "Full structure solved",
-  "es": null
+  "es": "Estructura resuelta por completo"
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[9].label",
   "en": "ICP · EA",
-  "es": null
+  "es": "ICP · EA"
  },
  {
   "path": "science.js:TECHNIQUE_COUNTS[9].note",
   "en": "Composition, as PDF",
-  "es": null
+  "es": "Composición, en PDF"
  },
  {
   "path": "science.js:WHY_CHARACTERISE.title",
   "en": "Why one material needs a dozen measurements",
-  "es": null
+  "es": "Por qué un solo material necesita una docena de medidas"
  },
  {
   "path": "science.js:WHY_CHARACTERISE.lead",
   "en": "Making a solid is not the same as knowing what it is. **A newly formed powder has to be interrogated** from several angles before anything can be claimed about it.",
-  "es": null
+  "es": "Fabricar un sólido no es lo mismo que saber qué es. **A un polvo recién formado hay que interrogarlo** desde varios ángulos antes de poder afirmar nada sobre él."
  },
  {
   "path": "science.js:WHY_CHARACTERISE.consequence",
   "en": "Every promising sample generates files from several instruments, each written in its own format. Multiply that by thousands of samples and it stops being a chemistry problem — it becomes a **data management and processing challenge**.",
-  "es": null
+  "es": "Cada muestra prometedora genera ficheros de varios instrumentos, cada uno escrito en su propio formato. Multiplica eso por miles de muestras y deja de ser un problema de química: pasa a ser un **reto de gestión y procesado de datos**."
  },
  {
   "path": "science.js:WHY_CHARACTERISE.numbers[0][1]",
   "en": "raw instrument files",
-  "es": null
+  "es": "ficheros de instrumento en crudo"
  },
  {
   "path": "screens.js:EDA_BIVARIATE.title",
@@ -4197,246 +4197,246 @@
  {
   "path": "workflow.js:AREAS[0].subtitle",
   "en": "Three ingestion lanes",
-  "es": null
+  "es": "Tres vías de ingesta"
  },
  {
   "path": "workflow.js:AREAS[0].objective",
   "en": "Accept a file plus basic metadata from whichever source triggered the run, and normalise it into one common shape before anything downstream has to care which lane it came from.",
-  "es": null
+  "es": "Aceptar un fichero más sus metadatos básicos venga de donde venga la ejecución, y normalizarlo a una forma común antes de que nada aguas abajo tenga que preocuparse de por qué vía entró."
  },
  {
   "path": "workflow.js:AREAS[0].adds[0]",
   "en": "technique, sample_code, researcher_email, researcher_name, operator_name, measurement_tag — raw, as submitted",
-  "es": null
+  "es": "technique, sample_code, researcher_email, researcher_name, operator_name, measurement_tag — en crudo, tal como se enviaron"
  },
  {
   "path": "workflow.js:AREAS[0].adds[1]",
   "en": "file_name and raw_file_path (folder-watcher lane only; the others fill these in once the file is written to disk)",
-  "es": null
+  "es": "file_name y raw_file_path (solo en la vía del vigilante de carpeta; las otras los rellenan cuando el fichero se escribe en disco)"
  },
  {
   "path": "workflow.js:AREAS[0].adds[2]",
   "en": "The binary itself, always ending up under $binary.data_file",
-  "es": null
+  "es": "El propio binario, que siempre acaba bajo $binary.data_file"
  },
  {
   "path": "workflow.js:AREAS[0].note",
   "en": "The raw webhook node renames the upload to data_file0 — n8n adds a numeric suffix to multipart uploads. Normalize Webhook Body copies it back so nothing downstream needs to know.",
-  "es": null
+  "es": "El nodo Webhook en crudo renombra la subida a data_file0: n8n añade un sufijo numérico a las subidas multipart. Normalize Webhook Body lo copia de vuelta para que nada aguas abajo tenga que saberlo."
  },
  {
   "path": "workflow.js:AREAS[1].title",
   "en": "Tags, sample code & whitelist",
-  "es": null
+  "es": "Etiquetas, código de muestra y lista blanca"
  },
  {
   "path": "workflow.js:AREAS[1].subtitle",
   "en": "Normalise, then authorise",
-  "es": null
+  "es": "Normalizar, luego autorizar"
  },
  {
   "path": "workflow.js:AREAS[1].objective",
   "en": "Make every field look the same regardless of origin lane, reject anything without a sample code — it is the database lookup key — and gate on researcher authorisation.",
-  "es": null
+  "es": "Hacer que todos los campos tengan el mismo aspecto venga de la vía que venga, rechazar cualquier cosa sin código de muestra (es la clave de búsqueda en la base) y filtrar por la autorización del investigador."
  },
  {
   "path": "workflow.js:AREAS[1].adds[0]",
   "en": "technique normalised (UV-Vis → UV_VIS, ICP-OES → ICP_OES)",
-  "es": null
+  "es": "technique normalizada (UV-Vis → UV_VIS, ICP-OES → ICP_OES)"
  },
  {
   "path": "workflow.js:AREAS[1].adds[1]",
   "en": "sample_code regex-extracted from the filename when not submitted explicitly",
-  "es": null
+  "es": "sample_code extraído del nombre de fichero por expresión regular cuando no se envía explícitamente"
  },
  {
   "path": "workflow.js:AREAS[1].adds[2]",
   "en": "researcher_email lowercased and trimmed",
-  "es": null
+  "es": "researcher_email en minúsculas y sin espacios sobrantes"
  },
  {
   "path": "workflow.js:AREAS[1].adds[3]",
   "en": "instrument_name gets a technique-based guess, overwritten later by the real parsed value",
-  "es": null
+  "es": "instrument_name recibe una estimación según la técnica, que luego sobrescribe el valor real parseado"
  },
  {
   "path": "workflow.js:AREAS[1].note",
   "en": "Auto-enrolment adds a new email as active, but deliberately does not re-activate one an administrator revoked by hand.",
-  "es": null
+  "es": "El auto-registro da de alta un correo nuevo como activo, pero a propósito no reactiva uno que un administrador revocó a mano."
  },
  {
   "path": "workflow.js:AREAS[2].subtitle",
   "en": "Reject before spending compute",
-  "es": null
+  "es": "Rechazar antes de gastar cómputo"
  },
  {
   "path": "workflow.js:AREAS[2].objective",
   "en": "Reject oversized or duplicate files before any parsing happens, and get the real bytes into a form the Python sandbox can actually read.",
-  "es": null
+  "es": "Rechazar los ficheros demasiado grandes o duplicados antes de parsear nada, y dejar los bytes reales en una forma que el sandbox de Python pueda leer de verdad."
  },
  {
   "path": "workflow.js:AREAS[2].adds[1]",
   "en": "data_file_base64 — the native Python runner cannot read $binary when binaries are stored in filesystem mode",
-  "es": null
+  "es": "data_file_base64 — el runner nativo de Python no puede leer $binary cuando los binarios se guardan en modo sistema de ficheros"
  },
  {
   "path": "workflow.js:AREAS[2].adds[2]",
   "en": "file_hash — the real MD5 of the decoded bytes",
-  "es": null
+  "es": "file_hash — el MD5 real de los bytes decodificados"
  },
  {
   "path": "workflow.js:AREAS[2].note",
   "en": "That last line was a genuine bug: the hash was being computed over the binary metadata marker rather than the file contents, so every file looked unique and deduplication silently did nothing.",
-  "es": null
+  "es": "Esa última línea fue un fallo de verdad: el hash se calculaba sobre el marcador de metadatos del binario y no sobre el contenido del fichero, así que todos los ficheros parecían únicos y la deduplicación no hacía nada, en silencio."
  },
  {
   "path": "workflow.js:AREAS[3].title",
   "en": "Routing by technique",
-  "es": null
+  "es": "Enrutado por técnica"
  },
  {
   "path": "workflow.js:AREAS[3].subtitle",
   "en": "Three extraction strategies",
-  "es": null
+  "es": "Tres estrategias de extracción"
  },
  {
   "path": "workflow.js:AREAS[3].objective",
   "en": "Decide which of the three extraction strategies applies: a deterministic parser, AI over a PDF, or rejection as unrecognised.",
-  "es": null
+  "es": "Decidir cuál de las tres estrategias de extracción corresponde: un parser determinista, IA sobre un PDF, o rechazo por técnica no reconocida."
  },
  {
   "path": "workflow.js:AREAS[3].adds[0]",
   "en": "Nothing new — this area only reads the technique field set back in area 2.",
-  "es": null
+  "es": "Nada nuevo: esta área solo lee el campo technique que fijó el área 2."
  },
  {
   "path": "workflow.js:AREAS[3].tableIntro",
   "en": "Every parser — Python and JavaScript alike — returns the same dictionary shape, and `data_json` always holds `header_metadata` and `raw_data`. Stored as **JSONB** with a GIN index, so an agent can query any technique uniformly.",
-  "es": null
+  "es": "Todos los parsers, tanto en Python como en JavaScript, devuelven la misma forma de diccionario, y `data_json` siempre contiene `header_metadata` y `raw_data`. Se guarda como **JSONB** con un índice GIN, así que un agente puede consultar cualquier técnica de manera uniforme."
  },
  {
   "path": "workflow.js:AREAS[4].subtitle",
   "en": "Seven techniques, zero AI · autonomy L4",
-  "es": null
+  "es": "Siete técnicas, cero IA · autonomía L4"
  },
  {
   "path": "workflow.js:AREAS[4].objective",
   "en": "For every technique with a well-understood file format, extract every real instrument-recorded value with no AI involvement whatsoever — the cheapest, fastest and most trustworthy path.",
-  "es": null
+  "es": "Para cada técnica con un formato de fichero bien conocido, extraer todos los valores reales registrados por el instrumento sin intervención ninguna de IA: el camino más barato, más rápido y más fiable."
  },
  {
   "path": "workflow.js:AREAS[4].adds[0]",
   "en": "The real parsed values overwrite the earlier guesses: sample_code, technique, measurement_tag, operator_name, instrument_name, file paths",
-  "es": null
+  "es": "Los valores reales parseados sobrescriben las estimaciones previas: sample_code, technique, measurement_tag, operator_name, instrument_name, rutas de fichero"
  },
  {
   "path": "workflow.js:AREAS[4].adds[1]",
   "en": "The full data_json payload: header_metadata plus raw_data",
-  "es": null
+  "es": "La carga completa de data_json: header_metadata más raw_data"
  },
  {
   "path": "workflow.js:AREAS[4].note",
   "en": "One standalone Python module per technique and extension, each verified against real data-lake files inside the actual runner container.",
-  "es": null
+  "es": "Un módulo de Python independiente por técnica y extensión, cada uno verificado contra ficheros reales del data lake dentro del contenedor del runner."
  },
  {
   "path": "workflow.js:AREAS[5].title",
   "en": "AI extraction — PDF reports",
-  "es": null
+  "es": "Extracción por IA — informes PDF"
  },
  {
   "path": "workflow.js:AREAS[5].subtitle",
   "en": "ICP-OES and elemental analysis",
-  "es": null
+  "es": "ICP-OES y análisis elemental"
  },
  {
   "path": "workflow.js:AREAS[5].objective",
   "en": "Extract elemental composition tables from reports that only exist as PDFs, with a human-in-the-loop safety net for when the model is not confident.",
-  "es": null
+  "es": "Extraer tablas de composición elemental de informes que solo existen como PDF, con una red de seguridad con persona en el bucle para cuando el modelo no tiene confianza."
  },
  {
   "path": "workflow.js:AREAS[5].adds[0]",
   "en": "elemental_ratios for ICP; chns_averages and triplicate_runs for EA",
-  "es": null
+  "es": "elemental_ratios para ICP; chns_averages y triplicate_runs para AE"
  },
  {
   "path": "workflow.js:AREAS[5].adds[1]",
   "en": "confidence and reasoning",
-  "es": null
+  "es": "confianza y razonamiento"
  },
  {
   "path": "workflow.js:AREAS[5].adds[2]",
   "en": "Restored afterwards: the agent output does not carry researcher identity, file paths or the hash — they are pulled back from before the agent ran",
-  "es": null
+  "es": "Restaurados después: la salida del agente no lleva la identidad del investigador, las rutas de fichero ni el hash, así que se recuperan de antes de que corriera el agente"
  },
  {
   "path": "workflow.js:AREAS[5].note",
   "en": "Below 85% confidence the run pauses and emails a human rather than guessing. An unanswered question is better than a confident wrong number in a governed table.",
-  "es": null
+  "es": "Por debajo del 85 % de confianza la ejecución se detiene y escribe a una persona en vez de adivinar. Una pregunta sin responder es mejor que un número equivocado con aplomo en una tabla gobernada."
  },
  {
   "path": "workflow.js:AREAS[6].title",
   "en": "AI extraction — microscopy",
-  "es": null
+  "es": "Extracción por IA — microscopía"
  },
  {
   "path": "workflow.js:AREAS[6].subtitle",
   "en": "SEM / FESEM / TEM",
-  "es": null
+  "es": "SEM / FESEM / TEM"
  },
  {
   "path": "workflow.js:AREAS[6].objective",
   "en": "The deterministic parser already pulled every real instrument value from the companion sidecar. The AI step only adds a qualitative morphology description and a literal transcription of any scale-bar caption.",
-  "es": null
+  "es": "El parser determinista ya sacó todos los valores reales del instrumento del fichero acompañante. El paso de IA solo añade una descripción cualitativa de la morfología y la transcripción literal de la leyenda de la barra de escala, si la hay."
  },
  {
   "path": "workflow.js:AREAS[6].adds[0]",
   "en": "data_json.raw_data.ai_vision_analysis, merged into the deterministic payload — never replacing it",
-  "es": null
+  "es": "data_json.raw_data.ai_vision_analysis, fundido con la carga determinista, nunca en su lugar"
  },
  {
   "path": "workflow.js:AREAS[6].note",
   "en": "Deliberately never a fabricated numeric particle size. The vision agent describes what the image looks like; it does not measure.",
-  "es": null
+  "es": "Nunca un tamaño de partícula numérico inventado, y es deliberado. El agente de visión describe qué aspecto tiene la imagen; no mide."
  },
  {
   "path": "workflow.js:AREAS[7].title",
   "en": "Database write & response",
-  "es": null
+  "es": "Escritura en la base y respuesta"
  },
  {
   "path": "workflow.js:AREAS[7].subtitle",
   "en": "Where a missing field becomes a hard failure",
-  "es": null
+  "es": "Donde un campo ausente pasa a ser un fallo en seco"
  },
  {
   "path": "workflow.js:AREAS[7].objective",
   "en": "Insert the finished row and tell the caller what happened. This is the point where a field that is still missing stops being a gap and becomes a constraint violation.",
-  "es": null
+  "es": "Insertar la fila terminada y decirle a quien llamó qué ha pasado. Es el punto donde un campo que sigue faltando deja de ser un hueco y pasa a ser una violación de restricción."
  },
  {
   "path": "workflow.js:AREAS[7].adds[0]",
   "en": "The row itself, plus the reply to whoever triggered the run",
-  "es": null
+  "es": "La propia fila, más la respuesta a quien disparó la ejecución"
  },
  {
   "path": "workflow.js:AREAS[8].subtitle",
   "en": "Fallbacks, audit trail & error response",
-  "es": null
+  "es": "Fallbacks, traza de auditoría y respuesta de error"
  },
  {
   "path": "workflow.js:AREAS[8].objective",
   "en": "Every rejection from any point in the pipeline lands here. It always writes the audit log with a typed verdict, cause and result, and then answers according to origin.",
-  "es": null
+  "es": "Todo rechazo desde cualquier punto del pipeline aterriza aquí. Siempre escribe en el log de auditoría con veredicto, causa y resultado tipados, y luego responde según el origen."
  },
  {
   "path": "workflow.js:AREAS[8].adds[0]",
   "en": "audit_log row — written deterministically, never by an LLM",
-  "es": null
+  "es": "Fila en audit_log — escrita de forma determinista, nunca por un LLM"
  },
  {
   "path": "workflow.js:AREAS[8].note",
   "en": "This used to be a separate sub-workflow called eleven times. Consolidated into two shared nodes, because a webhook response cannot be sent from outside the workflow that owns the trigger — and because sharing nodes beats duplicating them.",
-  "es": null
+  "es": "Esto era antes un subflujo aparte al que se llamaba once veces. Se consolidó en dos nodos compartidos, porque una respuesta de webhook no se puede enviar desde fuera del flujo que posee el disparador, y porque compartir nodos es mejor que duplicarlos."
  }
 ]
