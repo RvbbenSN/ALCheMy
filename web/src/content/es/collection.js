@@ -40,8 +40,8 @@ export const COLLECTION_PROBLEM = {
 export const COLLECTION_ROW_INTRO = "Todo camino por este workflow tiene que llegar a la escritura en la base llevando exactamente estos campos. Piensa en el elemento como una bola de nieve que rueda por el pipeline y va recogiendo más de esta forma en cada etapa. Si al llegar todavía falta un campo, la inserción falla en seco contra una restricción."
 
 export const COLLECTION_TREE = {
-  "title": "An example of a ingested file",
-  "lead": "A real `.xrdml` after going through the workflow.",
+  "title": "Un ejemplo de fichero ingerido",
+  "lead": "Un `.xrdml` real después de pasar por el workflow.",
   "point": "El contexto experimental. Guarda los parámetros instrumentales parseados automáticamente de la cabecera del fichero, como la longitud de onda de la radiación, la configuración óptica y las marcas de tiempo de la adquisición. Garantiza reproducibilidad sin anotar nada a mano.",
   "contract": "La curva. Guarda la señal medida como arrays de coordenadas (X, Y) normalizadas junto con sus unidades físicas (por ejemplo, 2theta frente a intensidad). Todas las técnicas comparten esta misma estructura, así que cualquier curva se puede representar al instante."
 }

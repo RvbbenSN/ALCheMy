@@ -3,35 +3,35 @@
    y volver a ejecutar el script. Lo que no este traducido sale en ingles. */
 
 export const EDA_BIVARIATE = {
-  "title": "Does any single variable separate the classes?",
-  "whichTitle": "Which variables are being tested here",
-  "which": "The **29 PXRD descriptors** extracted from each diffractogram: peak count, crystalline fraction, peak width, entropy, signal-to-noise and the rest. Not the synthesis conditions. The question is whether any single measurement taken *from the pattern* is enough, on its own, to tell the three classes apart.",
-  "shapesTitle": "What each class looks like as numbers",
+  "title": "¿Separa las clases alguna variable por sí sola?",
+  "whichTitle": "Qué variables se están probando aquí",
+  "which": "Los **29 descriptores PXRD** extraídos de cada difractograma: número de picos, fracción cristalina, anchura de pico, entropía, señal-ruido y el resto. No las condiciones de síntesis. La pregunta es si alguna medida tomada *del propio patrón* basta, por sí sola, para distinguir las tres clases.",
+  "shapesTitle": "Qué aspecto tiene cada clase en números",
   "shapes": [
     {
       "klass": "Amorphous",
       "tone": "amorphous",
-      "body": "**No peaks at all** (`n_peaks` = 0). 88 % of the scattered area sits under the diffuse halo, and peak-to-background stays near **0.03**."
+      "body": "**Ningún pico** (`n_peaks` = 0). El 88 % del área dispersada está bajo el halo difuso, y la relación pico-fondo se queda cerca de **0,03**."
     },
     {
       "klass": "Incipient",
       "tone": "incipient",
-      "body": "A handful of **broad** reflections: median 8 peaks at **0.240°** FWHM, with about half the area crystalline and peak-to-background near **1.19**."
+      "body": "Un puñado de reflexiones **anchas**: mediana de 8 picos a **0,240°** de FWHM, con cerca de la mitad del área cristalina y una relación pico-fondo próxima a **1,19**."
     },
     {
       "klass": "Crystalline",
       "tone": "pure",
-      "body": "Many **sharp** reflections: median 19 peaks at **0.162°** FWHM, **77 %** crystalline fraction, and peak-to-background at **9.42**."
+      "body": "Muchas reflexiones **afiladas**: mediana de 19 picos a **0,162°** de FWHM, **77 %** de fracción cristalina y relación pico-fondo de **9,42**."
     }
   ],
-  "shapesLink": "Where those 29 numbers come from, descriptor by descriptor",
-  "ordering": "They do order the classes cleanly: every descriptor tested rises or falls **monotonically** from amorphous through incipient to crystalline. The numbers agree with the human verdicts on the direction of the effect.",
-  "body": "But ordering is not separating. In the box plots below the boxes **overlap for every variable tested**: an incipient sample and a crystalline one can share the same peak count, the same width, the same entropy. That overlap is the definition of a multivariate problem, and the reason a model is needed instead of a threshold."
+  "shapesLink": "De dónde salen esos 29 números, descriptor a descriptor",
+  "ordering": "Sí ordenan las clases con limpieza: todos los descriptores probados suben o bajan **monótonamente** de amorfo a incipiente y de ahí a cristalino. Los números coinciden con los veredictos humanos en la dirección del efecto.",
+  "body": "Pero ordenar no es separar. En los diagramas de caja de abajo las cajas **se solapan en todas las variables probadas**: una muestra incipiente y una cristalina pueden compartir el mismo número de picos, la misma anchura, la misma entropía. Ese solape es la definición de un problema multivariante, y la razón de que haga falta un modelo y no un umbral."
 }
 
 export const EDA_CONFOUNDER = {
-  "title": "The confounder that nearly ruined the analysis",
-  "intro": "The record holds three ways of making a material, and version 2 of this analysis mixed them without looking. The numbers:",
+  "title": "El factor de confusión que casi arruina el análisis",
+  "intro": "El registro contiene tres formas de fabricar un material, y una versión anterior de este análisis las mezcló sin mirar. Los números:",
   "tableHead": [
     "Synthesis type",
     "Amorphous",
@@ -65,75 +65,75 @@ export const EDA_CONFOUNDER = {
   "points": [
     {
       "label": "The shortcut",
-      "body": "**Zero amorphous samples in microwave.** Detecting that a synthesis was microwave-assisted, even indirectly through reactor volume or year, lets a model answer CRYSTALLINE and be right 96% of the time. Those 94 cases are 5% of the dataset and 27% of the crystalline class."
+      "body": "**Cero muestras amorfas en microondas.** Detectar que una síntesis fue asistida por microondas, aunque sea indirectamente por el volumen de reactor o el año, permite a un modelo responder CRISTALINO y acertar el 96 % de las veces. Esos 94 casos son el 5 % del conjunto de datos y el 27 % de la clase cristalina."
     },
     {
-      "label": "The cause is selection bias",
-      "body": "Combinatorial screening is exploratory, so it is full of failures. Standard and microwave synthesis are used once the recipe is known to work. \"Synthesis type\" largely encodes **whether the outcome was already known**."
+      "label": "La causa es sesgo de selección",
+      "body": "El cribado combinatorio es exploratorio, así que está lleno de fracasos. La síntesis estándar y la de microondas se usan cuando ya se sabe que la receta funciona. \"Tipo de síntesis\" codifica en gran medida **si el resultado ya se conocía**."
     },
     {
-      "label": "And the physics differ",
-      "body": "Microwave heating is localised and fast, favouring kinetic phases over thermodynamic ones. Mixing the methods forces the model to learn two physics as one."
+      "label": "Y la física es distinta",
+      "body": "El calentamiento por microondas es localizado y rápido, lo que favorece las fases cinéticas frente a las termodinámicas. Mezclar los métodos obliga al modelo a aprender dos físicas como si fueran una."
     }
   ],
   "decision": [
-    "It is the only subset without success bias: it was designed to explore, not to confirm.",
-    "It is what we actually want to predict — the next plate is an HTS plate.",
-    "It is a single thermal regime, so the model learns one physics, not two."
+    "Es el único subconjunto sin sesgo de éxito: se diseñó para explorar, no para confirmar.",
+    "Es lo que de verdad queremos predecir: la siguiente placa es una placa de HTS.",
+    "Es un único régimen térmico, así que el modelo aprende una física, no dos."
   ],
-  "price": "The price is stated: 90 of the 330 crystalline cases are lost, 27%, and the minority class becomes scarcer still. The alternative is **a higher score that measures the synthesis method** instead of the chemistry."
+  "price": "El precio queda dicho: se pierden 90 de los 330 casos cristalinos, un 27 %, y la clase minoritaria se vuelve aún más escasa. La alternativa es **una puntuación más alta que mide el método de síntesis** en vez de la química."
 }
 
 export const EDA_CORRELATION = {
-  "title": "Correlation: two different questions",
+  "title": "Correlación: dos preguntas distintas",
   "questions": [
     {
-      "title": "Do two input variables move together?",
-      "lead": "This one is about **interpretation**, not about performance.",
+      "title": "¿Se mueven juntas dos variables de entrada?",
+      "lead": "Esta va de **interpretación**, no de rendimiento.",
       "points": [
         [
-          "What to look for",
-          "Not zero correlation — knowing **where** it is not zero."
+          "Qué buscar",
+          "No una correlación cero, sino saber **dónde** no es cero."
         ],
         [
-          "Why it matters",
-          "Two columns carrying nearly the same information make the model **split the credit between them arbitrarily**. Reading \"this variable barely matters\" would then be a mistake: it matters, but its twin took the credit."
+          "Por qué importa",
+          "Dos columnas que llevan casi la misma información hacen que el modelo **reparta el mérito entre ellas de forma arbitraria**. Leer entonces \"esta variable apenas importa\" sería un error: importa, pero su gemela se llevó el mérito."
         ],
         [
-          "What is done about it",
-          "The final interpretation is read **by chemical block**, never variable by variable."
+          "Qué se hace al respecto",
+          "La interpretación final se lee **por bloque químico**, nunca variable a variable."
         ]
       ],
-      "note": "A map with red blocks is not a problem. Here they are mostly properties of the same metal, correlated **by physics**: the electronegativity and hardness of a cation are not independent in nature."
+      "note": "Un mapa con bloques rojos no es un problema. Aquí son sobre todo propiedades del mismo metal, correlacionadas **por física**: la electronegatividad y la dureza de un catión no son independientes en la naturaleza."
     },
     {
-      "title": "Does each variable relate to the target?",
-      "lead": "This is the one you **do** want to be high — it is literally the signal the model will exploit.",
+      "title": "¿Se relaciona cada variable con la variable objetivo?",
+      "lead": "Esta es la que **sí** quieres que sea alta: es literalmente la señal que el modelo va a explotar.",
       "points": [
         [
-          "Why Pearson does not apply",
-          "The target is **categorical with three levels**, not a number. A Pearson coefficient between \"amorphous\" and a temperature is undefined."
+          "Por qué Pearson no vale",
+          "La variable objetivo es **categórica con tres niveles**, no un número. Un coeficiente de Pearson entre \"amorfo\" y una temperatura no está definido."
         ],
         [
-          "What is used instead",
-          "The correlation ratio **η²** for numeric against categorical, and **Cramér's V** for categorical against categorical."
+          "Qué se usa en su lugar",
+          "La razón de correlación **η²** para numérica frente a categórica, y la **V de Cramér** para categórica frente a categórica."
         ],
         [
-          "How to read it",
-          "Both are plotted below, on the same scale, so a weak association looks weak."
+          "Cómo leerlo",
+          "Las dos se representan abajo, en la misma escala, así que una asociación débil parece débil."
         ]
       ]
     }
   ],
-  "blankTitle": "The blank cells are not missing data",
-  "blankBody": "A white square means the correlation **is not defined**, not that a value was lost. `reactor_volume_ml` is 2.5 mL in every high-throughput synthesis, so its variance is zero and any correlation with it divides by zero.",
-  "blankConsequence": "It follows that `fill_fraction` is exactly `total_volume_ml / 2.5`: the same variable rescaled, across all 1,516 rows. **Both columns are excluded from the model** — zero variance for one, perfect collinearity for the other.",
-  "causation": "**Correlation is not causation**. These plots measure whether two things move together, nothing more. Temperature appearing associated with crystallinity does not demonstrate that raising it causes crystallisation: the two may share a common cause, or it may be a coincidence of this record. Establishing causation requires intervening, changing only the temperature and seeing what happens."
+  "blankTitle": "Las celdas en blanco no son datos ausentes",
+  "blankBody": "Un cuadro blanco significa que la correlación **no está definida**, no que se haya perdido un valor. `reactor_volume_ml` vale 2,5 mL en todas las síntesis de alto rendimiento, así que su varianza es cero y cualquier correlación con ella divide entre cero.",
+  "blankConsequence": "De ahí se sigue que `fill_fraction` es exactamente `total_volume_ml / 2.5`: la misma variable reescalada, en las 1.516 filas. **Las dos columnas quedan excluidas del modelo** — varianza cero en una, colinealidad perfecta en la otra.",
+  "causation": "**Correlación no es causalidad**. Estos gráficos miden si dos cosas se mueven juntas, nada más. Que la temperatura aparezca asociada a la cristalinidad no demuestra que subirla cause la cristalización: pueden compartir una causa común, o ser una coincidencia de este registro. Establecer causalidad exige intervenir, cambiando solo la temperatura y viendo qué pasa."
 }
 
 export const EDA_DISCRETE = {
-  "title": "The process variables are **discrete in practice**",
-  "body": "A continuous variable on paper is not continuous in the record. Over the training set, three of the main process variables take these values and no others:",
+  "title": "Las variables de proceso son **discretas en la práctica**",
+  "body": "Una variable continua sobre el papel no es continua en el registro. En el conjunto de entrenamiento, tres de las principales variables de proceso toman estos valores y ningún otro:",
   "tableHead": [
     "Variable",
     "Distinct values",
@@ -156,21 +156,21 @@ export const EDA_DISCRETE = {
       "24 · 48 · 72 h"
     ]
   ],
-  "concentration": "And they are not evenly used either: **710 of the syntheses sit at 150 °C** and 370 at 120 °C, so two settings out of nine cover seven tenths of the record.",
-  "why": "This reflects how combinatorial synthesis is designed: **fix a grid of conditions and sweep composition**. A chemist filling a 24-well plate picks round numbers.",
-  "consequence": "It carries a consequence for interpretation: **a variable that was barely varied cannot explain much variance, however important it is chemically**. Reaction time takes three values in this record, so a model that finds it unimportant is describing the record, not the chemistry."
+  "concentration": "Y tampoco se usan de forma uniforme: **710 de las síntesis están a 150 °C** y 370 a 120 °C, así que dos ajustes de nueve cubren siete décimas partes del registro.",
+  "why": "Esto refleja cómo se diseña la síntesis combinatoria: **fijar una rejilla de condiciones y barrer la composición**. Un químico que llena una placa de 24 pocillos elige números redondos.",
+  "consequence": "Trae una consecuencia para la interpretación: **una variable que apenas se varió no puede explicar mucha varianza, por importante que sea químicamente**. El tiempo de reacción toma tres valores en este registro, así que un modelo que lo encuentre irrelevante está describiendo el registro, no la química."
 }
 
 export const EDA_FUNNEL_INTRO = {
-  "title": "From the full record to the training set",
-  "lead": "The laboratory performed **2,167 syntheses**. The chain below counts **rows of the feature table**, which is why it starts at 2,152: those are the syntheses the pipeline could turn into features.",
-  "chain": "Each step removes exactly one filter from the query the model registry stores for this dataset, so the last line is the number the registry holds. **Every drop is a deliberate exclusion with a stated reason.**",
-  "scope": "By the last row the model is no longer a model of this laboratory’s chemistry: it is a model of **combinatorial syntheses that produced a powder someone was willing to judge**. Everything below refers to those 1,516 rows unless it says otherwise."
+  "title": "Del registro completo al conjunto de entrenamiento",
+  "lead": "El laboratorio realizó **2.167 síntesis**. La cadena de abajo cuenta **filas de la tabla de características**, y por eso empieza en 2.152: son las síntesis que el pipeline pudo convertir en características.",
+  "chain": "Cada paso quita exactamente un filtro de la consulta que el registro de modelos guarda para este conjunto de datos, así que la última línea es el número que tiene el registro. **Cada caída es una exclusión deliberada con un motivo declarado.**",
+  "scope": "En la última fila el modelo ya no es un modelo de la química de este laboratorio: es un modelo de **síntesis combinatorias que produjeron un polvo que alguien estuvo dispuesto a juzgar**. Todo lo de abajo se refiere a esas 1.516 filas salvo que diga otra cosa."
 }
 
 export const EDA_IMBALANCE = {
-  "title": "The target: how much imbalance there is",
-  "intro": "Across the 1,516 training rows the three classes are far from equally common, and that is chemistry rather than sampling: most attempts land somewhere in between.",
+  "title": "La variable objetivo: cuánto desequilibrio hay",
+  "intro": "En las 1.516 filas de entrenamiento las tres clases distan mucho de ser igual de frecuentes, y eso es química y no muestreo: la mayoría de los intentos aterrizan en un punto intermedio.",
   "tableHead": [
     "Class",
     "What it means",
@@ -197,62 +197,62 @@ export const EDA_IMBALANCE = {
       "11.0%"
     ]
   ],
-  "trivial": "A model that learns nothing at all, always answering **INCIPIENT**, is right 64% of the time. That is why every metric in this project is quoted against that floor rather than against zero: reporting \"64% accuracy\" would describe a model that does nothing.",
-  "ratio": "The gap between the largest and smallest class is **6 : 1**, and it is sharper than over the whole record, because restricting to high-throughput synthesis removed material that was almost entirely crystalline. It is handled by **weighting the classes inside each model**, which is simpler than resampling and does not invent samples that were never made."
+  "trivial": "Un modelo que no aprende nada, que responde siempre **INCIPIENTE**, acierta el 64 % de las veces. Por eso cada métrica de este proyecto se da contra ese suelo y no contra cero: informar de un \"64 % de exactitud\" describiría un modelo que no hace nada.",
+  "ratio": "La diferencia entre la clase mayor y la menor es de **6 : 1**, y es más marcada que en el registro completo, porque restringir a síntesis de alto rendimiento quitó material que era casi todo cristalino. Se trata **ponderando las clases dentro de cada modelo**, que es más simple que remuestrear y no inventa muestras que nunca se hicieron."
 }
 
 export const EDA_INTRO = {
   "acronym": "EDA",
-  "expansion": "Exploratory Data Analysis",
+  "expansion": "Análisis Exploratorio de Datos",
   "steps": [
     {
       "key": "look",
       "label": "Look",
-      "body": "Plot every variable, count what is missing, check whether the classes are balanced and whether two columns say the same thing twice."
+      "body": "Representar todas las variables, contar lo que falta, comprobar si las clases están equilibradas y si dos columnas dicen lo mismo dos veces."
     },
     {
       "key": "decide",
       "label": "Decide",
-      "body": "It produces no model and no metric, which is why it gets skipped. What it produces is decisions: which rows to drop, which columns cannot be trusted."
+      "body": "No produce ningún modelo ni ninguna métrica, y por eso se salta. Lo que produce son decisiones: qué filas descartar, de qué columnas no fiarse."
     },
     {
       "key": "catch",
       "label": "Catch confounders",
-      "body": "Separate signal that comes from the chemistry from signal that comes from how the data was collected."
+      "body": "Separar la señal que viene de la química de la que viene de cómo se recogieron los datos."
     }
   ],
-  "rule": "**A model cannot warn you about a problem it has learned to exploit.** If a confounder sits in the training data, cross-validation rewards the model for using it. The only place to catch it is here.",
+  "rule": "**Un modelo no puede avisarte de un problema que ha aprendido a explotar.** Si hay un factor de confusión en los datos de entrenamiento, la validación cruzada premia al modelo por usarlo. El único sitio donde cazarlo es aquí.",
   "found": [
     [
       "A confounder",
-      "One synthesis method had produced no amorphous samples at all — so the method itself predicted the answer"
+      "Un método de síntesis no había producido ni una sola muestra amorfa, así que el propio método predecía la respuesta"
     ],
     [
-      "Five kinds of gap",
-      "Nine per cent missing, from five unrelated causes, each needing a different fix"
+      "Cinco tipos de hueco",
+      "Un nueve por ciento ausente, por cinco causas sin relación entre sí, cada una con su arreglo distinto"
     ],
     [
-      "A 6 : 1 imbalance",
-      "Between the largest and smallest class, enough to make accuracy meaningless"
+      "Un desequilibrio de 6 : 1",
+      "Entre la clase mayor y la menor, suficiente para que la exactitud no signifique nada"
     ],
     [
       "Hidden structure",
-      "Rows that are not independent of one another, which makes a random split lie"
+      "Filas que no son independientes entre sí, lo que hace que una partición aleatoria mienta"
     ]
   ]
 }
 
 export const EDA_LEAKAGE = {
-  "title": "Hidden structure: why a random split would lie",
-  "body": "Each row is **one synthesis**: one well of a 24-well plate, with its conditions and the verdict on its diffractogram. Those rows are **not independent of one another**. A plate is a batch prepared on the same day, with the same linker, the same thermal ramp and often the same metal, sweeping one variable. And plates are internally homogeneous: knowing one well tells you most of what its 23 neighbours did.",
-  "consequence": "A random split would put samples from the same plate in both training and test. The model would not need to learn any chemistry: **recognising the plate would be enough**. The score would come out inflated and false. Validation therefore groups by plate, so no plate ever appears on both sides.",
-  "reminder": "This compounds with the class imbalance. With **64% of samples incipient** and whole plates almost uniformly one class, a lucky split can hand the test set a plate that is 90% incipient, where the do-nothing baseline scores 90% and any model looks brilliant. Grouping by plate stops the split from choosing its own difficulty.",
-  "drift": "There is temporal drift too: the class proportions change year on year, because the laboratory was learning. Every bar carries its count, because **a proportion without its sample size misleads**: a year with seven samples shows a 100% bar that means nothing."
+  "title": "Estructura oculta: por qué una partición aleatoria mentiría",
+  "body": "Cada fila es **una síntesis**: un pocillo de una placa de 24, con sus condiciones y el veredicto de su difractograma. Esas filas **no son independientes entre sí**. Una placa es un lote preparado el mismo día, con el mismo conector, la misma rampa térmica y a menudo el mismo metal, barriendo una variable. Y las placas son homogéneas por dentro: conocer un pocillo te dice casi todo lo que hicieron sus 23 vecinos.",
+  "consequence": "Una partición aleatoria pondría muestras de la misma placa en entrenamiento y en test. El modelo no necesitaría aprender nada de química: **le bastaría con reconocer la placa**. La puntuación saldría inflada y falsa. Por eso la validación agrupa por placa, y ninguna placa aparece nunca en los dos lados.",
+  "reminder": "Esto se suma al desequilibrio de clases. Con el **64 % de las muestras incipientes** y placas enteras casi uniformes en una clase, una partición afortunada puede darle al conjunto de test una placa que sea 90 % incipiente, donde la línea base que no hace nada saca un 90 % y cualquier modelo parece brillante. Agrupar por placa impide que la partición elija su propia dificultad.",
+  "drift": "También hay deriva temporal: las proporciones de clase cambian año a año, porque el laboratorio estaba aprendiendo. Cada barra lleva su recuento, porque **una proporción sin su tamaño de muestra engaña**: un año con siete muestras enseña una barra del 100 % que no significa nada."
 }
 
 export const EDA_MISSING = {
   "title": "Missing values",
-  "intro": "A single \"9% missing\" figure hides unrelated problems, and only some of them are what imputation assumes.",
+  "intro": "Una sola cifra de \"9 % ausente\" esconde problemas sin relación entre sí, y solo algunos son lo que la imputación da por supuesto.",
   "tableHead": [
     "Property",
     "Who is missing",
@@ -300,97 +300,97 @@ export const EDA_MISSING = {
 }
 
 export const EDA_MODULATORS = {
-  "title": "Where the modulator descriptors come from",
-  "problem": "Ten columns of acids, nearly all zero in any given row, would let the model memorise which plate used which reagent instead of learning chemistry. So they were **grouped by chemical role** (carboxylic, strong acid, HF, base, fluorinated) and summed. Two extra columns carry the **mean pKa and mean logP of the acids present**, weighted by how much of each was added, so the chemistry the sum discards is not lost.",
+  "title": "De dónde salen los descriptores de modulador",
+  "problem": "Diez columnas de ácidos, casi todas a cero en cualquier fila dada, dejarían al modelo memorizar qué placa usó qué reactivo en vez de aprender química. Así que se **agruparon por papel químico** (carboxílico, ácido fuerte, HF, base, fluorado) y se sumaron. Dos columnas extra llevan el **pKa medio y el logP medio de los ácidos presentes**, ponderados por cuánto se añadió de cada uno, para no perder la química que la suma descarta.",
   "formula": "mod_carbox_mean_pka = (3.75·formic + 4.76·acetic + 4.87·propionic) / total carboxylic mmol",
   "caveats": [
-    "**\"Carboxylic\" here means weak carboxylic.** Trifluoroacetic acid is grouped with the strong acids: the criterion was pKa, not functional family, and at pKa 0.23 it behaves like one. 82 syntheses.",
-    "**The pKa and logP values carry no citation.** They are standard aqueous figures at 25 °C written into the SQL. Every other chemical property in the model traces to a reference in `property_sources`."
+    "**Aquí \"carboxílico\" significa carboxílico débil.** El ácido trifluoroacético va agrupado con los ácidos fuertes: el criterio fue el pKa, no la familia funcional, y con un pKa de 0,23 se comporta como uno de ellos. 82 síntesis.",
+    "**Los valores de pKa y logP no llevan cita.** Son cifras acuosas estándar a 25 °C escritas directamente en el SQL. Cualquier otra propiedad química del modelo se puede rastrear hasta una referencia en `property_sources`."
   ]
 }
 
 export const EDA_PCA = {
-  "title": "The PCA projection",
-  "disclaimer": "This is a diagnostic, not a model.",
-  "whatTitle": "What a PCA does",
+  "title": "La proyección PCA",
+  "disclaimer": "Esto es un diagnóstico, no un modelo.",
+  "whatTitle": "Qué hace un PCA",
   "what": [
-    "Each synthesis is a point in a space with one dimension per variable, which cannot be looked at directly.",
-    "PCA finds the **direction along which the points are most spread out**, then the most spread-out direction perpendicular to it, and so on.",
-    "Projecting onto the first two gives a flat picture that keeps as much of the original spread as any flat picture can.",
-    "It is a **change of viewpoint, not a summary**: nothing is discarded."
+    "Cada síntesis es un punto en un espacio con una dimensión por variable, que no se puede mirar directamente.",
+    "El PCA encuentra la **dirección en la que los puntos están más dispersos**, luego la dirección más dispersa perpendicular a esa, y así sucesivamente.",
+    "Proyectar sobre las dos primeras da una imagen plana que conserva tanta dispersión original como puede conservar cualquier imagen plana.",
+    "Es un **cambio de punto de vista, no un resumen**: no se descarta nada."
   ],
-  "varsTitle": "What goes in",
-  "varsNote": "The **38 synthesis-condition columns**: metal properties, linker properties, solvent fractions, thermal ramp and modulators. Not the 29 PXRD descriptors, which describe the outcome. The question is whether what was *done* already separates the outcomes.",
-  "stepsTitle": "How it is built",
+  "varsTitle": "Qué entra",
+  "varsNote": "Las **38 columnas de condiciones de síntesis**: propiedades del metal, propiedades del conector, fracciones de disolvente, rampa térmica y moduladores. No los 29 descriptores PXRD, que describen el resultado. La pregunta es si lo que se *hizo* ya separa los resultados.",
+  "stepsTitle": "Cómo se construye",
   "steps": [
-    "**Standardise** the numeric variables after imputation. Without it, reaction time (up to 96) would crush a solvent fraction (0 to 1) through the scale of its units alone.",
-    "**Find the direction of maximum variance**, a linear combination of every variable, and call it the first component. Then the maximum remaining variance perpendicular to it, and so on.",
-    "**Project** the samples onto those components so they can be drawn."
+    "**Estandarizar** las variables numéricas después de imputar. Sin ello, el tiempo de reacción (hasta 96) aplastaría una fracción de disolvente (de 0 a 1) solo por la escala de sus unidades.",
+    "**Encontrar la dirección de máxima varianza**, una combinación lineal de todas las variables, y llamarla primera componente. Luego la máxima varianza restante perpendicular a ella, y así sucesivamente.",
+    "**Proyectar** las muestras sobre esas componentes para poder dibujarlas."
   ],
-  "honest": "PCA uses every variable and **does not know the classes**: it is unsupervised, and the colours are painted on afterwards. So any separation that appears is real structure in the synthesis conditions.",
+  "honest": "El PCA usa todas las variables y **no conoce las clases**: es no supervisado, y los colores se pintan después. Así que cualquier separación que aparezca es estructura real en las condiciones de síntesis.",
   "findings": [
-    "There is structure, but the classes overlap heavily. The problem is genuinely multivariate and genuinely hard.",
-    "Adding a third component reveals no hidden separation. That is a useful negative result: there is **no plane that separates the classes**, which already predicts that no linear model will shine.",
-    "Reaching 90% of the variance takes many components. The information is spread across many variables rather than concentrated in two or three — so reducing dimensionality before modeling would throw away signal, and PCA is not used in the final pipeline."
+    "Hay estructura, pero las clases se solapan mucho. El problema es genuinamente multivariante y genuinamente difícil.",
+    "Añadir una tercera componente no revela ninguna separación oculta. Es un resultado negativo útil: **no hay un plano que separe las clases**, lo que ya anticipa que ningún modelo lineal va a brillar.",
+    "Llegar al 90 % de la varianza exige muchas componentes. La información está repartida entre muchas variables y no concentrada en dos o tres, así que reducir la dimensionalidad antes de modelar tiraría señal, y el PCA no se usa en el pipeline final."
   ]
 }
 
 export const ETL_DEFECTS = [
   {
     "n": 1,
-    "defect": "Neat liquid modulators stored as µmol but labelled mmol — a factor of 1,000",
-    "found": "The median formic acid value read 1,168 \"mmol\", which is 54 g of formic acid in a 2.5 mL reactor. Physically impossible.",
-    "fix": "Formula corrected in notebook 01; stored values divided by 1,000."
+    "defect": "Moduladores líquidos puros guardados como µmol pero etiquetados como mmol: un factor de 1.000",
+    "found": "La mediana del ácido fórmico marcaba 1.168 \"mmol\", que son 54 g de ácido fórmico en un reactor de 2,5 mL. Físicamente imposible.",
+    "fix": "Fórmula corregida en el cuaderno 01; los valores guardados divididos entre 1.000."
   },
   {
     "n": 2,
-    "defect": "Adding mmol to µmol erased HCl from the strong-acid feature",
-    "found": "A consequence of defect 1: HCl contributed ~0.004 against TFA at ~600.",
-    "fix": "With coherent units, the most-used modulator in the whole dataset — 393 syntheses — becomes visible to the model again."
+    "defect": "Sumar mmol con µmol borró el HCl de la característica de ácido fuerte",
+    "found": "Consecuencia del defecto 1: el HCl aportaba ~0,004 frente al TFA a ~600.",
+    "fix": "Con unidades coherentes, el modulador más usado de todo el conjunto de datos —393 síntesis— vuelve a ser visible para el modelo."
   },
   {
     "n": 3,
-    "defect": "Synthesis type absent as a variable, while being the largest confounder",
-    "found": "Microwave runs are 95.7% crystalline against 11.0% for combinatorial screening.",
-    "fix": "Restrict training to high-throughput synthesis only."
+    "defect": "El tipo de síntesis no estaba como variable, siendo el mayor factor de confusión",
+    "found": "Las ejecuciones por microondas son cristalinas en un 95,7 % frente al 11,0 % del cribado combinatorio.",
+    "fix": "Restringir el entrenamiento a la síntesis de alto rendimiento."
   },
   {
     "n": 4,
-    "defect": "1-propanol and DEF missing from the feature view",
-    "found": "Solvent fractions summed to 0.789 instead of 1.",
-    "fix": "All six solvents included."
+    "defect": "El 1-propanol y el DEF faltaban en la vista de características",
+    "found": "Las fracciones de disolvente sumaban 0,789 en vez de 1.",
+    "fix": "Incluidos los seis disolventes."
   },
   {
     "n": 5,
-    "defect": "The liquid modulator is sometimes the solvent, and was not counted as medium",
-    "found": "After fixing defect 4 the volume still did not close. One synthesis used 1.35 mL of propionic acid out of 1.5 mL total.",
-    "fix": "A modulator fraction reconstructed from the millimoles."
+    "defect": "El modulador líquido es a veces el disolvente, y no se contaba como medio",
+    "found": "Tras arreglar el defecto 4 el volumen seguía sin cuadrar. Una síntesis usaba 1,35 mL de ácido propiónico de 1,5 mL totales.",
+    "fix": "Una fracción de modulador reconstruida a partir de los milimoles."
   },
   {
     "n": 6,
-    "defect": "HF grouped with HCl despite a different chemical role",
-    "found": "Chemical argument: HF is a mineralising agent, and some frameworks only crystallise in its presence.",
-    "fix": "Its own column, 25 syntheses."
+    "defect": "El HF agrupado con el HCl pese a tener un papel químico distinto",
+    "found": "Argumento químico: el HF es un agente mineralizante, y algunas redes solo cristalizan en su presencia.",
+    "fix": "Su propia columna, 25 síntesis."
   },
   {
     "n": 7,
-    "defect": "22 rows lost their ionic radius to a non-breaking space",
-    "found": "A U+00A0 character inside precursor strings such as \"MgCl2 · 6H2O\" stopped them matching the lookup table.",
-    "fix": "The join was normalised, rather than adding typographic variants by hand — that is a race you do not win."
+    "defect": "22 filas perdieron su radio iónico por un espacio de no separación",
+    "found": "Un carácter U+00A0 dentro de cadenas de precursor como \"MgCl2 · 6H2O\" impedía que casaran con la tabla de consulta.",
+    "fix": "Se normalizó el JOIN, en vez de ir añadiendo variantes tipográficas a mano: esa es una carrera que no se gana."
   }
 ]
 
 export const ETL_EXCLUSION = {
-  "title": "Exclusion as a label, never as a deletion",
-  "body": "Auditing the dataset uncovered 113 problematic entries: 43 duplicate scans (re-runs, washed samples) that would bias training, and 70 amorphous runs contaminated with metal oxide peaks that would poison class labels",
-  "decision": "Instead of destructive hard-deletions, every case was flagged with ml_include = NO. In scientific databases, deleting destroys experimental history; explicit flagging preserves the audit trail while delivering clean data to the models.",
-  "pullquote": "In a scientific data store, **deleting destroys evidence and labelling preserves it**."
+  "title": "La exclusión como etiqueta, nunca como borrado",
+  "body": "Auditar el conjunto de datos destapó 113 entradas problemáticas: 43 barridos duplicados (repeticiones, muestras lavadas) que sesgarían el entrenamiento, y 70 ejecuciones amorfas contaminadas con picos de óxido metálico que envenenarían las etiquetas de clase",
+  "decision": "En vez de borrados destructivos, cada caso se marcó con ml_include = NO. En una base de datos científica, borrar destruye la historia experimental; marcar de forma explícita conserva la traza de auditoría y a la vez entrega datos limpios a los modelos.",
+  "pullquote": "En un almacén de datos científicos, **borrar destruye evidencia y etiquetar la conserva**."
 }
 
 export const ETL_IMPUTATION = {
-  "title": "Imputation: tested, not assumed",
-  "body": "Numeric gaps are filled with the median and categorical ones with the mode — always inside the cross-validation pipeline, never before it.",
-  "leak": "Imputing with the median of the whole dataset before splitting leaks information from the test fold into training: the test rows would have helped compute the median used on them. It is a subtle leak that inflates the result while nothing appears to fail. Inside the pipeline, each fold computes its median from its own data only.",
+  "title": "Imputación: probada, no supuesta",
+  "body": "Los huecos numéricos se rellenan con la mediana y los categóricos con la moda, siempre dentro del pipeline de validación cruzada, nunca antes.",
+  "leak": "Imputar con la mediana del conjunto entero antes de partir filtra información del pliegue de test al entrenamiento: las filas de test habrían ayudado a calcular la mediana que se les aplica. Es una fuga sutil que infla el resultado sin que nada parezca fallar. Dentro del pipeline, cada pliegue calcula su mediana solo con sus propios datos.",
   "tableHead": [
     "Configuration",
     "F1 macro",
@@ -418,33 +418,33 @@ export const ETL_IMPUTATION = {
       "0.258"
     ]
   ],
-  "conclusion": "Flagging which values were missing adds nothing, so the simple version stays. That is worth recording precisely because it is a negative result: knowing that missingness is not informative means the gaps are recording accidents, not a pattern with chemical meaning."
+  "conclusion": "Marcar qué valores faltaban no aporta nada, así que se queda la versión simple. Merece la pena dejarlo escrito precisamente por ser un resultado negativo: saber que la ausencia no es informativa significa que los huecos registran accidentes, no un patrón con sentido químico."
 }
 
 export const ETL_STOICHIOMETRY = {
-  "intro": "Modulators reach the reactor in two physically different forms, and each needs its own arithmetic.",
+  "intro": "Los moduladores llegan al reactor en dos formas físicamente distintas, y cada una necesita su propia aritmética.",
   "typeA": {
-    "title": "Type A — aqueous molar solutions",
-    "body": "HCl, HF and KOH are dosed as solutions of known molarity, so the active amount follows directly from volume times concentration.",
+    "title": "Tipo A — disoluciones acuosas molares",
+    "body": "El HCl, el HF y el KOH se dosifican como disoluciones de molaridad conocida, así que la cantidad activa sale directamente de volumen por concentración.",
     "formula": "mmol = V(mL) × M"
   },
   "typeB": {
-    "title": "Type B — neat organic liquids",
-    "body": "Formic, acetic, propionic, trifluoroacetic, triflic and methanesulfonic acids, plus triethylamine, are pipetted pure. The amount has to be reconstructed from density, purity and molecular weight.",
+    "title": "Tipo B — líquidos orgánicos puros",
+    "body": "Los ácidos fórmico, acético, propiónico, trifluoroacético, tríflico y metanosulfónico, más la trietilamina, se pipetean puros. La cantidad hay que reconstruirla a partir de la densidad, la pureza y el peso molecular.",
     "formula": "mmol = V(µL) × ρ(g/mL) × P(%) / (100 × MW)"
   }
 }
 
 export const ETL_TANNIC = {
-  "title": "Tannic acid: a chemical decision, then confirmed by measurement",
-  "body": "24 samples used tannic acid, a polyphenol and the only non-phosphonate chemistry in the record. Its denticity is not well defined — with roughly 25 phenolic hydroxyls there is no meaningful number of binding \"teeth\". The argument for removing them is chemical and comes first: 24 samples are not enough for a model to learn a separate chemical family, and their presence forces the linker descriptors to describe two incompatible things at once.",
-  "measure": "Removing them raises macro F1 from 0.495 to 0.527, and MCC from 0.266 to 0.312.",
-  "caution": "Choosing what to remove because it improves the metric is a way of cheating: the number can always be raised by dropping the hard cases. Here the order was the right one — **chemical argument first, verification second** — and that is what makes the exclusion legitimate. Had the criterion been \"let us try removing things and see what goes up\", the result would be worth nothing."
+  "title": "Ácido tánico: una decisión química, confirmada después por la medida",
+  "body": "24 muestras usaron ácido tánico, un polifenol y la única química no fosfonato del registro. Su denticidad no está bien definida: con unos 25 hidroxilos fenólicos no hay un número con sentido de \"dientes\" de unión. El argumento para quitarlas es químico y va primero: 24 muestras no bastan para que un modelo aprenda una familia química aparte, y su presencia obliga a los descriptores del conector a describir dos cosas incompatibles a la vez.",
+  "measure": "Quitarlas sube el F1 macro de 0,495 a 0,527, y el MCC de 0,266 a 0,312.",
+  "caution": "Elegir qué quitar porque mejora la métrica es una forma de hacer trampa: el número siempre se puede subir descartando los casos difíciles. Aquí el orden fue el correcto —**primero el argumento químico, después la verificación**— y eso es lo que hace legítima la exclusión. Si el criterio hubiera sido \"probemos a quitar cosas y a ver qué sube\", el resultado no valdría nada."
 }
 
 export const ETL_THERMAL = {
-  "title": "Parsing thermal ramps written in prose",
-  "body": "The spreadsheet recorded thermal programs as free text. They are parsed into initial, target and final temperature, plateau hours, and two slopes in °C per minute.",
+  "title": "Parsear rampas térmicas escritas en prosa",
+  "body": "La hoja de cálculo registraba los programas térmicos como texto libre. Se parsean en temperatura inicial, objetivo y final, horas de meseta, y dos pendientes en °C por minuto.",
   "formulas": [
     "heating rate = (T_target − T_initial) / (t_heating × 60)",
     "cooling rate = (T_target − T_final) / (t_cooling × 60)"
@@ -452,96 +452,96 @@ export const ETL_THERMAL = {
 }
 
 export const ETL_ZERO_VS_NULL = {
-  "title": "The correction that mattered more than the seven",
-  "body": "Wherever the solvent breakdown failed to account for the total volume — about 18% of rows — the fractions were being stored as 0. They are now NULL, with an explicit completeness flag.",
-  "pullquote": "Writing a 0 where the value is unknown is not neutral: it asserts something false. \"This synthesis contained no methanol\" and \"how much methanol it contained was never recorded\" are different statements, and a model given a 0 has no way to tell them apart."
+  "title": "La corrección que importó más que los siete defectos",
+  "body": "Allí donde el desglose de disolventes no daba cuenta del volumen total —alrededor del 18 % de las filas— las fracciones se estaban guardando como 0. Ahora son NULL, con una bandera explícita de completitud.",
+  "pullquote": "Escribir un 0 donde el valor es desconocido no es neutral: afirma algo falso. \"Esta síntesis no contenía metanol\" y \"nunca se registró cuánto metanol contenía\" son afirmaciones distintas, y un modelo al que le dan un 0 no tiene forma de distinguirlas."
 }
 
 export const MODEL_ASSESSMENT = {
-  "title": "An honest reading of the performance",
-  "lead": "The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31, a real but moderate association. Two features of the result matter more than that headline.",
+  "title": "Una lectura honesta del rendimiento",
+  "lead": "El modelo completo duplica aproximadamente la línea base trivial y alcanza una correlación de Matthews de 0,31, una asociación real pero moderada. Dos rasgos del resultado importan más que ese titular.",
   "points": [
     {
-      "title": "Three quarters of the crystalline syntheses are not recovered",
+      "title": "Tres cuartas partes de las síntesis cristalinas no se recuperan",
       "bullets": [
-        "Recall on the crystalline class is **0.25** under the grouped cross-validation. That is the figure to quote: the tool exists to shortlist promising conditions, so it governs practical value far more than the aggregate does.",
-        "The confusion matrix above reads **0.53** for the same class — because it is one held-out split, not the five-fold average. A lucky set of plates flatters the smallest class.",
-        "Cause: **167 crystalline examples against 967 incipient**, and the crystalline class is the most heterogeneous. There are many ways for a framework to crystallise and only one way for it not to."
+        "La exhaustividad sobre la clase cristalina es de **0,25** bajo la validación cruzada agrupada. Esa es la cifra que hay que citar: la herramienta existe para preseleccionar condiciones prometedoras, así que gobierna el valor práctico mucho más que el agregado.",
+        "La matriz de confusión de arriba marca **0,53** para esa misma clase, porque es una única partición reservada y no la media de los cinco pliegues. Un conjunto afortunado de placas favorece a la clase más pequeña.",
+        "Causa: **167 ejemplos cristalinos frente a 967 incipientes**, y la clase cristalina es la más heterogénea. Hay muchas formas de que una red cristalice y solo una de que no lo haga."
       ]
     },
     {
-      "title": "The actionable model sits close to the limit of the data",
+      "title": "El modelo accionable está cerca del límite de los datos",
       "bullets": [
-        "Stripped of metal and linker chemistry, macro F1 falls to **0.393** and MCC to **0.095**.",
-        "Above chance — and not yet a basis for recommending conditions.",
-        "This is the question the laboratory actually asks, so it is the more important of the two results."
+        "Sin la química del metal y del conector, el F1 macro cae a **0,393** y el MCC a **0,095**.",
+        "Por encima del azar, y todavía no una base para recomendar condiciones.",
+        "Esta es la pregunta que de verdad se hace el laboratorio, así que es el más importante de los dos resultados."
       ]
     }
   ],
   "cause": {
-    "title": "The limit lies in the experimental record, not in the model",
-    "body": "Across five years the record contains 15 distinct target temperatures and 11 reaction times, and the subset the model was trained on is poorer still — **9 temperatures and 3 reaction times**. They were also varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate.",
-    "expectation": "Hyperparameter optimisation on this dataset can reasonably be expected to yield an improvement of 0.02 to 0.05 in macro F1. It is worth doing for methodological completeness; it is not a route to a materially better model."
+    "title": "El límite está en el registro experimental, no en el modelo",
+    "body": "A lo largo de cinco años el registro contiene 15 temperaturas objetivo distintas y 11 tiempos de reacción, y el subconjunto con el que se entrenó el modelo es aún más pobre: **9 temperaturas y 3 tiempos de reacción**. Además se variaron de forma confundida con la química: cada campaña barría un factor dentro de un sistema metal-conector. Un modelo supervisado no puede estimar el efecto de una variable que se mantuvo casi constante, ni separar un efecto de un factor con el que siempre apareció junto. Es una propiedad de los datos, y ninguna elección de algoritmo o de hiperparámetro recupera información que los experimentos no generaron.",
+    "expectation": "Es razonable esperar que optimizar los hiperparámetros sobre este conjunto dé una mejora de 0,02 a 0,05 en F1 macro. Merece la pena hacerlo por completitud metodológica; no es una vía hacia un modelo sustancialmente mejor."
   },
   "next": {
-    "title": "What would improve it, in order of expected return",
+    "title": "Qué lo mejoraría, por orden de retorno esperado",
     "items": [
       {
         "icon": "sweep",
         "head": "One designed sweep",
         "cost": "1–2 plates",
-        "body": "Vary temperature, time and modulator finely **within a single metal-linker system**. It attacks the confounding head-on and costs one or two plates — by a wide margin the most efficient intervention available."
+        "body": "Variar temperatura, tiempo y modulador con finura **dentro de un único sistema metal-conector**. Ataca el factor de confusión de frente y cuesta una o dos placas: con diferencia, la intervención más eficiente disponible."
       },
       {
         "icon": "minority",
         "head": "More crystalline examples",
         "cost": "bench time",
-        "body": "With **167** in the training set, the minority class is the binding constraint on every metric above. Nothing algorithmic gets around it."
+        "body": "Con **167** en el conjunto de entrenamiento, la clase minoritaria es la restricción que limita todas las métricas de arriba. Nada algorítmico la esquiva."
       },
       {
         "icon": "record",
         "head": "Finish the solvent record",
         "cost": "no experiments",
-        "body": "**18 %** of rows lack the breakdown, and that block currently scores as noise. Its real contribution cannot even be measured until the medium is written down completely."
+        "body": "El **18 %** de las filas no tiene el desglose, y ese bloque puntúa hoy como ruido. Su aportación real ni siquiera se puede medir hasta que el medio esté escrito por completo."
       },
       {
         "icon": "target",
         "head": "Revisit the target",
         "cost": "later",
-        "body": "A continuous crystallinity index may carry more than a three-way class — though the three classes remain the judgement the bench actually recorded."
+        "body": "Un índice de cristalinidad continuo puede llevar más información que una clase de tres niveles, aunque las tres clases siguen siendo el juicio que la poyata registró de verdad."
       }
     ]
   },
-  "closing": "The score is defensible: cross-validated with plates as groups, computed after seven data defects were corrected, and reported alongside the baseline that gives it meaning. The limitation is one of experimental design rather than of the model, which makes it a specific and actionable experiment."
+  "closing": "La puntuación es defendible: validada cruzadamente con las placas como grupos, calculada después de corregir siete defectos de datos, y publicada junto a la línea base que le da sentido. La limitación es de diseño experimental y no del modelo, lo que la convierte en un experimento concreto y accionable."
 }
 
 export const MODEL_CHEMISTRY = {
-  "title": "The chemical reading, by block rather than variable by variable",
-  "why": "With strongly correlated variables, any importance method splits the credit arbitrarily. Interpreting Pauling electronegativity in isolation from absolute hardness would be over-reading. The block-level split is the defensible reading.",
+  "title": "La lectura química, por bloque y no variable a variable",
+  "why": "Con variables muy correlacionadas, cualquier método de importancia reparte el mérito de forma arbitraria. Interpretar la electronegatividad de Pauling aislada de la dureza absoluta sería leer de más. El reparto por bloques es la lectura defendible.",
   "blocks": [
     {
       "name": "Metal chemistry",
-      "rank": "Dominant, by a wide margin",
-      "body": "It enters through ionic radius and charge-over-radius, which together give the **charge density** of the cation. That charge density governs the strength of the metal-phosphonate interaction, and with it whether the system has time to order or precipitates amorphous."
+      "rank": "Dominante, con diferencia",
+      "body": "Entra por el radio iónico y la relación carga-radio, que juntos dan la **densidad de carga** del catión. Esa densidad de carga gobierna la fuerza de la interacción metal-fosfonato y, con ella, si el sistema tiene tiempo de ordenarse o precipita amorfo."
     },
     {
       "name": "Process conditions",
-      "rank": "Second, ahead of linker chemistry",
-      "body": "This qualifies the easy reading of the headline numbers. Conditions do contribute, but only in combination with the chemistry: the actionable model, which uses them alone, stalls at 0.41. Temperature and time help decide within a metal-linker system, not between systems. Both statements are true and have to be read together."
+      "rank": "Segundo, por delante de la química del conector",
+      "body": "Esto matiza la lectura fácil de los números principales. Las condiciones sí contribuyen, pero solo en combinación con la química: el modelo accionable, que las usa solas, se atasca en 0,41. La temperatura y el tiempo ayudan a decidir dentro de un sistema metal-conector, no entre sistemas. Las dos afirmaciones son ciertas y hay que leerlas juntas."
     },
     {
       "name": "Stoichiometry and reaction medium",
-      "rank": "Negative importance overall",
-      "body": "Not a calculation error: shuffling those variables slightly improves the model, which is the operational definition of noise. It has an identifiable cause — the 18% of rows with no solvent breakdown — and a practical consequence: they are candidates for removal next time round, and their real value will not be known until the medium is recorded completely."
+      "rank": "Importancia negativa en conjunto",
+      "body": "No es un error de cálculo: barajar esas variables mejora ligeramente el modelo, que es la definición operativa de ruido. Tiene una causa identificable —el 18 % de filas sin desglose de disolvente— y una consecuencia práctica: son candidatas a quitarse la próxima vez, y su valor real no se sabrá hasta que el medio se registre por completo."
     }
   ],
-  "caution": "Permutation importance tends to split and to understate when variables are correlated: if two columns say almost the same thing, shuffling one barely hurts the model because the other covers the gap. So the absolute values should not be read as \"percentage of the chemistry explained\", and the block-level split is more reliable than any individual variable.",
-  "distinction": "\"It does not matter\" and \"it was not explored\" are different claims, and only the second is actionable. The model is not saying temperature is irrelevant to phosphonate crystallisation; it is saying that in this record it **was not varied enough to be learnable**. The instruction that follows is experimental: vary it."
+  "caution": "La importancia por permutación tiende a repartir y a subestimar cuando las variables están correlacionadas: si dos columnas dicen casi lo mismo, barajar una apenas perjudica al modelo porque la otra cubre el hueco. Así que los valores absolutos no deben leerse como \"porcentaje de la química explicada\", y el reparto por bloques es más fiable que cualquier variable individual.",
+  "distinction": "\"No importa\" y \"no se exploró\" son afirmaciones distintas, y solo la segunda es accionable. El modelo no dice que la temperatura sea irrelevante para la cristalización de fosfonatos; dice que en este registro **no se varió lo suficiente como para poder aprenderse**. La instrucción que se sigue es experimental: variarla."
 }
 
 export const MODEL_ERRORS = {
-  "title": "Where it goes wrong, and whether the errors make chemical sense",
-  "intro": "A confusion matrix shows the direction of the errors, not just how many there are. Here the ordinal pattern holds clearly one way and only half-way the other.",
+  "title": "Dónde se equivoca, y si los errores tienen sentido químico",
+  "intro": "Una matriz de confusión enseña la dirección de los errores, no solo cuántos hay. Aquí el patrón ordinal se cumple con claridad en un sentido y solo a medias en el otro.",
   "tableHead": [
     "True class",
     "→ neighbouring class (incipient)",
@@ -559,37 +559,37 @@ export const MODEL_ERRORS = {
       "21.9% to amorphous"
     ]
   ],
-  "amorphous": "For amorphous samples the behaviour is what you would hope: when it fails, it confuses \"nothing\" with \"almost nothing\", which in the diffractogram itself is a matter of degree and something two experts could disagree about. The severe error — calling an amorphous sample crystalline — is rare.",
-  "crystalline": "For crystalline samples it is not. Roughly one in six is classified as amorphous, the most serious error available. The model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient, and the most heterogeneous class of the three (many ways to crystallise, one way not to), this was predictable. It remains the model's main weakness.",
-  "usage": "For the intended use, ranking candidates and filling the next plate, what matters is that good candidates rise in the ranking rather than that the label is exact. But the model makes a serious mistake on **22% of crystalline samples**, and that figure has to be quoted alongside the aggregate."
+  "amorphous": "En las muestras amorfas el comportamiento es el que uno esperaría: cuando falla, confunde \"nada\" con \"casi nada\", que en el propio difractograma es una cuestión de grado y algo en lo que dos expertos podrían discrepar. El error grave —llamar cristalina a una muestra amorfa— es raro.",
+  "crystalline": "En las cristalinas, no. Aproximadamente una de cada seis se clasifica como amorfa, el error más grave posible. El modelo no reconoce bien la clase minoritaria y, cuando la pierde, la pierde del todo. Con 167 casos frente a 967 incipientes, y siendo la más heterogénea de las tres (muchas formas de cristalizar, una sola de no hacerlo), era previsible. Sigue siendo la principal debilidad del modelo.",
+  "usage": "Para el uso previsto, ordenar candidatos y llenar la siguiente placa, lo que importa es que los buenos candidatos suban en el ranking más que el que la etiqueta sea exacta. Pero el modelo comete un error grave en el **22 % de las muestras cristalinas**, y esa cifra hay que darla junto al agregado."
 }
 
 export const MODEL_FINDINGS = [
   {
-    "title": "There is real predictive signal, and it is modest",
-    "body": "The best full model reaches a macro F1 of about 0.52 against 0.26 for the baseline, twice as good. MCC lands near 0.31: a real association, but far from strong."
+    "title": "Hay señal predictiva real, y es modesta",
+    "body": "El mejor modelo completo llega a un F1 macro de unos 0,52 frente a 0,26 de la línea base, el doble de bueno. El MCC se queda cerca de 0,31: una asociación real, pero lejos de ser fuerte."
   },
   {
-    "title": "Excluding the confounded syntheses costs 0.10 of macro F1",
-    "body": "Removing microwave and standard solvothermal runs drops the score from 0.62 to 0.52. That gap **measures the portion of the score that came from identifying the synthesis method** rather than the chemistry."
+    "title": "Excluir las síntesis confundidas cuesta 0,10 de F1 macro",
+    "body": "Quitar las ejecuciones por microondas y las solvotermales estándar baja la puntuación de 0,62 a 0,52. Esa diferencia **mide la parte de la puntuación que venía de identificar el método de síntesis** y no la química."
   },
   {
-    "title": "The actionable model drops further, and that answers the objection",
-    "body": "Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. Most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.",
-    "caveat": "That does not make conditions chemically unimportant. In this record they were not varied enough to be learnable: **9 temperatures and 3 reaction times** across the training set."
+    "title": "El modelo accionable cae más, y eso responde a la objeción",
+    "body": "Sin la química del metal y del conector, el mejor modelo cae a 0,393 con un MCC cercano a 0,095: por encima del azar, pero débil. La mayor parte de lo que el modelo distingue en este registro es qué sistema metal-conector se usó, no qué condiciones se aplicaron.",
+    "caveat": "Eso no hace que las condiciones sean químicamente irrelevantes. En este registro no se variaron lo suficiente como para poder aprenderse: **9 temperaturas y 3 tiempos de reacción** en todo el conjunto de entrenamiento."
   },
   {
-    "title": "Tree-based models win",
-    "body": "Random Forest and LightGBM come out ahead of k-nearest neighbours and SVM. Methods that build boundaries from thresholds benefit from variables that mean what they say, which is what the unit corrections in the previous stage delivered."
+    "title": "Ganan los modelos basados en árboles",
+    "body": "Random Forest y LightGBM quedan por delante de k vecinos más cercanos y de SVM. Los métodos que construyen fronteras a partir de umbrales se benefician de variables que significan lo que dicen, que es justo lo que aportaron las correcciones de unidades de la etapa anterior."
   },
   {
-    "title": "Naive Bayes sinks below the baseline",
-    "body": "It assumes the variables are independent given the class, and the correlation map shows strong blocks. Its failure measures how much that correlation matters, which is why it is on the list."
+    "title": "Naive Bayes se hunde por debajo de la línea base",
+    "body": "Supone que las variables son independientes dada la clase, y el mapa de correlación enseña bloques marcados. Su fracaso mide cuánto importa esa correlación, que es por lo que está en la lista."
   }
 ]
 
 export const MODEL_LINEUP = {
-  "intro": "Ten models are compared, not one. Different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right.",
+  "intro": "Se comparan diez modelos, no uno. Distintas familias de modelos suponen cosas distintas sobre la forma de la frontera entre clases, y ante un problema nuevo no hay manera de saber de antemano qué suposición es la acertada.",
   "tableHead": [
     "Model",
     "What it assumes",
@@ -598,72 +598,72 @@ export const MODEL_LINEUP = {
   "models": [
     {
       "name": "Baseline (majority class)",
-      "assumes": "Nothing: always the most frequent class",
-      "why": "The bar. Everything else must clear it",
-      "detail": "It looks at no variable at all. It counts which class is commonest in the training data and answers that, every time. On this data it says INCIPIENT to everything and is right 64 % of the time. That is why accuracy is a useless headline here, and why this model is on the list: to give every other number a floor.",
+      "assumes": "Nada: siempre la clase más frecuente",
+      "why": "El listón. Todo lo demás tiene que superarlo",
+      "detail": "No mira ni una sola variable. Cuenta qué clase es la más común en los datos de entrenamiento y responde esa, siempre. Con estos datos dice INCIPIENTE a todo y acierta el 64 % de las veces. Por eso la exactitud es un titular inútil aquí, y por eso este modelo está en la lista: para darle un suelo a todos los demás números.",
       "code": "DummyClassifier(strategy='most_frequent')"
     },
     {
       "name": "Logistic regression",
-      "assumes": "A linear boundary",
-      "why": "Interpretable reference; if it suffices, it wins",
-      "detail": "Draws a straight dividing surface through the 39-dimensional space and reads each variable’s weight as its pull towards one class or another. If a straight line were enough, this would be the answer to keep: you can read the coefficients and argue about the chemistry. It is here to find out whether the problem needs anything more complicated.",
+      "assumes": "Una frontera lineal",
+      "why": "Referencia interpretable; si basta, gana",
+      "detail": "Traza una superficie divisoria recta por el espacio de 39 dimensiones y lee el peso de cada variable como su tirón hacia una clase u otra. Si bastara con una recta, esta sería la respuesta a conservar: se pueden leer los coeficientes y discutir la química. Está aquí para averiguar si el problema necesita algo más complicado.",
       "code": "LogisticRegression(max_iter=2000, class_weight='balanced')"
     },
     {
       "name": "k-nearest neighbours",
-      "assumes": "Similar samples share an outcome",
-      "why": "Purely local, with no global model",
-      "detail": "Builds no model. For a new synthesis it finds the fifteen most similar ones already on record and takes a vote. That makes it a direct test of a chemical intuition — that similar conditions give similar products — and it is unforgiving about badly scaled variables, which is part of what made it useful for spotting the unit defects.",
+      "assumes": "Las muestras parecidas comparten resultado",
+      "why": "Puramente local, sin modelo global",
+      "detail": "No construye ningún modelo. Ante una síntesis nueva busca las quince más parecidas que ya hay en el registro y hace una votación. Eso lo convierte en una prueba directa de una intuición química —que condiciones parecidas dan productos parecidos— y es implacable con las variables mal escaladas, que es parte de lo que lo hizo útil para detectar los defectos de unidades.",
       "code": "KNeighborsClassifier(n_neighbors=15)"
     },
     {
       "name": "Naive Bayes",
-      "assumes": "Variables independent given the class",
-      "why": "Its failure measures how much the correlation structure matters",
-      "detail": "Assumes every variable contributes independently, which in this data is plainly false: the electronegativity and the hardness of a cation are tied together by physics. It is on the list precisely so that assumption can fail visibly. It scores below the trivial baseline, and that gap is a measurement of how much the correlation structure matters.",
+      "assumes": "Variables independientes dada la clase",
+      "why": "Su fracaso mide cuánto importa la estructura de correlación",
+      "detail": "Supone que cada variable contribuye de forma independiente, lo que con estos datos es sencillamente falso: la electronegatividad y la dureza de un catión están atadas por la física. Está en la lista precisamente para que esa suposición falle a la vista. Puntúa por debajo de la línea base trivial, y esa diferencia es una medida de cuánto importa la estructura de correlación.",
       "code": "GaussianNB()"
     },
     {
       "name": "SVM (RBF kernel)",
-      "assumes": "A smooth non-linear boundary",
-      "why": "Strong in medium dimension with few samples",
-      "detail": "Bends the boundary instead of keeping it straight, and cares only about the samples nearest the frontier. That makes it strong when there are many variables and few rows, which is this problem exactly. The price is that its decisions cannot be read off as \"this variable mattered\".",
+      "assumes": "Una frontera no lineal suave",
+      "why": "Fuerte en dimensión media con pocas muestras",
+      "detail": "Curva la frontera en vez de mantenerla recta, y solo le importan las muestras más cercanas al límite. Eso lo hace fuerte cuando hay muchas variables y pocas filas, que es exactamente este problema. El precio es que sus decisiones no se pueden leer como \"esta variable importó\".",
       "code": "SVC(kernel='rbf', probability=True, class_weight='balanced')"
     },
     {
       "name": "Decision tree",
-      "assumes": "Threshold cuts, one at a time",
-      "why": "Interpretable; the basis of what follows",
-      "detail": "Asks a chain of yes/no questions about single thresholds — is the temperature above 130, is there carboxylic modulator — until it reaches a verdict. Alone it overfits badly, but it is the building block of the four models below it, and it is the only one whose reasoning you can read out loud.",
+      "assumes": "Cortes por umbral, de uno en uno",
+      "why": "Interpretable; la base de lo que viene después",
+      "detail": "Hace una cadena de preguntas de sí o no sobre umbrales sueltos —¿está la temperatura por encima de 130?, ¿hay modulador carboxílico?— hasta llegar a un veredicto. Por sí solo sobreajusta mucho, pero es el ladrillo de los cuatro modelos que tiene debajo, y el único cuyo razonamiento se puede leer en voz alta.",
       "code": "DecisionTreeClassifier(max_depth=6, class_weight='balanced')"
     },
     {
       "name": "Random Forest",
-      "assumes": "Many decorrelated trees",
-      "why": "Robust, insensitive to hyperparameters",
-      "detail": "Grows hundreds of trees, each on a random slice of the rows and the columns, and averages them. The randomness is the point: individual trees overfit in different directions and the errors cancel. It is the model actually deployed here, chosen for being the best performer that is also hard to break by tuning it wrong.",
+      "assumes": "Muchos árboles descorrelacionados",
+      "why": "Robusto, insensible a los hiperparámetros",
+      "detail": "Hace crecer cientos de árboles, cada uno sobre una porción aleatoria de las filas y de las columnas, y los promedia. La aleatoriedad es la clave: los árboles individuales sobreajustan en direcciones distintas y los errores se cancelan. Es el modelo que está desplegado aquí, elegido por ser el que mejor rinde y a la vez el más difícil de estropear ajustándolo mal.",
       "code": "RandomForestClassifier(n_estimators=500, class_weight='balanced_subsample', random_state=42)"
     },
     {
       "name": "HistGradientBoosting",
-      "assumes": "Sequential trees correcting each other",
-      "why": "Handles missing values natively",
-      "detail": "Instead of averaging independent trees, each new tree is fitted to the errors the previous ones left behind. It bins the variables first, which makes it fast, and it takes missing values without imputing them — relevant here, where a null pKa means \"no carboxylic acid\" rather than \"unknown\".",
+      "assumes": "Árboles secuenciales que se corrigen entre sí",
+      "why": "Maneja los valores ausentes de forma nativa",
+      "detail": "En vez de promediar árboles independientes, cada árbol nuevo se ajusta a los errores que dejaron los anteriores. Primero agrupa las variables en intervalos, lo que lo hace rápido, y acepta valores ausentes sin imputarlos, algo relevante aquí, donde un pKa nulo significa \"sin ácido carboxílico\" y no \"desconocido\".",
       "code": "HistGradientBoostingClassifier(max_iter=300, random_state=42)"
     },
     {
       "name": "LightGBM",
       "assumes": "Optimised boosting",
-      "why": "The industry reference",
-      "detail": "The same idea as above with a different growth strategy: it extends whichever leaf reduces the error most, rather than growing level by level. Fast and usually at the top of tabular benchmarks, which is why it is the yardstick. It is the model serving the actionable half of this project.",
+      "why": "La referencia del sector",
+      "detail": "La misma idea que el anterior con otra estrategia de crecimiento: extiende la hoja que más reduce el error, en vez de crecer nivel a nivel. Rápido y normalmente en lo alto de los benchmarks tabulares, que es por lo que sirve de vara de medir. Es el modelo que sirve la mitad accionable de este proyecto.",
       "code": "LGBMClassifier(n_estimators=400, class_weight='balanced', random_state=42)"
     },
     {
       "name": "XGBoost",
-      "assumes": "Boosting with regularisation",
+      "assumes": "Boosting con regularización",
       "why": "Standard comparison",
-      "detail": "Boosting again, with an explicit penalty on tree complexity written into what it optimises. That extra brake is what usually separates it from LightGBM on small datasets, and with 1,516 rows this one qualifies as small.",
+      "detail": "Boosting otra vez, con una penalización explícita a la complejidad de los árboles escrita en lo que optimiza. Ese freno de más es lo que suele separarlo de LightGBM en conjuntos pequeños, y con 1.516 filas este cuenta como pequeño.",
       "code": "XGBClassifier(n_estimators=400, max_depth=5, random_state=42)"
     }
   ]
@@ -697,49 +697,49 @@ export const MODEL_METRICS = {
       "Present only as a warning: the trivial baseline already scores ~64%"
     ]
   ],
-  "note": "Mean relative error, RMSE and R² do not apply here. They belong to regression and measure distance to a number. In classification you either get the class right or you do not."
+  "note": "El error relativo medio, el RMSE y el R² no aplican aquí. Pertenecen a la regresión y miden distancia a un número. En clasificación, o aciertas la clase o no."
 }
 
 export const MODEL_SHAP = {
-  "title": "Reading the SHAP plot",
-  "body": "Each point is one synthesis. Its horizontal position is how far that variable pushed the prediction towards crystalline (right) or against it (left). The colour is the value of the variable — red high, blue low. So \"red on the right\" means high values of this variable favour crystallisation.",
-  "note": "It complements permutation importance: that says how much a variable matters, this says in which direction and for which samples."
+  "title": "Cómo leer el gráfico SHAP",
+  "body": "Cada punto es una síntesis. Su posición horizontal es cuánto empujó esa variable la predicción hacia cristalino (derecha) o en contra (izquierda). El color es el valor de la variable: rojo alto, azul bajo. Así que \"rojo a la derecha\" significa que los valores altos de esa variable favorecen la cristalización.",
+  "note": "Complementa a la importancia por permutación: aquella dice cuánto importa una variable, esta dice en qué dirección y para qué muestras."
 }
 
 export const MODEL_TWO = {
-  "title": "Two models, not one",
-  "objection": "The linker does not make a metal crystallise; it determines which material can exist at all. Changing it changes the chemistry, not a reaction condition.",
-  "body": "So the variables split in two: **design variables** (metal and linker chemistry), which change the research target itself, and **process variables** (concentration, ligand-to-metal ratio, temperature, time, ramps, modulators, solvents), which can be changed within the same chemistry. One model is trained on each split.",
+  "title": "Dos modelos, no uno",
+  "objection": "El conector no hace que un metal cristalice; determina qué material puede existir siquiera. Cambiarlo cambia la química, no una condición de reacción.",
+  "body": "Así que las variables se parten en dos: **variables de diseño** (la química del metal y del conector), que cambian el propio objetivo de la investigación, y **variables de proceso** (concentración, relación ligando-metal, temperatura, tiempo, rampas, moduladores, disolventes), que se pueden cambiar dentro de la misma química. Se entrena un modelo con cada mitad.",
   "models": [
     {
       "name": "Full model",
       "inputs": "All 39 variables",
-      "asks": "Is there predictive signal in this record at all?",
-      "pro": "Best score of the two: **0.52 macro F1**, twice the baseline.",
-      "limit": "Most of that signal is the metal-linker system, so it cannot tell you what to change."
+      "asks": "¿Hay algo de señal predictiva en este registro?",
+      "pro": "La mejor puntuación de los dos: **0,52 de F1 macro**, el doble que la línea base.",
+      "limit": "La mayor parte de esa señal es el sistema metal-conector, así que no te dice qué cambiar."
     },
     {
       "name": "Actionable model",
       "inputs": "Process variables only",
-      "asks": "Given this chemistry, which conditions make it crystallise?",
-      "pro": "The question the bench actually asks, and the one that designs the next plate.",
-      "limit": "Falls to **0.393 macro F1**, MCC 0.095: above chance, not yet a basis for recommending conditions."
+      "asks": "Dada esta química, ¿qué condiciones la hacen cristalizar?",
+      "pro": "La pregunta que de verdad se hace en la poyata, y la que diseña la siguiente placa.",
+      "limit": "Cae a **0,393 de F1 macro**, con MCC de 0,095: por encima del azar, todavía no una base para recomendar condiciones."
     }
   ],
-  "note": "The gap between the two scores measures how much of the signal comes from the chemistry rather than from the conditions."
+  "note": "La diferencia entre las dos puntuaciones mide cuánta de la señal viene de la química y no de las condiciones."
 }
 
 export const MODEL_VALIDATION = {
-  "title": "Validation grouped by plate",
+  "title": "Validación agrupada por placa",
   "setupPoints": [
-    "**A plate is 24 wells**: one block, one oven, one thermal programme, 24 compositions swept in parallel.",
-    "The training set is **1,516 syntheses across 68 plates**.",
-    "So a plate is a batch that shared a reactor, a day, a solvent bottle and an operator, not an administrative label."
+    "**Una placa son 24 pocillos**: un bloque, una estufa, un programa térmico, 24 composiciones barridas en paralelo.",
+    "El conjunto de entrenamiento son **1.516 síntesis repartidas en 68 placas**.",
+    "Así que una placa es un lote que compartió reactor, día, bote de disolvente y operador, no una etiqueta administrativa."
   ],
   "bodyPoints": [
-    "**Stratified group k-fold, five folds.** Every plate stays entirely inside one fold, so no plate is ever in training and test at once.",
-    "**Without it**, a model can score well by recognising which plate a sample came from instead of learning any chemistry.",
-    "**The stratification** keeps class proportions even, so no fold ends up with almost no crystalline samples."
+    "**k-fold agrupado y estratificado, cinco pliegues.** Cada placa se queda entera dentro de un pliegue, así que ninguna está nunca a la vez en entrenamiento y en test.",
+    "**Sin eso**, un modelo puede puntuar bien reconociendo de qué placa viene una muestra en vez de aprender nada de química.",
+    "**La estratificación** mantiene parejas las proporciones de clase, así que ningún pliegue acaba casi sin muestras cristalinas."
   ],
-  "consequence": "It costs performance. A random split would report a higher number for a model that had learned less."
+  "consequence": "Cuesta rendimiento. Una partición aleatoria daría un número más alto para un modelo que había aprendido menos."
 }
