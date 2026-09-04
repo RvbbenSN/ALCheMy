@@ -73,6 +73,10 @@ EXCEPCIONES = {
     "src/README.md": "explica el fallo del contador del SEM, y los digitos SON la explicacion",
     # El correo de la 09 es el contacto del portfolio: esta puesto a proposito.
     "web/src/content/site.js": "el correo es el contacto publico del autor",
+    # Clon generado del anterior para la version en espanol. Lo genera
+    # web/scripts/generar_contenido_es.mjs clonando el modulo ingles, asi que
+    # hereda el correo por construccion: la excepcion es la misma de arriba.
+    "web/src/content/es/site.js": "clon generado de content/site.js, mismo motivo",
 }
 
 # Correos que no son de nadie de este proyecto. Se listan a la vista en vez de
