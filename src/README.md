@@ -1657,3 +1657,32 @@ primer intento uso crop+overlay encadenados y solo tapaba una de las cuatro
 regiones, porque cada eslabon reutilizaba la misma etiqueta como entrada del
 recorte y como base de la superposicion, y ffmpeg no duplica un flujo sin
 `split`. `drawbox` encadena con comas y ademas no deja nada reconstruible.
+
+### `scripts/build_og_image.py`
+
+La tarjeta que se ve al pegar el enlace de la web en WhatsApp, LinkedIn o Slack.
+
+**Por qué existía el problema.** La vista previa salía borrosa, y la causa no era la calidad
+del logo: es que **no había ninguna imagen declarada**. Sin `og:image`, la aplicación que
+genera la vista previa se apaña con lo que encuentra —el icono de pestaña, de 32 px, o el
+`apple-touch-icon` de 180— y lo estira hasta los ~1200×630 que ocupa la tarjeta. Un icono de
+180 px agrandado siete veces se ve exactamente así.
+
+```bash
+python scripts/build_og_image.py      # escribe web/public/og-card.png
+```
+
+Compone 1200×630 con la paleta oscura real de `tokens.css`, a partir del
+`android-chrome-512x512.png` que ya está en el repositorio (no toca `design_system/`, que es
+privado). Dos detalles que costaron una iteración y se ven en el código:
+
+- **El isotipo se recolorea, no se pega.** El PNG de origen es trazo borgoña sobre un
+  cuadrado blanco *opaco*; pegarlo planta una caja blanca en mitad de la tarjeta. Se usa su
+  tinta como máscara —gris invertido: el trazo se vuelve opaco y el fondo transparente— y se
+  rellena de dorado. De paso hereda el suavizado del original.
+- **El texto se mide antes de pintarse** y la fuente se encoge hasta que cabe. El subtítulo
+  se salía por el borde derecho, y eso no se ve escribiendo el código: solo mirando el PNG.
+
+Las etiquetas que la referencian están en `web/index.html` y llevan **direcciones absolutas**,
+porque quien genera la vista previa no está navegando por el sitio y no puede resolver una
+ruta relativa. Si cambia el dominio, hay que actualizar `og:url` y `og:image`.
