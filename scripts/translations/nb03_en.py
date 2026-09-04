@@ -124,7 +124,7 @@ router (technique+extension) has no rule that accepts this combination.
     44: """### 8. Human rejection at L2 approval (manual)
 
 This can't be automated from here: it has to be triggered and then **Decline** clicked
-in the approval email that arrives at `rubbenserrano@gmail.com` (or whoever is
+in the approval email that arrives at `researcher@example.org` (or whoever is
 configured as `researcher_email`).
 
 1. Run the cell below to trigger an AI extraction.
@@ -274,7 +274,7 @@ because the free Gemini quota ran out) and reconnecting the `If` node's FALSE ou
 
 ### A modelling limitation worth keeping in mind
 
-A single PDF can carry **several samples** (the ICP one carries `RS1107` and `RS1419`),
+A single PDF can carry **several samples** (the ICP one carries `SMP-0012` and `SMP-0015`),
 but the row that gets inserted is filed under the single `sample_code` that came with
 the request. It will need to be decided whether such reports get split into one row
 per sample.

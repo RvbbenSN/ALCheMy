@@ -13,15 +13,18 @@ ligandos sin publicar y los codigos de muestra reales que se limpiaron despues.
 Git conserva cada version anterior: borrar un dato hoy no lo borra del commit de
 la semana pasada, y basta un `git log -S` para sacarlo.
 
-Comprobado en este repositorio: el ligando `H6ttbmp` aparece en 25 commits, uno
-de ellos titulado *"Un guardian de privacidad, y cerradas las fugas que
-encontro"*. Y ni siquiera hace falta abrir un fichero -- este mensaje de commit
-se lee en la portada del repositorio:
+Comprobado en este repositorio: uno de los ligandos sin publicar aparece en 25
+commits, uno de ellos titulado *"Un guardian de privacidad, y cerradas las fugas
+que encontro"*. Y ni siquiera hace falta abrir un fichero -- hay mensajes de
+commit que se leen en la portada del repositorio con esta forma:
 
-    Cierra F0: oxofilicidad de Kepp completa, RS253 por calculo de masa,
-    identidades H6ttbmp/H8ptp confirmadas
+    Cierra F0: oxofilicidad de Kepp completa, <codigo de muestra> por calculo
+    de masa, identidades <ligando>/<ligando> confirmadas
 
-Un codigo de muestra y dos ligandos, a la vista, sin mirar el codigo.
+Un codigo de muestra y dos ligandos, a la vista, sin mirar el codigo. (El
+ejemplo va enmascarado aqui a proposito: este fichero SI se publica, y citar el
+mensaje literal reintroduciria en la copia limpia justo lo que el script
+existe para dejar fuera.)
 
 La solucion
 -----------
