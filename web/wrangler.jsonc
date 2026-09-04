@@ -1,0 +1,50 @@
+{
+  // Configuracion de despliegue en Cloudflare Workers (assets estaticos).
+  //
+  // POR QUE EXISTE ESTE FICHERO
+  // Cloudflare ha unificado sus dos productos de despliegue. El camino antiguo
+  // --Pages-- no necesitaba configuracion: bastaba con decir en la web "el
+  // resultado esta en dist/". El camino actual --Workers-- despliega ejecutando
+  // `npx wrangler deploy`, y wrangler necesita que alguien le diga que hay que
+  // publicar y donde esta. Eso es este fichero. Sin el, el despliegue falla.
+  //
+  // Aqui NO hay codigo de servidor, y es deliberado: la web es 100 % estatica.
+  // Un Worker puede ejecutar JavaScript en el borde de la red, pero esta web no
+  // lo necesita, asi que se despliega solo con los ficheros. Menos partes
+  // moviles y nada que pueda romperse en produccion.
+
+  // Tiene que coincidir con el nombre del proyecto en el panel de Cloudflare.
+  // Si no coincide, wrangler publicaria en un proyecto distinto del que se ve
+  // en la pantalla, y parece que el despliegue "no hace nada".
+  "name": "alchemy",
+
+  // Congela el comportamiento de la plataforma en esta fecha. Cloudflare cambia
+  // cosas con el tiempo; con esto, un despliegue de dentro de dos anos se sigue
+  // comportando como el de hoy en vez de heredar cambios que nadie ha probado.
+  "compatibility_date": "2026-09-01",
+
+  "assets": {
+    // Relativo a este fichero: web/dist, lo que produce `npm run build`.
+    "directory": "./dist",
+
+    // El fallback de aplicacion de una sola pagina.
+    //
+    // Las rutas (/the-model, /rag...) las resuelve React en el navegador; en el
+    // servidor no existe ninguna carpeta con ese nombre. Sin esto, recargar con
+    // F5 fuera de la portada, o abrir un enlace directo a una seccion --lo que
+    // hace cualquiera al que se le pasa la URL-- devuelve 404.
+    //
+    // "single-page-application" responde con index.html y codigo 200 a lo que
+    // no encuentre. React arranca, lee la URL y pinta la pantalla correcta.
+    //
+    // Se conserva ademas `public/_redirects`, que hace lo mismo por si el
+    // proyecto se desplegara alguna vez por el camino de Pages. Los dos dicen
+    // exactamente lo mismo, asi que no pueden contradecirse.
+    "not_found_handling": "single-page-application"
+  }
+
+  // Las cabeceras de seguridad NO van aqui: viven en `public/_headers`, que
+  // Vite copia a dist/ y que Cloudflare lee al desplegar. Se dejan en su
+  // fichero porque funcionan igual por los dos caminos de despliegue y porque
+  // ahi pueden llevar comentarios explicando cada una.
+}

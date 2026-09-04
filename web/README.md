@@ -106,15 +106,23 @@ tanto, `connect-src 'self'` significa que la página no habla con nadie.
 
 ### Conectar el repositorio (recomendado)
 
-En Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, autorizar el
-repositorio y configurar:
+Cloudflare ha unificado Pages y Workers, y para proyectos nuevos ofrece el camino de
+**Workers**: en vez de "dime dónde está el resultado del build", despliega ejecutando
+`npx wrangler deploy`. Por eso existe `wrangler.jsonc` — es lo que le dice a wrangler qué
+publicar. Sin ese fichero el despliegue falla, y ese es el único trámite que el camino
+antiguo no pedía.
+
+En Cloudflare, tras vincular el repositorio:
 
 | Campo | Valor |
 |---|---|
-| Framework preset | Vite |
-| Root directory | `web` |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
+| Deploy command | `npx wrangler deploy` (el que viene por defecto) |
+| Root directory (*Advanced settings*) | `web` |
+| Variable de entorno | `NODE_VERSION` = `22` |
+
+`NODE_VERSION` no es opcional: Cloudflare usa por defecto una versión de Node más antigua
+que la que exige Vite 7, y el build falla con un error que no explica la causa.
 
 A partir de ahí, cada `push` a `main` reconstruye y publica. **El repositorio manda**: el
 sitio se regenera entero desde el código en cada despliegue, así que cualquier cambio hecho
