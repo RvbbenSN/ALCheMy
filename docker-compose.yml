@@ -4,7 +4,7 @@ services:
   n8n:
     build:
       context: .
-      dockerfile: Dockerfile.n8n
+      dockerfile: docker/Dockerfile.n8n
     container_name: alchemy_n8n
     restart: unless-stopped
     ports:
@@ -36,7 +36,7 @@ services:
   runners:
     build:
       context: .
-      dockerfile: Dockerfile.runners
+      dockerfile: docker/Dockerfile.runners
     container_name: alchemy_runners
     restart: unless-stopped
     environment:
@@ -91,7 +91,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+      - ./scripts/sql/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
@@ -107,8 +107,15 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
+      # Registra la conexion a la base la primera vez que arranca con un volumen
+      # nuevo. Sin esto, pgAdmin abre con el arbol "Servers" vacio y hay que dar
+      # de alta el servidor a mano, adivinando que el host es `postgres` y no
+      # `localhost`. La contrasena no va aqui: se escribe una vez y pgAdmin la
+      # guarda en su volumen.
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin-servers.json:/pgadmin4/servers.json:ro
     depends_on:
       - postgres
 

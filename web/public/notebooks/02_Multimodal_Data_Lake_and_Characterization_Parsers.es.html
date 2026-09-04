@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 Multimodal Data Lake and Characterization Parsers</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./02_Multimodal_Data_Lake_and_Characterization_Parsers.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>🔬 Cuaderno 02: Arquitectura del lago de datos multimodal y estrategia de procesamiento de caracterización</h1>
+<p><strong>Proyecto:</strong> ALCheMy - Laboratorio inteligente de química de materiales<br />
+<strong>Autor:</strong> Rubén Serrano Nieto &amp; AI Agent Pair<br />
+<strong>Fecha:</strong> Agosto de 2026</p>
+<hr />
+<h2>📌 Resumen ejecutivo y propósito</h2>
+<p>Este cuaderno actúa como <strong>cuaderno de registro maestro interactivo y documentación arquitectónica</strong> para el subsistema de ingesta de caracterizaciones multimodales de ALCheMy.</p>
+<p>En él se detalla:</p>
+<ol>
+<li><strong>La arquitectura del lago de datos (<code>data/raw_datalake/</code>):</strong> La catalogación, aplanamiento y depuración de los ficheros de instrumentación analítica crudos correspondientes a <strong>9 técnicas de caracterización</strong>.</li>
+<li><strong>El modelo de base de datos relacional y JSONB (<code>characterization_measurements</code>):</strong> La estructuración en PostgreSQL de los registros espectroscópicos, termogravimétricos, de fisisorción y ópticos de alta dimensionalidad.</li>
+<li><strong>El módulo de procesamiento determinista en Python (<code>src/characterization_parser.py</code>):</strong> Las funciones en Python de alto rendimiento y coste nulo diseñadas para la extracción automatizada de datos (&lt;1 ms por fichero).</li>
+<li><strong>La estrategia de ingesta híbrida con flujos n8n:</strong> La arquitectura modular que desacopla la ejecución de scripts deterministas del uso de agentes de IA basados en LLM (encargados de extraer informes en PDF y analizar imágenes SEM).</li>
+</ol>
+<hr />
+<h2>🗂️ Paso 1: Inventario del lago de datos multimodal (9 técnicas analíticas)</h2>
+<p>Para prevenir problemas de anidamiento excesivo de directorios, redundancia de ficheros y dependencias con licencias de software propietario, el lago de datos crudo se organizó en <strong>9 directorios planos</strong> bajo <code>data/raw_datalake/</code> (montados 1:1 en Docker en <code>&lt;path omitted&gt;</code>):</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Índice de técnica</th>
+  <th style="text-align:left">Técnica analítica</th>
+  <th style="text-align:left">Directorio en el lago de datos</th>
+  <th style="text-align:left">Formato de fichero</th>
+  <th style="text-align:left">Recuento de ficheros</th>
+  <th style="text-align:left">Método principal de procesamiento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>1</strong></td>
+  <td style="text-align:left"><strong>Difracción de rayos X de polvo (PXRD)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/PXRD/</code></td>
+  <td style="text-align:left"><code>.xrdml</code> (XML de PANalytical)</td>
+  <td style="text-align:left"><strong>1.870</strong></td>
+  <td style="text-align:left"><code>xml.etree.ElementTree</code> (coste 0€)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>2</strong></td>
+  <td style="text-align:left"><strong>Análisis termogravimétrico (TGA / ATG)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/TGA/</code></td>
+  <td style="text-align:left"><code>.txt</code> (TA Instruments, 7 señales)</td>
+  <td style="text-align:left"><strong>37</strong></td>
+  <td style="text-align:left"><code>pandas.read_csv</code> (coste 0€)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>3</strong></td>
+  <td style="text-align:left"><strong>Espectroscopía FTIR</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/FTIR/</code></td>
+  <td style="text-align:left"><code>.csv</code> (espectro 2D Thermo Nicolet)</td>
+  <td style="text-align:left"><strong>78</strong></td>
+  <td style="text-align:left"><code>pandas.read_csv</code> (coste 0€)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>4</strong></td>
+  <td style="text-align:left"><strong>Cuantificación metálica por ICP-OES</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/ICP/</code></td>
+  <td style="text-align:left"><code>.pdf</code> (Servicios Centrales de Investigación)</td>
+  <td style="text-align:left"><strong>16</strong></td>
+  <td style="text-align:left"><code>pypdf</code> + Agente de IA (LLM)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>5</strong></td>
+  <td style="text-align:left"><strong>Análisis elemental orgánico (EA CHNS)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/EA/</code></td>
+  <td style="text-align:left"><code>.pdf</code> (informes FLASH 2000)</td>
+  <td style="text-align:left"><strong>12</strong></td>
+  <td style="text-align:left"><code>pypdf</code> + Agente de IA (LLM)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>6</strong></td>
+  <td style="text-align:left"><strong>Adsorción de gases y área BET</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/BET/</code></td>
+  <td style="text-align:left"><code>.xls</code> (Micromeritics 3Flex)</td>
+  <td style="text-align:left"><strong>87</strong></td>
+  <td style="text-align:left"><code>pandas.read_excel</code> (coste 0€)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>7</strong></td>
+  <td style="text-align:left"><strong>DRX a temperatura variable (VT-XRD)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/VT-XRD/</code></td>
+  <td style="text-align:left"><code>.brml</code> (contenedor ZIP/XML Bruker)</td>
+  <td style="text-align:left"><strong>82</strong></td>
+  <td style="text-align:left"><code>zipfile</code> + <code>xml.etree</code> (coste 0€)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>8</strong></td>
+  <td style="text-align:left"><strong>Espectroscopía UV-Vis</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/UV_Vis/</code></td>
+  <td style="text-align:left"><code>.asc</code> / <code>.csv</code> (PerkinElmer Lambda)</td>
+  <td style="text-align:left"><strong>100</strong></td>
+  <td style="text-align:left">Parser ASCII propio + representación de Tauc</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>9</strong></td>
+  <td style="text-align:left"><strong>Microscopía electrónica de barrido (SEM)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/SEM/</code></td>
+  <td style="text-align:left"><code>.jpg</code> (imagen) + <code>.txt</code> (metadatos)</td>
+  <td style="text-align:left"><strong>3.434</strong></td>
+  <td style="text-align:left">Parser de <code>.txt</code> Hitachi + Visión LLM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2>🏛️ Paso 2: Esquema relacional y JSONB en base de datos (<code>characterization_measurements</code>)</h2>
+<p>Para garantizar consultas SQL de alto rendimiento y mantener la flexibilidad ante cargas experimentales heterogéneas, las medidas de caracterización se almacenan en una <strong>tabla secundaria vinculada mediante <code>sample_code</code></strong>:</p>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS characterization_measurements (
+    measurement_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sample_code VARCHAR(50) NOT NULL REFERENCES synthesis_experiments(sample_code) ON DELETE CASCADE,
+    technique VARCHAR(30) NOT NULL, -- e.g. PXRD, TGA, FTIR, ICP_OES, EA, BET, VT-XRD, UV_VIS, SEM
+    measurement_tag VARCHAR(100) DEFAULT 'as_synthesized',
+    operator_name VARCHAR(100),
+    instrument_name VARCHAR(100),
+    file_name VARCHAR(255) NOT NULL,
+    raw_file_path TEXT NOT NULL,
+    data_json JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- High-speed JSONB GIN index for nested web app queries
+CREATE INDEX IF NOT EXISTS idx_char_jsonb ON characterization_measurements USING gin (data_json);
+</code></pre>
+<h3>Estructura estandarizada de la carga útil en <code>data_json</code></h3>
+<p>Cada técnica completa dos subdiccionarios principales dentro de <code>data_json</code>:</p>
+<ol>
+<li><strong><code>header_metadata</code></strong>: Parámetros de instrumental, longitud de onda de radiación, masa inicial de muestra, modo óptico, fecha y hora de registro e identificadores de muestra.</li>
+<li><strong><code>raw_data</code></strong>: Vectores numéricos de alta densidad (<code>x_label</code>, <code>y_label</code>, <code>x</code>, <code>y</code>) o conjuntos estructurados multitemperatura (<code>temperature_series</code>, vector de objetos para VT-XRD).</li>
+</ol>
+<hr />
+<h2>💡 Paso 3: Hallazgos técnicos clave entre formatos</h2>
+<h3>🔓 1. Contenedores <code>.brml</code> no cifrados de Bruker (VT-XRD)</h3>
+<ul>
+<li><strong>Hallazgo:</strong> Los ficheros <code>.brml</code> son <strong>archivos ZIP estándar</strong> que alojan archivos XML sin cifrado (<code>RawData0.xml</code>, <code>RawData1.xml</code>... <code>MeasurementContainer.xml</code>).</li>
+<li><strong>Rampa multitemperatura en VT-XRD:</strong> Cada fichero <code>.brml</code> contiene pares de ficheros XML: <code>RawData(2*i)</code> almacena el escalón térmico registrado (por ejemplo <code>29 °C</code>, <code>39 °C</code>, <code>49 °C</code>... <code>500 °C</code>), mientras que <code>RawData(2*i + 1)</code> alberga los 3.145 puntos de intensidad de difracción medidos a dicha temperatura.</li>
+<li><strong>Impacto:</strong> Lectura 100 % nativa en Python mediante <code>zipfile</code> y <code>xml.etree.ElementTree</code> en &lt;1 ms, sin depender de software propietario.</li>
+</ul>
+<h3>⚖️ 2. Termogravimetría de 7 señales de TA Instruments (TGA)</h3>
+<ul>
+<li><strong>Hallazgo:</strong> Las termobalanzas SDT Q600 registran <strong>7 señales instrumentales en tiempo real</strong>: tiempo (min), temperatura del horno (°C), masa (mg), flujo de calor (mW), diferencia térmica en el crisol (°C), voltaje del termopar (µV) y caudal de purga de la muestra (mL/min).</li>
+<li><strong>Impacto:</strong> Extracción íntegra en <code>data_json</code>, permitiendo representar simultáneamente la pérdida gravimétrica de masa en TGA y las transiciones térmicas de fase por calorimetría diferencial de barrido (DSC).</li>
+</ul>
+<h3>🖼️ 3. Calibración automática de la barra de escala en SEM Hitachi TM-1000</h3>
+<ul>
+<li><strong>Hallazgo:</strong> Cada micrografía SEM en formato <code>.jpg</code> va acompañada de un fichero de texto auxiliar <code>.txt</code> generado por el instrumento, que recoge los campos <code>Magnification</code> (por ejemplo <code>300x</code>), <code>MicronMarker</code> (por ejemplo <code>300 um</code>), <code>AcceleratingVoltage</code> (<code>15000V</code>) y <code>Detector</code> (<code>BSE</code>).</li>
+<li><strong>Impacto:</strong> Eliminación total de la medición manual de escalas. Python lee directamente la calibración y permite que modelos de visión basados en LLM describan sistemáticamente la morfología cristalina.</li>
+</ul>
+<hr />
+<h2>🤖 Paso 4: Estrategia de ingesta híbrida y granular con n8n</h2>
+<p>Para asegurar estabilidad operativa, coste cero de API en datos numéricos y un aislamiento completo de errores, el flujo de ingesta de n8n se estructura según una <strong>arquitectura de enrutador modular</strong>:</p>
+<ol>
+<li><strong>Nodo selector por extensión (enrutador):</strong> Evalúa las rutas de los ficheros entrantes del lago de datos.</li>
+<li><strong>Subflujos de procesamiento determinista (95 % de los datos):</strong> Los ficheros con extensiones <code>.xrdml</code>, <code>.brml</code>, <code>.txt</code>, <code>.csv</code> y <code>.xls</code> ejecutan funciones de Python desde <code>src/characterization_parser.py</code> en &lt;1 ms sin consumo de API.</li>
+<li><strong>Subflujos de extracción con LLM (5 % de los datos):</strong> Los informes analíticos no estructurados en <code>.pdf</code> (ICP-OES y EA CHNS) se derivan a nodos de extracción LLM configurados con <code>CHARACTERIZATION_DICTIONARY_SPEC.md</code> como instrucción de sistema (<em>System Prompt</em>).</li>
+<li><strong>Subflujo de visión con LLM:</strong> Las imágenes SEM en <code>.jpg</code> se procesan mediante modelos de visión por IA para nutrir el campo de descripción morfológica <code>ai_vision_analysis</code>.</li>
+</ol>
+<hr />
+<h3>🏁 Resumen de logros</h3>
+<ul>
+<li><strong>Lago de datos saneado y aplanado:</strong> 9 técnicas analíticas catalogadas en directorios planos sin anidamiento.</li>
+<li><strong>Especificación maestra redactada:</strong> <code>methodology/CHARACTERIZATION_DICTIONARY_SPEC.md</code> recoge las expresiones XPath, columnas SQL y esquemas JSONB.</li>
+<li><strong>Módulo de procesamiento en Python desplegado:</strong> <code>src/characterization_parser.py</code> validado exhaustivamente en todos los formatos.</li>
+<li><strong>Preparado para canalización en n8n:</strong> Montaje de Docker <code>./data:&lt;path omitted&gt;</code> listo para la sincronización automatizada hacia la base de datos PostgreSQL <code>alchemy_db</code>.</li>
+</ul>
+<h2>DUDAS</h2>
+<ul>
+<li>En el Paso 1 (línea 23 del original), el paréntesis queda formalmente abierto con dos puntos al final en el original: <code>(mounted 1:1 inside Docker at &lt;path omitted&gt;:</code>. Se ha mantenido <code>&lt;path omitted&gt;</code> respetando la sanitización, cerrando la estructura sintáctica.</li>
+<li>En el Paso 3 (apartado 3), el metadato del instrumento recoge <code>300 um</code> (con 'u' simple en lugar del carácter 'µ'). Se ha conservado literalmente como <code>300 um</code> al tratarse del identificador de texto exacto del fabricante.</li>
+<li>En el Paso 4 (resumen final), la especificación de montaje de Docker figura como <code>./data:&lt;path omitted&gt;</code>. Si procede para la documentación web, convendría indicar la ruta de montaje interna de destino completa del contenedor.</li>
+</ul>
+
+</div></body></html>

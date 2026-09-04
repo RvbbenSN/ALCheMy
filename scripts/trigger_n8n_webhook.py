@@ -13,7 +13,7 @@ import requests
 DEFAULT_WEBHOOK_URL = "http://localhost:5678/webhook/ingest-characterization"
 DEFAULT_TEST_WEBHOOK_URL = "http://localhost:5678/webhook-test/ingest-characterization"
 
-def send_webhook(file_path, technique='PXRD', sample_code='RS1883', operator_name='Rubén S.N.', use_test_mode=True):
+def send_webhook(file_path, technique='PXRD', sample_code='SMP-0011', operator_name='Rubén S.N.', use_test_mode=True):
     url = DEFAULT_TEST_WEBHOOK_URL if use_test_mode else DEFAULT_WEBHOOK_URL
     
     if not os.path.exists(file_path):
@@ -61,7 +61,7 @@ def main():
     parser = argparse.ArgumentParser(description="Send characterization file to ALCheMy n8n Webhook")
     parser.add_argument('--file', '-f', default='data/sample_datalake_demo/PXRD/24DRX0180-RS1883_CoPy.xrdml', help="Path to characterization file")
     parser.add_argument('--technique', '-t', default='PXRD', help="Analytical technique (PXRD, TGA, FTIR, ADSORPTION, UV_VIS, SEM, ICP, EA)")
-    parser.add_argument('--sample', '-s', default='RS1883', help="Sample code")
+    parser.add_argument('--sample', '-s', default='SMP-0011', help="Sample code")
     parser.add_argument('--operator', '-o', default='Rubén S.N.', help="Operator name")
     parser.add_argument('--prod', action='store_true', help="Use Production Webhook URL instead of Test Webhook URL")
     

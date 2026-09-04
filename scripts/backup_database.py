@@ -50,7 +50,7 @@ CONTAINER_NAME = 'alchemy_postgres'
 # anywhere else, matching the fallback behaviour the notebooks already use.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-BACKUP_DIR = os.path.join(REPO_ROOT, 'backups')
+BACKUP_DIR = os.path.join(REPO_ROOT, '_lab', 'backups')
 ENV_PATH = os.path.join(REPO_ROOT, '.env')
 
 # Tables whose row counts are recorded next to every dump. If a restore ever has to

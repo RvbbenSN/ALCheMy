@@ -23,14 +23,15 @@ export const SITE = {
    sin actualizar tambien la tabla 4.2 del roadmap. */
 export const SCREENS = [
   { id: '00', slug: '', short: 'Overview', title: 'Overview', crisp: 'Business understanding' },
-  { id: '01', slug: 'science', short: 'The Science', title: 'MOFs & Lab Daily-life', crisp: 'Analytic approach · Data requirements' },
+  { id: '01', slug: 'science', short: 'The Science', title: 'MOFs & Lab Daily-life', crisp: 'Data requirements' },
   { id: '02', slug: 'data-collection', short: 'Data Collection', title: 'The Ingestion Workflow', crisp: 'Data collection' },
   { id: '03', slug: 'data-preparation', short: 'Data Preparation', title: 'ETL & PXRD Signal Processing', crisp: 'Data preparation' },
-  { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Data Understanding', crisp: 'Exploratory data analysis' },
+  { id: '04', slug: 'data-understanding', short: 'Data Understanding', title: 'Exploratory data analysis', crisp: 'Data Understanding' },
   { id: '05', slug: 'modeling', short: 'Modeling', title: 'Training & Evaluation', crisp: 'Modeling · Evaluation' },
   { id: '06', slug: 'the-model', short: 'The Model', title: 'Simulator, Registry & Active Learning', crisp: 'Deployment · Feedback' },
   { id: '07', slug: 'rag', short: 'RAG Assistant', title: 'Scientific Co-pilot', crisp: 'Decision support' },
-  { id: '08', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: '—' },
+  { id: '08', slug: 'database', short: 'The Database', title: 'ALCheMy Database', crisp: 'Data governance' },
+  { id: '09', slug: 'about', short: 'About', title: 'Bio, CV & Contact', crisp: 'About the author' },
 ]
 
 /* KPIs: valores auditados el 2026-09-01 contra la base de datos.
@@ -153,41 +154,38 @@ export const WORKFLOW_SECTIONS = [
   { n: 9, title: 'Governance — fallbacks, audit & errors', adds: 'audit_log with typed verdict, cause and result' },
 ]
 
-/* Registro de modelos. Valores reales de ml_models / ml_datasets. */
-export const MODELS = [
-  {
-    name: 'crystallinity_v3_hts_full',
-    algo: 'Random Forest',
-    f1: '0.522',
-    size: '5.5 MB',
-    status: 'ACTIVE',
-    note: 'HTS only. 1,516 rows across 68 groups.',
-  },
-  {
-    name: 'crystallinity_v3_hts_actionable',
-    algo: 'LightGBM',
-    f1: '0.413',
-    size: '1.6 MB',
-    status: 'ACTIVE',
-    note: 'Reduced feature set, servable in public.',
-  },
-  {
-    name: 'crystallinity_v2_mixed',
-    algo: 'Random Forest',
-    f1: '0.620',
-    size: '—',
-    status: 'INVALID',
-    note: 'Higher score, but it mixed HTS, ST and MW syntheses. Retired for synthesis bias.',
-  },
-]
+/* Registro de modelos.
+   Los HECHOS (algoritmo, F1, tamano, estado, filas) NO viven aqui: se leen de
+   src/data/model_scorecard.json, que genera scripts/build_model_scorecard.py
+   contra ml_models. Esta tabla estuvo escrita a mano y llego a publicar los dos
+   modelos v3 como ACTIVE cuando la web ya servia el v4 -- en la pantalla que
+   explica que existe un registro para no fiarse de la memoria.
+   Aqui solo queda la frase de cada modelo, que es texto y no dato. Un modelo
+   sin frase sale igualmente en la tabla, solo que sin glosa. */
+export const MODEL_NOTES = {
+  crystallinity_v4_hts_full:
+    'The reference model: is there predictive signal in this data at all? First version with the volume units corrected.',
+  crystallinity_v4_hts_actionable:
+    'Process and medium only. Answers the question the bench actually asks: given this chemistry, which conditions help?',
+  crystallinity_v3_hts_full:
+    'Same design, but trained before the volume-unit defect was found. Superseded, not wrong to have existed.',
+  crystallinity_v3_hts_actionable:
+    'The actionable model of the previous generation, kept for comparison.',
+  crystallinity_v2_mixed:
+    'The highest score on this table, and the reason the table exists. It mixed HTS, ST and microwave syntheses, so it was partly detecting the synthesis method. Marked invalid rather than deleted.',
+}
 
-/* Embudo verificado el 2026-09-01. Es contenido de la pantalla de EDA. */
+/* Embudo re-derivado el 2026-09-03 de la consulta que el registro guarda para
+   el conjunto crystallinity_v4_hts_2026_09_02 (ml_datasets.source_query): se le
+   quita un filtro cada vez y la cadena aterriza en las 1.516 filas registradas.
+   Los dos primeros escalones cuentan trabajo de laboratorio; del tercero en
+   adelante se cuentan filas de la tabla de rasgos, y el texto lo dice. */
 export const FUNNEL = [
-  { n: '2,167', label: 'Syntheses performed', why: 'The starting point: every synthesis on record' },
-  { n: '1,879', label: 'PXRD measurements', why: 'Not every synthesis reached the diffractometer' },
-  { n: '1,877', label: 'Labeled diffractograms', why: 'Two left unlabeled' },
-  { n: '1,611', label: 'Labeled HTS samples', why: 'Solvothermal and microwave runs excluded' },
-  { n: '1,516', label: 'Rows in training set v3', why: 'No tannic acid, no ml_include = NO' },
+  { n: '2,152', label: 'Rows in the feature table', why: 'Every synthesis the pipeline could turn into features' },
+  { n: '1,839', label: 'With a labelled diffractogram', why: 'The rest never reached the diffractometer, or nobody has judged them yet' },
+  { n: '1,723', label: 'Verdict usable', why: 'Drops SIN_MUESTRA and anything an expert marked ml_include = NO' },
+  { n: '1,540', label: 'Combinatorial only', why: 'Solvothermal and microwave runs excluded — the confounder above' },
+  { n: '1,516', label: 'Rows in training set v4', why: 'No tannic acid' },
 ]
 
 /* Glosario para los tooltips. Se generara desde la guia didactica

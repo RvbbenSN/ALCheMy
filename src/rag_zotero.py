@@ -4,7 +4,7 @@ ALCheMy RAG - Zotero library reader.
 Reads a Zotero library (zotero.sqlite + storage/) and returns one record per
 item whose PDF attachment actually exists on disk. Metadata comes from the
 reference manager, i.e. curated by a human, so it outranks anything guessed
-from the PDF itself - see rag_source_rank() in scripts/init_db.sql.
+from the PDF itself - see rag_source_rank() in scripts/sql/init_db.sql.
 
 Why this lane exists alongside the drop-a-file-in-a-folder lane
 ---------------------------------------------------------------

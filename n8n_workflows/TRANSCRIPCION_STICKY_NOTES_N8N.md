@@ -270,7 +270,7 @@ That way confidentiality never depends on anyone remembering: it depends on wher
 ## FLOW 1 - INDEXING (manual, run each time you add documents)
 **Before the first run:**
 1. `docker compose up -d ollama` and `docker exec -it alchemy_ollama ollama pull bge-m3`
-2. `docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/init_db.sql`
+2. `docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/sql/init_db.sql`
 3. Assign the Postgres credential to the 4 nodes that need it.
 
 Drop PDFs into `data/rag_corpus/public/` or `data/rag_corpus/internal/`.

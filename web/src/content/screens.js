@@ -140,7 +140,7 @@ export const EDA_INTRO = {
   found: [
     ['A confounder', 'One synthesis method had produced no amorphous samples at all — so the method itself predicted the answer'],
     ['Five kinds of gap', 'Nine per cent missing, from five unrelated causes, each needing a different fix'],
-    ['A 5.8 : 1 imbalance', 'Between the largest and smallest class, enough to make accuracy meaningless'],
+    ['A 6 : 1 imbalance', 'Between the largest and smallest class, enough to make accuracy meaningless'],
     ['Hidden structure', 'Rows that are not independent of one another, which makes a random split lie'],
   ],
 }
@@ -154,7 +154,7 @@ export const EDA_POPULATION = {
     'Two numbers in this screen can both be right and still disagree, because they count different things. It is worth fixing which is which before anything else.',
   rows: [
     ['2,152', 'The feature table', 'Every synthesis on record, including the methods the model does not use'],
-    ['1,786', 'Restricted to high-throughput', 'The universe the model works in, before requiring a label'],
+    ['1,810', 'Restricted to high-throughput', 'The universe the model works in, before requiring a label'],
     ['1,516', 'The training set', 'What actually trained the model: combinatorial synthesis, with an expert verdict'],
   ],
   note:
@@ -189,7 +189,7 @@ export const EDA_CONFOUNDER = {
 export const EDA_MISSING = {
   title: 'Missing values: five causes, five different fixes',
   intro:
-    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the record is internally inconsistent" — and only the first resembles what imputation assumes. Of the five causes below, **only one was a mistake made by this project**.',
+    '"9% missing" is a reassuring figure that hides unrelated problems. A gap can mean "not measured", "does not exist", or "the record is internally inconsistent" — and only the first resembles what imputation assumes.',
   tableHead: ['Property', 'Who is missing', 'Why', 'What was done'],
   tableRows: [
     [
@@ -213,7 +213,7 @@ export const EDA_MISSING = {
     [
       'Oxidation state, ionic radius',
       '22 rows',
-      'A non-breaking space (U+00A0) in the precursor text — **the only one of the five that was our own bug**',
+      'A non-breaking space (U+00A0) in the precursor text',
       'Fixed by normalising the join, not by hand-listing variants',
     ],
     [
@@ -229,19 +229,6 @@ export const EDA_MISSING = {
       '**NULL, not 0**',
     ],
   ],
-  /* La objecion natural de quien llevo el Excel, y por que no aplica. El texto
-     anterior decia "el registro guardo el total pero no el desglose", que solo
-     describe 20 de las 452 filas; en las otras 431 el desglose SI esta y lo que
-     pasa es que no cuadra. */
-  zeroTitle: 'An empty cell does read as zero — that is not what the null is about',
-  zeroBody:
-    'The obvious objection is that a blank cell in the master spreadsheet means "none of that solvent", not "unknown". **And the pipeline agrees**: it reads every blank solvent column as zero, with an explicit `COALESCE(column, 0)`. The null appears afterwards, for a different reason.',
-  zeroDetail:
-    'After turning every blank into a zero, the volumes are added up and compared with the total volume declared for that synthesis. In **431 of 452 flagged rows** the components are written down and simply do not reach the total. Sample RS1873 declares 15 mL of reaction and records 15 µL of water. Reading the rest as zeros there does not give "a synthesis without methanol": it gives **a synthesis without solvent**, which is impossible. Only 20 rows are the other case — a total with nothing itemised — and those are equally impossible for the same reason.',
-  zeroRule:
-    'So the flag does not distrust the chemist. It distrusts arithmetic that does not close: **a zero is a claim, a gap is not, and a model cannot tell them apart if it is handed a zero.**',
-  lesson:
-    'That is the underlying lesson of the whole table. Telling a model "this synthesis contained no methanol" when the truth is "the record of what it contained is incomplete" is feeding it a falsehood dressed as data.',
 }
 
 /* De donde salen las dos columnas de modulador que el lector va a preguntar,
@@ -253,8 +240,6 @@ export const EDA_MODULATORS = {
   fix:
     'So they were **grouped by chemical role** — carboxylic, strong acid, HF, base, fluorinated — and summed. To avoid losing the chemistry that the sum discards, two extra columns carry the **mean pKa and mean logP of the acids present, weighted by how much of each was added**.',
   formula: 'mod_carbox_mean_pka = (3.75·formic + 4.76·acetic + 4.87·propionic) / total carboxylic mmol',
-  consequence:
-    'Which explains the gap directly: when a synthesis carries no carboxylic modulator the denominator is zero and the mean does not exist. That is 70% of the training set, and the correspondence is exact — **not one row** has a null pKa while carrying carboxylic acid.',
   caveats: [
     {
       title: '"Carboxylic" here means "weak carboxylic"',
@@ -273,11 +258,14 @@ export const EDA_IMBALANCE = {
      una frase: son las tres clases de cristalinidad que etiqueto Ruben a mano. */
   intro:
     'The imbalance is **between the three crystallinity classes** — the verdict a human gave each diffractogram, and the thing the model has to predict. They are not equally common, and that is a property of the chemistry, not a sampling error: most attempts land somewhere in between.',
+  /* Recuentos tomados de ml_datasets.class_distribution para el conjunto
+     crystallinity_v4_hts_2026_09_02 (1.516 filas). No editar a mano: si cambian,
+     cambian ahi primero. */
   tableHead: ['Class', 'What it means', 'Samples', 'Share'],
   tableRows: [
-    ['Incipient', 'Broad reflections near a crystallisation boundary', '967', '64.1%'],
-    ['Amorphous', 'No reflections at all', '382', '25.3%'],
-    ['Crystalline', 'Sharp, well-ordered reflections', '160', '10.6%'],
+    ['Incipient', 'Broad reflections near a crystallisation boundary', '967', '63.8%'],
+    ['Amorphous', 'No reflections at all', '382', '25.2%'],
+    ['Crystalline', 'Sharp, well-ordered reflections', '167', '11.0%'],
   ],
   trivial:
     'That first row is the whole problem. A model that learns nothing — one that always answers **INCIPIENT** — is right 64% of the time. Reporting "64% accuracy" would sound like the model does something, when it would do nothing at all. This is why every metric on the next screen is compared against that floor rather than against zero.',
@@ -297,7 +285,7 @@ export const EDA_DISCRETE = {
     ['time_hours', '3', '24 · 48 · 72 h'],
   ],
   concentration:
-    'And they are not evenly used either: **816 of the syntheses sit at 150 °C** and 442 at 120 °C, so two settings cover more than four fifths of the record.',
+    'And they are not evenly used either: **710 of the syntheses sit at 150 °C** and 370 at 120 °C, so two settings out of nine cover seven tenths of the record.',
   why:
     'That is not a defect in the data. It reflects how combinatorial synthesis is actually designed — **fix a grid of conditions and sweep composition** — and a chemist filling a 24-well plate picks round numbers.',
   consequence:
@@ -333,7 +321,7 @@ export const EDA_CORRELATION = {
   blankBody:
     'A white square in the map means the correlation **is not defined**, not that the value was lost. It happens when a variable has **no variance** in this subset: `reactor_volume_ml` is 2.5 mL in every single high-throughput synthesis, so its standard deviation is zero and every correlation involving it divides by zero.',
   blankConsequence:
-    'It also has a corollary worth stating, because it is the textbook case of the point made just above: since the reactor is always 2.5 mL, **`fill_fraction` is exactly `total_volume_ml / 2.5`**. The two columns are the same variable rescaled — perfect collinearity, verified across all 1,516 rows, not an approximation. Neither can be credited independently, and that is precisely why importance is read by block.',
+    'It also has a corollary worth stating, because it is the textbook case of the point made just above: since the reactor is always 2.5 mL, **`fill_fraction` is exactly `total_volume_ml / 2.5`**. The two columns are the same variable rescaled — perfect collinearity, verified across all 1,516 rows, not an approximation. Neither can be credited independently, which is one reason importance is read by block. The other is that this reading was acted on: **in v4 both `reactor_volume_ml` and `fill_fraction` are excluded from the model**, each with its reason recorded in the registry — zero variance for the first, perfect collinearity for the second. Finding it here is what made it removable there.',
   causation:
     '**Correlation is not causation**. These plots measure whether two things move together, nothing more. That temperature appears associated with crystallinity does not demonstrate that raising it causes crystallisation: they may share a common cause, or it may be a coincidence of this particular record. Establishing causation requires intervening — changing only the temperature and seeing what happens — which is precisely what the model suggests where to do, not what it proves.',
 }
@@ -394,23 +382,101 @@ export const MODEL_LINEUP = {
   intro:
     'Ten models are compared, not one. Not out of indecision: different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right. **Comparing is more honest than betting**.',
   tableHead: ['Model', 'What it assumes', 'Why it is here'],
-  tableRows: [
-    ['Baseline (majority class)', 'Nothing: always the most frequent class', 'The bar. Everything else must clear it'],
-    ['Logistic regression', 'A linear boundary', 'Interpretable reference; if it suffices, it wins'],
-    ['k-nearest neighbours', 'Similar samples share an outcome', 'Purely local, with no global model'],
-    ['Naive Bayes', 'Variables independent given the class', 'Its failure measures how much the correlation structure matters'],
-    ['SVM (RBF kernel)', 'A smooth non-linear boundary', 'Strong in medium dimension with few samples'],
-    ['Decision tree', 'Threshold cuts, one at a time', 'Interpretable; the basis of what follows'],
-    ['Random Forest', 'Many decorrelated trees', 'Robust, insensitive to hyperparameters'],
-    ['HistGradientBoosting', 'Sequential trees correcting each other', 'Handles missing values natively'],
-    ['LightGBM', 'Optimised boosting', 'The industry reference'],
-    ['XGBoost', 'Boosting with regularisation', 'Standard comparison'],
+  /* Cada fila se despliega: `detail` explica como funciona el modelo sin
+     formulas, y `code` es la linea real con la que se instancia en el cuaderno
+     06 -- con sus hiperparametros, no un ejemplo generico. */
+  models: [
+    {
+      name: 'Baseline (majority class)',
+      assumes: 'Nothing: always the most frequent class',
+      why: 'The bar. Everything else must clear it',
+      detail:
+        'It looks at no variable at all. It counts which class is commonest in the training data and answers that, every time. On this data it says INCIPIENT to everything and is right 64 % of the time — which is exactly why accuracy is a useless headline here. Its purpose is to give every other number a floor to be measured against.',
+      code: "DummyClassifier(strategy='most_frequent')",
+    },
+    {
+      name: 'Logistic regression',
+      assumes: 'A linear boundary',
+      why: 'Interpretable reference; if it suffices, it wins',
+      detail:
+        'Draws a straight dividing surface through the 39-dimensional space and reads each variable\u2019s weight as its pull towards one class or another. If a straight line were enough, this would be the answer to keep: you can read the coefficients and argue about the chemistry. It is here to find out whether the problem needs anything more complicated.',
+      code: "LogisticRegression(max_iter=2000, class_weight='balanced')",
+    },
+    {
+      name: 'k-nearest neighbours',
+      assumes: 'Similar samples share an outcome',
+      why: 'Purely local, with no global model',
+      detail:
+        'Builds no model. For a new synthesis it finds the fifteen most similar ones already on record and takes a vote. That makes it a direct test of a chemical intuition — that similar conditions give similar products — and it is unforgiving about badly scaled variables, which is part of what made it useful for spotting the unit defects.',
+      code: "KNeighborsClassifier(n_neighbors=15)",
+    },
+    {
+      name: 'Naive Bayes',
+      assumes: 'Variables independent given the class',
+      why: 'Its failure measures how much the correlation structure matters',
+      detail:
+        'Assumes every variable contributes independently, which in this data is plainly false: the electronegativity and the hardness of a cation are tied together by physics. It is on the list precisely so that assumption can fail visibly. It scores below the trivial baseline, and that gap is a measurement of how much the correlation structure matters.',
+      code: "GaussianNB()",
+    },
+    {
+      name: 'SVM (RBF kernel)',
+      assumes: 'A smooth non-linear boundary',
+      why: 'Strong in medium dimension with few samples',
+      detail:
+        'Bends the boundary instead of keeping it straight, and cares only about the samples nearest the frontier. That makes it strong when there are many variables and few rows, which is this problem exactly. The price is that its decisions cannot be read off as "this variable mattered".',
+      code: "SVC(kernel='rbf', probability=True, class_weight='balanced')",
+    },
+    {
+      name: 'Decision tree',
+      assumes: 'Threshold cuts, one at a time',
+      why: 'Interpretable; the basis of what follows',
+      detail:
+        'Asks a chain of yes/no questions about single thresholds — is the temperature above 130, is there carboxylic modulator — until it reaches a verdict. Alone it overfits badly, but it is the building block of the four models below it, and it is the only one whose reasoning you can read out loud.',
+      code: "DecisionTreeClassifier(max_depth=6, class_weight='balanced')",
+    },
+    {
+      name: 'Random Forest',
+      assumes: 'Many decorrelated trees',
+      why: 'Robust, insensitive to hyperparameters',
+      detail:
+        'Grows hundreds of trees, each on a random slice of the rows and the columns, and averages them. The randomness is the point: individual trees overfit in different directions and the errors cancel. It is the model actually deployed here, chosen for being the best performer that is also hard to break by tuning it wrong.',
+      code: "RandomForestClassifier(n_estimators=500, class_weight='balanced_subsample', random_state=42)",
+    },
+    {
+      name: 'HistGradientBoosting',
+      assumes: 'Sequential trees correcting each other',
+      why: 'Handles missing values natively',
+      detail:
+        'Instead of averaging independent trees, each new tree is fitted to the errors the previous ones left behind. It bins the variables first, which makes it fast, and it takes missing values without imputing them — relevant here, where a null pKa means "no carboxylic acid" rather than "unknown".',
+      code: "HistGradientBoostingClassifier(max_iter=300, random_state=42)",
+    },
+    {
+      name: 'LightGBM',
+      assumes: 'Optimised boosting',
+      why: 'The industry reference',
+      detail:
+        'The same idea as above with a different growth strategy: it extends whichever leaf reduces the error most, rather than growing level by level. Fast and usually at the top of tabular benchmarks, which is why it is the yardstick. It is the model serving the actionable half of this project.',
+      code: "LGBMClassifier(n_estimators=400, class_weight='balanced', random_state=42)",
+    },
+    {
+      name: 'XGBoost',
+      assumes: 'Boosting with regularisation',
+      why: 'Standard comparison',
+      detail:
+        'Boosting again, with an explicit penalty on tree complexity written into what it optimises. That extra brake is what usually separates it from LightGBM on small datasets, and with 1,516 rows this one qualifies as small.',
+      code: "XGBClassifier(n_estimators=400, max_depth=5, random_state=42)",
+    },
   ],
 }
 
 export const MODEL_VALIDATION = {
   title: 'Validation grouped by plate',
-  body: 'Stratified group k-fold with five folds does two things at once. The grouping guarantees that no plate appears in both training and test — without it the model would pass by recognising the plate instead of the chemistry. The stratification keeps the class proportions in every fold, so no fold ends up with almost no crystalline samples.',
+  setup:
+    'These syntheses were not done one at a time. High-throughput screening runs them in **plates of 24 wells** — one block, one oven, one thermal programme, 24 compositions swept in parallel. The training set is **1,516 syntheses across 68 plates**, so a plate is not an administrative label: it is a batch of samples that shared a reactor, a day, a solvent bottle and an operator.',
+  body:
+    'That is why the split is grouped by plate. **Stratified group k-fold with five folds** keeps every plate entirely inside one fold, so no plate is ever in training and test at once. Without it the model can score well by recognising which plate a sample came from — the shared batch conditions — instead of learning any chemistry. The stratification then keeps the class proportions even, so no fold ends up with almost no crystalline samples.',
+  consequence:
+    'It costs performance and it is worth it. A random split would report a higher number for a model that had learned less.',
 }
 
 export const MODEL_TWO = {
@@ -446,9 +512,9 @@ export const MODEL_FINDINGS = [
   },
   {
     title: 'The actionable model drops further, and that answers the objection',
-    body: 'Without metal and linker chemistry the best model falls to about 0.41 with MCC near 0.13: above chance, but weak. In plain terms, most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
+    body: 'Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. In plain terms, most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
     caveat:
-      'This does not mean conditions are chemically unimportant. It means that in this data they were not varied enough for their effect to be learnable — about 13 temperatures and 9 reaction times across the whole record. The suspicion that the linker was acting as the directing variable was correct, and it is now measured.',
+      'This does not mean conditions are chemically unimportant. It means that in this data they were not varied enough for their effect to be learnable — 9 temperatures and 3 reaction times across the training set. The suspicion that the linker was acting as the directing variable was correct, and it is now measured.',
   },
   {
     title: 'Tree-based models now win',
@@ -472,7 +538,7 @@ export const MODEL_ERRORS = {
   amorphous:
     'For amorphous samples the behaviour is what you would hope: when it fails, it confuses "nothing" with "almost nothing", which in the diffractogram itself is a matter of degree and something two experts could disagree about. The severe error — calling an amorphous sample crystalline — is rare.',
   crystalline:
-    'For crystalline samples it is not. One in five crystalline samples is classified as amorphous, the most serious error available. That is not a clean ordinal pattern: it means the model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient ones, and being the most heterogeneous class — there are many ways to crystallise and only one way not to — it was the predictable outcome, but predictable does not stop it being the model\'s main weakness.',
+    'For crystalline samples it is not. Roughly one in six crystalline samples is classified as amorphous, the most serious error available. That is not a clean ordinal pattern: it means the model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient ones, and being the most heterogeneous class — there are many ways to crystallise and only one way not to — it was the predictable outcome, but predictable does not stop it being the model\'s main weakness.',
   usage:
     'For the intended use — ranking candidates and filling the next plate — this matters less than it appears: what is needed is for good candidates to rise in the ranking, not for the label to be exact. But it refutes any reading along the lines of "the model rarely makes a serious mistake". It makes a serious mistake on **22% of crystalline samples**, and that has to be accounted for.',
 }
@@ -512,27 +578,55 @@ export const MODEL_ASSESSMENT = {
     'The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31 — a real but moderate association. Two features of these results deserve to be stated plainly rather than left for the reader to infer.',
   points: [
     {
-      title: 'Half of the crystalline syntheses are not recovered',
-      body: 'Recall on the crystalline class is 0.50. Since the purpose of the tool is to shortlist promising conditions, this is the figure that governs its practical value, and it is a meaningful limitation. It is also the expected consequence of a class with 167 examples against 967 incipient ones, and of that class being the most heterogeneous: there are many ways for a framework to crystallise and only one way for it not to.',
+      title: 'Three quarters of the crystalline syntheses are not recovered',
+      bullets: [
+        'Recall on the crystalline class is **0.25** under the grouped cross-validation. That is the figure to quote: the tool exists to shortlist promising conditions, so it governs practical value far more than the aggregate does.',
+        'The confusion matrix above reads **0.53** for the same class — because it is one held-out split, not the five-fold average. A lucky set of plates flatters the smallest class.',
+        'Cause: **167 crystalline examples against 967 incipient**, and the crystalline class is the most heterogeneous. There are many ways for a framework to crystallise and only one way for it not to.',
+      ],
     },
     {
-      title: 'The actionable model is close to the limit of what the data supports',
-      body: 'Restricted to process variables — the model that answers "given this chemistry, which conditions favour crystallisation?" — performance falls to a Matthews correlation of 0.13. That is above chance and it is not yet a basis for recommending conditions. Since this is the question the laboratory actually asks, it is the more important of the two results.',
+      title: 'The actionable model sits close to the limit of the data',
+      bullets: [
+        'Stripped of metal and linker chemistry, macro F1 falls to **0.393** and MCC to **0.095**.',
+        'Above chance — and not yet a basis for recommending conditions.',
+        'This is the question the laboratory actually asks, so it is the more important of the two results.',
+      ],
     },
   ],
   cause: {
     title: 'The limit lies in the experimental record, not in the model',
-    body: 'Across five years the record contains roughly thirteen distinct target temperatures and nine reaction times, and these were varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate.',
+    body: 'Across five years the record contains 15 distinct target temperatures and 11 reaction times, and the subset the model was trained on is poorer still — **9 temperatures and 3 reaction times**. They were also varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate.',
     expectation:
       'Hyperparameter optimisation on this dataset can reasonably be expected to yield an improvement of 0.02 to 0.05 in macro F1. It is worth doing for methodological completeness; it is not a route to a materially better model.',
   },
   next: {
     title: 'What would improve it, in order of expected return',
     items: [
-      'A designed sweep of temperature, time and modulator at fine resolution within a single metal-linker system. This addresses the confounding directly and amounts to one or two high-throughput plates — by a wide margin the most efficient intervention available.',
-      'More crystalline examples. With 167 in the training set, the minority class is the binding constraint on every metric reported above.',
-      'Completion of the solvent breakdown for the 18% of records that lack it. That block currently scores as noise under permutation importance, and its true contribution cannot be assessed until the medium is recorded completely.',
-      'Revisiting the target once more data exists. A continuous crystallinity index may carry more information than a three-way class, although the three classes remain the judgement the bench actually recorded.',
+      {
+        icon: 'sweep',
+        head: 'One designed sweep',
+        cost: '1–2 plates',
+        body: 'Vary temperature, time and modulator finely **within a single metal-linker system**. It attacks the confounding head-on and costs one or two plates — by a wide margin the most efficient intervention available.',
+      },
+      {
+        icon: 'minority',
+        head: 'More crystalline examples',
+        cost: 'bench time',
+        body: 'With **167** in the training set, the minority class is the binding constraint on every metric above. Nothing algorithmic gets around it.',
+      },
+      {
+        icon: 'record',
+        head: 'Finish the solvent record',
+        cost: 'no experiments',
+        body: '**18 %** of rows lack the breakdown, and that block currently scores as noise. Its real contribution cannot even be measured until the medium is written down completely.',
+      },
+      {
+        icon: 'target',
+        head: 'Revisit the target',
+        cost: 'later',
+        body: 'A continuous crystallinity index may carry more than a three-way class — though the three classes remain the judgement the bench actually recorded.',
+      },
     ],
   },
   closing:

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>07 RAG Contextual Chunking Protocol</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./07_RAG_Contextual_Chunking_Protocol.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>07 · RAG — Contextual Chunking: protocolo de actuación (Fase C-bis)</h1>
+<p>Este cuaderno documenta, con código real y salidas reales contra la base de datos,
+el protocolo completo seguido para añadir <strong>una frase de contexto por chunk</strong>
+al corpus del RAG (técnica de <em>contextual retrieval</em> de Anthropic) usando un
+modelo externo (Gemini, a traves de Antigravity) como colaborador humano-en-el-bucle,
+sin exponerlo nunca a la base de datos ni al trabajo ya hecho por Ollama.</p>
+<p><strong>Por qué existe este cuaderno</strong>: no es solo un registro de lo que se hizo, es un
+<strong>protocolo reusable</strong> para la proxima vez que un proyecto necesite delegar una
+tarea de generacion masiva a un LLM externo bajo un presupuesto de sesion limitado,
+con verificacion automatica y sin poder revisar el resultado a mano.</p>
+<p><strong>Fuentes:</strong></p>
+<ul>
+<li><code>methodology/ROADMAP_RAG_Y_GRAFO.md</code> (sección 3, &quot;Contextual chunking&quot;) y
+<code>methodology/ROADMAP_RAG_Y_GRAFO_v2.md</code> (estado de la pieza).</li>
+<li><a href="https://www.anthropic.com/engineering/contextual-retrieval">Contextual Retrieval in AI Systems — Anthropic</a></li>
+<li><code>src/README.md</code> (entradas <code>rag_export_context_batches.py</code>,
+<code>rag_import_context_batches.py</code>, <code>rag_export_context_repairs.py</code>,
+<code>rag_reembed_context.py</code>, <code>rag_query_compare.py</code>).</li>
+<li><code>data/rag_context_batches/README.md</code> (ciclo operativo día a día, gitignored,
+vive solo en local).</li>
+</ul>
+<h2>1. Por qué existe esta pieza — lo que dice el roadmap</h2>
+<p>La técnica no es una idea propia: es <em>contextual retrieval</em>, publicada por Anthropic,
+y estaba citada en el roadmap del proyecto desde la version 1, marcada como
+<strong>pendiente de implementar</strong>. La cita textual (<code>ROADMAP_RAG_Y_GRAFO.md</code>):</p>
+<blockquote>
+<p><em>&quot;Contextual chunking: antes de vectorizar, un LLM barato anade 1-2 frases de
+contexto a cada chunk [...]. Es la tecnica de Anthropic — 35% menos fallos por
+si sola.&quot;</em></p>
+</blockquote>
+<p>Y el resultado que reporta Anthropic al combinarla con búsqueda léxica (BM25) y
+un reranker: <strong>-67% de fallos de recuperacion</strong> (de 5,7% a 1,9%). Solo los
+<em>contextual embeddings</em>, sin las otras dos piezas, ya dan <strong>-35%</strong>.</p>
+<p>El detalle que importa para todo lo que sigue: la tecnica dice <strong>&quot;antes de
+vectorizar&quot;</strong>. El contexto no se guarda al lado del vector como una etiqueta
+bonita — <strong>se funde con el texto del chunk y ESO es lo que se vectoriza</strong>. Si
+no se hace asi, el trabajo entero de generar las frases no mejora la busqueda
+en absoluto: el motor de busqueda solo compara vectores, nunca lee el texto
+guardado al lado.</p>
+<h2>2. Arquitectura: aislar al colaborador externo del trabajo ya validado</h2>
+<p>Tres piezas, cada una con una responsabilidad y un limite de escritura muy
+concreto:</p>
+<pre><code class="language-mermaid">flowchart TD
+    DOCS[(&quot;rag_documents&lt;br/&gt;1 fila por PDF/paper, catálogo bibliográfico&quot;)]
+    CHUNKS[&quot;&lt;b&gt;rag_chunks&lt;/b&gt; — 1 fila por fragmento de texto&lt;br/&gt;• text ← splitter recursivo determinista, SIN LLM&lt;br/&gt;• embedding ← vector de Ollama (bge-m3) del chunk SOLO — Fase B, ya cerrada&lt;br/&gt;• embedding_v2 ← vector de Ollama del (contexto + chunk) — Fase D, columna nueva, NUNCA sobrescribe embedding&quot;]
+    CTX[&quot;&lt;b&gt;rag_chunk_context&lt;/b&gt; — tabla sidecar: SOLO la frase de contexto que escribe Gemini/Antigravity&lt;br/&gt;• context_sentence &amp;nbsp; • source_model &amp;nbsp; • batch_file&lt;br/&gt;Ningún script de esta fase escribe nunca en rag_chunks.text ni en rag_chunks.embedding&quot;]
+
+    DOCS --&gt; CHUNKS
+    CHUNKS --&gt;|&quot;chunk_id (FK)&quot;| CTX
+
+    classDef prod fill:#E3F2FD,stroke:#1E88E5,color:#0D47A1
+    classDef side fill:#FFF3E0,stroke:#FB8C00,color:#E65100
+    class DOCS,CHUNKS prod
+    class CTX side
+</code></pre>
+<p><strong>Por qué una tabla sidecar y no una columna en <code>rag_chunks</code> directamente:</strong>
+un modelo externo, con un historial ya conocido de errores (ver sección 5),
+nunca debe tener un camino de escritura que toque una columna de la que ya
+depende produccion (<code>embedding</code>). Si el sidecar sale mal, se borra y se
+rehace sin haber arriesgado nada. Este mismo principio es el que despues
+justifica <code>embedding_v2</code> en la sección 7: ni siquiera el paso final de
+vectorizar el contexto se permite sobrescribir el original.</p>
+<h2>3. Paso 1 — exportar lotes por documento, nunca por chunk</h2>
+<p><code>src/rag_export_context_batches.py</code> escribe un JSON por documento en
+<code>data/rag_context_batches/pending/</code>. La razon de agrupar por documento (no por
+chunk) es la misma razon de ser de la tecnica: el modelo necesita ver el
+<strong>documento completo</strong> para poder situar cada fragmento dentro de el — un
+chunk aislado no tiene nada contra que &quot;situarse&quot;. Agrupar por documento
+tambien reduce ~87.765 peticiones a nivel de chunk a ~956 a nivel de documento.</p>
+<p>El filtro de privacidad es una clausula <code>WHERE</code> en la consulta SQL, no una
+instruccion de prompt que el modelo podria ignorar:</p>
+<h2>4. El prompt para Gemini / Antigravity</h2>
+<p>Este es el prompt tal cual se pego en el chat de Antigravity al principio de
+cada sesion, apuntando a la carpeta <code>pending/</code>. Incluye ya el refuerzo añadido
+tras el primer incidente (sección 5.1): la instruccion explicita de no
+reciclar frases.</p>
+<blockquote>
+<p>You will find JSON files in data/rag_context_batches/pending/ (or
+data/rag_context_batches/repairs/pending/ for a repair batch). Each one
+lists chunk_ids and the full text of the document they belong to. Follow
+each file's own &quot;instructions&quot; field exactly — one specific,
+non-generic sentence per chunk_id, grounded in what that exact chunk
+says. Never a generic template, never a &quot;(part N)&quot; counter standing in
+for a real difference, never a garbled or truncated word filling a gap,
+and never the same sentence (or a near-identical one) reused across
+multiple chunks. Process the files one at a time, in filename order,
+moving each finished one to the matching done/ folder as you go. Stop
+cleanly when pending/ is empty or you run out of session budget. Same
+hard limits as always: never edit any .py file, never touch the
+database, never open anything outside data/rag_context_batches/.</p>
+</blockquote>
+<p>Version <strong>autónoma</strong> (Antigravity con acceso a terminal, ejecuta ella misma
+el ciclo completo en bucle hasta agotar presupuesto o terminar el corpus —
+ver sección 6):</p>
+<blockquote>
+<p>You also have permission to run terminal commands from the repository
+root. Instead of stopping after one wave, run the full cycle in a loop:</p>
+<ol>
+<li>Run <code>python src/rag_export_context_batches.py --limit 30</code>. If it
+exports 0 new files, the corpus is done — stop and report it. 2. Process
+every file now in pending/, exactly as above, moving each to done/ as
+you finish it. 3. Once pending/ is empty, run
+<code>python src/rag_import_context_batches.py --apply</code>. 4. Run
+<code>python src/rag_import_context_batches.py --status</code> and note the
+numbers. 5. Repeat from step 1. Stop when: you run out of session
+budget (finish the file you are on first), OR step 1 has nothing left
+to export, OR a command errors. Hard limits: only ever run those two
+exact commands, never raw SQL, never a database client, never edit any
+.py file. If <code>--apply</code> reports rejected files, leave them in rejected/
+untouched and just count them in your summary.</li>
+</ol>
+</blockquote>
+<h2>5. Verificar ANTES de escribir — nunca confiar en que el formato correcto implique contenido correcto</h2>
+<p><code>src/rag_import_context_batches.py</code> nunca escribe nada en <code>rag_chunk_context</code>
+sin pasar primero por <code>verify()</code>. Si un archivo falla, se rechaza <strong>entero</strong>
+— nunca una importación parcial de un documento — y se mueve a <code>rejected/</code>
+para que el fallo sea ruidoso, no un hueco silencioso descubierto semanas
+despues.</p>
+<h3>5.1 Incidente 1 — frases recicladas (el primer lote real)</h3>
+<p>El primer lote grande procesado por Gemini paso la verificacion estructural
+(mismo numero de <code>chunk_id</code>, sin huecos) pero, al inspeccionar el contenido,
+reutilizaba <strong>3 a 10 frases genericas</strong> para documentos de 100-250 chunks —
+por ejemplo, 227 chunks con solo 3 frases distintas repetidas en bucle. Nada
+en las reglas 1-4 de <code>verify()</code> lo detectaba porque son puramente
+estructurales.</p>
+<p><strong>Solución</strong>: regla 5 añadida a <code>verify()</code> — si un archivo tiene mas de 5
+resultados y menos del 50% de las frases son unicas entre si, se rechaza.
+Probado retroactivamente contra los 30 archivos del incidente: <strong>30/30
+detectados</strong>, 0 falsos positivos contra archivos ya buenos.</p>
+<h3>5.2 Incidente 2 — la plantilla rota <code>&quot;(part N)&quot;</code></h3>
+<p>Un fallo mas sutil, encontrado <em>despues</em> de que la regla 5 ya estuviera en
+produccion: para una minoria de chunks por documento, el modelo rellenaba una
+plantilla rigida — <code>&quot;This X chunk (part N) evaluates &lt;fragmento roto&gt; regarding &lt;titulo&gt;&quot;</code> — con una palabra truncada o sin sentido en el hueco.
+Cada frase es <strong>tecnicamente distinta</strong> (cambia el numero de parte y el
+fragmento), asi que pasa la regla de diversidad sin problema. Solo se
+descubre escaneando el texto ya importado en busca del patron.</p>
+<h3>5.3 Incidente 3 — el mismo fallo del 5.1, pero anterior al fix</h3>
+<p>Al auditar el corpus entero (no solo los lotes recientes) aparecieron <strong>37
+documentos</strong> con el fallo original de frases recicladas — pero su
+<code>created_at</code> era <strong>anterior</strong> a que la regla 5 existiera, asi que nunca
+pasaron por ese filtro. No es que el filtro fallara: es una franja de datos
+mas antigua que quedo fuera de su alcance por construccion.</p>
+<p><strong>Leccion</strong>: un chequeo añadido a un pipeline solo protege lo que se procesa
+<em>despues</em> de anadirlo. Los datos ya escritos antes necesitan una auditoria
+retroactiva aparte — nunca asumir que &quot;ya lo arregle&quot; cubre el pasado.</p>
+<h2>6. Reparar quirúrgicamente, no rehacer el corpus entero</h2>
+<p><code>src/rag_export_context_repairs.py</code> tiene dos modos, uno por cada tipo de
+incidente, porque su alcance dentro de un documento es distinto:</p>
+<ul>
+<li><strong><code>--mode template</code></strong> (incidente 5.2): dentro de un documento afectado, solo
+una minoria de chunks estaba mal (mediana &lt;10%). Reexportar el documento
+entero tiraria a la basura cientos de frases buenas para arreglar unas
+pocas. Se exportan <strong>solo los <code>chunk_id</code> marcados</strong>, con el texto completo
+del documento como contexto.</li>
+<li><strong><code>--mode recycled</code></strong> (incidente 5.3): aqui la mayoría de los chunks de un
+documento comparten frase, y no hay forma fiable de saber cual copia era
+&quot;la real&quot; para un chunk dado. Se reexporta el <strong>documento completo</strong>.</li>
+</ul>
+<p>Ambos importan con el mismo <code>verify()</code> de siempre, apuntando a un árbol de
+carpetas separado (<code>data/rag_context_batches/repairs/</code>) para que el trabajo
+de reparacion nunca se mezcle con el procesamiento de documentos nuevos:</p>
+<h2>7. Trabajar por oleadas con presupuesto de sesion limitado</h2>
+<p>Antigravity (la suscripcion de Google AI Pro que ejecuta Gemini) tiene un
+limite de horas por sesion. El protocolo que hace esto seguro de interrumpir
+en cualquier momento:</p>
+<ol>
+<li><code>--status</code> antes de cada oleada: si <code>pending/</code> no esta vacio, hay trabajo
+a medias de la sesion anterior — se retoma esa misma carpeta, nunca se
+exporta una oleada nueva encima.</li>
+<li><code>rag_export_context_batches.py --limit N</code> exporta <em>solo</em> los documentos
+que aun no tienen ninguna frase — repetir el comando nunca duplica
+trabajo.</li>
+<li>Si la sesion de Antigravity se corta a medias, lo hecho ya esta a salvo en
+<code>done/</code>; lo que falta sigue en <code>pending/</code> esperando a la siguiente sesion.</li>
+<li><code>--apply</code> solo escribe lo que paso <code>verify()</code>; el resto va a <code>rejected/</code>
+sin tocar la base de datos.</li>
+</ol>
+<p>Estado final verificado del corpus tras cerrar los tres incidentes:</p>
+<h2>8. Fase D — de &quot;frase guardada&quot; a &quot;frase que influye en la busqueda&quot;</h2>
+<p>Terminar la tabla <code>rag_chunk_context</code> <strong>no mejora ninguna busqueda por si
+solo</strong> — es solo texto guardado. Para que la tecnica de Anthropic haga lo que
+promete hace falta el paso que el propio nombre de la tecnica describe:
+vectorizar <code>contexto + chunk</code> junto, no el chunk solo.</p>
+<p><strong>Decisión de diseño explicita</strong>: esto se escribe en una columna <strong>nueva</strong>
+(<code>rag_chunks.embedding_v2</code>), nunca sobrescribiendo <code>embedding</code>. La razon es
+directa — las frases de contexto las escribio un modelo externo con un
+historial de errores ya documentado en este mismo cuaderno (secciones 5.1 a
+5.3), y no es razonable pedirle al dueno del proyecto que revise a mano
+~88.000 frases para confiar en ellas. Con una columna aparte, el peor caso
+posible es <code>UPDATE rag_chunks SET embedding_v2 = NULL</code> — cero riesgo para la
+busqueda que ya funciona hoy.</p>
+<p><code>src/rag_reembed_context.py</code> calcula <code>embedding_v2</code> en local con el mismo
+modelo Ollama (<code>bge-m3</code>) que ya se uso para <code>embedding</code>, mismo patron de
+lotes y reintentos que <code>rag_ingest_chunks.py</code>:</p>
+<h3>8.1 Comparación A/B — juzgar sin revisar frase a frase</h3>
+<p><code>src/rag_query_compare.py</code> hace una búsqueda por similitud de coseno pura
+(sin fusion BM25) contra <code>embedding</code> y contra <code>embedding_v2</code> para la misma
+pregunta, y las imprime lado a lado. Es la forma de decidir si el contexto
+ayuda de verdad, con preguntas reales, sin depender de leer las 88.000
+frases generadas.</p>
+<p>Salida real capturada durante el desarrollo de esta fase (piloto de 100
+chunks del paper de Salcedo-Abraira et al. 2023 sobre MOFs de Cu para
+fotocatalisis de agua):</p>
+<pre><code>Pregunta: photocatalytic water splitting MOF
+==============================================================================
+
+--- SIN contexto (embedding, lo que usa rag_query.py hoy) ---
+
+  1. similitud 0.7753   Wei Wang et al. (2017) DOI: 10.1002/advs.201600371
+     limited timescales, ranging from several hours to a few days. Robust
+     MOF-derived materials that can operate on a longer timescale are thus
+     needed to go a step further toward the real application of water
+     splitting. 3.2. Photocatalytic Water Splitting Some MOFs have shown
+     favorable photocatalytic activity for water split...
+
+--- CON contexto (embedding_v2) ---
+
+  1. similitud 0.6321   Pablo Salcedo-Abraira et al. (2023) DOI: 10.1021/acs.chemmater.3c00054
+     Two Cu-Based Phosphonate Metal-Organic Frameworks as Efficient Water-
+     Splitting Photocatalysts...
+
+Chunks que aparecen SOLO con contexto: 3
+Chunks que aparecen SOLO sin contexto : 3
+Chunks en ambos                       : 0
+</code></pre>
+<p>Con solo 100 chunks vectorizados (de un unico documento) la comparacion
+todavia no es representativa del corpus — este es el resultado de la prueba
+piloto que confirmo que el mecanismo funciona de punta a punta, no una
+evaluacion de calidad. La evaluacion real se hace cuando <code>embedding_v2</code> este
+completo (seccion 8, tabla de progreso) lanzando varias preguntas reales del
+dominio y comparando que pasajes trae cada columna.</p>
+<p><strong>Importante</strong>: las similitudes de coseno de <code>embedding</code> y <code>embedding_v2</code> no
+son directamente comparables en valor absoluto (anadir la frase de contexto
+desplaza el vector en el espacio de bge-m3) — lo que hay que juzgar es si los
+<strong>pasajes</strong> que trae cada version son más relevantes para la pregunta, no si
+el numero de similitud es mayor o menor.</p>
+<h2>9. Protocolo generalizable — checklist para el proximo proyecto</h2>
+<p>Lo que queda de esta fase, mas alla del RAG de ALCheMy, es un patron
+reusable para cualquier tarea futura que delegue trabajo masivo a un LLM
+externo:</p>
+<ol>
+<li><strong>Filtro de privacidad como clausula SQL, nunca como instruccion de
+prompt.</strong> Un modelo puede ignorar una instruccion; no puede ignorar una
+fila que la consulta nunca le entrego.</li>
+<li><strong>Tabla sidecar, no columna nueva en la tabla de produccion</strong>, mientras el
+colaborador externo este generando el dato. Aisla el peor caso.</li>
+<li><strong>Verificar ANTES de escribir, y rechazar la unidad entera</strong> (nunca una
+escritura parcial) si algo no cuadra — un fallo ruidoso es barato de
+arreglar; un hueco silencioso se descubre semanas despues.</li>
+<li><strong>Un chequeo estructural (formato correcto) no es un chequeo de
+contenido.</strong> El incidente 5.1 lo demostro: un archivo perfectamente
+formado puede llevar basura dentro. Hacen falta las dos capas.</li>
+<li><strong>Un chequeo añadido al pipeline solo protege lo que se procesa despues.</strong>
+Auditar retroactivamente lo que ya paso por el pipeline antes del fix es
+un paso aparte, no gratis (incidente 5.3).</li>
+<li><strong>Reparar quirúrgicamente cuando el dano esta disperso; rehacer la unidad
+completa cuando el dano es mayoritario dentro de ella.</strong> No hay una regla
+unica — depende de si se puede identificar con confianza que parte
+concreta esta mal.</li>
+<li><strong>Lotes por la unidad que necesita el contexto completo</strong> (aqui,
+documento), no por la unidad mas pequena (chunk) — aunque eso multiplique
+las llamadas.</li>
+<li><strong>Handoff por archivos + un comando de estado</strong> cuando la herramienta
+externa tiene un presupuesto de sesion limitado. Nunca depender de que
+una sesion larga no se corte.</li>
+<li><strong>Cuando el resultado final alimenta un vector ya en produccion, escribe
+en una columna nueva y compara A/B con preguntas reales</strong> antes de decidir
+si sustituye a la version actual. Revisar a mano miles de items generados
+por IA no es una opcion realista — comparar resultados de busqueda si lo
+es.</li>
+</ol>
+<h2>DUDAS</h2>
+<ul>
+<li>En la Sección 3 (línea 85) se mencionan ~87.765 peticiones a nivel de chunk reducidas a ~956 a nivel de documento, mientras que en la Sección 8 (líneas 230 y 245) se habla de ~88.000 frases. La cifra 87.765 concuerda con el redondeo a 88.000, reflejando un promedio de ~91,8 chunks por documento.</li>
+<li>En la Sección 8.1, la prueba piloto se realizó sobre 100 chunks del artículo de Salcedo-Abraira et al. (2023). Sería conveniente confirmar si la evaluación definitiva del corpus completo sobre embedding_v2 ya dispone de resultados consolidados para actualizar la tabla de progreso de la Sección 8.</li>
+<li>En la Sección 4, los dos bloques de instrucciones para Antigravity/Gemini se encuentran redactados en inglés (tal como se introdujeron originalmente en el prompt de la sesión). Se han mantenido íntegramente en inglés por fidelidad documental.</li>
+</ul>
+
+</div></body></html>

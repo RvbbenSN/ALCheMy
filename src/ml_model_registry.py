@@ -302,7 +302,7 @@ def columnas_de_entrada(conn, slug):
     if not cols:
         raise ValueError(
             'El modelo %r no tiene columnas de entrada con posicion registrada. '
-            'Aplique scripts/ddl_ml_model_features_position.sql y vuelva a '
+            'Aplique scripts/sql/migrations/2026-09-03_ml_model_features_position.sql y vuelva a '
             'registrarlo, o rellene feature_position desde el pipeline guardado '
             '(pipeline.feature_names_in_).' % slug)
     return cols

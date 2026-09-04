@@ -5,7 +5,7 @@ ALCheMy - Construye la Fase 1 del grafo de conocimiento (kg_nodes/kg_edges).
 characterization_measurements tal como existen hoy y escribe (UPSERT, nunca
 DELETE) las relaciones que ya estan en esas columnas pero que hoy solo se
 pueden consultar con un JOIN especifico para cada pregunta. Ver
-scripts/init_db.sql, Section 22, y methodology/ROADMAP_RAG_Y_GRAFO_v2.md
+scripts/sql/init_db.sql, Section 22, y methodology/ROADMAP_RAG_Y_GRAFO_v2.md
 seccion 5 para el diseno completo.
 
 Nodos que crea:

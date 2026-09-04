@@ -34,6 +34,25 @@ function you need directly, or go through `characterization_parser.py`'s
 dispatcher. Each file starts with `import io; open = io.open` — a workaround
 for n8n's Python sandbox permanently blocking the bare `open` builtin.
 
+**Sample-code recovery, and the trap inside it.** When the caller does not
+supply a `sample_code`, each parser recovers it from the file name with the
+regex `(RS\d+|LP\d+|RSMix\d+|IEF-\d+)`. That works for eight of the nine
+techniques, and fails silently for SEM: the Hitachi writes
+`RS9990000(x400).jpg`, which is image `0000` of sample `RS999`, with no
+separator at all. `RS\d+` is greedy, so it swallowed the counter too and
+returned `RS9990000` — a sample that does not exist. The ingestion then
+created a placeholder synthesis row for each invented code, and hung the
+micrograph off that ghost instead of the real sample. The damage measured on
+the live database was **988 phantom rows in `synthesis_experiments` and 1,009
+micrographs detached from 297 real samples**. `parse_microscopy_image.py`
+therefore runs `_strip_image_counter()` first: the image counter is always
+exactly four digits immediately before the `(x…)` magnification, so that
+boundary is unambiguous, and a name that does not match the full shape is
+returned untouched. Reuse: import `_strip_image_counter` if you write another
+tool that reads SEM file names — and note the general lesson, that a greedy
+`\d+` against an instrument's file name is a bug waiting for the day the
+instrument appends something of its own.
+
 ### `characterization_parser_n8n.js`
 The same parsing contract as above, rewritten in JavaScript for an n8n Code
 node, reading the uploaded binary via base64/regex scanning instead of a
@@ -269,7 +288,7 @@ count per column).
 
 ### `build_knowledge_graph.py`
 Builds/refreshes Phase 1 (deterministic, no LLM) of the knowledge graph:
-`kg_nodes`/`kg_edges` in Postgres (`scripts/init_db.sql`, Section 22). Reads
+`kg_nodes`/`kg_edges` in Postgres (`scripts/sql/init_db.sql`, Section 22). Reads
 `synthesis_experiments` (metal, ligand, the 10 modulator-in-mmol columns) and
 `characterization_measurements` (grouped by sample+technique, not one node
 per file — thousands of file-level nodes would make the graph unreadable for
@@ -277,7 +296,7 @@ no benefit `get_characterisation` doesn't already give), and UPSERTs the
 relations that already live in those columns but today can only be queried
 with a JOIN written for that specific question. Idempotent: safe to re-run
 any time after new syntheses or measurements land, never deletes anything.
-Problem solved: turns "what does RS1884 have in common with RS1902" from a
+Problem solved: turns "what does SMP-0010 have in common with SMP-0061" from a
 bespoke SQL query into a generic graph walk (`kg_neighbors()` /
 `agent_explore_graph` tool in the chat agent) that works for any pair of
 nodes, not just the one you thought to ask about in advance. See
@@ -420,7 +439,7 @@ written to `pxrd_labels` keyed on `file_hash`, not on `measurement_id`, because
 regenerates every id (it happened on 2026-08-25 and took 300 descriptor rows with
 it). A hash does not change, so labels outlive any rebuild; `measurement_id` is
 kept only as a convenience link with `ON DELETE SET NULL`, re-attachable by the
-query at the bottom of `scripts/ddl_pxrd_labels_v2.sql`.
+query at the bottom of `scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql`.
 
 Speed is the other design constraint. Streamlit re-runs the whole script on every
 interaction, so the connection is a cached resource, the ~1,870-row work queue is
@@ -484,7 +503,7 @@ Reuse: `--server.port` to run several instances; the sidebar filters by metal an
 linker so the corpus can be labelled in themed batches; every click is an
 autocommitted UPSERT, so closing the browser mid-session loses nothing.
 
-### `scripts/ddl_pxrd_labels_v2.sql`
+### `scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql`
 Rebuilds `pxrd_labels` with the hash-keyed design described above, plus the
 `v_pxrd_labels_full` view (labels joined to their synthesis conditions, with a
 `needs_relink` flag) and `data_dictionary` rows for every column. Idempotent
@@ -611,7 +630,7 @@ plain psycopg2 one and returns the blank on the standard grid;
 `amorphous_from_blank(x, y_grid, blank_grid)` returns the diffuse curve, the fraction and
 the scale factor, and is callable on its own for plotting. Pass `blank_grid=` to
 `extract_descriptors` or the v3.0 columns come back `None` rather than silently falling
-back to the superseded estimate. Schema delta in `scripts/ddl_pxrd_descriptors_v3.sql`
+back to the superseded estimate. Schema delta in `scripts/sql/migrations/2026-08-27_pxrd_descriptors_v3.sql`
 (additive; the v2.0 columns are kept, with their COMMENT amended to say they are
 superseded and why).
 
@@ -655,7 +674,7 @@ funcion del modulo.
 
 v3.1 dividia el area difusa por el area TOTAL del barrido, que incluye el fondo
 instrumental. Dos consecuencias, las dos incorrectas: `crystalline_fraction_blank`, al
-definirse como 1 menos la fraccion, contaba ese fondo como cristalino - en LP69 el panel
+definirse como 1 menos la fraccion, contaba ese fondo como cristalino - en SMP-0005 el panel
 de fases de la figura de anatomia mostraba 9 % de area cristalina mientras la columna
 decia 0,757 - y el valor dependia de cuanto fondo instrumental hubiera debajo, que cambia
 con la exposicion y el montaje.
@@ -684,7 +703,7 @@ mejora real es en los subtipos, que bajo v3.1 se solapaban casi por completo:
 | CRISTALITO_PEQUENO | 0,242 | 0,608 |
 
 El cuaderno incluye ademas, en la seccion 10.0, una **figura de anatomia del vector**:
-los 29 descriptores senalados sobre un mismo difractograma incipiente (LP69, Ca+Et8ptp),
+los 29 descriptores senalados sobre un mismo difractograma incipiente (SMP-0005, Ca+Et8ptp),
 en cinco paneles - patron completo con las ventanas angulares y las capas de fase, zoom
 sobre una reflexion aislada para la anchura y Scherrer, composicion de fases en barras,
 concentracion de la intensidad, y el vector completo con sus valores reales agrupado por
@@ -702,7 +721,7 @@ un bulto.
 
 Medido por Monte Carlo -la parte suave de un barrido real, que por construccion no tiene
 ninguna reflexion, re-dibujada con ruido de Poisson-: **4,6 picos falsos por barrido a
-k = 3**, 0,1 a k = 4, 0 a k = 5. En RS1765, etiquetada AMORFO a mano, el detector
+k = 3**, 0,1 a k = 4, 0 a k = 5. En SMP-0006, etiquetada AMORFO a mano, el detector
 declaraba 8 picos y ~5 eran ruido. Y de ese conjunto salian tambien `two_theta_first_peak`,
 `d_max_angstrom`, las anchuras y Scherrer: un espaciado interplanar calculado sobre una
 espiga de ruido.
@@ -804,7 +823,7 @@ chemistry a physical descriptor recovers for free. See the roadmap's §2-4 for
 the full argument; the schema and every design decision are also documented
 inline as SQL `COMMENT`s and Python docstrings in the files below.
 
-### `scripts/ddl_ml_reference_tables.sql`
+### `scripts/sql/migrations/2026-08-28_ml_reference_tables.sql`
 
 **What it does.** Creates five objects: `element_properties` (one row per
 metal symbol), `ion_properties` (one row per (symbol, oxidation_state) — radius
@@ -823,7 +842,7 @@ chemically similar metals (Zr/Hf, or the four lanthanides with 2-5 samples
 each) instead of treating each one as an isolated, unrelated category.
 
 **How to reuse it.** Apply once with `docker exec -i alchemy_postgres psql -U
-alchemy_user -d alchemy_db < scripts/ddl_ml_reference_tables.sql` (checkpoint
+alchemy_user -d alchemy_db < scripts/sql/migrations/2026-08-28_ml_reference_tables.sql` (checkpoint
 first with `python scripts/backup_database.py` — it's a DDL migration).
 Idempotent-ish: `CREATE TABLE IF NOT EXISTS` and `CREATE OR REPLACE VIEW`, so
 re-running it after a small tweak is safe, but it will not pick up column
@@ -898,9 +917,9 @@ fed into a model as features themselves; that would reintroduce exactly the
 categorical-identifier problem this whole layer exists to avoid.
 
 
-### `scripts/fix_pxrd_labels_20260828.sql`
+### `scripts/sql/migrations/2026-08-28_fix_pxrd_labels.sql`
 One-off correction of four hand labels that were reviewed and found wrong
-(RS1164 / RS1567 / RS1568 -> INCIPIENTE / PICOS_ANCHOS, RS159 -> INCIPIENTE /
+(SMP-0001 / SMP-0002 / SMP-0003 -> INCIPIENTE / PICOS_ANCHOS, SMP-0004 -> INCIPIENTE /
 HALO_DOMINANTE). Kept in the repository rather than run and forgotten, because
 `pxrd_labels` is the one table in this project that cannot be rebuilt from any
 file: every change to it needs an auditable record of what changed and why.
@@ -920,7 +939,7 @@ change.
 
 ### `src/apply_ml_label_review_2026_08.py`
 
-Same pattern as `scripts/fix_pxrd_labels_20260828.sql` above, in Python because
+Same pattern as `scripts/sql/migrations/2026-08-28_fix_pxrd_labels.sql` above, in Python because
 the plan (44 duplicate measurements, 70 AMORFO+oxide exclusions, 2 class
 overrides, 16 subtype assignments, 1 sample_code reassignment) is too big to
 type as one SQL statement without a transcription mistake somewhere. One-off,
@@ -931,7 +950,7 @@ one by hand in `app/pxrd_explorer.py`'s "Revisión puntual para ML" filter
 (`Downloads/Revisión.txt`, 2026-08-30):
 
 - **43 sample_codes had more than one independently-labelled PXRD measurement**
-  (a 44th, RS1915, needed 3 exclusions instead of 1). Rather than delete the
+  (a 44th, SMP-0055, needed 3 exclusions instead of 1). Rather than delete the
   losing measurement's label — real human judgement, on a real file — the
   script writes a new `pxrd_labels` row with `label_type='ml_include'`,
   `label_value='NO'`, in exactly the shape `app/pxrd_labeler.py` already
@@ -943,7 +962,7 @@ one by hand in `app/pxrd_explorer.py`'s "Revisión puntual para ML" filter
   AMORFO class if kept — same `ml_include='NO'` mechanism, ids pulled live
   from the join, not hand-copied.
 - **One measurement filed under the wrong sample_code**: the file itself was
-  named `...RS1670-CaPy es RS1700..xrdml` — a note left at scan time. RS1700
+  named `...SMP-0013-CaPy es SMP-0012..xrdml` — a note left at scan time. SMP-0012
   had zero PXRD measurements of its own, so the fix is a real reassignment
   (`characterization_measurements.sample_code`, `pxrd_descriptors.sample_code`
   and `pxrd_labels.sample_code` all updated together — three denormalised
@@ -1000,10 +1019,10 @@ rows and the code that produced them, in the same commit"*.
 
 ---
 
-### `scripts/ddl_ml_features_v2.sql`
+### `scripts/sql/migrations/2026-08-29_ml_features_v2.sql`
 
 Rebuild of the `v_ml_features` view after the expert review of notebook 06. Applies with
-`docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/ddl_ml_features_v2.sql`
+`docker exec -i alchemy_postgres psql -U alchemy_user -d alchemy_db < scripts/sql/migrations/2026-08-29_ml_features_v2.sql`
 (back up first — it is a migration). Note it uses `DROP VIEW` + `CREATE VIEW`, not
 `CREATE OR REPLACE`, because the latter cannot insert columns in the middle of the list.
 
@@ -1013,7 +1032,7 @@ What it changes, and why each one is a real defect and not a preference:
   `def_ml` were missing, so the solvent fractions summed to 0.789 on average instead of 1.
 - **The liquid modulator counted as part of the medium** (`frac_modulator`), reconstructed
   from the millimoles by inverting notebook 01's formula. In many syntheses the modulator
-  *is* the solvent — RS1188 uses 1.35 mL of propionic acid out of 1.5 mL total.
+  *is* the solvent — SMP-0007 uses 1.35 mL of propionic acid out of 1.5 mL total.
 - **Fractions are NULL, not 0, when the breakdown does not account for the volume**
   (~18% of rows), with a `solvent_breakdown_complete` flag. Writing 0 asserts "there was
   no methanol"; the truth is "how much methanol was not recorded". Those are different
@@ -1029,7 +1048,7 @@ What it changes, and why each one is a real defect and not a preference:
 - **Precursor matching normalised** against a non-breaking space (U+00A0) in strings like
   `MgCl2 . 6H2O`, which cost 22 rows their oxidation state and ionic radius. Normalising
   the join beats adding typographic variants by hand — that is a race you do not win.
-- **Rows with `metal_center = '-'` excluded** (RS94, RS95): syntheses with no metal.
+- **Rows with `metal_center = '-'` excluded** (SMP-0008, SMP-0009): syntheses with no metal.
 
 The `data_dictionary` rows for the new columns are inserted by the same file, so the view
 stays self-documenting from inside the database.
@@ -1037,7 +1056,7 @@ stays self-documenting from inside the database.
 
 ---
 
-### `src/ml_model_registry.py` + `scripts/ddl_ml_model_registry.sql`
+### `src/ml_model_registry.py` + `scripts/sql/migrations/2026-08-29_ml_model_registry.sql`
 
 The model registry: save, query and retrieve trained models. Five tables plus a helper
 module and a small CLI.
@@ -1119,7 +1138,7 @@ no sense.
 
 ---
 
-### `src/sync_data_dictionary.py` + `scripts/ddl_data_dictionary_completion.sql`
+### `src/sync_data_dictionary.py` + `scripts/sql/migrations/2026-09-01_data_dictionary_completion.sql`
 
 Bring `data_dictionary` to **100% coverage** of every column of every table and view, and
 keep it there.
@@ -1284,7 +1303,7 @@ water was being thrown away by the code**. After the fix the breakdown is comple
 denominator is worth stating, because the three numbers otherwise read as if they
 disagreed.)
 
-**How it was found.** By a chemist's objection to a claim of mine. I had read RS1873's
+**How it was found.** By a chemist's objection to a claim of mine. I had read SMP-0062's
 15 mL of reaction volume as evidence of a missing solvent record; the answer was "how can
 there be 15 µL of water?". Reading the Excel formula settled it: the volume closes exactly,
 and the units were the error. Verified by reproducing the stored `V total` in **2,162 of
@@ -1302,7 +1321,7 @@ the database on 2,096 samples to within the stored rounding.
 
 ---
 
-### `scripts/ddl_ml_features_v3.sql`
+### `scripts/sql/migrations/2026-09-03_ml_features_v3.sql`
 
 Rebuild of `v_ml_features` on top of the corrected volumes. Same `DROP VIEW` + `CREATE VIEW`
 mechanics and the same "back up first" rule as v2. What it changes:
@@ -1371,7 +1390,7 @@ DataFrame de resultados cuya primera fila es el modelo ganador, con columnas `F1
 
 ---
 
-### `scripts/ddl_ml_model_features_position.sql` + `v_ml_model_input_contract`
+### `scripts/sql/migrations/2026-09-03_ml_model_features_position.sql` + `v_ml_model_input_contract`
 
 Migración aditiva que añade `ml_model_features.feature_position` y una vista,
 `v_ml_model_input_contract`, con **las columnas de entrada de cada modelo en el orden
@@ -1441,7 +1460,7 @@ columna del contrato.
 
 ## Despliegue del modelo en la web
 
-### `scripts/ddl_ml_deployment_slot.sql` + `modelo_desplegado()` + `scripts/build_model_scorecard.py`
+### `scripts/sql/migrations/2026-09-03_ml_deployment_slot.sql` + `modelo_desplegado()` + `scripts/build_model_scorecard.py`
 
 **El problema.** El registro de modelos sabía qué modelos existían, pero no cuál se estaba
 *sirviendo*. Esa información vivía escrita a mano en dos sitios: el slug dentro de
@@ -1545,3 +1564,96 @@ rejilla de predicciones precalculadas (`build_simulator_grid.py`). Eso tiene una
 además de la técnica —**nadie puede sondear el modelo** para reconstruir la química que
 aprendió— y un precio, que es que la rejilla cuantiza y hay que regenerarla al cambiar de
 modelo. El paso 3 es ese precio.
+
+### `scripts/export_notebook_prose.py`
+Saca a Markdown **solo la prosa** de los siete cuadernos, ya seudonimizada, en
+`handoff/notebook_prose/`. Problema que resuelve: el texto de los cuadernos es
+lo que se quiere revisar o traducir, pero el `.ipynb` no puede salir del
+proyecto (lleva códigos de muestra y ligandos reales en las salidas de celda) y
+el HTML publicable sí está saneado pero pesa 6,6 MB por las figuras en base64.
+Esta salida son 187 KB de texto plano, sin una línea de código ni una salida de
+celda, con una marca `> [FIGURA n de <cuaderno>]` donde iba cada imagen.
+Reutiliza el `Sanitizer` de `build_public_notebooks.py` importándolo en vez de
+copiar sus expresiones regulares, que es la parte que importa: dos copias de esa
+lógica acabarían divergiendo y la copia sería la que se quedara corta. Reuso:
+`--out <carpeta>` para dejarlo en otro sitio; el `Sanitizer` es de corpus, así
+que se alimenta con todos los cuadernos antes de escribir ninguno y `SMP-0001`
+significa lo mismo en los siete.
+
+
+### `scripts/build_rag_canvas.py`
+Saca los 36 nodos y las 48 conexiones del flujo `ALCheMy-RAG` a
+`web/public/data/rag_canvas.json`, agrupados en seis etapas, para que la
+pantalla 07 lo dibuje con el mismo componente que la 02. **La diferencia con
+`build_workflow_canvas.py` es el motivo por el que existe aparte**: aquel
+conserva las coordenadas exactas de n8n, y puede porque en el flujo de ingesta
+las areas son sticky notes que envuelven a sus nodos. El flujo RAG no tiene
+eso — sus dos notas grandes son banderolas — y al agrupar por etapas los marcos
+salen superpuestos, no por un fallo sino porque en el lienzo real hay nodos de
+etapas distintas compartiendo columna (`Discard Already Indexed` esta a 96
+unidades de `Embeddings`, con cajas de 190). Asi que aqui la posicion **se
+compone**: se conserva que nodos hay, como se llaman, de que tipo son y como se
+conectan, que es lo que un mapa de un flujo tiene que contar, y la pantalla dice
+al lado que las posiciones estan compuestas. Reuso: las etapas se declaran en
+`AREAS` como listas de columnas; el script se niega a dibujar si un nodo del
+export no esta declarado, si uno declarado no existe, o si dos marcos se pisan.
+
+### `scripts/build_schema_map.py`
+Lee la base y escribe `web/src/data/schema_map.json`: las 26 tablas agrupadas en
+siete familias, las 9 vistas, las 16 funciones del proyecto, y para cada objeto
+sus columnas, sus filas, su tamano y su `COMMENT` nativo. Alimenta la pantalla
+08. Problema que resuelve: cualquier cifra del esquema escrita a mano en el
+contenido de la web es mentira en cuanto haya una migracion — ya paso con la
+tabla del registro de modelos, que publicaba los v3 como activos cuando la web
+ya servia el v4. Aqui **no se escribe ningun hecho**: lo unico declarado es a
+que familia pertenece cada tabla, que es una decision de como contarlo. Las
+filas se cuentan con `count(*)` y no con la estimacion de `reltuples`, porque el
+numero se publica. Reuso: el script falla si aparece una tabla que no este ni en
+`FAMILIES` ni en `NOT_OURS`, asi que una tabla nueva no puede colarse sin que
+alguien decida donde va.
+
+### `scripts/build_knowledge_map.py`
+Dibuja el mapa de la pantalla 06: la salida del modelo desplegado sobre el plano
+temperatura x modulador, con las sintesis que existen encima. La metafora es de
+Ruben --el espacio de sintesis como un mapa a oscuras y el modelo como una
+brujula-- y la decision que importa fue no ilustrarla: se dibuja la rejilla real
+del simulador, no una recreacion. Lo que se propone es donde el modelo **duda**,
+medido por entropia, y no donde predice exito: un experimento en una casilla
+donde ya esta seguro confirma lo que sabia. Al dibujarlo salieron dos errores
+propios que una ilustracion habria escondido: los puntos no caian en la rejilla
+--el eje del modulador son siete valores redondos y el modulador real es
+continuo, asi que cada sintesis va ahora a su casilla mas cercana-- y la
+cobertura estaba contada sobre ternas (condicion, veredicto) en vez de casillas,
+lo que la inflaba del 29 % al 86 %. Reuso: las sintesis se leen con la consulta
+que el registro guarda para el conjunto del modelo, no con un filtro parecido
+escrito a mano, que dejaba entrar filas que el modelo nunca vio.
+
+### `scripts/build_graph_sample.py`
+Saca una vecindad del grafo de conocimiento para la pantalla 07. Problema que
+resuelve: el grafo tiene 6.506 nodos y dibujarlo entero da una maraña que decora
+sin informar -- y ademas no es lo que hace el agente, que camina unos pocos
+saltos desde un nodo. Se dibuja esa unidad, y a cada vecino se le anota su
+**grado**, que dice cuantas muestras mas cuelgan de el sin tener que dibujarlas:
+esa cifra es lo que convierte el dibujo en una respuesta. A dos saltos salian 160
+nodos y 149 eran muestras que comparten metal, porque el metal es un
+concentrador; de ahi que se quede en uno. Codigos de muestra y ligandos
+seudonimizados.
+
+### `scripts/build_prose_pages.py`
+Convierte la prosa revisada de los cuadernos (`handoff/gemini_back/`) en paginas
+de lectura bilingues junto a los cuadernos completos. Coexisten a proposito:
+`build_public_notebooks.py` publica el `.ipynb` entero --codigo, salidas y
+figuras, en el idioma en que se escribio, que en varios es una mezcla-- y eso
+sirve para auditar; estas paginas sirven para leer. Sustituye cada marca
+`> [FIGURA n de ...]` por la figura real, que ya paso por el saneado, y avisa en
+vez de publicar un texto que habla de una imagen que no esta.
+
+### `scripts/redact_video.py`
+Tapa con caja solida las regiones sensibles de los videos de las herramientas:
+ligandos sin publicar, codigos de muestra y la IP local. Reuso y aviso: las
+coordenadas son fijas porque se comprobo en fotogramas de varios momentos que la
+maquetacion no se mueve; si se regraba un video hay que volver a mirarlas. El
+primer intento uso crop+overlay encadenados y solo tapaba una de las cuatro
+regiones, porque cada eslabon reutilizaba la misma etiqueta como entrada del
+recorte y como base de la superposicion, y ffmpeg no duplica un flujo sin
+`split`. `drawbox` encadena con comas y ademas no deja nada reconstruible.

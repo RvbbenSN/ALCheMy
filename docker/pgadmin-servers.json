@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "ALCheMy DB",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "alchemy_db",
+      "Username": "alchemy_user",
+      "SSLMode": "prefer",
+      "Comment": "Registrado automaticamente por docker-compose. El host es el nombre del servicio, no localhost: pgAdmin habla con Postgres por la red interna de Docker."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { ExternalLink, Fingerprint, Link2, ScrollText, Shapes } from 'lucide-react'
-import { Badge, Card, Placeholder, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
+import { Link } from 'react-router-dom'
+import { Badge, Card, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
 import IngestedRowTree from '../components/IngestedRowTree.jsx'
@@ -8,7 +9,6 @@ import { SITE } from '../content/site.js'
 import {
   COLLECTION_CANVAS_INTRO,
   COLLECTION_HERO,
-  COLLECTION_PENDING,
   COLLECTION_PROBLEM,
   COLLECTION_ROW_INTRO,
   COLLECTION_TREE,
@@ -141,19 +141,19 @@ export default function DataCollection() {
 
       <section>
         <SectionTitle eyebrow="Where it lands">The PostgreSQL schema</SectionTitle>
-        <Placeholder source="scripts/init_db.sql, data_dictionary">
-          <Rich>{COLLECTION_PENDING.schema}</Rich>
-        </Placeholder>
+        <p className="max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+          Every row this workflow writes ends up in one governed schema, and every automated
+          decision it takes ends up in <code>audit_log</code> with a typed verdict and cause.{' '}
+          <Link to="/database" style={{ color: 'var(--accent-primary)' }}>
+            Screen 08 takes the schema apart
+          </Link>{' '}
+          — the tables, what each one holds, and how they feed each other.
+        </p>
       </section>
 
       <section>
         <SectionTitle eyebrow="The code itself">Notebooks behind this screen</SectionTitle>
         <NotebookList only="02" />
-      </section>
-
-      <section>
-        <SectionTitle eyebrow="Governance">Audit log</SectionTitle>
-        <Placeholder source="audit_log"><Rich>{COLLECTION_PENDING.audit}</Rich></Placeholder>
       </section>
     </div>
   )

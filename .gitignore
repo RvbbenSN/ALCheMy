@@ -37,15 +37,12 @@ dist/
 !/data/sample_demo/
 
 # Carpeta Privada de Metodología, Diario y Protocolos (OCULTA EN GITHUB)
-methodology/
 .agents/
 
 # Material de marca en bruto: moodboards, audio, .docx del guion, logos fuente.
 # Es material de trabajo, no producto. Lo publicable ya sale de aqui como
 # artefacto: los tokens en web/src/styles/tokens.css (generados por
 # scripts/build_design_tokens.py) y los favicons en web/public/.
-design_system/
-
 # Dependencias de Node (la app web se reconstruye con `npm install`)
 node_modules/
 
@@ -61,12 +58,27 @@ node_modules/
 Thumbs.db
 
 # Backups Privados (Ocultos de GitHub)
-backups/
-
 # Scripts Temporales y Borradores de Trabajo (Scratch)
-scratch/
-
 # Exports sueltos de conversaciones con Claude (no son código del proyecto)
 Conversacion con Claude*
 
 
+
+# Material de entrega a terceros (prosa saneada, prompts). Derivado y efimero:
+# se regenera con scripts/export_notebook_prose.py.
+
+# --------------------------------------------------------------------------
+# _lab/ : TODO el material de trabajo de Ruben, en un solo sitio.
+#
+# Dentro viven la bitacora y los roadmaps, el diseño de la web, las entregas a
+# terceros, los borradores y las copias de la base. Antes eran cinco carpetas
+# sueltas en la raiz con su propia linea aqui, y era facil anadir una sexta y
+# olvidarse de ignorarla. Ahora la regla es una sola y no depende de acordarse:
+# si esta en _lab/, no se publica.
+# --------------------------------------------------------------------------
+_lab/
+
+# Indice de trabajo para elegir y rotular figuras. Lo genera
+# extract_notebook_figures.py, cita titulos de seccion tal cual --y algunos
+# llevan un codigo de muestra dentro-- y no lo lee nada del sitio.
+scripts/figure_manifest.json

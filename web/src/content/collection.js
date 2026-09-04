@@ -79,9 +79,3 @@ export const COLLECTION_TREE = {
     'Note that `raw_data` holds only `x`, `y` and their labels. That is the **parser contract**: every technique, from a diffractogram to a thermogram to a micrograph, produces the same two sub-objects, so a query can span all nine without knowing anything about instruments.',
 }
 
-export const COLLECTION_PENDING = {
-  schema:
-    'Schema explorer pending: an entity diagram of the governed tables, with each column’s description read from the data_dictionary table itself — documented at 100% coverage.',
-  audit:
-    'Live table pending: timestamp, agent, action, verdict and cause for every automated decision. Sample codes and emails pseudonymized before display.',
-}

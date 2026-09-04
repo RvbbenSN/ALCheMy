@@ -139,7 +139,7 @@ ds_v3 = registrar_dataset(
     n_rows=len(df), n_features=X.shape[1], n_groups=int(groups.nunique()),
     target_column='ml_class',
     class_distribution=df['ml_class'].value_counts().to_dict(),
-    feature_source='v_ml_features v2 (scripts/ddl_ml_features_v2.sql)',
+    feature_source='v_ml_features v2 (scripts/sql/migrations/2026-08-29_ml_features_v2.sql)',
     filters_human=('Solo sintesis en combinatoria (HTS); sin acido tanico; sin medidas '
                    'marcadas ml_include=NO; MEZCLA contada como CRISTALINO.'),
     known_caveats=(

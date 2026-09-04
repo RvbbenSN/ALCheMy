@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 Excel Ingestion and Transformation</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./01_Excel_Ingestion_and_Transformation.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>🧪 Cuaderno 01: Ingeniería de variables químicas y canalización ETL</h1>
+<h3>📌 Objetivos:</h3>
+<ol>
+<li><strong>Carga del conjunto de datos crudo de síntesis:</strong> Ingerir el archivo Excel multirregistro del laboratorio (<code>data/raw/</code>).</li>
+<li><strong>Renombrado y normalización de columnas:</strong> Estandarizar los encabezados arbitrarios hacia un esquema SQL estricto.</li>
+<li><strong>Ingeniería de variables estequiométricas:</strong> Calcular los milimoles (mmol) activos tanto para ácidos y bases líquidos puros como para disoluciones acuosas molares.</li>
+<li><strong>Procesamiento de rampas térmicas:</strong> Extraer las pendientes de calentamiento y enfriamiento (°C/min), las temperaturas inicial, diana y final, y la duración de la meseta isotérmica (horas).</li>
+<li><strong>Saneamiento y desambiguación de datos:</strong> Auditar los metadatos (conformidad ISO 17025), asignar volúmenes de reactor por defecto, estandarizar la nomenclatura de ligandos, eliminar columnas innecesarias y desambiguar códigos de muestra duplicados (<code>_v2</code>, <code>_MW</code>, <code>_HTS</code>).</li>
+<li><strong>Suma de control MD5 para claves naturales de negocio:</strong> Generar una clave MD5 única a partir de 6 atributos de negocio fundamentales.</li>
+<li><strong>Perfilado de datos para análisis exploratorio (EDA):</strong> Generar un resumen exhaustivo de la estructura del conjunto de datos, evaluando tipos de datos, recuentos de valores nulos, cardinalidad de valores únicos y rangos de distribución.</li>
+<li><strong>Exportación de copia de seguridad local:</strong> Guardar el conjunto de datos maestro depurado en el archivo local <code>backups/df_final_limpio_backup.xlsx</code>.</li>
+<li><strong>Carga en base de datos PostgreSQL en producción (UPSERT):</strong> Sincronizar los registros en <code>alchemy_db</code> mediante <code>ON CONFLICT DO UPDATE</code> para preservar los datos generados en vivo por n8n.</li>
+</ol>
+<h2>📦 Paso 1: Importación de dependencias</h2>
+<h2>🏷️ Paso 2: Renombrado de encabezados (<code>column_mapping</code>)</h2>
+<h2>⚗️ Paso 3: Ingeniería estequiométrica para moduladores y disolventes</h2>
+<h3>🧪 Cálculos estequiométricos y fórmulas matemáticas:</h3>
+<blockquote>
+<p><strong>Corrección de unidades (2026-09-03): mL frente a µL.</strong> Este cuaderno asumía inicialmente que todas las columnas de aditivos estaban expresadas en microlitros. No es así. La evidencia reside en la fórmula de la propia columna <code>V total</code> en la hoja de cálculo original:</p>
+<pre><code>V total = SUMA(Q:AB) + SUMA(AE:AU)/1000
+</code></pre>
+<p>El divisor <code>/1000</code> se aplica exclusivamente al segundo bloque, lo que demuestra que el primero —donde residen <code>HCl (0,6M)</code>, <code>HCl (3M)</code> y <code>HF (3M)</code>— está registrado en <strong>mililitros</strong>. Esta distinción responde a la lógica de laboratorio: se trata de disoluciones <strong>diluidas</strong>, dosificadas en mL y que actúan a su vez como <strong>componentes del medio disolvente</strong>; las disoluciones concentradas y los líquidos puros se dosifican en µL.</p>
+<p><strong>La consecuencia fue grave y silenciosa:</strong> al dividir estos volúmenes entre 1.000, el agua aportada por la disolución desaparecía del cómputo. El volumen no cuadraba en un <strong>18 %</strong> de las síntesis, quedando esas filas clasificadas con composición desconocida. No faltaba disolvente alguno: <strong>faltaba el agua de la dilución</strong>. Con esta corrección, la cobertura del desglose del medio de reacción aumenta del <strong>81,7 %</strong> al <strong>99,5 %</strong> de las filas.</p>
+<p><strong>La base de datos ya está corregida</strong> mediante <code>src/fix_volume_units_2026_09.py</code>, que actualiza únicamente las columnas afectadas. Este cuaderno se repara para que una reingesta futura no reintroduzca el error, pero <strong>no se reejecuta</strong>: una ingesta completa sobrescribiría las correcciones químicas manuales consolidadas en la base de datos.</p>
+</blockquote>
+<h4>1. Tipo A: Disoluciones acuosas molares (ácidos y bases en disolución)</h4>
+<p>Conversión de volúmenes a milimoles activos. Atención estricta a las unidades: las disoluciones diluidas se introducen en mL y las concentradas en µL:</p>
+<pre><code>mmol_HCl = V_0.6M(mL) * 0.6 + V_1M(mL) * 1.0 + V_3M(mL) * 3.0 + V_5M(mL) * 5.0 + V_12M(mL) * 12.0
+mmol_HF = V_3M(mL) * 3.0
+mmol_KOH = V_10M(mL) * 10.0
+</code></pre>
+<h4>2. Tipo B: Ácidos orgánicos líquidos puros y moduladores</h4>
+<p>Cálculo de milimoles (mmol) activos directamente a partir del volumen dosificado V (µL), la densidad ρ (g/mL), el porcentaje de pureza P_% y el peso molecular MW (g/mol):</p>
+<pre><code>mmol = [V(µL) * ρ(g/mL) * P_%] / [100 * MW(g/mol)]
+</code></pre>
+<blockquote>
+<p><strong>Corrección de unidades (2026-08-29).</strong> Esta fórmula incluía un factor <code>* 10 / MW</code> en lugar de <code>/ (100 * MW)</code>: un error de <strong>1.000 veces en exceso</strong>. Como resultado, los siete moduladores líquidos puros quedaban calculados en <strong>µmol pero etiquetados como mmol</strong>, mientras que las especies de Tipo A (HCl, HF y KOH, derivadas de disoluciones molares) estaban calculadas correctamente.</p>
+<p>El perjuicio no radicaba en el factor de escala en sí mismo —una transformación lineal uniforme no afecta al entrenamiento de un modelo—, sino en que <strong>ambas familias se suman</strong> en <code>v_ml_features</code>. Al combinar milimoles con micromoles, la aportación de HCl (0,004) quedaba enmascarada frente a la de TFA (582), haciendo invisible para los modelos el modulador más recurrente de todo el registro histórico.</p>
+<p>La discrepancia se detectó mediante una auditoría fundamentada en criterio químico: el valor mediano para el ácido fórmico era de 1.168 «mmol», equivalente a <strong>54 g dentro de un reactor de 2,5 mL</strong>. Ninguna métrica estadística automatizada había alertado de la anomalía.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Modulador / Aditivo</th>
+  <th style="text-align:left">Fórmula</th>
+  <th style="text-align:center">Densidad ρ (g/mL)</th>
+  <th style="text-align:center">Pureza (%)</th>
+  <th style="text-align:center">Peso molecular MW (g/mol)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>Ácido fórmico</strong></td>
+  <td style="text-align:left">HCOOH</td>
+  <td style="text-align:center">1.22</td>
+  <td style="text-align:center">98.0%</td>
+  <td style="text-align:center">46.03</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Ácido acético</strong></td>
+  <td style="text-align:left">CH3COOH</td>
+  <td style="text-align:center">1.05</td>
+  <td style="text-align:center">99.8%</td>
+  <td style="text-align:center">60.05</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Ácido propiónico</strong></td>
+  <td style="text-align:left">CH3CH2COOH</td>
+  <td style="text-align:center">0.99</td>
+  <td style="text-align:center">99.5%</td>
+  <td style="text-align:center">74.08</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Ácido trifluoroacético (TFA)</strong></td>
+  <td style="text-align:left">CF3COOH</td>
+  <td style="text-align:center">1.49</td>
+  <td style="text-align:center">99.0%</td>
+  <td style="text-align:center">114.02</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Ácido tríflico</strong></td>
+  <td style="text-align:left">CF3SO3H</td>
+  <td style="text-align:center">1.70</td>
+  <td style="text-align:center">99.0%</td>
+  <td style="text-align:center">150.08</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Trietilamina (TEA)</strong></td>
+  <td style="text-align:left">(C2H5)3N</td>
+  <td style="text-align:center">0.726</td>
+  <td style="text-align:center">99.5%</td>
+  <td style="text-align:center">101.19</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Ácido metanosulfónico</strong></td>
+  <td style="text-align:left">CH3SO3H</td>
+  <td style="text-align:center">1.48</td>
+  <td style="text-align:center">99.5%</td>
+  <td style="text-align:center">96.11</td>
+</tr>
+</tbody>
+</table>
+<h4>3. Homogeneización del volumen total de agua:</h4>
+<pre><code>h2o_total_ml = V_pure_H2O(mL) + sum(V_aqueous_solutions(mL))
+</code></pre>
+<h2>🌡️ Paso 4: Procesador exhaustivo de rampas térmicas (tasas en °C/min)</h2>
+<h3>📈 Ecuaciones de velocidad de rampa térmica:</h3>
+<pre><code>Rate_heating = (T_target - T_initial) / (Time_heating(hours) * 60)   (°C/min)
+Rate_cooling = (T_target - T_final) / (Time_cooling(hours) * 60)   (°C/min)
+</code></pre>
+<p><em>Nota: Para el enfriamiento rápido por ventilador en microondas (<code>asap</code>), la duración de enfriamiento se fija en <strong>10 minutos</strong> (10/60 = 0,1667 horas) con una meseta isotérmica de 0 horas.</em></p>
+<h2>🧹 Paso 5: Saneamiento y desambiguación de datos</h2>
+<h2>🔑 Paso 6: Cálculo de la suma de control MD5 (claves naturales de negocio)</h2>
+<h2>📊 Paso 7: Análisis exploratorio de datos (EDA) y resumen del perfilado</h2>
+<h3>🔍 Métricas de perfilado automatizado:</h3>
+<ul>
+<li><strong>Tipos de datos y dtypes</strong> para cada columna.</li>
+<li><strong>Recuentos de valores no nulos frente a nulos</strong> y porcentaje de valores nulos (%).</li>
+<li><strong>Cardinalidad de valores únicos</strong> y rango de valores de muestra.</li>
+</ul>
+<h2>💾 Paso 8: Exportación de copia de seguridad local en Excel (<code>backups/</code>)</h2>
+<h2>🚀 Paso 9: Carga en base de datos PostgreSQL en producción (protocolo UPSERT / Merge)</h2>
+<h2>DUDAS</h2>
+<ul>
+<li>En la fórmula del Tipo A para HCl se incluyen términos para 0.6M, 1M, 3M, 5M y 12M, mientras que la nota metodológica de 2026-09-03 solo cita expresamente <code>HCl (0,6M)</code> y <code>HCl (3M)</code> (junto a <code>HF (3M)</code>) en el bloque de mL (columnas Q:AB). Sería conveniente confirmar si las concentraciones 1M, 5M y 12M figuran en el bloque en mL o en el de µL de la hoja Excel.</li>
+<li>El ácido clorhídrico 12M corresponde comercialmente a HCl concentrado (~37 % en peso). Dado que el texto explicativo asocia disoluciones concentradas a dosificación en µL y diluidas a mL, convendría verificar si <code>V_12M</code> se ingresa verdaderamente en mL o si debió pertenecer al bloque en µL.</li>
+<li>En el Objetivo 6 y en el Paso 6 se indica la suma de control MD5 «basada en 6 claves naturales de negocio». El texto original no enumera cuáles son esas 6 variables concretas; si se desea máxima claridad de cara a la versión web, valdría la pena explicitar sus nombres de columna en una futura iteración.</li>
+</ul>
+
+</div></body></html>

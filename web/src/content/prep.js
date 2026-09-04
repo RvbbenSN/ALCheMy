@@ -133,7 +133,7 @@ export const ELEMENT_INTRO = {
 
 export const METAL_FEATURES = [
   ['electronegativity_pauling', 'How strongly the metal pulls electron density from the linker. The classic scale.'],
-  ['electronegativity_allen', 'A second scale, computed from spectroscopic energies. Kept alongside Pauling because they disagree exactly where it matters, among the transition metals.'],
+  ['electronegativity_allen', 'A second scale, computed from spectroscopic energies. Computed here, but **dropped before training**: it is undefined for the lanthanides, so for Ce, La, Nd and Dy the value does not exist rather than being missing. Screen 04 tells that story.'],
   ['absolute_hardness_ev', 'Resistance to deformation of the electron cloud. Hard metals prefer hard donors — the HSAB rule, as a number.'],
   ['oxophilicity_kepp', 'Affinity for oxygen donors, which is what a carboxylate linker offers.'],
   ['polarizability_a3', 'How easily the electron cloud distorts. Governs the softer, less directional part of the bonding.'],

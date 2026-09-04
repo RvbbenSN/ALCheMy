@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 n8n Webhook Interactive Tester</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">Español</span><a href="./03_n8n_Webhook_Interactive_Tester.en.html">English</a><a class="back" href="/">&larr; Volver al sitio</a></div>
+<div class="banner"><strong>Copia de lectura.</strong> Esta es la narrativa del cuaderno, editada para leerse y traducida — no el cuaderno ejecutable, que se publica aparte con su código y sus salidas. Los códigos de muestra y los ligandos sin publicar van seudonimizados. Todas las figuras las produjo el propio cuaderno; para construir esta página no se reejecutó nada.</div>
+<h1>🧪 ALCheMy — Probador interactivo del webhook de n8n</h1>
+<p>Este cuaderno persigue dos objetivos fundamentales:</p>
+<ol>
+<li><strong>Validar exhaustivamente la casuística de la canalización de ingesta</strong>: un caso de éxito (<em>happy path</em>) para cada una de las 9 técnicas deterministas y de microscopía más las 2 técnicas procesadas mediante IA sobre documentos PDF, junto a la totalidad de las ramas de contingencia (<em>fallbacks</em>: correo no autorizado, tamaño de fichero excedido, registro duplicado, ausencia de <code>sample_code</code>, técnica no reconocida, extensión de fichero no válida, rechazo manual en aprobación L2, expiración temporal de aprobación y fallo del agente de IA).</li>
+<li><strong>Definir la estructura de un cliente en Python</strong> (<code>ALCheMyIngestionClient</code>) para el webhook de ingesta: la base para una futura API pública en producción. Aunque actualmente se comunica mediante peticiones HTTP directas con n8n, el contrato formal de invocación (<code>submit(file_path, technique, sample_code, ...)</code>) coincide con el que expondría un servicio backend desacoplado en FastAPI.</li>
+</ol>
+<h2>⚠️ Requisitos previos a la ejecución</h2>
+<ul>
+<li>El entorno <code>docker compose up -d</code> debe encontrarse en ejecución activa (contenedores de n8n, ejecutores auxiliares y base de datos PostgreSQL).</li>
+<li>El flujo de trabajo <strong>ALCheMy</strong> debe estar <strong>activo</strong> en n8n, y el nodo <code>Webhook</code> debe figurar <strong>habilitado</strong>. Si siguió la sesión de configuración inicial, ya se encuentra en este estado (inicialmente venía inactivo por defecto). Si se desactiva manualmente desde el editor, este cuaderno dejará de recibir respuesta al operar en <code>mode=&quot;prod&quot;</code>.</li>
+<li>Actualice (F5) la pestaña del navegador con la interfaz de n8n antes de ejecutar las celdas, evitando así discrepancias con versiones no sincronizadas del flujo.</li>
+<li>Asegure la instalación de las dependencias necesarias: <code>pip install requests psycopg2-binary python-dotenv</code>.</li>
+</ul>
+<h2>🧩 Estructura del cliente y API de ingesta</h2>
+<p>La clase <code>ALCheMyIngestionClient</code> encapsula las peticiones multipart POST dirigidas al webhook de n8n. Se ha concebido intencionadamente con una arquitectura ligera: un único método público (<code>submit</code>), sin lógica de negocio propia (la cual se delega íntegramente en el flujo de trabajo). Si en el futuro se despliega una capa API dedicada frente a n8n (mediante FastAPI para gestionar autenticación estricta, control de tasa de peticiones o validación previa de esquemas), el contrato funcional de <code>submit(...)</code> se mantendrá inalterado, modificándose exclusivamente el mecanismo de transporte subyacente.</p>
+<hr />
+<h2>✅ Parte 1 — Casos de éxito (Happy Path) por técnica</h2>
+<p>Se evalúa un caso práctico para cada una de las 11 combinaciones soportadas de técnica y enrutamiento: 6 procesadores deterministas convencionales, 3 flujos de microscopía (SEM, FESEM y TEM, ilustrando en FESEM el envío complementario de metadatos del instrumento) y 2 canales mediante agentes de IA aplicados a informes en formato PDF (ICP-OES y EA).</p>
+<p>Cada celda experimental espera un código de respuesta HTTP 200 acompañado del estado <code>status: success</code>. En caso de renombrado de ficheros en el lago de datos, ajuste la ruta correspondiente.</p>
+<h3>PXRD (.xrdml)</h3>
+<h3>VT-XRD (.brml)</h3>
+<h3>TGA (.txt)</h3>
+<h3>FTIR (.csv)</h3>
+<h3>Adsorción / BET (.xls)</h3>
+<h3>UV-Vis (.asc)</h3>
+<h3>SEM (.jpg + sidecar .txt de Hitachi)</h3>
+<p>Envío conjunto de la micrografía <strong>y</strong> de su fichero auxiliar de metadatos <code>.txt</code>. En los tres casos de microscopía se abarcan los tres formatos de metadatos reales presentes en el lago de datos:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Caso</th>
+  <th style="text-align:left">Formato del fichero auxiliar (<em>sidecar</em>)</th>
+  <th style="text-align:left">Origen de la lectura del aumento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>SEM</strong></td>
+  <td style="text-align:left">Archivo INI de Hitachi (<code>[SemImageFile]</code>, <code>Clave=Valor</code>)</td>
+  <td style="text-align:left">Extraído del fichero auxiliar</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>FESEM</strong></td>
+  <td style="text-align:left">Formato JEOL (<code>$CM_MAG</code>, <code>$$SM_WD</code>...)</td>
+  <td style="text-align:left">Extraído del fichero auxiliar</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>TEM</strong></td>
+  <td style="text-align:left">Sin fichero auxiliar</td>
+  <td style="text-align:left">Extraído del propio nombre del fichero (<code>_MAG_X3000_</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3>FESEM (.bmp, con metadatos adjuntos)</h3>
+<p>Este escenario demuestra el uso del nuevo parámetro: se transfiere la imagen generada por el microscopio JEOL (<code>.bmp</code>) <strong>simultáneamente</strong> con su fichero <code>.txt</code> complementario a través de <code>instrument_metadata_file</code>. El procesador determinista extrae el modelo del instrumento (<code>JEOL 7900F</code>), el aumento, el voltaje de aceleración y las anotaciones fijadas por el operador.</p>
+<h3>TEM (.jpg, sin fichero auxiliar; aumento codificado en el nombre)</h3>
+<p>Las adquisiciones de TEM no incorporan ficheros <code>.txt</code> independientes; el aumento de trabajo se obtiene directamente a partir del nombre del fichero (<code>..._MAG_X3000_001.jpg</code>).</p>
+<h3>ICP-OES (.pdf, procesado mediante agente de IA)</h3>
+<p>Esta bifurcación es gestionada por el agente de IA (Gemini) y un nodo de evaluación de confianza. Cuando la confianza estimada es igual o superior al 85 %, el registro se inserta automáticamente en la base de datos; si se sitúa por debajo de este umbral, se remite una notificación de aprobación manual L2 por correo electrónico (véase la Parte 2 para los casos de rechazo y expiración temporal).</p>
+<h3>EA / CHNS (.pdf, procesado mediante agente de IA)</h3>
+<hr />
+<h2>🧯 Parte 2 — Casuísticas de contingencia y control de errores (Fallbacks)</h2>
+<p>Cada contingencia genera un registro en la tabla <code>audit_log</code> clasificando formalmente los campos <code>verdict</code>, <code>cause</code> y <code>result</code> (según la especificación <code>workflows/error_payloads_matrix.csv</code>). Los primeros 7 casos se encuentran totalmente automatizados en este cuaderno. Los 3 restantes (rechazo humano, expiración temporal de la aprobación y caída del agente de IA) exigen intervención de un operador o esperas de reloj reales; se describen minuciosamente en lugar de forzar simulaciones ficticias en el cuaderno, evitando proyectar una falsa verificación de cobertura.</p>
+<h3>1. Dirección de correo no autorizada (Lista blanca)</h3>
+<p>El nodo <code>Auto-Enroll Whitelist</code> da de alta cualquier dirección de correo nueva con estado activo (mecanismo de autorregistro para demostraciones). No obstante, <strong>no reactiva</strong> aquellas direcciones que un administrador haya bloqueado expresamente (<code>ON CONFLICT ... DO UPDATE SET last_seen = ...</code> no altera el campo <code>active</code>). En consecuencia, para verificar esta contingencia resulta necesario revocar previamente un usuario de manera manual.</p>
+<h3>2. Tamaño de fichero excedido (&gt; 10 MB)</h3>
+<p>Se genera dinámicamente un archivo sintético de prueba para superar el límite establecido, prescindiendo de la necesidad de almacenar ficheros voluminosos reales en el lago de datos.</p>
+<h3>3. Registro de medida duplicada</h3>
+<p>Reenvío del mismo fichero de PXRD utilizado en el caso de éxito (<strong>ejecute previamente la celda de PXRD de la Parte 1</strong>; de lo contrario, el sistema no detectará duplicidad alguna).</p>
+<h3>4. Ausencia de sample_code</h3>
+<p>Petición desprovista del identificador <code>sample_code</code>, cuyo nombre de archivo no contiene ningún patrón de muestra identificable (<code>RS\d+</code>, <code>IEF-\d+</code>, <code>RSMix\d+</code>, <code>LP\d+</code>).</p>
+<h3>5. Técnica analítica no reconocida</h3>
+<h3>6. Extensión no válida para técnica determinista</h3>
+<p>Se especifica <code>technique=&quot;PXRD&quot;</code>, pero se transfiere un fichero <code>.csv</code> de FTIR. El enrutador determinista (asociación técnica-extensión) carece de reglas que validen dicha correspondencia.</p>
+<h3>7. Extensión no válida para procesamiento mediante IA (PDF)</h3>
+<p>Se declara <code>technique=&quot;ICP-OES&quot;</code>, pero se remite un fichero <code>.xrdml</code> en lugar de un documento <code>.pdf</code>.</p>
+<h3>8. Rechazo humano en fase de aprobación L2 (manual)</h3>
+<p>Este ensayo no puede automatizarse íntegramente: precisa ejecución activa y posterior pulsación de la acción <strong>Decline</strong> en el correo de validación remitido a <code>researcher@hidden</code> (o a la dirección asignada en <code>researcher_email</code>).</p>
+<ol>
+<li>Ejecute la celda inferior para iniciar la extracción mediante IA.</li>
+<li>Si el índice de confianza del agente se sitúa por debajo del 85 %, se recibirá un correo con las opciones <strong>Approve</strong> y <strong>Disapprove</strong>.</li>
+<li>Seleccione <strong>Disapprove</strong>. El flujo registrará en <code>audit_log</code> el motivo <code>REJECTED_BY_RESEARCHER</code> y cancelará la inserción del ensayo.</li>
+<li>Si la confianza supera el 85 %, el flujo no solicitará confirmación humana. Repita el ensayo con otro informe PDF o reduzca transitoriamente el valor de <code>CONFIDENCE_THRESHOLD</code> en el nodo <code>Confidence Evaluator</code>.</li>
+</ol>
+<h3>9. Expiración de tiempo de aprobación (manual, dependiente del tiempo)</h3>
+<p>Utiliza el mismo desencadenante que el caso precedente, pero <strong>omitiendo deliberadamente responder al correo</strong>. Transcurridos 5 minutos (<code>resumeAmount: 5</code> en el nodo <code>Send message and wait for response</code>), el flujo deriva automáticamente a la rama de error registrando la causa <code>APPROVAL_TIMEOUT_OR_ERROR</code>. Para no bloquear la celda durante este intervalo, consulte la tabla <code>audit_log</code> transcurrido el tiempo límite:</p>
+<pre><code class="language-sql">SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 5;
+</code></pre>
+<h3>10. Fallo operativo del agente de IA (manual, mediante alteración de entorno)</h3>
+<p>Para provocar esta contingencia de forma fehaciente es preciso interrumpir la comunicación con el modelo LLM:</p>
+<ol>
+<li>En el fichero <code>.env</code>, altere temporalmente el valor de <code>GEMINI_API_KEY</code> (respaldando previamente la clave original).</li>
+<li>Ejecute en terminal <code>docker compose restart n8n</code>.</li>
+<li>Ejecute la celda correspondiente empleando cualquier fichero PDF o imagen de prueba.</li>
+<li>El servicio responderá con un código HTTP 400 asociado a la causa <code>AI_AGENT_EXTRACTION_FAILED</code>, documentada en <code>audit_log</code>.</li>
+<li>Restituya la variable <code>GEMINI_API_KEY</code> legítima y reinicie nuevamente el contenedor de n8n.</li>
+</ol>
+<p>Este procedimiento no se ejecuta de forma automática en el cuaderno para preservar la integridad operativa del entorno de contenedores.</p>
+<hr />
+<h2>🔎 Verificación final en <code>audit_log</code></h2>
+<p>Consulta SQL inmediata para auditar el conjunto de registros generados a lo largo de la sesión de pruebas.</p>
+<hr />
+<h2>🤖 Batería de verificación automatizada integral</h2>
+<p>Las celdas individuales permiten examinar cada casuística de forma aislada y pormenorizada. Para contrastar la integridad global de la canalización de ingesta, se dispone de un script que evalúa simultáneamente los 9 casos de éxito y los 7 fallbacks automatizables. Además, el script comprueba que el registro resultante se haya insertado en <code>characterization_measurements</code> conteniendo todos los metadatos analíticos pertinentes (y no limitándose a validar una respuesta HTTP 200):</p>
+<pre><code class="language-bash">python src/verify_webhook_pipeline.py                # evaluación completa
+python src/verify_webhook_pipeline.py --happy        # únicamente casos de éxito
+python src/verify_webhook_pipeline.py --fallbacks    # únicamente contingencias
+python src/verify_webhook_pipeline.py --only PXRD    # técnica aislada
+python src/verify_webhook_pipeline.py --table characterization_measurements  # fuerza la tabla canónica
+</code></pre>
+<p>La celda inferior transmite automáticamente la variable <code>MEASUREMENTS_TABLE</code> (definida al comienzo del cuaderno) al script de verificación. Modifique dicha variable si desea dirigir las pruebas contra la tabla canónica en lugar de la tabla de ensayo.</p>
+<p>Esta suite automatizada es fundamental dado que el sistema integra múltiples puntos de fallo desacoplados (el entorno aislado de ejecución en Python de n8n, la gestión de datos binarios multipart, las tablas de enrutamiento por extensión y las restricciones de clave foránea en PostgreSQL). La validación puramente manual propiciaba la aparición de regresiones: la corrección de un módulo podía comprometer inadvertidamente la funcionalidad de otro.</p>
+<hr />
+<h2>⚠️ Restricciones operativas del entorno de ejecución de Python en n8n</h2>
+<p>Los nodos <strong>Code</strong> en Python no se ejecutan sobre un intérprete CPython convencional, sino en un entorno restringido (<em>sandbox</em>) que intercepta determinadas instrucciones sin emitir advertencias detalladas. Los siguientes comportamientos se han determinado empíricamente en el entorno de ejecución activo:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Operación</th>
+  <th style="text-align:left">Error observado</th>
+  <th style="text-align:left">Solución adoptada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><code>open</code> convencional bloqueado</td>
+  <td style="text-align:left"><code>name 'open' is not defined</code></td>
+  <td style="text-align:left">Incluir <code>import io; open = io.open</code> al inicio del script</td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>open(...)</code> en <strong>modo texto</strong> (<code>'r'</code>) inoperativo</td>
+  <td style="text-align:left"><code>'NoneType' object is not callable</code></td>
+  <td style="text-align:left">Lectura en modo binario (<code>'rb'</code>) y decodificación explícita con <code>.decode(...)</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Bloqueo de <code>getattr</code> y <code>type</code></td>
+  <td style="text-align:left"><code>name 'getattr' is not defined</code></td>
+  <td style="text-align:left">Omitir su uso; capturar excepciones mediante <code>try/except</code> y evaluar <code>str(e)</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Recepción de binarios como referencias y no como datos</td>
+  <td style="text-align:left"><code>base64.b64decode</code> produce datos corruptos</td>
+  <td style="text-align:left">Conversión intermedia con el nodo <code>Move Binary Data</code> (<code>keepAsBase64</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Asimismo, debe considerarse una particularidad técnica del <strong>nodo Webhook</strong>: renombra sistemáticamente los ficheros recibidos bajo un identificador genérico secuencial (<code>data_file0</code>, <code>data_file1</code>...), omitiendo los nombres de campo originales del formulario multipart. Por ello, el fichero de texto con metadatos ingresa como <code>data_file1</code> y debe reasignarse formalmente en el nodo <code>Normalize Webhook Body</code>.</p>
+<p>Aviso de mantenimiento: el código de los procesadores analíticos se encuentra duplicado (en los ficheros independientes <code>src/parse_*.py</code> y embebido dentro de los nodos Code de n8n). La sincronización manual resulta propensa a desajustes y provocó que el procesamiento de microscopía en n8n operase desactualizado respecto a JEOL durante meses. Para asegurar la paridad de versiones:</p>
+<pre><code class="language-bash">python src/sync_parsers_to_n8n.py --dry-run   # comprobar divergencias
+python src/sync_parsers_to_n8n.py             # propagar desde src/ hacia n8n
+</code></pre>
+<hr />
+<h2>🧪 La rama de extracción mediante IA (ICP / EA): validación experimental y supervisión HITL</h2>
+<p>Esta canalización llegó a <strong>insertar datos químicos erróneos</strong> en la base de datos de producción. Por rigor metodológico, se documenta tanto el origen del incidente como el protocolo de verificación diseñado.</p>
+<h3>Descripción del fallo</h3>
+<p>Durante el procesado del informe <code>24AQ0245</code> (cuantificación por ICP de Fe, Ni y P), el agente de IA generó el siguiente resultado asignándole un <strong>índice de confianza del 95 %</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Variable</th>
+  <th style="text-align:left">Contenido real del informe PDF</th>
+  <th style="text-align:left">Valor generado por el modelo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Analista</td>
+  <td style="text-align:left">Laura Garcia Firgaira</td>
+  <td style="text-align:left"><code>John Doe</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Fecha</td>
+  <td style="text-align:left">17/06/2024</td>
+  <td style="text-align:left"><code>2023-10-26</code></td>
+</tr>
+<tr>
+  <td style="text-align:left">Elementos analizados</td>
+  <td style="text-align:left">Fe, Ni, P</td>
+  <td style="text-align:left">Ni, Fe, <strong>Co, Mg, Ca</strong> (sin cuantificar P)</td>
+</tr>
+<tr>
+  <td style="text-align:left">Ni</td>
+  <td style="text-align:left">10,8 ± 0,5</td>
+  <td style="text-align:left">25,12</td>
+</tr>
+</tbody>
+</table>
+<p>Ninguno de estos registros figuraba en el documento original: el modelo construyó la respuesta infiriéndola del nombre del archivo y de las directrices del prompt.</p>
+<h3>Causa fundamental</h3>
+<p>El contenido binario del PDF <strong>nunca llegó a transferirse al modelo</strong>. El parámetro <code>passthroughBinaryPdfs</code> en el nodo del agente únicamente transmite archivos identificados formalmente como PDF, mientras que el fichero se recibió etiquetado como <code>application/octet-stream</code> (asignación por defecto de clientes HTTP ante extensiones desconocidas). Al carecer de documento de entrada, el modelo respondió proyectando las instrucciones del prompt. Actualmente, el nodo <code>Normalize Webhook Body</code> asigna dinámicamente el <code>mimeType</code> adecuado basándose en la extensión real del fichero.</p>
+<h3>Conclusión técnica crítica</h3>
+<p><strong>El umbral de confianza del 85 % carecía de valor como filtro de seguridad.</strong> Dado que el propio modelo autocalibra su confianza, cuando se produce una alucinación sobre los datos, se alucina igualmente el parámetro de certidumbre: asignó un 95 % a una serie de datos inventados. Un control de calidad sustentado sobre el mismo sistema que se pretende fiscalizar resulta ineficaz. La incidencia fue identificada únicamente mediante la auditoría manual contrastando la respuesta con el documento fuente.</p>
+<h3>Estado operativo actual</h3>
+<p>El módulo procesa correctamente: ante ese mismo informe reproduce fielmente <code>Laura Garcia Firgaira</code>, <code>CENTRAL RESEARCH LABORATORIES</code>, <code>Ni 10,8 ± 0,5</code> y <code>P 21,4 ± 1,1</code>, en concordancia con el informe.</p>
+<p>No obstante, <strong>la inserción desatendida en base de datos (L4) permanece intencionadamente inhabilitada</strong>: las dos salidas del nodo condicional <code>If - Needs Human Approval?</code> convergen en la notificación de aprobación por correo electrónico, impidiendo el ingreso de datos procedentes de PDF sin supervisión de un operador. Para reactivar el modo autónomo será necesario validar la tasa de acierto frente a múltiples informes analíticos reales (hasta la fecha solo se ha auditado uno; el segundo no pudo completarse al haberse agotado la cuota de la API de Gemini) y restituir la conexión entre la salida FALSE del nodo <code>If</code> y la operación <code>DB Update</code>.</p>
+<h3>Consideraciones sobre el modelado de datos</h3>
+<p>Un único informe en PDF puede contener resultados para <strong>múltiples muestras</strong> (el informe de ICP incluye determinaciones para <code>SMP-0012</code> y <code>SMP-0015</code>). Sin embargo, el registro se almacena actualmente bajo el único identificador <code>sample_code</code> transmitido en la petición. Debe evaluarse si resulta conveniente segregar estos informes compuestos en registros independientes por muestra.</p>
+<hr />
+<h2>⛔ Restricciones temporales de validación: agotamiento de créditos de IA</h2>
+<p>Las canalizaciones de <code>SEM</code>, <code>FESEM</code>, <code>TEM</code>, <code>ICP-OES</code> y <code>EA</code> interactúan con modelos de Gemini. Su verificación se encuentra temporalmente en suspenso debido al agotamiento del saldo de la cuenta:</p>
+<pre><code>HTTP 429 - &quot;Your prepayment credits are depleted.
+            Please go to AI Studio to manage your project and billing.&quot;
+</code></pre>
+<p>Esta contingencia <strong>no se soluciona de forma pasiva</strong>. Conviene catalogar con precisión los tres tipos de error HTTP 429 experimentados durante el desarrollo:</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Mensaje de error</th>
+  <th style="text-align:left">Tipología</th>
+  <th style="text-align:left">Resolución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><code>The service is receiving too many requests from you</code></td>
+  <td style="text-align:left">Límite de frecuencia por minuto</td>
+  <td style="text-align:left">Se restablece automáticamente en segundos</td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>You exceeded your current quota</code></td>
+  <td style="text-align:left">Límite de cuota del plan</td>
+  <td style="text-align:left">Depende del ciclo de facturación</td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>Your prepayment credits are depleted</code></td>
+  <td style="text-align:left"><strong>Saldo prepagado consumido</strong></td>
+  <td style="text-align:left"><strong>Requiere recarga de fondos en la cuenta</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Estado verificado de estas 5 técnicas previo al consumo de saldo:</p>
+<ul>
+<li><strong>SEM / FESEM / TEM</strong>: Los tres flujos completaron su ciclo integral de almacenamiento (inserción en base de datos con extracción fidedigna de metadatos de Hitachi, JEOL y codificación en nombre de fichero) a lo largo de tres ejecuciones consecutivas. La etapa determinista está validada; la restricción afecta exclusivamente a la generación descriptiva de morfología mediante visión artificial.</li>
+<li><strong>ICP-OES</strong>: Contrastado con éxito frente a un informe PDF real en una ocasión.</li>
+<li><strong>EA</strong>: Es la única técnica cuya extracción <strong>no ha podido comprobarse</strong> tras la corrección del parámetro <code>mimeType</code>. Constituye la prioridad de validación una vez se disponga de saldo.</li>
+</ul>
+<h3>Protocolo de reactivación tras la recarga de fondos</h3>
+<pre><code class="language-bash">python src/verify_webhook_pipeline.py          # ejecución de los 18 casos de prueba
+</code></pre>
+<p>Si la extracción refleja con exactitud el contenido de los informes a lo largo de diversos ensayos, se podrá reconectar la salida <strong>FALSE</strong> del nodo <code>If - Needs Human Approval?</code> a <code>DB Update</code> para habilitar nuevamente la ingesta desatendida (L4). Hasta entonces, permanecerá desacoplada deliberadamente.</p>
+<h2>DUDAS</h2>
+<ul>
+<li>En las líneas 78 y 141 del original figuraba la expresión <code>85%%</code> con doble signo de porcentaje (habitual al escapar caracteres en cadenas de formato en Python). Se ha normalizado a <code>85 %</code> en la redacción.</li>
+<li>En el apartado 4 de la Parte 2 se mencionan expresiones regulares de códigos de muestra (<code>RS\d+</code>, <code>IEF-\d+</code>, <code>RSMix\d+</code>, <code>LP\d+</code>). Parecen corresponder a prefijos de muestras sin seudonimizar del histórico del laboratorio; se han conservado literalmente al tratarse de patrones de código.</li>
+<li>En la tabla de la sección de la rama de IA (línea 248) se incluye el nombre propio del analista (<code>Laura Garcia Firgaira</code>) y el centro (<code>CENTRAL RESEARCH LABORATORIES</code>). Se han mantenido intactos al formar parte del registro literal del fallo auditado.</li>
+</ul>
+
+</div></body></html>

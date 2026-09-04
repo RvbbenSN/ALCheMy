@@ -39,7 +39,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "design_system" / "assets" / "logo" / "logo_alchemy_dark.svg"
+SRC = ROOT / "_lab" / "design_system" / "assets" / "logo" / "logo_alchemy_dark.svg"
 OUT_MARK = ROOT / "web" / "public" / "logo-mark.svg"
 OUT_LOCKUP = ROOT / "web" / "public" / "logo-lockup.svg"
 

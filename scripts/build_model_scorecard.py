@@ -150,6 +150,45 @@ def baseline(dist):
     }
 
 
+def leer_registro(cur):
+    """Todos los modelos entrenados, para la tabla de gobernanza de la 05.
+
+    Se publican todos, tambien los retirados: el argumento de esa pantalla es
+    que un modelo invalido se marca en vez de borrarse, y esconderlo aqui seria
+    contradecirlo en el mismo sitio donde se cuenta.
+    """
+    cur.execute(
+        """
+        SELECT m.model_slug, m.algorithm, m.status,
+               d.n_rows, d.n_groups,
+               (SELECT metric_value FROM ml_model_metrics k
+                 WHERE k.model_id = m.model_id AND k.metric_name = 'f1_macro'
+                   AND k.class_name = '' AND k.split = 'cv') AS f1_macro,
+               (SELECT artifact_size_bytes FROM ml_model_artifacts a
+                 WHERE a.model_id = m.model_id) AS tam,
+               m.model_slug
+          FROM ml_models m
+          LEFT JOIN ml_datasets d ON d.dataset_id = m.dataset_id
+         ORDER BY m.status <> 'active', m.model_slug
+        """
+    )
+    filas = []
+    for slug, algo, estado, n_rows, n_groups, f1, tam, _ in cur.fetchall():
+        filas.append({
+            "name": slug,
+            "algo": algo,
+            "f1": ("%.3f" % f1) if f1 is not None else "\u2014",
+            "size": ("%.1f MB" % (tam / 1e6)) if tam else "\u2014",
+            "status": (estado or "").upper(),
+            # La nota que guarda la base esta en espanol y el sitio esta en
+            # ingles, asi que aqui se publica el tamano del conjunto, que es un
+            # hecho y no hay que traducirlo.
+            "note": ("%s rows across %d groups." % ("{:,}".format(n_rows), n_groups)
+                     if n_rows and n_groups else ""),
+        })
+    return filas
+
+
 def main() -> int:
     conn = connect()
     cur = conn.cursor()
@@ -183,6 +222,11 @@ def main() -> int:
         salida[slot] = datos
         print("%-11s %-32s F1 macro %.3f" % (slot, datos["slug"],
                                              datos["metrics"]["f1_macro"]["value"]))
+
+    salida["registry"] = leer_registro(cur)
+    print("registro    %d modelos (%d activos)"
+          % (len(salida["registry"]),
+             sum(1 for m in salida["registry"] if m["status"] == "ACTIVE")))
 
     salida["baseline"] = baseline(salida["primary"]["dataset"]["classDistribution"])
     print("trivial     %-32s F1 macro %.3f"

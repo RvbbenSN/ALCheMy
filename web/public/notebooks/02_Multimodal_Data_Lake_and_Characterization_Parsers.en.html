@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 Multimodal Data Lake and Characterization Parsers</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">English</span><a href="./02_Multimodal_Data_Lake_and_Characterization_Parsers.es.html">Español</a><a class="back" href="/">&larr; Back to the site</a></div>
+<div class="banner"><strong>Reading copy.</strong> This is the narrative of the notebook, edited for reading and translated — not the executable notebook, which is published separately with its code and outputs. Sample identifiers and unpublished ligand names are pseudonymised. Every figure below was produced by the notebook itself; none of the code was re-executed to build this page.</div>
+<h1>🔬 Notebook 02: Multimodal Data Lake Architecture &amp; Characterization Parsing Strategy</h1>
+<p><strong>Project:</strong> ALCheMy - Materials Chemistry Smart Lab<br />
+<strong>Author:</strong> Rubén Serrano Nieto &amp; AI Agent Pair<br />
+<strong>Date:</strong> August 2026</p>
+<hr />
+<h2>📌 Executive Summary &amp; Purpose</h2>
+<p>This notebook serves as the <strong>master interactive logbook and architectural documentation</strong> for the multimodal characterisation ingestion subsystem of ALCheMy.</p>
+<p>It details:</p>
+<ol>
+<li><strong>The Data Lake Architecture (<code>data/raw_datalake/</code>):</strong> How raw analytical instrument files across <strong>9 characterisation techniques</strong> were catalogued, flattened, and cleaned.</li>
+<li><strong>The Relational &amp; JSONB Database Model (<code>characterization_measurements</code>):</strong> How high-dimensional spectroscopic, thermogravimetric, physisorption, and optical datasets are structured in PostgreSQL.</li>
+<li><strong>The Deterministic Python Parsers Module (<code>src/characterization_parser.py</code>):</strong> The zero-cost, high-throughput Python functions engineered for automated parsing (&lt;1 ms per file).</li>
+<li><strong>The Hybrid n8n Workflow Ingestion Strategy:</strong> The modular architecture that isolates deterministic script execution from LLM AI Agents (handling PDF extraction and SEM vision tasks).</li>
+</ol>
+<hr />
+<h2>🗂️ Step 1: Multimodal Data Lake Inventory (9 Analytical Techniques)</h2>
+<p>To eliminate nested directory hierarchies, redundant files, and vendor software lock-ins, the raw Data Lake was structured into <strong>9 flat directories</strong> under <code>data/raw_datalake/</code> (mounted 1:1 inside Docker at <code>&lt;path omitted&gt;</code>):</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Technique Index</th>
+  <th style="text-align:left">Analytical Technique</th>
+  <th style="text-align:left">Data Lake Directory</th>
+  <th style="text-align:left">File Format</th>
+  <th style="text-align:left">File Count</th>
+  <th style="text-align:left">Primary Parser Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>1</strong></td>
+  <td style="text-align:left"><strong>Powder X-Ray Diffraction (PXRD)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/PXRD/</code></td>
+  <td style="text-align:left"><code>.xrdml</code> (PANalytical XML)</td>
+  <td style="text-align:left"><strong>1,870</strong></td>
+  <td style="text-align:left"><code>xml.etree.ElementTree</code> (0€ cost)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>2</strong></td>
+  <td style="text-align:left"><strong>Thermogravimetric Analysis (TGA / ATG)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/TGA/</code></td>
+  <td style="text-align:left"><code>.txt</code> (TA Instruments 7 signals)</td>
+  <td style="text-align:left"><strong>37</strong></td>
+  <td style="text-align:left"><code>pandas.read_csv</code> (0€ cost)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>3</strong></td>
+  <td style="text-align:left"><strong>FTIR Spectroscopy</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/FTIR/</code></td>
+  <td style="text-align:left"><code>.csv</code> (Thermo Nicolet 2D Spectrum)</td>
+  <td style="text-align:left"><strong>78</strong></td>
+  <td style="text-align:left"><code>pandas.read_csv</code> (0€ cost)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>4</strong></td>
+  <td style="text-align:left"><strong>ICP-OES Metal Quantification</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/ICP/</code></td>
+  <td style="text-align:left"><code>.pdf</code> (Central Research Labs)</td>
+  <td style="text-align:left"><strong>16</strong></td>
+  <td style="text-align:left"><code>pypdf</code> + LLM AI Agent</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>5</strong></td>
+  <td style="text-align:left"><strong>Organic Elemental Analysis (EA CHNS)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/EA/</code></td>
+  <td style="text-align:left"><code>.pdf</code> (FLASH 2000 Reports)</td>
+  <td style="text-align:left"><strong>12</strong></td>
+  <td style="text-align:left"><code>pypdf</code> + LLM AI Agent</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>6</strong></td>
+  <td style="text-align:left"><strong>Gas Adsorption &amp; BET Area</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/BET/</code></td>
+  <td style="text-align:left"><code>.xls</code> (Micromeritics 3Flex)</td>
+  <td style="text-align:left"><strong>87</strong></td>
+  <td style="text-align:left"><code>pandas.read_excel</code> (0€ cost)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>7</strong></td>
+  <td style="text-align:left"><strong>Variable-Temperature XRD (VT-XRD)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/VT-XRD/</code></td>
+  <td style="text-align:left"><code>.brml</code> (Bruker ZIP/XML Container)</td>
+  <td style="text-align:left"><strong>82</strong></td>
+  <td style="text-align:left"><code>zipfile</code> + <code>xml.etree</code> (0€ cost)</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>8</strong></td>
+  <td style="text-align:left"><strong>UV-Vis Spectroscopy</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/UV_Vis/</code></td>
+  <td style="text-align:left"><code>.asc</code> / <code>.csv</code> (PerkinElmer Lambda)</td>
+  <td style="text-align:left"><strong>100</strong></td>
+  <td style="text-align:left">Custom ASCII parser + Tauc plot</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>9</strong></td>
+  <td style="text-align:left"><strong>Scanning Electron Microscopy (SEM)</strong></td>
+  <td style="text-align:left"><code>data/raw_datalake/SEM/</code></td>
+  <td style="text-align:left"><code>.jpg</code> (Image) + <code>.txt</code> (Metadata)</td>
+  <td style="text-align:left"><strong>3,434</strong></td>
+  <td style="text-align:left">Hitachi <code>.txt</code> parser + LLM Vision</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2>🏛️ Step 2: Database Relational &amp; JSONB Schema (<code>characterization_measurements</code>)</h2>
+<p>To ensure high-performance SQL querying while accommodating heterogeneous experimental payloads, characterisation records are managed in a <strong>child table linked by <code>sample_code</code></strong>:</p>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS characterization_measurements (
+    measurement_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sample_code VARCHAR(50) NOT NULL REFERENCES synthesis_experiments(sample_code) ON DELETE CASCADE,
+    technique VARCHAR(30) NOT NULL, -- e.g. PXRD, TGA, FTIR, ICP_OES, EA, BET, VT-XRD, UV_VIS, SEM
+    measurement_tag VARCHAR(100) DEFAULT 'as_synthesized',
+    operator_name VARCHAR(100),
+    instrument_name VARCHAR(100),
+    file_name VARCHAR(255) NOT NULL,
+    raw_file_path TEXT NOT NULL,
+    data_json JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- High-speed JSONB GIN index for nested web app queries
+CREATE INDEX IF NOT EXISTS idx_char_jsonb ON characterization_measurements USING gin (data_json);
+</code></pre>
+<h3>Standardised <code>data_json</code> Payload Structure</h3>
+<p>Every technique populates two principal sub-dictionaries within <code>data_json</code>:</p>
+<ol>
+<li><strong><code>header_metadata</code></strong>: Instrument parameters, radiation wavelength, initial sample mass, optical mode, acquisition timestamp, and sample identifiers.</li>
+<li><strong><code>raw_data</code></strong>: High-density numerical arrays (<code>x_label</code>, <code>y_label</code>, <code>x</code>, <code>y</code>) or structured multi-temperature collections (<code>temperature_series</code> array of objects for VT-XRD).</li>
+</ol>
+<hr />
+<h2>💡 Step 3: Key Technical Discoveries Across Formats</h2>
+<h3>🔓 1. Unencrypted Bruker <code>.brml</code> Containers (VT-XRD)</h3>
+<ul>
+<li><strong>Discovery:</strong> <code>.brml</code> files are standard <strong>ZIP archives</strong> containing unencrypted XML files (<code>RawData0.xml</code>, <code>RawData1.xml</code>... <code>MeasurementContainer.xml</code>).</li>
+<li><strong>VT-XRD Multi-Temperature Ramp:</strong> Individual <code>.brml</code> files contain paired XML files: <code>RawData(2*i)</code> records the target temperature step (e.g. <code>29 °C</code>, <code>39 °C</code>, <code>49 °C</code>... <code>500 °C</code>), while <code>RawData(2*i + 1)</code> stores the 3,145 diffraction intensity points collected at that temperature.</li>
+<li><strong>Impact:</strong> Fully readable natively in Python using <code>zipfile</code> and <code>xml.etree.ElementTree</code> in &lt;1 ms without requiring proprietary vendor licences.</li>
+</ul>
+<h3>⚖️ 2. TA Instruments 7-Signal Thermogravimetry (TGA)</h3>
+<ul>
+<li><strong>Discovery:</strong> SDT Q600 thermobalances record <strong>7 real-time instrument signals</strong>: Time (min), Furnace Temperature (°C), Weight (mg), Heat Flow (mW), Crucible Temp Difference (°C), Thermocouple Voltage (µV), and Sample Purge Flow (mL/min).</li>
+<li><strong>Impact:</strong> Parsed completely into <code>data_json</code> to support simultaneous plotting of TGA gravimetric mass loss and DSC caloric phase transitions.</li>
+</ul>
+<h3>🖼️ 3. Hitachi TM-1000 SEM Automatic Scale Bar Calibration</h3>
+<ul>
+<li><strong>Discovery:</strong> Every <code>.jpg</code> SEM micrograph is accompanied by an instrument-generated <code>.txt</code> sidecar file containing <code>Magnification</code> (e.g. <code>300x</code>), <code>MicronMarker</code> (e.g. <code>300 um</code>), <code>AcceleratingVoltage</code> (<code>15000V</code>), and <code>Detector</code> (<code>BSE</code>).</li>
+<li><strong>Impact:</strong> Eliminates manual scale calibration. Python reads the scale parameters directly, allowing Vision LLM AI Agents to describe crystal morphology systematically.</li>
+</ul>
+<hr />
+<h2>🤖 Step 4: Hybrid Granular n8n Ingestion Strategy</h2>
+<p>To guarantee operational stability, zero API cost for numerical data, and robust error isolation, the n8n ingestion workflow implements a <strong>Modular Router Architecture</strong>:</p>
+<ol>
+<li><strong>Extension Switch Node (Router):</strong> Evaluates incoming file paths across the Data Lake.</li>
+<li><strong>Deterministic Script Sub-workflows (95% of Data):</strong> <code>.xrdml</code>, <code>.brml</code>, <code>.txt</code>, <code>.csv</code>, and <code>.xls</code> files execute Python functions from <code>src/characterization_parser.py</code> in &lt;1 ms with zero LLM API cost.</li>
+<li><strong>LLM Extraction Sub-workflows (5% of Data):</strong> Unstructured <code>.pdf</code> analytical reports (ICP-OES and EA CHNS) are routed to LLM Extraction Nodes configured with <code>CHARACTERIZATION_DICTIONARY_SPEC.md</code> as the System Prompt.</li>
+<li><strong>Vision LLM Sub-workflow:</strong> <code>.jpg</code> SEM images are processed by Vision AI models to generate structured <code>ai_vision_analysis</code> morphological summaries.</li>
+</ol>
+<hr />
+<h3>🏁 Summary of Accomplishments</h3>
+<ul>
+<li><strong>Data Lake Cleaned &amp; Flattened:</strong> 9 analytical techniques catalogued into flat directories without subfolder nesting.</li>
+<li><strong>Master Specification Created:</strong> <code>methodology/CHARACTERIZATION_DICTIONARY_SPEC.md</code> documents XPaths, SQL columns, and JSONB schemas.</li>
+<li><strong>Python Parser Module Deployed:</strong> <code>src/characterization_parser.py</code> fully validated across all input formats.</li>
+<li><strong>Ready for n8n Pipeline:</strong> Docker mount <code>./data:&lt;path omitted&gt;</code> ready for automated ingestion into the PostgreSQL database <code>alchemy_db</code>.</li>
+</ul>
+
+</div></body></html>

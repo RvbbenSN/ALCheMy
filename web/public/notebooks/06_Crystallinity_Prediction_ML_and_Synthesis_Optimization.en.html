@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 Crystallinity Prediction ML and Synthesis Optimization</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">English</span><a href="./06_Crystallinity_Prediction_ML_and_Synthesis_Optimization.es.html">Español</a><a class="back" href="/">&larr; Back to the site</a></div>
+<div class="banner"><strong>Reading copy.</strong> This is the narrative of the notebook, edited for reading and translated — not the executable notebook, which is published separately with its code and outputs. Sample identifiers and unpublished ligand names are pseudonymised. Every figure below was produced by the notebook itself; none of the code was re-executed to build this page.</div>
+<h1>Notebook 06 — Predicting Synthesis Crystallisation: An End-to-End Data Science Case Study</h1>
+<p><strong>Project:</strong> ALCheMy · <strong>Author:</strong> Rubén Serrano Nieto &amp; AI Agent Pair · <strong>Date:</strong> 2026-09-02 (v4)</p>
+<hr />
+<h3>How to Read this Notebook</h3>
+<p>This notebook navigates an <strong>end-to-end data science lifecycle</strong>: from formulating the initial laboratory inquiry to evaluating predictive models and identifying governing chemical drivers. It is not merely a model training script; it is a transparent scientific logbook documenting the rationale behind every decision, <strong>including those that failed</strong>.</p>
+<p>It is structured according to the <strong>10-stage methodological framework</strong>, the widely adopted modern refinement of <strong>CRISP-DM</strong> (<em>Cross-Industry Standard Process for Data Mining</em>, 1999, the enduring de facto standard). Both frameworks express identical underlying principles at differing granularity; the 10-stage variant decouples early scoping phases where experimental research projects face their greatest vulnerabilities.</p>
+<table>
+<thead>
+<tr>
+  <th>Stage (10-Stage Framework)</th>
+  <th>CRISP-DM Phase</th>
+  <th>Notebook Section</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1. Problem Understanding</td>
+  <td>Business Understanding</td>
+  <td>§1</td>
+</tr>
+<tr>
+  <td>2. Analytic Approach</td>
+  <td>Business Understanding</td>
+  <td>§2</td>
+</tr>
+<tr>
+  <td>3. Data Requirements</td>
+  <td>Data Understanding</td>
+  <td>§3</td>
+</tr>
+<tr>
+  <td>4. Data Collection</td>
+  <td>Data Understanding</td>
+  <td>§4</td>
+</tr>
+<tr>
+  <td>5. Data Understanding</td>
+  <td>Data Understanding</td>
+  <td>§5 (EDA)</td>
+</tr>
+<tr>
+  <td>6. Data Preparation</td>
+  <td>Data Preparation</td>
+  <td>§6 (ETL)</td>
+</tr>
+<tr>
+  <td>7. Modelling</td>
+  <td>Modeling</td>
+  <td>§7</td>
+</tr>
+<tr>
+  <td>8. Evaluation</td>
+  <td>Evaluation</td>
+  <td>§8</td>
+</tr>
+<tr>
+  <td>9. Deployment</td>
+  <td>Deployment</td>
+  <td>§9</td>
+</tr>
+<tr>
+  <td>10. Feedback</td>
+  <td>Deployment</td>
+  <td>§10</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The workflow is an iterative loop rather than a linear sequence</strong>, as evidenced throughout this notebook, currently in its third iteration. The initial cycle progressed to Stage 8 with apparently promising metrics; a chemical domain audit returned it to Stages 3 and 6. The second iteration corrected those deficiencies only to stall on a subtle <strong>unit conversion discrepancy</strong> detectable solely by scrutinising original spreadsheet formulas.</p>
+<blockquote>
+<p><strong>Note on Figures.</strong> Figure titles, axis labels, and annotations are presented in English (following academic publication standards); the narrative reasoning is presented in Spanish.</p>
+</blockquote>
+<h3>Table of Contents</h3>
+<ul>
+<li><strong>§1</strong> Problem Formulation · <strong>§2</strong> Classification vs Regression · <strong>§3</strong> Data Requirements</li>
+<li><strong>§4</strong> Data Lineage and Provenance · <strong>§5</strong> Exploratory Data Analysis (EDA) · <strong>§6</strong> Data Preparation &amp; ETL</li>
+<li><strong>§7</strong> Predictive Modelling · <strong>§8</strong> Performance Evaluation · <strong>§9</strong> Model Deployment &amp; Registry · <strong>§10</strong> Feedback &amp; Continuous Improvement</li>
+</ul>
+<hr />
+<blockquote>
+<h3>📌 Version Revisions: The Volumetric Unit Discrepancy</h3>
+<p>Previous iterations assumed that <strong>all</strong> additive volume columns in the master laboratory workbook were expressed in microlitres. They were not. The discrepancy was uncovered directly within the spreadsheet calculation for <code>V total</code>:</p>
+<pre><code>V total = SUMA(Q:AB) + SUMA(AE:AU)/1000
+</code></pre>
+<p>The <code>/1000</code> divisor applied <strong>exclusively to the second block</strong> proves that the first block—housing <code>HCl (0,6M)</code>, <code>HCl (3M)</code>, and <code>HF (3M)</code>—was recorded in <strong>millilitres</strong>. This aligns with experimental laboratory practice: dilute aqueous acids are dosed in millilitres and function as part of the primary solvent matrix, whereas concentrated acids and neat organic modulators are dosed in microlitres.</p>
+<p><strong>The operational impact was critical and silent:</strong> dividing these volumes by 1,000 caused the associated water volume to vanish. Consequently, 18% of synthesis records failed volumetric mass balances and were mischaracterised as having unknown solvent composition. Following the correction implemented in <code>src/fix_volume_units_2026_09.py</code>, complete solvent breakdown coverage increased from 81.7% to 99.8% across the high-throughput synthesis subset.</p>
+</blockquote>
+<hr />
+<h1>§1. Problem Formulation</h1>
+<h3>The Laboratory Inquiry</h3>
+<p>Can we predict whether a hypothetical hydrothermal synthesis mixture will yield a crystalline metal-organic framework (MOF), an amorphous precipitate, or an unreacted solution before committing experimental reagents and autoclave time?</p>
+<h3>Practical Utility</h3>
+<p>High-throughput screening (HTS) plates accommodate 24 or 96 reaction wells. In exploratory synthesis campaigns, random combinatorial parameter exploration typically yields high failure rates (&gt;70% amorphous or unreacted outcomes). A predictive ranking model enables prioritizing reaction conditions that maximise crystallization probability, effectively filtering out non-viable parameter space.</p>
+<h3>Pre-Established Success Criteria</h3>
+<p>Defined <strong>prior to model training</strong> to prevent post-hoc rationalisation:</p>
+<ul>
+<li><strong>Baseline Benchmark</strong>: Must outperform a stratified baseline and the majority-class naive predictor (predicting the majority incipient class).</li>
+<li><strong>Evaluation Metric</strong>: Macro-averaged F1 score (F1_macro) and Matthews Correlation Coefficient (MCC) across 3 classes, ensuring minority crystalline outcomes are not sacrificed for overall accuracy.</li>
+<li><strong>Minimum Operational Target</strong>: F1_macro &gt;= 0.50 under spatially and temporally grouped cross-validation.</li>
+</ul>
+<h1>§2. Analytic Approach</h1>
+<h3>Why Classification Rather than Regression?</h3>
+<p>Although powder X-ray diffraction yields continuous numerical descriptors (e.g. <code>amorphous_fraction_blank</code>, <code>n_peaks</code>), crystallisation in exploratory materials chemistry represents a categorical, multi-modal phase phenomenon:</p>
+<ol>
+<li>Continuous crystallinity descriptors exhibit non-linear physical regimes and zero-inflation.</li>
+<li>The chemist's primary screening decision is discrete: <em>did this condition yield a crystalline framework worth scaling up?</em></li>
+<li>Phase transitions between amorphous glassy gels and crystalline solids involve nucleation barriers, best framed as class boundaries.</li>
+</ol>
+<h3>The Three Target Classes</h3>
+<ul>
+<li><strong>AMORFO (Amorphous)</strong>: Featureless diffuse scatter; absence of coherent Bragg reflections; non-crystalline solid or clear solution.</li>
+<li><strong>INCIPIENTE (Incipient)</strong>: Poorly crystalline or disordered framework; broad reflections, often coexisting with a pronounced diffuse halo; partial crystallisation.</li>
+<li><strong>CRISTALINO (Crystalline)</strong>: Sharp, well-defined Bragg reflections; high peak-to-background ratio; established crystal lattice.</li>
+</ul>
+<h1>§3. Data Requirements</h1>
+<p>Predictive features must capture the complete thermodynamic and kinetic state of each synthesis autoclave:</p>
+<ul>
+<li><strong>Inorganic Precursor Parameters</strong>: Metal identity, oxidation state, ionic radius, electronegativity, charge density, and active millimoles.</li>
+<li><strong>Organic Linker Parameters</strong>: Chemical formula, molecular weight, denticity, coordination geometry, and active millimoles.</li>
+<li><strong>Modulator &amp; Additive Stoichiometry</strong>: Active millimoles of pure liquid acids (formic, acetic, propionic, TFA, triflic), organic bases (TEA), and aqueous mineral acids (HCl, HF, KOH).</li>
+<li><strong>Solvent Composition &amp; Dilution</strong>: Primary solvent volumes (water, DMF, DEF, ethanol), total reaction volume, and molar concentrations.</li>
+<li><strong>Thermal Profile</strong>: Heating ramp rate (°C/min), target isothermal temperature (°C), plateau duration (hours), and cooling ramp rate (°C/min).</li>
+</ul>
+<h1>§4. Data Collection &amp; Lineage</h1>
+<h3>4.1 Data Architecture from Lab Notebook to Machine Learning</h3>
+<p>Experimental syntheses recorded in multi-tab laboratory workbooks (<code>data/raw/</code>) undergo automated transformation via Notebook 01:</p>
+<ol>
+<li>Column standardisation and schema mapping.</li>
+<li>Stoichiometric calculations for liquid pure acids and aqueous molar solutions.</li>
+<li>Thermal ramp parameter parsing.</li>
+<li>Relational UPSERT ingestion into PostgreSQL (<code>synthesis_experiments</code>).</li>
+<li>PXRD pattern integration from the multimodal Data Lake (<code>characterization_measurements</code>).</li>
+<li>Feature extraction via <code>src/pxrd_descriptors.py</code> into <code>pxrd_descriptors</code>.</li>
+</ol>
+<h3>4.2 Chemical Featurisation</h3>
+<p>Raw chemical names are converted into physically meaningful descriptors:</p>
+<ul>
+<li><strong>Metals</strong>: Ionic radius (Shannon), Pauling electronegativity, group, period, valence electrons, hardness (Pearson HSAB).</li>
+<li><strong>Linkers</strong>: Topological descriptors, coordination sites, aromatic ring counts, pKa estimates.</li>
+</ul>
+<h1>§5. Exploratory Data Analysis (EDA)</h1>
+<h3>5.0 Cohort Selection: Eliminating Confounding Factors</h3>
+<p>A critical confounding factor was identified in early iterations: mixing conventional single-autoclave syntheses (Teflon-lined steel bombs in ovens) with high-throughput screening plates (HTS multireactor blocks).</p>
+<ul>
+<li><strong>Conventional syntheses</strong> had been run historically to optimise already-known crystalline phases, introducing extreme selection bias.</li>
+<li><strong>Thermal physics differ fundamentally</strong>: microwave and metal heating blocks transfer heat substantially faster than a bulk solvothermal autoclave.
+Consequently, modelling is restricted strictly to the <strong>HTS cohort</strong> (<code>synthesis_type = 'HTS'</code>).</li>
+</ul>
+<h3>5.1 SQL Extraction Filters</h3>
+<table>
+<thead>
+<tr>
+  <th>Filter Condition</th>
+  <th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>synthesis_type = 'HTS'</code></td>
+  <td>Homogeneous thermal kinetics and unbiased screening exploration</td>
+</tr>
+<tr>
+  <td><code>label_value &lt;&gt; 'SIN_MUESTRA'</code></td>
+  <td>Excludes empty or unrecovered wells</td>
+</tr>
+<tr>
+  <td>Exclude <code>ml_include = 'NO'</code></td>
+  <td>Eliminates unresolvable duplicates and documented metal oxides (§6.3)</td>
+</tr>
+<tr>
+  <td>Map <code>MEZCLA → CRISTALINO</code></td>
+  <td>Multi-phase crystalline mixtures confirm framework crystallisation</td>
+</tr>
+<tr>
+  <td>Exclude <code>linker &lt;&gt; 'Tannic acid'</code></td>
+  <td>Tannic acid acts as a biological macromolecule violating small-molecule assumptions (§6.4)</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="/figures/nb06-01.png" alt="Figure 1, produced by notebook 06." loading="lazy"><figcaption>Figure 1, produced by notebook 06.</figcaption></figure>
+<h3>5.2 Data Profiling</h3>
+<p>The dataset comprises 2,172 raw historical synthesis records, filtering down to the homogeneous HTS dataset. Automated profiling checks data types, null fractions, and unique values per feature.</p>
+<h3>5.3 Missing Values: Imputation vs Chemical Meaning</h3>
+<p>Missing values in chemical formulations are rarely missing completely at random (MCAR):</p>
+<ul>
+<li>A null volume for an additive denotes <strong>zero added volume</strong>, not an unrecorded value. Imputing with column medians would introduce non-existent reagents into syntheses.</li>
+<li>Structural reagent nulls are filled with physical zero (<code>0.0</code>).</li>
+</ul>
+<h3>5.4 Class Imbalance</h3>
+<p>The target distribution within the filtered HTS cohort reveals substantial class imbalance:</p>
+<ul>
+<li>The majority class is <strong>INCIPIENTE</strong> (~64% of syntheses).</li>
+<li><strong>AMORFO</strong> comprises ~25%.</li>
+<li><strong>CRISTALINO</strong> comprises only ~11% (167 cases).
+This 5.8:1 imbalance invalidates standard classification accuracy: a naive model predicting solely INCIPIENTE achieves ~64% accuracy while providing zero predictive utility. Class weighting (<code>class_weight='balanced'</code>) is enforced across all algorithms.</li>
+</ul>
+<figure><img src="/figures/nb06-02.png" alt="Figure 2, produced by notebook 06." loading="lazy"><figcaption>Figure 2, produced by notebook 06.</figcaption></figure>
+<h3>5.5 Numerical Feature Distributions</h3>
+<p>Inspection of continuous features reveals that process parameters are <strong>discretised in practice</strong>:</p>
+<ul>
+<li>Temperatures take only nine distinct values across the training set, and two of them account for most of the record.</li>
+<li>Reaction times take three: 24 h, 48 h and 72 h.</li>
+<li>Modulator volumes span several orders of magnitude, exhibiting heavy right-tailed skewness.</li>
+</ul>
+<figure><img src="/figures/nb06-03.png" alt="Figure 3, produced by notebook 06." loading="lazy"><figcaption>Figure 3, produced by notebook 06.</figcaption></figure>
+<h3>5.6 Correlation Structures</h3>
+<p>Cross-correlation analysis demonstrates distinct blocks of highly collinear variables:</p>
+<ul>
+<li>Metal physical descriptors (radius, atomic weight, electronegativity) form tightly coupled correlation clusters.</li>
+<li>Solvent fraction ratios exhibit compositional constraint collinearly (summing to unity).</li>
+</ul>
+<figure><img src="/figures/nb06-04.png" alt="Figure 4, produced by notebook 06." loading="lazy"><figcaption>Figure 4, produced by notebook 06.</figcaption></figure>
+<h3>5.7 Bivariate Class Separation</h3>
+<p>Evaluating individual feature distributions grouped by crystallisation outcome reveals that no single variable linearly separates crystalline from amorphous outcomes.</p>
+<figure><img src="/figures/nb06-05.png" alt="Figure 5, produced by notebook 06." loading="lazy"><figcaption>Figure 5, produced by notebook 06.</figcaption></figure>
+<h3>5.8 Hidden Data Leakage: Grouped Plate Architecture</h3>
+<p>Syntheses conducted simultaneously within the same multireactor block share identical thermal ramps, identical operator handling, and identical reagent batches. Random cross-validation splits would place syntheses from the same plate into both training and validation folds, leaking batch effects and yielding unrealistically optimistic validation metrics.
+<strong>Validation must be grouped by synthesis plate</strong> (<code>GroupKFold</code> on <code>synthesis_plate</code>).</p>
+<figure><img src="/figures/nb06-06.png" alt="Figure 6, produced by notebook 06." loading="lazy"><figcaption>Figure 6, produced by notebook 06.</figcaption></figure>
+<h3>5.9 Principal Component Analysis (PCA)</h3>
+<p>Unsupervised projection across the chemical descriptor space demonstrates significant clustering governed by metal identity rather than continuous reaction conditions.</p>
+<figure><img src="/figures/nb06-07.png" alt="Figure 7, produced by notebook 06." loading="lazy"><figcaption>Figure 7, produced by notebook 06.</figcaption></figure>
+<h1>§6. Data Preparation &amp; ETL</h1>
+<h3>6.1 The Volumetric Discrepancy Resolution</h3>
+<p>As detailed in the version log, unit standardisation resolved the phantom volume discrepancies, increasing valid solvent breakdown coverage to 99.8%.</p>
+<h3>6.2 Data Quality Corrections</h3>
+<ol>
+<li>Standardisation of ligand nomenclature (<code>LIG-A</code>, <code>LIG-B</code>, <code>LIG-C</code>, <code>LIG-D</code>).</li>
+<li>Resolution of duplicate sample codes using suffix disambiguation (<code>_v2</code>, <code>_HTS</code>).</li>
+<li>Alignment of stoichiometric units to active millimoles (mmol).</li>
+</ol>
+<h3>6.3 Sample Uniqueness and Insoluble Oxides</h3>
+<p>Syntheses yielding purely insoluble binary metal oxides (e.g. TiO2, Fe2O3) rather than metal-organic networks were flagged and excluded under <code>ml_include = 'NO'</code>, ensuring the model learns coordination framework formation.</p>
+<h3>6.4 Exclusion of Tannic Acid</h3>
+<p>Tannic acid represents an extraordinary polyphenol ligand whose polydisperse molecular structure and extreme coordination capacity distort stoichiometric feature spaces. It was removed based on chemical domain consensus.</p>
+<h3>6.5 Feature Selection &amp; Dimensionality Reduction</h3>
+<p>Uninformative constants and duplicate tracking columns were pruned, leaving a curated set of chemical, stoichiometric and thermodynamic predictors.</p>
+<h3>6.6 Imputation Strategy</h3>
+<p>Deterministic zero-filling for unadded reagents; iterative k-NN imputation for minor missing physical descriptors, verified against known elemental tables.</p>
+<figure><img src="/figures/nb06-08.png" alt="Figure 8, produced by notebook 06." loading="lazy"><figcaption>Figure 8, produced by notebook 06.</figcaption></figure>
+<h1>§7. Predictive Modelling</h1>
+<h3>7.1 Experimental Design</h3>
+<p>Six algorithmic families spanning different inductive biases were benchmarked:</p>
+<ol>
+<li><strong>Dummy Baseline Classifier</strong>: Stratified and majority-class prediction.</li>
+<li><strong>Logistic Regression (L2 regularised)</strong>: Linear baseline establishing linear separability.</li>
+<li><strong>Gaussian Naive Bayes</strong>: Probabilistic baseline assuming conditional independence.</li>
+<li><strong>Random Forest</strong>: Non-linear ensemble insensitive to monotonic feature scaling.</li>
+<li><strong>Extra Trees Classifier</strong>: Randomised decision trees with enhanced variance reduction.</li>
+<li><strong>Gradient Boosted Trees (LightGBM / HistGradientBoosting)</strong>: Sequentially boosted shallow trees optimising multinomial log-loss.</li>
+</ol>
+<h3>7.2 Grouped Cross-Validation Protocol</h3>
+<p>To honour the grouped plate structure demonstrated in §5.8, all models are evaluated via <strong>GroupKFold cross-validation (5 folds)</strong> grouped strictly on <code>synthesis_plate</code>. No synthesis condition from a validation plate ever appears within the corresponding training fold.</p>
+<h3>7.3 Dual Formulation: Full Model vs Actionable Model</h3>
+<p>Two distinct feature formulations are evaluated:</p>
+<ul>
+<li><strong>Full Model (39 features)</strong>: Incorporates all metal descriptors, linker parameters, solvent ratios, modulators, and process conditions. Evaluates total learnable signal.</li>
+<li><strong>Actionable Model (Process &amp; Formulation Only)</strong>: Excludes metal and linker intrinsic descriptors, restricting inputs strictly to laboratory variables a chemist can tune for an already-selected metal-linker pairing (additive volumes, solvent fractions, temperatures, reaction times).</li>
+</ul>
+<h1>§8. Performance Evaluation</h1>
+<blockquote>
+<p><em>Stage 8 — Evaluation. Not merely &quot;what metric was achieved?&quot; but &quot;is this metric trustworthy, and what does it convey to experimental chemists?&quot;.</em></p>
+</blockquote>
+<h3>8.1 Performance Metrics</h3>
+<table>
+<thead>
+<tr>
+  <th>Metric</th>
+  <th>Measurement Scope</th>
+  <th>Methodological Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Macro F1 (F1_macro)</strong></td>
+  <td>Unweighted mean of class F1 scores</td>
+  <td><strong>Primary metric.</strong> Heavily penalises neglecting the 167 crystalline cases</td>
+</tr>
+<tr>
+  <td><strong>Balanced Accuracy</strong></td>
+  <td>Mean recall evaluated within each class</td>
+  <td>Interpretable: &quot;correctly identifies X% of true crystalline phases&quot;</td>
+</tr>
+<tr>
+  <td><strong>MCC</strong></td>
+  <td>Multi-class Matthews Correlation Coefficient (−1 to +1)</td>
+  <td>Rigorous chance-adjusted correlation: 0 indicates random performance</td>
+</tr>
+<tr>
+  <td><strong>Accuracy</strong></td>
+  <td>Fraction of total correct predictions</td>
+  <td><strong>Diagnostic warning only</strong>: a naive majority predictor achieves ~64%</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Reminder from §2: <strong>MRE, RMSE, and R² do not apply</strong>—they evaluate regression tasks.</p>
+</blockquote>
+<figure><img src="/figures/nb06-09.png" alt="Figure 9, produced by notebook 06." loading="lazy"><figcaption>Figure 9, produced by notebook 06.</figcaption></figure>
+<h3>8.2 Analysis of Empirical Results</h3>
+<p><strong>1. Genuine predictive signal exists, but it is modest.</strong> The leading full model achieves <strong>F1_macro ≈ 0.52</strong>, compared to <strong>0.26</strong> for the dummy baseline: an exact two-fold improvement. The associated MCC evaluates to ≈ 0.31, confirming a statistically authentic yet moderate correlation.</p>
+<p><strong>2. Correcting the volumetric units did NOT improve model performance, and this must be stated transparently.</strong> The previous iteration, where 18% of synthesis solvent compositions were flagged as unknown, achieved an F1_macro of 0.522. The corrected dataset, boasting 99.8% solvent completeness, evaluated to 0.517. <strong>The difference of 0.005 is seven times smaller than cross-validation standard deviation</strong> (±0.036): statistically, the models are identical.</p>
+<blockquote>
+<p>This represents an uncomfortable and honest scientific finding. Completing solvent composition for an entire fifth of the dataset <strong>conferred zero additional predictive power</strong>. Two interpretations exist, neither of which can be definitively resolved from current data: either solvent formulation does not govern crystallisation to the extent chemical intuition assumes, or it does govern it via mechanisms not captured by linear volume fractions (such as solution pH, which was not experimentally recorded). What was gained is that <strong>the numbers genuinely represent what they claim to represent</strong>, which is a prerequisite for chemical interpretability.</p>
+</blockquote>
+<p><strong>3. The actionable model experiences substantial degradation.</strong> Omitting metal and linker intrinsic descriptors causes performance to drop to <strong>0.393</strong> with <strong>MCC ≈ 0.10</strong>—exceeding random chance, but weak.</p>
+<blockquote>
+<p><strong>Unvarnished chemical interpretation:</strong> within this historical dataset, <strong>the vast majority of what the machine learning model learns is the identity of the metal-linker system, rather than the applied synthesis conditions.</strong> This does not imply that synthesis conditions are irrelevant. Rather, it demonstrates that <em>within this historical dataset</em>, conditions were not varied with sufficient breadth to render their effects learnable (§5.5: ~13 temperatures, ~9 reaction times).</p>
+</blockquote>
+<p><strong>4. Naive Bayes collapses below the random baseline.</strong> This is not an implementation defect: Naive Bayes assumes features are conditionally independent given the class, whereas §5.6 demonstrated pronounced correlation blocks. <strong>Its failure quantifies the critical importance of feature covariance.</strong></p>
+<figure><img src="/figures/nb06-10.png" alt="Figure 10, produced by notebook 06." loading="lazy"><figcaption>Figure 10, produced by notebook 06.</figcaption></figure>
+<h3>8.3 Error Analysis: Chemical Plausibility of Misclassifications</h3>
+<p>The critical consideration is not merely <em>how frequently</em> the model fails, but <strong>the directionality of its errors</strong>. The ordinal crystallisation pattern is cleanly observed in one direction, but only partially in the other.</p>
+<p><strong>For amorphous syntheses, behaviour aligns with physical intuition:</strong> misclassifications predominantly confound &quot;amorphous&quot; with &quot;incipient&quot;—a boundary that in experimental diffraction patterns is a matter of degree, where two expert crystallographers might disagree. Severe errors (classifying an amorphous outcome as crystalline) are rare.</p>
+<p><strong>For crystalline syntheses, the behaviour is less forgiving.</strong> While most errors assign crystalline cases to the neighbouring incipient class, the fraction misclassified as <strong>amorphous</strong>—the most severe failure mode—is <strong>double</strong> that of the reverse error (15.6% vs 7.9%). This indicates that the model <strong>struggles to generalise across the minority crystalline class</strong>, and when it fails, it fails completely. With only 167 crystalline cases against 967 incipient records, and given that crystalline outcomes exhibit diverse polymorphic forms, this limitation was anticipated; it remains <strong>the primary weakness of the model</strong>.</p>
+<p><strong>Operational consequences:</strong> For Stage 9—ranking synthesis candidates to populate a 24-well multireactor plate—this limitation is manageable: the requirement is that promising candidates rank higher in relative probability, rather than assigning perfect absolute probabilities. However, it refutes any claim that &quot;the model almost never commits severe errors&quot;.</p>
+<figure><img src="/figures/nb06-11.png" alt="Figure 11, produced by notebook 06." loading="lazy"><figcaption>Figure 11, produced by notebook 06.</figcaption></figure>
+<h3>8.4 Chemical Interpretability: Feature Blocks vs Isolated Variables</h3>
+<p><strong>Why evaluate feature blocks?</strong> With highly correlated descriptors (§5.6), attribution algorithms distribute importance arbitrarily among collinear inputs. Interpreting <code>electronegativity_pauling</code> in isolation from <code>absolute_hardness_ev</code> would represent over-interpretation.</p>
+<p>Evaluating importance by chemical family (aggregating permutation feature importance):</p>
+<ul>
+<li><strong>Metal chemistry dominates completely, both in aggregate and per variable</strong> (sum of 0.071 across 7 features). Dominant drivers are Shannon ionic radius and charge density, governing the electrostatic strength of metal-phosphonate coordination. This represents a direct physical mechanism rather than an algorithmic artifact.</li>
+<li><strong>Process parameters rank second, nearly matching metal chemistry on a per-variable basis</strong> (sum of 0.039 across only 4 features: 0.0099 each vs 0.0101 for metals). Temperature and duration exert significant leverage, constrained solely by their narrow historical sampling range (§5.5).</li>
+<li><strong>Linker descriptors rank lower</strong> (sum of 0.028 across 6 features, 0.0046 per variable): with only 4 distinct linkers in the dataset, there is limited variability to learn.</li>
+<li><strong>Solvent formulation is by far the weakest predictor per variable</strong> (0.0011 per column across 22 features, one-ninth the influence of metals), despite being <strong>fully corrected and validated</strong> in §6.1. <strong>Repairing the data did not transform it into predictive signal.</strong> In fact, 12 of the 22 solvent variables exhibit negative permutation importance: permuting them slightly improves validation performance, which is the operational definition of noise.</li>
+</ul>
+<blockquote>
+<p><strong>Chemical context.</strong> That solvent fractions contribute minimal importance does not prove they are chemically inactive. Rather, it indicates that <em>these 22 composition fractions, under this sample size and model architecture</em>, fail to separate outcomes. What genuinely governs crystallisation kinetics is likely in-situ pH, which was not historically recorded.</p>
+</blockquote>
+<figure><img src="/figures/nb06-12.png" alt="Figure 12, produced by notebook 06." loading="lazy"><figcaption>Figure 12, produced by notebook 06.</figcaption></figure>
+<p><strong>Interpreting the SHAP Beeswarm Plot:</strong> Each point represents a synthesis. Horizontal displacement reflects the log-odds push toward the CRISTALINO class. High values (red) located to the right indicate that elevated values of that feature favour crystallisation.</p>
+<hr />
+<h1>§9. Model Deployment &amp; Registry</h1>
+<h3>9.1 Model Serialisation</h3>
+<p>Trained pipelines (preprocessing, imputer, feature selectors, and calibrated classifier) are exported using <code>joblib</code> into <code>models/</code>. Serialising full pipelines prevents train-test feature misalignment during inference.</p>
+<h3>9.2 Model Registry Architecture</h3>
+<p>Model metadata is tracked in PostgreSQL within a dedicated registry table:</p>
+<ul>
+<li>Hyperparameters, feature schema versions, cross-validation metrics (F1_macro, MCC, balanced accuracy).</li>
+<li>Training git commit hash, data snapshot MD5 checksum, and training timestamp.</li>
+</ul>
+<h3>9.3 Deployment Pipeline</h3>
+<p>The deployed model is exposed via the n8n orchestration platform and local CLI utilities (<code>src/predict_synthesis.py</code>), accepting hypothetical stoichiometry and outputting ranked crystallisation probabilities for high-throughput screening planning.</p>
+<h1>§10. Feedback Loop &amp; Synthesis Optimisation</h1>
+<h3>Delivered Capabilities</h3>
+<ul>
+<li>A robust, validated classification pipeline achieving F1_macro ≈ 0.52 (2x over baseline).</li>
+<li>Rigorous quantification showing that metal charge density and thermal kinetics govern historical crystallisation.</li>
+<li>Transparent demonstration that solvent volume fractions alone provide weak predictive signal without pH tracking.</li>
+</ul>
+<h3>Recommendations for the Experimental Laboratory</h3>
+<ol>
+<li><strong>Systematically vary reaction temperatures and dwell times</strong>: Historic clustering on two of the nine temperatures used suppresses process-parameter leverage.</li>
+<li><strong>Implement in-situ or pre-reaction pH tracking</strong>: The 22 solvent features act as a proxy for acid-base equilibria; recording pH directly will likely recover the missing chemical signal.</li>
+<li><strong>Target active exploration for minority metals</strong>: Expanding exploration around intermediate charge-density cations will improve class boundary definition.</li>
+</ol>
+<h3>The Essential Conclusion</h3>
+<p>Data science applied to experimental chemistry does not replace chemical insight: it highlights where historical experimentation suffered from unconscious human bias, and clarifies which physical parameters must be rigorously recorded moving forward.</p>
+
+</div></body></html>

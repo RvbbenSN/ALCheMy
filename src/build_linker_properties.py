@@ -23,16 +23,16 @@ rigidity).
 
 IDENTITY CONFIRMED 2026-08-29
 -------------------------------
-H6ttbmp/Et6ttbmp and H8ptp/Et8ptp were originally deduced by an AI from the
+LIG-x/LIG-x and LIG-x/LIG-x were originally deduced by an AI from the
 lab's file naming, not from a CAS/vendor record. Ruben confirmed both against
 a downloaded article:
-- H6ttbmp: the article's own name, "2,4,6-tris[4-(phosphonomethyl)phenyl]-
-  1,3,5-triazine (H6ttbmp)", is character-for-character the same as the
+- LIG-x: the article's own name, "2,4,6-tris[4-(phosphonomethyl)phenyl]-
+  1,3,5-triazine (LIG-x)", is character-for-character the same as the
   iupac_name below -- exact match, same compound, same abbreviation.
-- H8ptp: the article calls the same molecule "H8tpt" (letters in a different
-  order) rather than "H8ptp", but the chemical description it gives --
+- LIG-x: the article calls the same molecule "H8tpt" (letters in a different
+  order) rather than "LIG-x", but the chemical description it gives --
   "pyrene-1,3,6,8-tetrayltetrakis(phosphonic acid)" -- is exactly the
-  iupac_name and substitution pattern {1,3,6,8} already used below (see H8ptp
+  iupac_name and substitution pattern {1,3,6,8} already used below (see LIG-x
   entry: built from RDKit symmetry analysis, formula-verified C16H14O12P4).
   Same molecule; only the four-letter abbreviation differs between this lab's
   convention and the article's, which does not change the SMILES or any
@@ -55,30 +55,30 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # -----------------------------------------------------------------------------
-# The 6 linkers. H6ttbmp/Et6ttbmp and H8ptp/Et8ptp identities confirmed by
+# The 6 linkers. LIG-x/LIG-x and LIG-x/LIG-x identities confirmed by
 # Ruben 2026-08-29 against a downloaded article (see docstring above). The
 # rest (tannic acid, bare pyrene) are unambiguous, well-known molecules.
 # -----------------------------------------------------------------------------
 LINKERS = {
-    'H6ttbmp': dict(
+    'LIG-x': dict(
         # 2,4,6-tris[4-(phosphonomethyl)phenyl]-1,3,5-triazine
         smiles='OP(=O)(O)Cc1ccc(cc1)-c1nc(nc(n1)-c1ccc(CP(=O)(O)O)cc1)-c1ccc(CP(=O)(O)O)cc1',
         iupac_name='2,4,6-tris[4-(phosphonomethyl)phenyl]-1,3,5-triazine',
-        common_name='H6ttbmp',
+        common_name='LIG-x',
         scaffold='triazine_phosphonate', protection_state='free_acid',
         denticity=3, n_donor_atoms=6, n_acidic_protons=6, donor_group='phosphonate',
         notes='Identity confirmed by Ruben 2026-08-29 against a downloaded article -- exact name match.',
     ),
-    'Et6ttbmp': dict(
-        # hexaethyl ester of H6ttbmp
+    'LIG-x': dict(
+        # hexaethyl ester of LIG-x
         smiles='CCOP(=O)(OCC)Cc1ccc(cc1)-c1nc(nc(n1)-c1ccc(CP(=O)(OCC)OCC)cc1)-c1ccc(CP(=O)(OCC)OCC)cc1',
         iupac_name='hexaethyl [1,3,5-triazine-2,4,6-triyltris(benzene-4,1-diyl)]trimethylenetris(phosphonate)',
-        common_name='Et6ttbmp',
+        common_name='LIG-x',
         scaffold='triazine_phosphonate', protection_state='ethyl_ester',
         denticity=0, n_donor_atoms=0, n_acidic_protons=0, donor_group='none',
-        notes='Ethyl ester of H6ttbmp -- a pro-linker; must hydrolyse in situ to coordinate (roadmap SS1.3).',
+        notes='Ethyl ester of LIG-x -- a pro-linker; must hydrolyse in situ to coordinate (roadmap SS1.3).',
     ),
-    'H8ptp': dict(
+    'LIG-x': dict(
         # pyrene-1,3,6,8-tetrayl-tetrakis(phosphonic acid)
         # Built programmatically (not hand-typed) by substituting -P(=O)(O)O at
         # the 4 pyrene ring positions {1,3,6,8} identified from RDKit symmetry
@@ -86,19 +86,19 @@ LINKERS = {
         # file for the derivation script. Formula checks out: C16H14O12P4.
         smiles='O=P(O)(O)c1cc(P(=O)(O)O)c2ccc3c(P(=O)(O)O)cc(P(=O)(O)O)c4ccc1c2c43',
         iupac_name='pyrene-1,3,6,8-tetrayltetrakis(phosphonic acid)',
-        common_name='H8ptp',
+        common_name='LIG-x',
         scaffold='pyrene_phosphonate', protection_state='free_acid',
         denticity=4, n_donor_atoms=8, n_acidic_protons=8, donor_group='phosphonate',
         notes='Identity confirmed by Ruben 2026-08-29 against a downloaded article, which calls it H8tpt -- same substitution pattern and iupac_name, different abbreviation letter order.',
     ),
-    'Et8ptp': dict(
-        # Same derivation as H8ptp, with ethoxy groups instead of hydroxyl. Formula checks out: C32H46O12P4.
+    'LIG-x': dict(
+        # Same derivation as LIG-x, with ethoxy groups instead of hydroxyl. Formula checks out: C32H46O12P4.
         smiles='CCOP(=O)(OCC)c1cc(P(=O)(OCC)OCC)c2ccc3c(P(=O)(OCC)OCC)cc(P(=O)(OCC)OCC)c4ccc1c2c43',
         iupac_name='octaethyl pyrene-1,3,6,8-tetrayltetrakis(phosphonate)',
-        common_name='Et8ptp',
+        common_name='LIG-x',
         scaffold='pyrene_phosphonate', protection_state='ethyl_ester',
         denticity=0, n_donor_atoms=0, n_acidic_protons=0, donor_group='none',
-        notes='Octaethyl ester of H8ptp -- a pro-linker (roadmap SS1.3).',
+        notes='Octaethyl ester of LIG-x -- a pro-linker (roadmap SS1.3).',
     ),
     'Tannic acid': dict(
         # Simplified representative structure (a decagalloyl glucose core) -- tannic

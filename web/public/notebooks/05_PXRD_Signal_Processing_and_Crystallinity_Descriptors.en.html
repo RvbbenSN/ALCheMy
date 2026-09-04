@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 PXRD Signal Processing and Crystallinity Descriptors</title>
+<style>
+:root {
+  --bg: #f5efe4; --surface: #fcfaf6; --ink: #3b0b15; --soft: #57333b;
+  --line: rgba(180, 140, 120, 0.55); --accent: #85253c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 16px; line-height: 1.65;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 96px; }
+h1, h2, h3, h4 { font-family: Marcellus, Georgia, serif; line-height: 1.25; margin: 2em 0 .6em; }
+h1 { font-size: 2rem; margin-top: .4em; }
+h2 { font-size: 1.5rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; }
+h3 { font-size: 1.2rem; }
+p, li { color: var(--soft); }
+a { color: var(--accent); }
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .88em;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+pre {
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: .85em;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto;
+}
+pre code { background: none; border: 0; padding: 0; }
+blockquote {
+  margin: 1.4em 0; padding: .1em 1.1em; border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; }
+th, td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; font-size: .92em; }
+th { background: var(--surface); font-family: Marcellus, Georgia, serif; }
+figure { margin: 2em 0; }
+figure img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 2px solid var(--line); border-radius: 8px;
+}
+figcaption { margin-top: .5em; font-size: .8rem; color: var(--soft); opacity: .85; }
+.missing {
+  border: 2px dashed var(--accent); border-radius: 8px; padding: 18px;
+  color: var(--accent); font-size: .9rem;
+}
+.banner {
+  background: var(--surface); border: 2.5px solid var(--accent); border-radius: 8px;
+  padding: 16px 20px; margin: 0 0 28px; font-size: 14px; color: var(--soft);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.banner strong { color: var(--ink); }
+.langbar { display: flex; gap: 10px; align-items: center; margin: 0 0 22px; font-size: .85rem; }
+.langbar a, .langbar span {
+  text-decoration: none; border: 2px solid var(--line); border-radius: 6px;
+  padding: 5px 11px; color: var(--soft); background: var(--surface);
+}
+.langbar .on { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.langbar .back { margin-left: auto; border: 0; background: none; }
+</style></head><body><div class="wrap">
+<div class="langbar"><span class="on">English</span><a href="./05_PXRD_Signal_Processing_and_Crystallinity_Descriptors.es.html">Español</a><a class="back" href="/">&larr; Back to the site</a></div>
+<div class="banner"><strong>Reading copy.</strong> This is the narrative of the notebook, edited for reading and translated — not the executable notebook, which is published separately with its code and outputs. Sample identifiers and unpublished ligand names are pseudonymised. Every figure below was produced by the notebook itself; none of the code was re-executed to build this page.</div>
+<h1>Notebook 05 — From Raw Diffractograms to Numbers a Chemist Can Interpret</h1>
+<p>A powder diffraction pattern is a <strong>curve</strong>. A curve cannot be directly sorted, filtered, correlated, or fed into a machine learning model. The inquiry <em>&quot;show me the syntheses exhibiting large unit cells alongside low crystallinity&quot;</em> is not a query a database can resolve as long as the information resides purely as a spectral profile.</p>
+<p>This notebook builds that bridge: it transforms each raw diffraction pattern into a <strong>vector of numerical descriptors</strong>, justifying every single extracted parameter against empirical laboratory data.</p>
+<h3>How to Read this Notebook</h3>
+<ul>
+<li><strong>Not a single raw file is opened from disk.</strong> Everything is queried from PostgreSQL via <code>SELECT</code>. The database serves as the single source of truth; raw instrument files scattered across directories are neither auditable nor reproducible.</li>
+<li><strong>All computational logic resides in <code>src/pxrd_descriptors.py</code>.</strong> This notebook imports the module rather than reimplementing functions. Consequently, the batch processing of 1,800 measurements and the diagnostic figures presented here execute identical code, eliminating any discrepancy between documentation and execution.</li>
+<li><strong>Explanatory text is written in Spanish, whilst all figures and code elements are in English.</strong> Figures are designed for direct inclusion in peer-reviewed publications or the web application.</li>
+<li><strong>Every algorithmic decision is measured, not assumed.</strong> Whenever an empirical threshold appears—an angular cut-off, a lambda parameter, or a detection limit—it is accompanied by the experiment that determined it.</li>
+</ul>
+<h3>Table of Contents</h3>
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Section</th>
+  <th>Problem Resolved</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>Connection &amp; Utilities</td>
+  <td>Minimal infrastructure scaffolding</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Database Inventory</td>
+  <td>Available data and measurement tags</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Why Signal Processing is Mandatory</td>
+  <td>Discrepancies in angular grids and count scales</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><strong>Where the Sample Genuinely Begins</strong></td>
+  <td>The 5° cut-off: direct beam is not diffraction</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>Anatomy: Three Superimposed Layers</td>
+  <td>Discarded vs quantified contributions</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>Baseline Calibration of λ</td>
+  <td>The single free parameter, calibrated against standards</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td>Separating the Amorphous Halo</td>
+  <td>Width filtering vs measured instrument background</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td>Peak Detection via Poisson Statistics</td>
+  <td>A self-calibrating statistical threshold</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td>Partially Crystalline Case Studies</td>
+  <td>Sharp Bragg reflections superimposed on amorphous halos</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><strong>The Complete Descriptor Vector</strong></td>
+  <td>Line-by-line derivation of all 29 descriptors</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td>Pipeline Verification</td>
+  <td>Auditing against blanks and silicon standards</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td>Writing to <code>pxrd_descriptors</code></td>
+  <td>Batch execution and database schema</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td>Corpus-Wide Statistical Insights</td>
+  <td>Exploratory analysis across the dataset</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td>Best Practices</td>
+  <td>Methodological guidelines derived from this pipeline</td>
+</tr>
+</tbody>
+</table>
+<h1>1. Connection and Utilities</h1>
+<p>Three core components: <code>sql()</code> for database querying, <code>cargar_curva()</code> to retrieve a diffraction pattern already interpolated onto the canonical angular grid, and a shared plotting theme.</p>
+<p><code>cargar_curva()</code> enforces a critical safeguard: angular grid points that fall <strong>outside the instrumentally measured scan range are discarded</strong>, never extrapolated or zero-filled. Extrapolating outside the measured range would invent intensity counts at scattering angles the diffractometer never probed. The distinction between &quot;no diffraction signal&quot; and &quot;unmeasured angle&quot; must be preserved throughout the pipeline.</p>
+<h1>2. Database Inventory</h1>
+<p>Before applying any signal processing, we must establish what data is available. Two dimensions are critical: <strong>measurement counts</strong> and <strong>measurement classification tags</strong>. The distinction between sample and reference runs is fundamental: references represent the <strong>benchmarks</strong> against which all calibrations are grounded.</p>
+<p>The four measurement families and their roles:</p>
+<table>
+<thead>
+<tr>
+  <th><code>measurement_tag</code></th>
+  <th>Description</th>
+  <th>Methodological Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>as_synthesized</code></td>
+  <td>Experimental laboratory samples</td>
+  <td>Target corpus to be characterised</td>
+</tr>
+<tr>
+  <td><code>reference_blank</code></td>
+  <td><strong>Empty sample holder</strong></td>
+  <td>Quantifies background in the absence of sample: the instrumental zero</td>
+</tr>
+<tr>
+  <td><code>reference_standard</code></td>
+  <td>Certified instrument standard</td>
+  <td>Determines instrumental resolution: the minimum achievable peak width</td>
+</tr>
+<tr>
+  <td><code>reference_precursor</code></td>
+  <td>Starting metal salts and unreacted ligands</td>
+  <td>Non-MOF starting materials used to distinguish precursor signals from framework phases</td>
+</tr>
+<tr>
+  <td><code>simulated_scxrd</code></td>
+  <td>Calculated patterns from solved single-crystal structures</td>
+  <td>Benchmarks for novel phase identification and phase matching</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Why blanks and standards are indispensable requirements rather than luxuries.</strong> Signal processing pipelines rely on free parameters. Selecting them simply &quot;because literature suggests it&quot; is an arbitrary assumption. Tuning them against specimens of <strong>known physical ground truth</strong>—an empty sample holder does not diffract; a silicon standard diffracts with known FWHM—constitutes genuine calibration. All calculations in Section 6 depend strictly on these references.</p>
+</blockquote>
+<h1>3. Why Signal Processing is Mandatory</h1>
+<p>Two diffraction scans of the exact same chemical substance can appear numerically incompatible due to acquisition artifacts unrelated to chemistry. Two major discrepancies exist across the raw dataset.</p>
+<h2>3.1 First Incompatibility: Disparate Angular Grids</h2>
+<figure><img src="/figures/nb05-01.png" alt="Figure 1, produced by notebook 05." loading="lazy"><figcaption>Figure 1, produced by notebook 05.</figcaption></figure>
+<p><strong>What is observed.</strong> Three distributions highlighting measurement heterogeneity: start angle (2θ), end angle, and angular step size. None of these parameters is constant. The vertical axis uses a logarithmic scale in panels (a) and (c) to reveal minority acquisition protocols that would otherwise be masked by the dominant configuration—precisely the configurations that break direct vector comparisons.</p>
+<p><strong>Why a canonical grid is required.</strong> Point-by-point subtraction or matrix factorisation requires that point <em>i</em> of pattern A corresponds to the exact same scattering angle as point <em>i</em> of pattern B. If one scan steps at 0.0131° and another at 0.0263°, direct comparison is impossible. The solution is to resample all scans onto a <strong>canonical grid</strong>—here fixed at a step size of 0.02°, which is finer than the narrowest peak resolved by the diffractometer, preventing any loss of resolution—while <strong>clipping each scan strictly to its experimentally measured range</strong>.</p>
+<blockquote>
+<p><strong>Statistical considerations.</strong> Linear interpolation between measured data points is a well-conditioned estimate <em>within</em> the scan range: the underlying diffraction curve is continuous and the step size is dense. Extrapolation <em>outside</em> the measured range is physically invalid. For this reason, <code>resample_to_grid</code> outputs a boolean <code>valido</code> mask rather than zero-padding: an intensity of zero constitutes an affirmative claim (&quot;zero diffraction counts&quot;), which was never experimentally verified.</p>
+</blockquote>
+<h2>3.2 Second Incompatibility: Count Intensity Scales</h2>
+<p>A rapid screening scan and an overnight high-resolution Rietveld acquisition may differ in raw count intensities by a factor of 30, <strong>even when collected on the identical crystalline phase</strong>.</p>
+<figure><img src="/figures/nb05-02.png" alt="Figure 2, produced by notebook 05." loading="lazy"><figcaption>Figure 2, produced by notebook 05.</figcaption></figure>
+<p><strong>What is observed.</strong> In panel (a), the screening curve (red) appears flat. The material is not poorly crystalline; rather, it is plotted on the vertical scale of the blue scan, which accumulated 33 times more counts. In panel (b), dividing each pattern by its total integrated area brings both curves into near-perfect overlay. <strong>Profile shape contains the physical information; absolute peak height merely reflects detector dwell time.</strong></p>
+<blockquote>
+<p><strong>Why area normalisation must precede baseline fitting.</strong> The arPLS baseline estimation algorithm applied in Section 6 incorporates a penalty parameter, λ, that governs baseline stiffness <strong>relative to the numerical magnitude of the input counts</strong>. If applied directly to raw counts, an identical λ behaves rigidly on a 200-count screening scan and flexibly on a 20,000-count pattern. Consequently, the two curves above would be treated differently due to an artifact devoid of chemical meaning. Normalising integrated area to unity first ensures that a single λ exerts an identical physical meaning across all 1,883 measurements.</p>
+</blockquote>
+<h1>4. Where the Sample Genuinely Begins: The Low-Angle Cut-Off</h1>
+<p>This section defines a single numerical boundary—the start angle of the canonical grid—which directly dictates the computed crystallinity across the <strong>entire dataset</strong>. It requires rigorous experimental justification.</p>
+<h2>4.1 The Physical Problem</h2>
+<p>At very low scattering angles, the X-ray detector directly faces the incident beam. The intensity recorded in this region does not originate from coherent sample diffraction; rather, it represents <strong>air scattering, beam spillover, and divergence slit scatter</strong>: photons reaching the detector without interacting with crystalline lattice planes. This phenomenon produces a steeply decaying low-angle tail present <strong>in every acquisition</strong>, including the empty sample holder.</p>
+<p>If this parasitic tail enters downstream processing, baseline algorithms interpret it as a massive amorphous halo situated at the beginning of the scan. This induces artificially depressed crystallinity metrics and spuriously implies the presence of a non-existent &quot;large unit cell&quot;.</p>
+<p>The dilemma is not <em>whether</em> to truncate low angles, but <strong>at what precise angle</strong>. Three independent experiments establish the cut-off.</p>
+<h2>4.2 Experiment 1: The Median Profile of 200 Random Syntheses</h2>
+<p>If a low-angle intensity surge is present within the <strong>median profile across 200 chemically distinct MOF syntheses</strong>, it cannot represent a Bragg reflection: no cohort of 200 distinct compounds shares an identical unit cell reflection. Only the diffractometer's optical geometry is common to all 200 scans.</p>
+<p>Each scan is normalised by its median intensity in the 20–45° region (a high-angle region devoid of intense coherent reflections) to ensure comparison of relative profile curvature rather than absolute counts.</p>
+<figure><img src="/figures/nb05-03.png" alt="Figure 3, produced by notebook 05." loading="lazy"><figcaption>Figure 3, produced by notebook 05.</figcaption></figure>
+<p><strong>What is observed.</strong> In panel (a), the median curve of 200 syntheses reaches <strong>3.6 times</strong> its high-angle background at 3.0°, decaying monotonically until plateauing at 1.3 around <strong>4.4°</strong>. The grey interquartile envelope demonstrates that this tail is universal across all specimens. In panel (b), the <strong>11 non-porous precursor standards</strong> (inorganic salts and free ligands lacking MOF-scale unit cells) exhibit the identical parasitic tail, scaling between 3.7 and 15.5 times baseline at 3.0–3.5°, and settling to ~1 near 4.5–5.0°.</p>
+<p><strong>Experiment 3: The Definitive Constraint.</strong> The instrument blank and certified standard were acquired beginning at <strong>5.0066°</strong>. Below 5°, <strong>no reference standard exists</strong> to validate signal subtraction. Processing an angular window unsupported by calibration references is unscientific.</p>
+<p><strong>Decision: The canonical grid begins at 5.0°</strong>, which simultaneously (a) clears the parasitic direct beam tail with a safety margin, and (b) remains fully bounded by certified calibration blanks.</p>
+<h2>4.3 The Explicit Cost of this Truncation</h2>
+<p>Bragg's law, d = λ / (2 sin θ), converts an angular boundary into a <strong>real-space lattice constraint</strong>: at the 5° 2θ cut-off with Cu Kα₁ radiation, the corresponding d-spacing is the largest the scan can resolve.</p>
+<p>Larger interplanar d-spacings do exist—certain MOF families constructed with extended ligands yield expanded unit cells—but <strong>this laboratory diffractometer cannot resolve them</strong>. This is an instrumental constraint, not an algorithmic choice. To ensure data integrity, <code>pxrd_descriptors</code> maintains a boolean flag <code>d_max_saturated</code>, which marks patterns whose first reflection falls adjacent to 5.0°, indicating that <code>d_max_angstrom</code> represents a <strong>lower bound</strong> rather than an exact measurement.</p>
+<figure><img src="/figures/nb05-04.png" alt="Figure 4, produced by notebook 05." loading="lazy"><figcaption>Figure 4, produced by notebook 05.</figcaption></figure>
+<blockquote>
+<p><strong>The 15° &quot;Large Unit Cell&quot; Window (vs 10°).</strong> The orange boundary defines the angular window where large unit cell reflections are tallied. These compounds are <strong>P-MOFs</strong> (metal-phosphonate frameworks): dense networks with limited accessible pore volumes, yet exhibiting substantial unit cell dimensions due to bulky ligand cores and low-symmetry asymmetric units. Their primary diagnostic reflections appear predominantly <strong>between 10° and 15°</strong>; restricting the window to 10° would discard half of the chemically diagnostic region.</p>
+<p>A vital semantic distinction must be stressed: prominent low-angle reflections signify a <strong>large unit cell</strong>, which merely suggests a <strong>potentially porous</strong> framework. In this chemical family, large cells arise from ligand molecular dimensions rather than solvent-accessible voids. Physical porosity is confirmed solely through gas physisorption (BET), never from powder diffraction alone.</p>
+</blockquote>
+<h1>5. Anatomy of a Powder Diffraction Pattern: Three Superimposed Layers</h1>
+<p>A diffraction pattern comprises <strong>three distinct physical contributions</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th>Layer</th>
+  <th>Physical Origin</th>
+  <th>Processing Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Instrumental Background</strong></td>
+  <td>Air scatter, sample holder, detector dark noise</td>
+  <td><strong>Discarded.</strong> Carries zero chemical information</td>
+</tr>
+<tr>
+  <td><strong>Amorphous Halo</strong></td>
+  <td>Diffuse scattering from disordered, non-crystalline solid</td>
+  <td><strong>Quantified.</strong> Measures the unreacted or non-crystalline mass fraction</td>
+</tr>
+<tr>
+  <td><strong>Bragg Reflections</strong></td>
+  <td>Coherent diffraction from crystalline lattice planes</td>
+  <td><strong>Quantified.</strong> Defines the crystalline phase</td>
+</tr>
+</tbody>
+</table>
+<p>The conventional error in materials science is treating the first two layers collectively as &quot;background&quot; and removing them simultaneously. This destroys the quantification of crystallization yield—the amorphous halo <em>is</em> primary data—and obliterates weak reflections that protrude slightly above the halo in marginal syntheses.</p>
+<figure><img src="/figures/nb05-05.png" alt="Figure 5, produced by notebook 05." loading="lazy"><figcaption>Figure 5, produced by notebook 05.</figcaption></figure>
+<p><strong>What is observed.</strong> In the top panel, the grey curve represents the total measured profile and the brown band illustrates the instrumental background: a featureless, monotonic baseline. In the lower panel, subtracting instrumental background isolates the sample-only signal into its two components: the broad amorphous halo (orange) and the narrow Bragg reflections (blue).</p>
+<p>Crystallinity is defined across <strong>integrated peak and halo areas</strong>, not peak heights:</p>
+<pre><code>Xc = A_crystalline / (A_crystalline + A_amorphous)
+</code></pre>
+<blockquote>
+<p><strong>Why areas rather than peak heights.</strong> Measuring peak heights relative to zero intensity double-counts the underlying amorphous halo as crystalline signal. This introduces an upward bias that <strong>scales proportionally with amorphous content</strong>, severely skewing marginal samples. Integrated areas ensure that each detected photon is allocated to one layer and one layer only.</p>
+</blockquote>
+<h1>6. Baseline Calibration of λ: The Single Free Parameter</h1>
+<h2>6.1 Principles of arPLS</h2>
+<p><strong>arPLS</strong> (<em>Asymmetrically Reweighted Penalized Least Squares</em>, Baek et al., <em>Analyst</em> 140 (2015) 250) estimates a smooth baseline beneath a 1D spectrum. The intuitive metaphor: a flexible steel wire is pushed upward from beneath the data until it makes contact with the lower envelope of the curve. <strong>λ dictates the mechanical stiffness of that wire.</strong></p>
+<ul>
+<li><strong>Small λ</strong> → Flexible wire: bends sharply, penetrates narrow troughs, and <strong>engulfs the broad amorphous halo</strong>, stripping true diffuse scatter.</li>
+<li><strong>Large λ</strong> → Rigid wire: cannot conform to the natural curvature of the instrumental background, leaving <strong>residual background uncorrected</strong>.</li>
+</ul>
+<p>The term <em>&quot;asymmetrically reweighted&quot;</em> represents the key mechanism: after each iteration, points lying <strong>above</strong> the fitted curve (Bragg reflections) receive near-zero weights, preventing the baseline from tracking peak contours. Weights are adjusted dynamically via a logistic function applied to negative residual deviations:</p>
+<pre><code>w_i = 1 / (1 + exp(2 * (d_i - (2 * sigma_neg - mu_neg)) / sigma_neg))
+</code></pre>
+<p>where mu_neg and sigma_neg represent the mean and standard deviation of the <strong>negative residuals</strong> (data points falling beneath the fitted baseline). Restricting noise estimation to negative residuals ensures that Bragg peaks do not distort baseline fitting, allowing arPLS to find the <strong>true lower floor</strong> of the spectrum rather than its mean.</p>
+<h2>6.2 Calibration via Three Ground-Truth Benchmarks</h2>
+<table>
+<thead>
+<tr>
+  <th>Reference Benchmark</th>
+  <th>Diagnostic Question</th>
+  <th>Failure Symptom</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Blank</strong> (empty holder)</td>
+  <td>Following baseline subtraction, does residual intensity approach zero?</td>
+  <td>λ too <strong>high</strong>: leaves uncorrected background</td>
+</tr>
+<tr>
+  <td><strong>Amorphous Sample</strong></td>
+  <td>Is the broad diffuse halo fully preserved?</td>
+  <td>λ too <strong>low</strong>: baseline engulfs the halo</td>
+</tr>
+<tr>
+  <td><strong>Crystalline Sample</strong></td>
+  <td>Do Bragg peak widths (FWHM) remain unperturbed?</td>
+  <td>Baseline deforms peak profiles</td>
+</tr>
+</tbody>
+</table>
+<p>All three references are drawn from the production database. The blank and crystalline samples are authentic experimental scans; the amorphous benchmark is a representative synthesis exhibiting a prominent diffuse halo.</p>
+<figure><img src="/figures/nb05-06.png" alt="Figure 6, produced by notebook 05." loading="lazy"><figcaption>Figure 6, produced by notebook 05.</figcaption></figure>
+<figure><img src="/figures/nb05-07.png" alt="Figure 7, produced by notebook 05." loading="lazy"><figcaption>Figure 7, produced by notebook 05.</figcaption></figure>
+<p><strong>What is observed.</strong> Evaluating the three criteria simultaneously:</p>
+<ul>
+<li><strong>(a)</strong> Blank residual intensity escalates sharply for λ &gt;= 10^7: the baseline becomes excessively rigid and <strong>fails to track instrumental background decay</strong>.</li>
+<li><strong>(b)</strong> Integrated halo area collapses for λ &lt; 10^4: the baseline bends excessively, <strong>engulfing the amorphous hump</strong>. As shown in Figure 7, the baseline climbs into the halo, spuriously inflating computed crystallinity.</li>
+<li><strong>(c)</strong> Bragg peak FWHM of the certified standard remains flat across several decades of λ, serving as an effective <strong>negative control</strong> confirming that reasonable λ values do not distort peak widths.</li>
+</ul>
+<p><strong>λ = 10^6</strong> represents the optimal inflection point: the highest value before blank residuals escalate, whilst fully retaining the amorphous halo.</p>
+<blockquote>
+<p><strong>Statistical methodology.</strong> This is a single-parameter optimization balancing opposing loss functions. A unique mathematical optimum does not exist; rather, an <strong>operational plateau</strong> exists where none of the three constraints is violated. Selecting the centre of this plateau provides robust generalisation for future experimental variations.</p>
+<p>For this reason, <code>pxrd_descriptors</code> logs <code>baseline_lambda</code> on <strong>every row</strong>: if recalibration is performed in the future, this column enables definitive identification of comparable cohorts.</p>
+</blockquote>
+<h1>7. Separating the Amorphous Halo: Three Methods and Why Only One Succeeds</h1>
+<h2>7.0 Objectives and Nomenclature</h2>
+<p>Following Section 6, every pattern is resampled to the 0.02° grid, area-normalised, and assigned an arPLS baseline. We define three mathematical signals maintained throughout this document:</p>
+<table>
+<thead>
+<tr>
+  <th>Profile Description</th>
+  <th>Symbol</th>
+  <th>Physical Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Measured Scan</strong></td>
+  <td>I(2θ)</td>
+  <td>Total area-normalised pattern</td>
+</tr>
+<tr>
+  <td><strong>arPLS Baseline</strong></td>
+  <td>B(2θ)</td>
+  <td>Combined background envelope</td>
+</tr>
+<tr>
+  <td><strong>Net Signal</strong></td>
+  <td>N = I - B</td>
+  <td>Signal elevated above baseline</td>
+</tr>
+</tbody>
+</table>
+<p>The goal is to <strong>decompose the baseline B</strong>, which contains two physically distinct components:</p>
+<pre><code>B(2θ) = A(2θ) [sample diffuse scatter] + E(2θ) [instrumental background]
+</code></pre>
+<ul>
+<li>E — <strong>Instrumental Background</strong>: air scatter, sample holder, detector noise. Carries zero chemical information.</li>
+<li>A — <strong>Sample Diffuse Scatter</strong>: coherent diffuse scattering from disordered solid. Directly quantifies <strong>non-crystalline sample fraction</strong>.</li>
+</ul>
+<p>Three candidate methodologies were tested in chronological order:</p>
+<table>
+<thead>
+<tr>
+  <th>Method</th>
+  <th>Conceptual Strategy</th>
+  <th>Operational Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>7.1</strong> Second arPLS Pass</td>
+  <td>A softer arPLS pass over N captures the halo</td>
+  <td>Failed: uniformly yields zero</td>
+</tr>
+<tr>
+  <td><strong>7.2</strong> Rolling Width Filter</td>
+  <td>Halos are broad, peaks are narrow</td>
+  <td>Failed: fabricates halo under peak clusters</td>
+</tr>
+<tr>
+  <td><strong>7.3</strong> Instrument Blank Subtraction</td>
+  <td>A = B - E, where E is directly measured</td>
+  <td><strong>Validated &amp; deployed</strong></td>
+</tr>
+</tbody>
+</table>
+<p>All three were benchmarked against the <strong>same three reference syntheses</strong>—amorphous, incipient, and crystalline—selected based on human-curated ground truth.</p>
+<h2>7.0.1 The Three Reference Syntheses</h2>
+<p>These reference patterns are held constant across all diagnostic figures. They were selected to span the 5–50° range and represent the <strong>median case</strong> of their respective classes, avoiding cherry-picked outliers.</p>
+<figure><img src="/figures/nb05-08.png" alt="Figure 8, produced by notebook 05." loading="lazy"><figcaption>Figure 8, produced by notebook 05.</figcaption></figure>
+<h2>7.1 Method 1: Secondary arPLS Pass</h2>
+<p><strong>Concept.</strong> If a rigid arPLS baseline isolates instrumental background E, a second, softer pass over net signal N should extract the amorphous halo A.</p>
+<p><strong>Mechanism of Failure.</strong> arPLS is an envelope <strong>floor estimator</strong>: it seeks the lowest boundary of data points. Net signal N = I - B already has its floor pegged at zero. Requesting the floor of a curve whose lower bound is already zero yields <strong>identically zero</strong>.</p>
+<p>The failure is <strong>silent</strong>: it executes without raising exceptions, returning a flat zero curve. Consequently, amorphous area evaluates to zero, falsely classifying <strong>all syntheses as 100% crystalline</strong>, including visual glasses.</p>
+<figure><img src="/figures/nb05-09.png" alt="Figure 9, produced by notebook 05." loading="lazy"><figcaption>Figure 9, produced by notebook 05.</figcaption></figure>
+<h2>7.2 Method 2: Rolling Width Filter</h2>
+<p><strong>Concept.</strong> Bragg reflections are narrow (FWHM 0.1–0.3°) while amorphous halos are broad (5–15°). A <strong>rolling median filter</strong> with a 3° window—ten times wider than individual peaks—theoretically glides over narrow peaks while following broad features.</p>
+<p>A rolling median reflects the 50th percentile of data points in a window. If peak data points represent a <strong>minority</strong> within the 3° window, the median ignores them and tracks the underlying baseline.</p>
+<p><strong>This assumption was tested and found to fail catastrophically.</strong></p>
+<figure><img src="/figures/nb05-10.png" alt="Figure 10, produced by notebook 05." loading="lazy"><figcaption>Figure 10, produced by notebook 05.</figcaption></figure>
+<p><strong>Failure Mode.</strong> In a purely <strong>crystalline</strong> sample displaying zero visible diffuse scatter, Method 2 allocated roughly half the pattern to amorphous content. The orange baseline rises <strong>directly beneath dense peak clusters</strong>.</p>
+<p>The diagnostic test is straightforward: if an authentic amorphous halo existed beneath peak clusters, intensity in the valleys between adjacent peaks could not drop to zero. In empirical measurements, it does drop to zero.</p>
+<p>Within a 3° window centred on a cluster of reflections, peak skirts dominate the distribution, causing the median to ride on peak skirts rather than baseline valleys. The premise that peaks are narrow was correct, but the prerequisite condition—<em>that peaks constitute a minority within the window</em>—was invalid.</p>
+<h3>Failed Patches for Method 2</h3>
+<table>
+<thead>
+<tr>
+  <th>Patch Strategy</th>
+  <th>Proposed Concept</th>
+  <th>Measured Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Masking peaks and interpolating beneath</td>
+  <td>Exclude peak skirts from median calculation</td>
+  <td>Masking ±0.5° drops the <strong>amorphous</strong> benchmark from 0.95 to 0.42: strips genuine halos</td>
+</tr>
+<tr>
+  <td>Shifting percentile (median → 10th percentile)</td>
+  <td>Track valley bottoms rather than skirts</td>
+  <td>Fixes the crystalline case (0.04) but suppresses the amorphous benchmark to 0.15</td>
+</tr>
+</tbody>
+</table>
+<p>Neither modification satisfies the core engineering criterion: <strong>a valid patch must resolve the failure mode without degrading previously functioning cases</strong>. Method 2 was discarded.</p>
+<h2>7.3 Method 3: Subtracting the Measured Instrument Blank</h2>
+<p>The two previous methods attempted to recognize the amorphous halo <strong>by shape alone</strong> within the specimen's own profile. Method 3 assumes nothing regarding profile geometry: it measures the diffractometer background independently and subtracts it.</p>
+<h3>Mathematical Formulation</h3>
+<p>arPLS extracts the total background baseline B, which equals the sum of both contributions:</p>
+<pre><code>B = A + E
+</code></pre>
+<p>An <strong>empty sample holder</strong> provides a direct experimental measurement of E: identical instrument optics, identical geometry, without sample mass. Therefore:</p>
+<pre><code>A = B - E
+</code></pre>
+<h3>Empirical Validation of the Blank</h3>
+<p>This method is physically valid only if the instrument contributes a <strong>featureless, curvature-free background</strong>. If instrumental optics introduced curvature, subtracting it would distort genuine sample features. This is evaluated by measuring the second-derivative deviation of each baseline from a chord connecting its endpoints.</p>
+<p>The baseline of an empty sample holder is linear within counting noise. <strong>The instrument introduces zero intrinsic curvature</strong>; therefore, all baseline curvature observed in experimental syntheses originates from the sample itself—precisely what arPLS was discarding as background.</p>
+<p>This explains the failure of Method 1: for amorphous syntheses, arPLS had <strong>already absorbed the diffuse halo</strong> during the initial pass, because a 5–15° broad feature is smooth enough for a penalized spline to treat as baseline. The second pass found nothing because nothing remained to be found.</p>
+<blockquote>
+<p>This mirrors the classic FTIR pitfall where baseline fitting inadvertently eliminates broad OH or NH stretching bands. The algorithm performs as designed; the error lies in expecting it to differentiate two phenomena it cannot distinguish.</p>
+</blockquote>
+<h3>Scaling the Blank Background</h3>
+<p>The empty holder and experimental syntheses were collected under different count times per step (a parameter omitted in PANalytical <code>.xrdml</code> headers), preventing unscaled subtraction. Both profiles are matched via an empirical scale factor k determined <strong>above 45° 2θ</strong>, where sample diffuse scatter has substantially decayed:</p>
+<pre><code>k = median[B(2θ &gt; 45°)] / median[E(2θ &gt; 45°)]
+
+A = max(B - k * E, 0)
+</code></pre>
+<p>The <strong>median</strong> is preferred over the mean: if a residual high-angle Bragg reflection persists within the window, the mean would be skewed upward, whereas the median remains robust.</p>
+<h3>Smoothing the Blank Profile</h3>
+<p>The empty holder scan accumulated modest counts (median ~80 counts), imparting high relative Poisson noise. Scaling this raw profile upward amplifies noise, contaminating the subtraction.</p>
+<p>Both terms must represent smooth envelopes; therefore, <strong>E is defined as the arPLS baseline of the blank</strong>, not its raw count profile.</p>
+<h3>The Denominator: Total Sample-Dispersed Scatter</h3>
+<p>To convert diffuse area A into a fractional quantity, the denominator must be physically consistent. Normalising by total scan area would incorporate instrumental background into the denominator, causing 1 - A to misclassify instrument noise as crystalline signal. The denominator must reflect <strong>total sample scatter</strong>:</p>
+<pre><code>A_frac = integral(A) / [integral(A) + integral(I - B)]
+</code></pre>
+<p>This definition directly resolves the question: <em>of the total radiation scattered by this specimen, what proportion was not coherent Bragg diffraction?</em> Its complement is rigorously the crystalline fraction, independent of variable air scatter.</p>
+<h3>Application across Reference Syntheses</h3>
+<p>Figure 11 displays the four profiles involved: total measured scan I, total baseline B, scaled instrument background kE, and the resulting diffuse area A (orange).</p>
+<figure><img src="/figures/nb05-11.png" alt="Figure 11, produced by notebook 05." loading="lazy"><figcaption>Figure 11, produced by notebook 05.</figcaption></figure>
+<h2>7.4 Validation: Benchmarking against 1,881 Human-Annotated Patterns</h2>
+<p>Internal algorithmic consistency is insufficient. Method 2 was internally consistent yet quantified peak skirts.</p>
+<p>External validation provides the definitive benchmark. A materials chemist visually classified 1,881 diffractograms into three classes <strong>without algorithmic intervention</strong>. A valid physical descriptor must reproduce this ordering.</p>
+<figure><img src="/figures/nb05-12.png" alt="Figure 12, produced by notebook 05." loading="lazy"><figcaption>Figure 12, produced by notebook 05.</figcaption></figure>
+<p>Method 3 resolves the three classes cleanly; Method 2 compresses them toward the upper boundary, falsely classifying crystalline frameworks as semi-amorphous.</p>
+<h3>Diagnostic Subtypes: Partially Crystalline Regimes</h3>
+<p>Coarse separation of distinct classes is achieved by simple peak counting. The true test lies in resolving intermediate subtypes representing <strong>three distinct crystallisation pathways</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th>Incipient Subtype</th>
+  <th>Physical Morphology</th>
+  <th>Expected Diffuse Fraction A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>HALO_DOMINANTE</code></td>
+  <td>Prominent halo with minor reflections</td>
+  <td>Highest diffuse fraction</td>
+</tr>
+<tr>
+  <td><code>PICOS_ANCHOS</code></td>
+  <td>Broad reflections with suppressed intensity</td>
+  <td>Intermediate</td>
+</tr>
+<tr>
+  <td><code>CRISTALITO_PEQUENO</code></td>
+  <td>Well-defined reflections from small crystallite domains</td>
+  <td>Lowest diffuse fraction</td>
+</tr>
+</tbody>
+</table>
+<h2>7.5 Physical Meaning and Limits of the Metric</h2>
+<p>This descriptor quantifies <strong>the fraction of the diffraction pattern that is not coherent Bragg diffraction</strong>. This quantity comprises amorphous mass, alongside several physical contributions:</p>
+<table>
+<thead>
+<tr>
+  <th>Contribution</th>
+  <th>Physical Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Non-crystalline solid</td>
+  <td>Short-range order, broad diffuse maxima</td>
+</tr>
+<tr>
+  <td>Thermal and defect diffuse scatter</td>
+  <td>Present <strong>even within perfect single crystals</strong>, scaling with scattering angle</td>
+</tr>
+<tr>
+  <td>Sample substrate / zero-background plate</td>
+  <td>Glass and PMMA contribute broad characteristic humps</td>
+</tr>
+<tr>
+  <td>Air scattering</td>
+  <td>Primary optical path</td>
+</tr>
+<tr>
+  <td>X-ray fluorescence</td>
+  <td><strong>Fe under Cu radiation</strong> represents a prominent operational case in this laboratory</td>
+</tr>
+</tbody>
+</table>
+<p>All non-Bragg contributions are grouped together deliberately. The practical takeaway must be respected:</p>
+<blockquote>
+<p>This descriptor quantifies <strong>how much of this diffraction pattern is not Bragg diffraction</strong>, not the absolute mass percentage of amorphous material within the reaction vial.</p>
+</blockquote>
+<h3>Certified Benchmark: Silicon NIST 640</h3>
+<p>The laboratory standard is <strong>NIST 640 silicon powder</strong>, characterised by sharp reflections at 28.44°, 47.30°, and 56.12° 2θ. As a certified crystallographic standard, it represents the upper bound of crystalline perfection.</p>
+<figure><img src="/figures/nb05-13.png" alt="Figure 13, produced by notebook 05." loading="lazy"><figcaption>Figure 13, produced by notebook 05.</figcaption></figure>
+<p>Silicon exhibits zero Bragg reflections below 28°, which is precisely where its diffuse excess appears. This is not amorphous silicon: it represents scattering from the <strong>sample mounting substrate</strong>, which the bare sample holder lacks.</p>
+<p>Subtraction assumes that sample presentation matches the blank. <strong>Within a cohort prepared under uniform sample mounting protocols, comparisons are rigorous; across differing sample geometries, they are not.</strong></p>
+<p>Consequently, a PXRD crystallinity metric <strong>lacking an internal quantitative standard</strong> provides comparative rankings within a corpus, <strong>never an absolute mass percentage</strong>.</p>
+<h3>Method Detection Limit: Values Below 0.02 Do Not Represent Amorphous Mass</h3>
+<p>An intrinsic limitation emerged during interactive exploration: <strong>the arPLS baseline penetrates slightly into the base of intense Bragg peaks</strong>. Because it tracks lower envelopes, it cannot distinguish between the onset of a Bragg peak and an ascending baseline, climbing slightly up peak skirts. This misattributed area inflates computed diffuse fractions.</p>
+<p>This was measured using a synthetic benchmark with zero amorphous content (smoothed blank background plus synthetic Gaussians of <strong>known area</strong>):</p>
+<table>
+<thead>
+<tr>
+  <th>Peak FWHM</th>
+  <th>Peak Area Absorbed by Baseline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>0.10 – 1.00°</td>
+  <td><strong>0.1 – 0.3%</strong></td>
+</tr>
+<tr>
+  <td>1.50°</td>
+  <td>1.4%</td>
+</tr>
+<tr>
+  <td>2.50°</td>
+  <td><strong>25%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>On a synthetic crystalline profile containing <strong>zero amorphous mass</strong>, the pipeline returns values between <strong>0.006 and 0.018</strong> rather than 0.000.</p>
+<p><strong>Two conclusions arise:</strong></p>
+<ol>
+<li>For genuine experimental peaks in this MOF corpus (median FWHM between 0.16° and 0.24°, 90th percentile below 0.57°, with zero peaks exceeding 1.0°), baseline penetration is negligible. The regime where arPLS introduces severe errors (FWHM &gt; 1.5°) is never reached.</li>
+<li><strong>The method possesses an intrinsic detection limit of ~0.02.</strong> Below this value, <code>amorphous_fraction_blank</code> cannot differentiate genuine diffuse scatter from baseline peak skirt absorption.</li>
+</ol>
+<p>The median value for the CRISTALINO class evaluates to <strong>0.011</strong>—at the detection floor. This does not indicate that these samples contain 1% amorphous phase; rather, it demonstrates that <strong>they contain zero quantifiable amorphous content</strong>. Machine learning models treating 0.011 as a continuous physical quantity would learn instrumental noise rather than chemistry.</p>
+<h1>8. Peak Detection via Poisson Counting Statistics</h1>
+<h2>8.1 Why Fixed Intensity Thresholds Fail</h2>
+<p>X-ray detection is fundamentally a <strong>photon counting process</strong>. Rare, independent Poisson events in a fixed time interval obey the fundamental relation where variance equals the mean:</p>
+<pre><code>P(k; mu) = (mu^k * exp(-mu)) / k!
+Var(k) = mu  ==&gt;  sigma = sqrt(mu)
+</code></pre>
+<p><strong>Noise scales with the square root of signal intensity</strong>, not as a constant percentage.</p>
+<table>
+<thead>
+<tr>
+  <th>Measurement Mode</th>
+  <th>Raw Count Level</th>
+  <th>Expected Noise sigma</th>
+  <th>Relative Noise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>High-resolution scan</td>
+  <td>10,000 counts</td>
+  <td>sqrt(10,000) = <strong>100</strong></td>
+  <td>1%</td>
+</tr>
+<tr>
+  <td>Rapid screening scan</td>
+  <td>100 counts</td>
+  <td>sqrt(100) = <strong>10</strong></td>
+  <td>10%</td>
+</tr>
+</tbody>
+</table>
+<p>A fixed intensity threshold (e.g. &quot;detect all features exceeding 50 counts&quot;) <strong>drowns genuine peaks in rapid screening scans</strong> while <strong>falsely accepting Poisson noise in long scans</strong>. The threshold must scale dynamically as k * sqrt(counts).</p>
+<h2>8.2 Three-Sigma Governs an Isolated Test, Not a Multi-Point Scan</h2>
+<p>A 99.73% confidence interval (k = 3) denotes the probability that <strong>a single point</strong> exceeds threshold by random chance. However, peak detection is an <strong>exhaustive search</strong> across an entire scan. Evaluating 2,250 points with a 0.2° minimum peak separation yields:</p>
+<pre><code>n_eff = 2250 points / (9 points / 0.2°) ≈ 250
+</code></pre>
+<p>independent opportunities for Poisson noise to produce a spurious peak. At k = 3, one expects ≈ 0.7 false peaks per scan simply due to multiple testing.</p>
+<p>Under the <strong>Bonferroni correction</strong>, maintaining an expected false-discovery rate α across the full scan requires tuning individual tests to α / n_eff:</p>
+<pre><code>z = Phi^-1(1 - alpha / (2 * n_eff))
+</code></pre>
+<p>Furthermore, peak detection evaluates <strong>prominence</strong> (the height of a maximum relative to surrounding local minima). Because prominence represents the difference between two noisy quantities, it carries the noise of both points (sqrt(2) * sigma):</p>
+<pre><code>k = sqrt(2) * Phi^-1(1 - alpha / (2 * n_eff))
+</code></pre>
+<p>Setting α = 0.05 expected false peaks per scan yields a k a little above 5 for standard acquisitions in this laboratory.</p>
+<h3>Comparability Across Heterogeneous Scans</h3>
+<p>k is not constant across all measurements: longer acquisitions present more statistical opportunities for false detection, demanding a higher prominence threshold.</p>
+<p>This preserves comparability: what remains constant is the <strong>expected error rate</strong> across all scans. A fixed threshold would generate excess false positives in longer scans, causing peak counts to reflect collection time rather than sample crystallinity.</p>
+<h3>Empirical Noise Validation</h3>
+<figure><img src="/figures/nb05-14.png" alt="Figure 14, produced by notebook 05." loading="lazy"><figcaption>Figure 14, produced by notebook 05.</figcaption></figure>
+<p>Empirical noise was measured across the high-angle background of real scans using point-to-point first differences (divided by sqrt(2) to account for differencing variance). Experimental noise tracks the theoretical σ = sqrt(μ) line across two orders of magnitude without empirical fitting.</p>
+<h3>Parametric Bootstrap Validation</h3>
+<p>A synthetic blank containing zero Bragg peaks was generated by extracting the smoothed arPLS baseline and halo of a real sample, followed by re-injecting Poisson counting noise via <code>np.random.poisson</code>. At k = 3, the detector declared multiple false peaks per scan; at the calibrated k ≈ 5.1, false detections dropped to identically zero.</p>
+<h3>Impact on the Labeled Corpus (1,852 Patterns)</h3>
+<table>
+<thead>
+<tr>
+  <th>Class</th>
+  <th>Count (n)</th>
+  <th>Median Peaks (k = 3)</th>
+  <th>Median Peaks (Calibrated k)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>AMORFO</td>
+  <td>486</td>
+  <td><strong>2.0</strong></td>
+  <td><strong>0.0</strong></td>
+</tr>
+<tr>
+  <td>INCIPIENTE</td>
+  <td>1,011</td>
+  <td>15.0</td>
+  <td>8.0</td>
+</tr>
+<tr>
+  <td>CRISTALINO</td>
+  <td>355</td>
+  <td>22.0</td>
+  <td><strong>19.0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Proportion of syntheses attributed <strong>three or more peaks</strong>:</p>
+<table>
+<thead>
+<tr>
+  <th>Class</th>
+  <th>k = 3</th>
+  <th>Calibrated k</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>AMORFO</td>
+  <td>0.47</td>
+  <td><strong>0.11</strong></td>
+</tr>
+<tr>
+  <td>CRISTALINO</td>
+  <td>0.99</td>
+  <td><strong>0.98</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Under k = 3, nearly half of all visual amorphous samples were attributed three or more false peaks. The calibrated threshold suppresses noise while retaining almost every crystalline peak: <strong>the correction eliminates noise, not signal</strong>.</p>
+<figure><img src="/figures/nb05-15.png" alt="Figure 15, produced by notebook 05." loading="lazy"><figcaption>Figure 15, produced by notebook 05.</figcaption></figure>
+<h1>9. Partially Crystalline Regimes: Bragg Reflections Overlying Diffuse Halos</h1>
+<p>Section 7 evaluated benchmarks across pure endmembers. Here we evaluate the most challenging scenario: <strong>partially crystallised frameworks</strong> where sharp Bragg reflections overlie prominent diffuse halos.</p>
+<p>Syntheses were selected programmatically from the database under the <code>HALO_DOMINANTE</code> tag, ranked by halo prominence above Poisson noise.</p>
+<figure><img src="/figures/nb05-16.png" alt="Figure 16, produced by notebook 05." loading="lazy"><figcaption>Figure 16, produced by notebook 05.</figcaption></figure>
+<p>All three cases correspond to <strong>triazine phosphonate frameworks (LIG-C)</strong> with different metals. The diffuse halo clearly emerges above noise while reflections are resolved simultaneously: subtracting the instrument blank acts upon baseline curvature without eroding net peak intensities.</p>
+<h1>10. The Complete Vector: Descriptor by Descriptor</h1>
+<p>Every descriptor is defined alongside its <strong>exact operational code</strong> and physical caveats. Variables correspond to outputs from <code>extract_descriptors</code>.</p>
+<h3>Summary: Four Descriptor Families</h3>
+<table>
+<thead>
+<tr>
+  <th>Family</th>
+  <th>Count</th>
+  <th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Traceability</strong></td>
+  <td>5</td>
+  <td>Computational versioning and calibration parameters</td>
+</tr>
+<tr>
+  <td><strong>Peak Geometry</strong></td>
+  <td>8</td>
+  <td>Reflection count, positions, widths, and Scherrer domain sizes</td>
+</tr>
+<tr>
+  <td><strong>Phase Composition</strong></td>
+  <td>10</td>
+  <td>Quantification of crystalline vs diffuse scattering fractions</td>
+</tr>
+<tr>
+  <td><strong>Global Metrics</strong></td>
+  <td>3</td>
+  <td>Peak-independent statistical descriptors</td>
+</tr>
+</tbody>
+</table>
+<h2>10.0 Vector Anatomy: Mapping Columns to Spectral Features</h2>
+<p>Figure 17 projects every extracted parameter onto an experimental pattern of <strong>SMP-0008</strong> (Ca + LIG-B, tagged <code>INCIPIENTE</code>), which displays 35 reflections, an amorphous halo at 16.5 times noise, and full 5–50° coverage.</p>
+<figure><img src="/figures/nb05-17.png" alt="Figure 17, produced by notebook 05." loading="lazy"><figcaption>Figure 17, produced by notebook 05.</figcaption></figure>
+<h3>Reference Table: The 29 Numerical Descriptors</h3>
+<table>
+<thead>
+<tr>
+  <th>Group</th>
+  <th>Descriptor</th>
+  <th>Units</th>
+  <th>Visual Location</th>
+  <th>Physical Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Traceability</strong></td>
+  <td><code>pipeline_version</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Code version identifier</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>baseline_method</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Baseline estimation algorithm</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>baseline_lambda</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>arPLS smoothing penalty</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>broad_width_deg</code></td>
+  <td>deg</td>
+  <td>—</td>
+  <td>Rolling filter window (Method 2 benchmark)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>peak_sigma_k</code></td>
+  <td>σ</td>
+  <td>(a) legend</td>
+  <td>Prominence threshold applied</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>blank_scale_factor</code></td>
+  <td>—</td>
+  <td>(a) blue band</td>
+  <td>Background scaling factor k</td>
+</tr>
+<tr>
+  <td><strong>Peak Geometry</strong></td>
+  <td><code>n_peaks</code></td>
+  <td>count</td>
+  <td>(a) triangles</td>
+  <td>Confirmed Bragg reflections</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>n_peaks_k3</code></td>
+  <td>count</td>
+  <td>—</td>
+  <td>Diagnostic 3σ peak count</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>n_peaks_below_15deg</code></td>
+  <td>count</td>
+  <td>(a) grey band</td>
+  <td>Low-angle reflections (large unit cell)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>two_theta_first_peak</code></td>
+  <td>deg</td>
+  <td>(a) red arrow</td>
+  <td>Angular onset of diffraction</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>d_max_angstrom</code></td>
+  <td>Å</td>
+  <td>(a) red arrow</td>
+  <td>Largest observed interplanar spacing</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>d_max_saturated</code></td>
+  <td>bool</td>
+  <td>—</td>
+  <td>Flag indicating whether first peak touches 5° cut-off</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>fwhm_median_deg</code></td>
+  <td>deg</td>
+  <td>(b)</td>
+  <td>Median peak width (sample representative)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>fwhm_min_deg</code></td>
+  <td>deg</td>
+  <td>(b)</td>
+  <td>Sharpest peak width (instrument limited)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>scherrer_size_nm</code></td>
+  <td>nm</td>
+  <td>(b)</td>
+  <td>Mean apparent crystallite domain size</td>
+</tr>
+<tr>
+  <td><strong>Phase Composition</strong></td>
+  <td><code>amorphous_fraction_blank</code></td>
+  <td>fraction</td>
+  <td>(a) orange, (c)</td>
+  <td>Primary non-Bragg scattering fraction</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystalline_fraction_blank</code></td>
+  <td>fraction</td>
+  <td>(c)</td>
+  <td>Primary crystalline fraction (1 - A_frac)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystalline_fraction</code></td>
+  <td>fraction</td>
+  <td>—</td>
+  <td>Legacy v2.0 estimate (Method 2)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystalline_area</code></td>
+  <td>a.u.</td>
+  <td>(c)</td>
+  <td>Integrated net Bragg area</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>amorphous_area</code></td>
+  <td>a.u.</td>
+  <td>(c)</td>
+  <td>Integrated diffuse halo area</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>amorphous_hump_center</code></td>
+  <td>deg</td>
+  <td>(a) dashed</td>
+  <td>Centroid position of diffuse halo</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>amorphous_hump_fwhm</code></td>
+  <td>deg</td>
+  <td>(a)</td>
+  <td>Angular width of diffuse halo</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>frac_intensity_below_15deg</code></td>
+  <td>fraction</td>
+  <td>(a) grey band</td>
+  <td>Low-angle intensity fraction (peak-independent)</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>signal_snr_area</code></td>
+  <td>—</td>
+  <td>—</td>
+  <td>Ratio of total signal to integrated noise</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>crystallinity_reliable</code></td>
+  <td>bool</td>
+  <td>—</td>
+  <td>Boolean validity flag derived from signal_snr_area</td>
+</tr>
+<tr>
+  <td><strong>Global Metrics</strong></td>
+  <td><code>peak_to_background_ratio</code></td>
+  <td>—</td>
+  <td>(d)</td>
+  <td>Peak contrast above instrumental background</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>spectral_entropy</code></td>
+  <td>bits</td>
+  <td>(d)</td>
+  <td>Intensity concentration across angular channels</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>snr_global</code></td>
+  <td>—</td>
+  <td>(a) green arrow</td>
+  <td>Highest peak intensity in units of Poisson noise</td>
+</tr>
+<tr>
+  <td></td>
+  <td><code>raw_counts_max</code></td>
+  <td>counts</td>
+  <td>(a) green arrow</td>
+  <td>Unscaled peak counts</td>
+</tr>
+</tbody>
+</table>
+<p>Descriptors marked with &quot;—&quot; represent <strong>algorithmic metadata or quality flags</strong> rather than visual features of the curve.</p>
+<h3>Complete Processing Pipeline</h3>
+<pre><code class="language-mermaid">flowchart TD
+    X([&quot;.xrdml — several thousand points, arbitrary grid&quot;])
+    S0[&quot;[0] resample_to_grid&quot;]
+    S1[&quot;[1] normalize_by_area&quot;]
+    S2[&quot;[2] arpls_baseline&quot;]
+    S3a[&quot;[3a] amorphous_from_blank — A = B − kE&quot;]
+    S3b[&quot;[3b] N = I − B — net signal&quot;]
+    S4[&quot;[4] poisson_noise_level&quot;]
+    S5[&quot;[5] detect_peaks_poisson&quot;]
+    S6[&quot;[6] extract_descriptors&quot;]
+    OUT[(&quot;pxrd_descriptors — one row per scan&quot;)]
+
+    X --&gt; S0
+    S0 --&gt;|&quot;canonical grid 5–50°, step 0.02° (2,250 points)&quot;| S1
+    S1 --&gt;|&quot;total area = 1, scans numerically comparable&quot;| S2
+    S2 --&gt;|&quot;B, total baseline (instrument + diffuse)&quot;| S3a
+    S2 --&gt; S3b
+    S3b --&gt;|&quot;sigma = sqrt(counts)&quot;| S4
+    S4 --&gt;|&quot;peaks exceeding k·sigma&quot;| S5
+    S3a --&gt; S6
+    S5 --&gt; S6
+    S6 --&gt;|&quot;29 descriptors: 6 traceability, 9 geometry, 10 composition, 4 global&quot;| OUT
+
+    classDef src fill:#E3F2FD,stroke:#1E88E5,color:#0D47A1
+    classDef proc fill:#F1F8E9,stroke:#7CB342,color:#33691E
+    classDef out fill:#FFF3E0,stroke:#FB8C00,color:#E65100
+    class X src
+    class S0,S1,S2,S3a,S3b,S4,S5,S6 proc
+    class OUT out
+</code></pre>
+<h2>10.1 Traceability Descriptors (5 Columns)</h2>
+<p>These columns log the code version and parameters used during ingestion. If descriptors are recomputed with an alternative λ in the future, these columns preserve historical integrity.</p>
+<h2>10.2 Peak Geometry Descriptors (8 Columns)</h2>
+<h3><code>n_peaks</code> and <code>n_peaks_k3</code></h3>
+<pre><code class="language-python">k = peak_k_sigma(len(x), min_distance_points)   # ~5.1-5.2 in this laboratory
+peaks, widths = detect_peaks_poisson(x, net_signal, sigma, k_sigma=k)
+peaks_k3, _   = detect_peaks_poisson(x, net_signal, sigma, k_sigma=3.0)
+n_peaks    = len(peaks)
+n_peaks_k3 = len(peaks_k3)
+</code></pre>
+<p><code>n_peaks</code> represents verified reflections above the multiple-testing corrected threshold; all downstream peak parameters are derived exclusively from this set. <code>n_peaks_k3</code> serves purely as a diagnostic benchmark: substantial divergence between both counts indicates a noisy amorphous pattern, whereas convergence confirms a crystalline material.</p>
+<h3><code>two_theta_first_peak</code></h3>
+<pre><code class="language-python">two_theta_first_peak = float(x[peaks[0]])
+</code></pre>
+<h3><code>d_max_angstrom</code> and <code>d_max_saturated</code></h3>
+<pre><code class="language-python">theta_rad = np.radians(two_theta_first_peak / 2.0)
+d_max_angstrom = WAVELENGTH_CU_KA1 / (2.0 * np.sin(theta_rad))
+d_max_saturated = two_theta_first_peak &lt;= LOW_ANGLE_CUTOFF_DEG + 0.10
+</code></pre>
+<p><code>d_max_saturated</code> ensures models do not mistake instrumental cut-offs for physical lattice limits.</p>
+<h3><code>fwhm_median_deg</code> and <code>fwhm_min_deg</code></h3>
+<pre><code class="language-python">fwhm_median_deg = float(np.median(widths))
+fwhm_min_deg    = float(np.min(widths))
+</code></pre>
+<h3><code>scherrer_size_nm</code></h3>
+<pre><code class="language-python">beta_rad = np.radians(float(widths[0]))
+scherrer_size_nm = (0.9 * (WAVELENGTH_CU_KA1 * 0.1)) / (beta_rad * np.cos(theta_rad))
+</code></pre>
+<p>Applies the Scherrer equation with shape factor K = 0.9 (paired with FWHM). It must be interpreted as a comparative index within this instrument, as instrumental broadening and microstrain are uncorrected.</p>
+<h2>10.3 Phase Composition Descriptors (10 Columns)</h2>
+<h3><code>crystalline_area</code>, <code>amorphous_area</code>, <code>crystalline_fraction</code></h3>
+<pre><code class="language-python">crystalline_area     = integrate(crystalline_signal, x)   # trapezoidal integration
+amorphous_area       = integrate(halo_signal, x)
+crystalline_fraction = crystalline_area / (crystalline_area + amorphous_area)
+</code></pre>
+<p>Both component areas are logged alongside the dimensionless ratio. The ratio discards scale; retaining integrated areas preserves the absolute quantity of coherent scattering.</p>
+<h3><code>signal_snr_area</code> and <code>crystallinity_reliable</code></h3>
+<pre><code class="language-python">angular_span    = float(x[-1] - x[0])
+signal_snr_area = (crystalline_area + amorphous_area) / (sigma * angular_span)
+crystallinity_reliable = signal_snr_area &gt;= MIN_SIGNAL_SNR_AREA
+</code></pre>
+<p>Evaluates whether integrated signal exceeds integrated noise across the angular range. Empty holders evaluate to 0.07, while typical syntheses range between 3 and 5.</p>
+<h3><code>amorphous_hump_center</code></h3>
+<pre><code class="language-python">amorphous_hump_center = integrate(x * halo_signal, x) / integrate(halo_signal, x)
+</code></pre>
+<p>Computes the intensity-weighted centroid of the amorphous halo. Both numerator and denominator are definite integrals; the step size cancels, yielding units of degrees 2θ.</p>
+<blockquote>
+<p><strong>Dimensional analysis pitfall.</strong> If the numerator were computed as a discrete sum (<code>np.sum(x * halo)</code>) while the denominator remained an integral, the step size (0.02°) would not cancel. The resulting centroid would be scaled by 1/0.02 = <strong>50</strong>, outputting unphysical values exceeding 500° 2θ. Always verify homogeneity between summations and integrals.</p>
+</blockquote>
+<p>Physically, the halo centroid reflects <strong>mean contact distances</strong> within the disordered phase: a centroid at 20–25° corresponds via Bragg's law to real-space distances of 3.5–4.5 Å, typical of dense disordered organic matrices.</p>
+<h3><code>amorphous_hump_fwhm</code></h3>
+<pre><code class="language-python">peak_halo = halo_signal.max()
+above_half = np.where(halo_signal &gt;= peak_halo / 2.0)[0]
+amorphous_hump_fwhm = float(x[above_half[-1]] - x[above_half[0]])
+</code></pre>
+<h3><code>frac_intensity_below_15deg</code></h3>
+<pre><code class="language-python">window = x &lt; LOW_ANGLE_WINDOW_DEG
+frac_intensity_below_15deg = integrate(normalized_scan[window], x[window])
+</code></pre>
+<p>Computes total intensity concentrated below 15° <strong>without requiring peak detection</strong>. Remains valid and physically informative in completely amorphous samples where <code>n_peaks_below_15deg</code> is zero.</p>
+<h3><code>peak_to_background_ratio</code></h3>
+<pre><code class="language-python">background_level = float(np.median(instrumental_background))
+peak_to_background_ratio = float(np.max(crystalline_signal) / background_level)
+</code></pre>
+<p>Quantifies signal contrast above instrumental noise, reflecting collection time and sample mass.</p>
+<h3><code>amorphous_fraction_blank</code>, <code>crystalline_fraction_blank</code>, <code>blank_scale_factor</code></h3>
+<p>The core metrics introduced in v3.0, replacing legacy <code>crystalline_fraction</code>:</p>
+<pre><code class="language-python">window = x &gt;= BLANK_SCALE_FROM_DEG                     # default 45°
+scale  = np.median(baseline[window]) / np.median(blank_baseline[window])
+blank_scale_factor = scale
+
+instrumental = scale * blank_baseline
+amorphous    = np.maximum(baseline - instrumental, 0.0)
+amorphous_fraction_blank = integrate(amorphous, x) / integrate(normalized_scan, x)
+crystalline_fraction_blank = 1.0 - amorphous_fraction_blank
+</code></pre>
+<p>Normalisation across <strong>total pattern area</strong> ensures comparability across acquisitions of differing duration. This metric quantifies total non-Bragg scattering (including thermal diffuse scatter, air scatter, substrate scatter, and fluorescence), providing comparative cohort rankings rather than absolute amorphous mass percentages.</p>
+<h2>10.4 Global Descriptors (3 Columns, Peak-Independent)</h2>
+<p>These metrics remain well-conditioned in <strong>completely amorphous samples</strong>, making them ideal for ordering the entire dataset from amorphous to highly crystalline.</p>
+<h3><code>spectral_entropy</code></h3>
+<pre><code class="language-python">p = net_signal / net_signal.sum()
+p = p[p &gt; 0]
+spectral_entropy = float(-np.sum(p * np.log2(p)))
+</code></pre>
+<p>Shannon entropy, H = -sum(p_i * log2(p_i)), measures intensity dispersion across angular channels.</p>
+<ul>
+<li><strong>Crystalline pattern</strong> → Intensity concentrated within narrow Bragg spikes → <strong>Low entropy</strong>.</li>
+<li><strong>Amorphous pattern</strong> → Intensity dispersed across a broad diffuse hump → <strong>High entropy</strong>.</li>
+</ul>
+<p>Across the real corpus, correlation with crystallinity evaluates to <strong>-0.73</strong>. It must be evaluated across the <strong>net signal</strong> N, as evaluating full patterns causes featureless background to dominate, collapsing correlation to +0.04.</p>
+<h3><code>snr_global</code></h3>
+<pre><code class="language-python">snr_global = float(np.max(net_signal) / sigma)
+</code></pre>
+<p>Evaluates maximum net peak prominence in units of Poisson noise.</p>
+<h3><code>raw_counts_max</code></h3>
+<pre><code class="language-python">raw_counts_max = float(np.max(y_raw))
+</code></pre>
+<p>Recovers the absolute count scale lost during area normalisation.</p>
+<h3>The log2(N) Ceiling: Interpreting Spectral Entropy Scales</h3>
+<p>In scatter plots of entropy versus crystallinity, data points cluster near the upper boundary across all crystallinity regimes:</p>
+<ol>
+<li><strong>The Logarithmic Scale.</strong> Maximum entropy for 2,250 points is log2(2250) = <strong>11.14 bits</strong>. A crystalline pattern with 40 narrow peaks occupies 17.8% of channels, gives an entropy close to the measured median on CRISTALINO (<strong>8.46 bits</strong>), and concentrating the intensity further lowers it only slightly.</li>
+<li><strong>Discriminative Capacity.</strong> Evaluated by Area Under the ROC Curve (AUC):<ul>
+<li><code>n_peaks</code>: <strong>0.994</strong></li>
+<li><code>crystalline_fraction</code>: 0.973</li>
+<li><code>amorphous_fraction_blank</code>: 0.964</li>
+<li><code>spectral_entropy</code>: <strong>0.909</strong></li>
+</ul>
+</li>
+<li><strong>Effective Width Transformation.</strong> Plotting effective width 2^H * Delta (degrees) linearises the physical metric:<ul>
+<li>CRISTALINO: <strong>7.1°</strong></li>
+<li>INCIPIENTE: 9.8°</li>
+<li>AMORFO: <strong>12.1°</strong></li>
+</ul>
+</li>
+<li><strong>Utility.</strong> Spectral entropy provides an independent, <strong>peak-detection-free</strong> validation metric.</li>
+</ol>
+<figure><img src="/figures/nb05-18.png" alt="Figure 18, produced by notebook 05." loading="lazy"><figcaption>Figure 18, produced by notebook 05.</figcaption></figure>
+<h1>11. Pipeline Verification</h1>
+<p>Four independent test suites:</p>
+<table>
+<thead>
+<tr>
+  <th>Verification Suite</th>
+  <th>Target of Detection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>11.1</strong> External Reference Standards</td>
+  <td>Expected responses on certified ground truth</td>
+</tr>
+<tr>
+  <td><strong>11.2</strong> Manual Code Reproduction</td>
+  <td>Numerical parity between documentation and execution</td>
+</tr>
+<tr>
+  <td><strong>11.3</strong> Physical Range Boundaries</td>
+  <td>Detecting impossible values (angles &gt;180°, negative sizes)</td>
+</tr>
+<tr>
+  <td><strong>11.4</strong> Internal Consistency</td>
+  <td>Area conservation and peak count agreement</td>
+</tr>
+</tbody>
+</table>
+<p>Benchmarking against certified physical ground truths:</p>
+<ul>
+<li><strong>Empty Holder</strong>: Yields Xc ≈ 0.02, SNR_area ≈ 0.07, and is flagged <code>crystallinity_reliable = FALSE</code>.</li>
+<li><strong>Inorganic Metal Precursors</strong>: Mg, Cu, Ni, Ca, Zn, and Bi nitrates evaluate between 0.91 and 0.96.</li>
+<li><strong>Free Organic Ligands</strong>: Pyrene and triazine phosphonates evaluate between 0.57 and 0.71.</li>
+<li><strong>Certified Standard</strong>: Defines instrumental FWHM resolution.</li>
+</ul>
+<h1>12. Writing to <code>pxrd_descriptors</code></h1>
+<p>The database schema decouples algorithmic descriptors from human annotations:</p>
+<ul>
+<li><strong><code>pxrd_descriptors</code></strong>: Machine-extracted numerical features. Safe to wipe and recompute upon pipeline updates.</li>
+<li><strong><code>pxrd_labels</code></strong>: Costly human expert annotations. Preserved across all pipeline re-executions.</li>
+</ul>
+<p>Records are committed via an <strong>UPSERT</strong> (<code>ON CONFLICT DO UPDATE</code>) keyed on <code>measurement_id</code> (UUID with <code>ON DELETE CASCADE</code>), recording <code>pipeline_version</code> on every row.</p>
+<h1>13. Corpus-Wide Statistical Insights</h1>
+<figure><img src="/figures/nb05-19.png" alt="Figure 19, produced by notebook 05." loading="lazy"><figcaption>Figure 19, produced by notebook 05.</figcaption></figure>
+<p><strong>Observations.</strong> Panel (a) shows crystallinity distributed broadly across the range rather than clustering at boundaries, confirming discriminative capacity. Panel (b) illustrates a strong negative correlation with effective spectral width (-0.70). Panel (c) shows cross-validation between maximum interplanar spacing (d_max) and low-angle reflection counts.</p>
+<h1>14. Best Practices Derived from this Pipeline</h1>
+<ol>
+<li><strong>An unexecuted notebook is merely a proposal.</strong> Cells with <code>execution_count: None</code> harbor latent errors.</li>
+<li><strong>Calibrate against specimens of known physical ground truth.</strong> Media-hour scans of blanks and standards turn arbitrary parameter tuning into rigorous measurement.</li>
+<li><strong>Always compute descriptors for the blank.</strong> If the pipeline attributes complex signal to an empty holder, the pipeline is flawed.</li>
+<li><strong>Algorithms operating outside their design envelope fail silently.</strong> arPLS seeks floor envelopes; requesting a ceiling returns plausible zeroes rather than exceptions.</li>
+<li><strong>Verify physical range boundaries.</strong> Catch unphysical angles (&gt;180°) or fractions (&gt;1) on day one.</li>
+<li><strong>Beware formulas mixing summations with integrals.</strong> Step sizes fail to cancel, introducing hidden scaling factors.</li>
+<li><strong>Simplify formulas analytically prior to deployment.</strong> Avoid duplicate, collinear columns masquerading under distinct names.</li>
+<li><strong>Operation order is as vital as the operations themselves.</strong> Area normalisation must precede baseline estimation.</li>
+<li><strong>Differentiate &quot;unmeasured angle&quot; from &quot;zero signal&quot;.</strong> Never zero-pad unmeasured angular domains.</li>
+<li><strong>Store pipeline versioning and parameters alongside the data.</strong> Ensure traceability across software iterations.</li>
+<li><strong>Log measurement validity in explicit boolean flags.</strong> Flag boundary truncations (<code>d_max_saturated</code>) and low SNR (<code>crystallinity_reliable</code>).</li>
+<li><strong>A valid hypothesis whose prerequisite condition is unverified is indistinguishable from a false hypothesis.</strong> Verify that peak skirts do not violate rolling window assumptions.</li>
+<li><strong>Validate fixes against cases that were already working.</strong> Prevent patches from degrading valid regimes.</li>
+<li><strong>Correct ordering does not guarantee correct quantification.</strong> Confirm absolute values against expert benchmarks.</li>
+<li><strong>Selecting representative examples visually biases conclusions.</strong> Select canonical test cases programmatically.</li>
+</ol>
+<h1>Conclusions</h1>
+<p><strong>What the database now provides:</strong>
+A dedicated <code>pxrd_descriptors</code> table containing validated numerical feature vectors for every scan, fully documented in <code>data_dictionary</code> and generated by a unified module (<code>src/pxrd_descriptors.py</code>) calibrated against certified standards.</p>
+<p><strong>What these descriptors do NOT represent:</strong></p>
+<ul>
+<li><strong>Crystallinity is not a categorical label.</strong> It is a reproducible continuous ranking; phase purity classification resides in <code>pxrd_labels</code>.</li>
+<li><strong><code>d_max_angstrom</code> is instrument-limited to 17.66 Å.</strong> It does not represent maximum lattice limits in the absolute chemical sense.</li>
+<li><strong>Scherrer sizes provide comparative indices</strong>, not absolute physical crystal diameters.</li>
+</ul>
+<h2>On Non-Negative Matrix Factorisation (NMF)</h2>
+<p>NMF decomposes a multi-scan dataset into constituent basis patterns. Its input is <strong>not reference standards</strong>, but the <strong>complete data matrix of N scans × 2,250 points</strong>. NMF learns basis components from the data itself, requiring diverse syntheses sharing identical phases. Reference standards serve distinct calibration roles.</p>
+<h2>Next Steps</h2>
+<ol>
+<li><strong>Execute batch processing</strong> across the complete corpus of ~1,880 measurements.</li>
+<li><strong>Human annotation campaign</strong> (<code>pxrd_labels</code>).</li>
+<li><strong>NMF decomposition</strong> across the net signal matrix.</li>
+<li><strong>Novelty triage</strong> comparing observed Bragg positions against single-crystal simulated patterns.</li>
+</ol>
+
+</div></body></html>

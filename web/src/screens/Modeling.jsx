@@ -1,4 +1,3 @@
-import { MODELS } from '../content/site.js'
 import {
   MODEL_ASSESSMENT,
   MODEL_CHEMISTRY,
@@ -10,10 +9,20 @@ import {
   MODEL_TWO,
   MODEL_VALIDATION,
 } from '../content/screens.js'
-import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
+import { Badge, Card, Note, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
 import ModelScorecard from '../components/ModelScorecard.jsx'
+import { FlaskConical, Gem, NotebookPen, Target } from 'lucide-react'
+
+/* Un simbolo por propuesta de mejora: un experimento nuevo, mas muestras de la
+   clase escasa, terminar de anotar lo que ya se hizo, y replantear el objetivo. */
+const NEXT_ICON = {
+  sweep: FlaskConical,
+  minority: Gem,
+  record: NotebookPen,
+  target: Target,
+}
 
 function Pullquote({ children, tone = 'accent' }) {
   return (
@@ -58,11 +67,6 @@ export default function Modeling() {
             &ldquo;degree of crystallinity&rdquo; that the human labels actually recorded, and inventing
             one would mean scoring the model against a quantity nobody measured.
           </p>
-          <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            One consequence follows immediately, and it is easy to get wrong: mean relative error, RMSE
-            and R² do not apply. They belong to regression and measure distance to a number. In
-            classification you either get the class right or you do not.
-          </p>
         </Card>
       </section>
 
@@ -72,7 +76,51 @@ export default function Modeling() {
         <p className="mb-6 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
           <Rich>{MODEL_LINEUP.intro}</Rich>
         </p>
-        <ScrollTable head={MODEL_LINEUP.tableHead} rows={MODEL_LINEUP.tableRows} />
+        {/* Cada modelo se despliega en su sitio. Un <details> nativo en vez
+            de estado en React: no hace falta, se puede abrir mas de uno a la
+            vez, y funciona con teclado y con Ctrl+F del navegador sin que
+            haya que programarlo. */}
+        <ol className="flex list-none flex-col gap-2 p-0">
+          {MODEL_LINEUP.models.map((m) => (
+            <li key={m.name}>
+              <details
+                className="rounded-[var(--radius-card)] px-4 py-3"
+                style={{
+                  border: 'var(--border-card) solid var(--surface-border)',
+                  background: 'var(--surface)',
+                }}
+              >
+                <summary className="cursor-pointer list-none">
+                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                      {m.name}
+                    </span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      {m.assumes}
+                    </span>
+                    <span className="ml-auto text-xs" style={{ color: 'var(--accent-primary)' }}>
+                      {m.why}
+                    </span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <Rich>{m.detail}</Rich>
+                </p>
+                <pre
+                  className="mono mt-3 overflow-x-auto rounded-[var(--radius-badge)] p-3 text-xs"
+                  style={{
+                    background: 'var(--surface-elevated)',
+                    border: '2px solid var(--surface-border)',
+                    color: 'var(--text-primary)',
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {m.code}
+                </pre>
+              </details>
+            </li>
+          ))}
+        </ol>
         <div className="mt-6">
           <NotebookFigure
             src="nb06-09.png"
@@ -82,7 +130,7 @@ export default function Modeling() {
           />
         </div>
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Every model that supports it carries balanced class weights, which offsets the 5.8:1 imbalance
+          Every model that supports it carries balanced class weights, which offsets the 6:1 imbalance
           by penalising errors on the minority classes more heavily.
         </p>
       </section>
@@ -90,9 +138,23 @@ export default function Modeling() {
       {/* --- Validacion --- */}
       <section>
         <SectionTitle eyebrow="Validation"><Rich>{MODEL_VALIDATION.title}</Rich></SectionTitle>
-        <Card accent>
-          <p style={{ color: 'var(--text-secondary)' }}><Rich>{MODEL_VALIDATION.body}</Rich></p>
-        </Card>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <h3 className="text-base">What a plate is</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{MODEL_VALIDATION.setup}</Rich>
+            </p>
+          </Card>
+          <Card accent>
+            <h3 className="text-base">So the split follows the plate</h3>
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <Rich>{MODEL_VALIDATION.body}</Rich>
+            </p>
+          </Card>
+        </div>
+        <Note>
+          <Rich>{MODEL_VALIDATION.consequence}</Rich>
+        </Note>
       </section>
 
       {/* --- Dos modelos --- */}
@@ -141,9 +203,16 @@ export default function Modeling() {
           {MODEL_ASSESSMENT.points.map((p) => (
             <Card key={p.title}>
               <h3 className="text-base"><Rich>{p.title}</Rich></h3>
-              <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                <Rich>{p.body}</Rich>
-              </p>
+              <ul className="mt-3 flex list-none flex-col gap-2.5 p-0 text-sm">
+                {p.bullets.map((b, i) => (
+                  <li key={i} className="flex gap-2.5">
+                    <span aria-hidden style={{ color: 'var(--accent-primary)', flexShrink: 0 }}>
+                      &mdash;
+                    </span>
+                    <span style={{ color: 'var(--text-secondary)' }}><Rich>{b}</Rich></span>
+                  </li>
+                ))}
+              </ul>
             </Card>
           ))}
         </div>
@@ -165,16 +234,44 @@ export default function Modeling() {
           </p>
         </Card>
 
-        <Card className="mt-4">
-          <h3 className="text-base"><Rich>{MODEL_ASSESSMENT.next.title}</Rich></h3>
-          <ol className="mt-4 flex list-decimal flex-col gap-3 pl-5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {MODEL_ASSESSMENT.next.items.map((it, i) => (
-              <li key={i}>
-                <Rich>{it}</Rich>
-              </li>
-            ))}
+        <div className="mt-4">
+          <h3 className="mb-3 text-base"><Rich>{MODEL_ASSESSMENT.next.title}</Rich></h3>
+          <ol className="grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
+            {MODEL_ASSESSMENT.next.items.map((it, i) => {
+              const Icon = NEXT_ICON[it.icon] ?? Target
+              return (
+                <li key={it.head}>
+                  <Card className="h-full">
+                    <div className="flex items-start gap-3">
+                      <span
+                        aria-hidden
+                        className="flex items-center justify-center rounded-full"
+                        style={{
+                          width: 34, height: 34, flexShrink: 0,
+                          border: '2.5px solid var(--accent-primary)',
+                          color: 'var(--accent-primary)',
+                        }}
+                      >
+                        <Icon size={17} />
+                      </span>
+                      <div>
+                        <div className="flex flex-wrap items-baseline gap-2">
+                          <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                            {i + 1}. {it.head}
+                          </span>
+                          <Badge tone="neutral">{it.cost}</Badge>
+                        </div>
+                        <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          <Rich>{it.body}</Rich>
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </li>
+              )
+            })}
           </ol>
-        </Card>
+        </div>
 
         <Card accent className="mt-4">
           <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
@@ -190,27 +287,6 @@ export default function Modeling() {
         <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
           <Rich>{MODEL_METRICS.note}</Rich>
         </p>
-      </section>
-
-      {/* --- Registro --- */}
-      <section>
-        <SectionTitle eyebrow="The registry">What was trained, and what survived</SectionTitle>
-        <ScrollTable
-          head={['Model', 'Algorithm', 'F1 macro', 'Size', 'Status']}
-          rows={MODELS.map((m) => [
-            <span key={m.name}>
-              <code><Rich>{m.name}</Rich></code>
-              <br />
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em' }}><Rich>{m.note}</Rich></span>
-            </span>,
-            m.algo,
-            m.f1,
-            m.size,
-            <Badge key="s" tone={m.status === 'INVALID' ? 'amorphous' : 'pure'}>
-              <Rich>{m.status}</Rich>
-            </Badge>,
-          ])}
-        />
       </section>
 
       {/* --- Que dicen los numeros --- */}

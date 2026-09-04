@@ -71,13 +71,47 @@ OUT = ROOT / "web" / "public" / "data" / "simulator_grid.json"
 MODEL_SLOT = "primary"
 MIN_SYNTHESES = 25  # metales con menos historico no entran: su mediana no es fiable
 
-# Los ejes que el usuario puede mover. Todos dentro del rango observado.
-AXES = {
-    "temp_target_c": [25, 40, 60, 80, 90, 100, 110, 120, 130, 140, 150, 160],
-    "time_hours": [1, 6, 12, 24, 48, 72],
-    "lm_ratio": [0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1.0],
+# Los ejes que el usuario puede mover.
+#
+# Tres de ellos NO se escriben aqui: se leen del conjunto con el que se entreno
+# el modelo desplegado (ver ejes_observados). Temperatura, tiempo y ratio son
+# discretos en la practica --el laboratorio usa 9, 3 y 8 valores respectivamente,
+# no un continuo-- y ofrecer al usuario un valor que nunca se probo es pedirle al
+# modelo una extrapolacion disfrazada de prediccion. Estuvieron escritos a mano y
+# ofrecian 25 grados, 1 hora y ratio 0,4, ninguno de los cuales existe en el
+# registro, mientras la web afirmaba lo contrario tres centimetros mas abajo.
+#
+# El modulador si es continuo (71 valores distintos en el historico), asi que su
+# escalera se elige a mano; va de 0 a 16 mmol, dentro del maximo observado.
+AXES_FIJOS = {
     "mod_carboxylic_mmol": [0.0, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0],
 }
+
+AXES_OBSERVADOS = ["temp_target_c", "time_hours", "lm_ratio"]
+
+
+def ejes_observados(cur, dataset_slug):
+    """Devuelve los valores que el laboratorio uso de verdad, en orden.
+
+    Se ejecuta la propia `source_query` que el registro guarda para el conjunto,
+    en vez de reescribir sus filtros aqui: dos copias de la misma definicion
+    acaban divergiendo, y la que manda es la registrada.
+    """
+    cur.execute("SELECT source_query FROM ml_datasets WHERE dataset_slug = %s", (dataset_slug,))
+    fila = cur.fetchone()
+    if not fila:
+        raise SystemExit("no encuentro el conjunto %s en ml_datasets" % dataset_slug)
+    consulta = fila[0]
+
+    ejes = {}
+    for col in AXES_OBSERVADOS:
+        cur.execute(
+            "SELECT DISTINCT %s FROM (%s) AS d WHERE %s IS NOT NULL ORDER BY 1"
+            % (col, consulta, col)
+        )
+        ejes[col] = [float(r[0]) for r in cur.fetchall()]
+    return ejes
+
 
 CLASSES_ORDER = ["AMORFO", "INCIPIENTE", "CRISTALINO"]
 
@@ -117,6 +151,22 @@ def main() -> int:
     features = columnas_de_entrada(conn, model_slug)
     print("ranura %r -> modelo %s (%d variables de entrada)"
           % (MODEL_SLOT, model_slug, len(features)))
+
+    # Los ejes discretos salen del conjunto con el que se entreno ESE modelo, no
+    # de una lista escrita aqui: asi el simulador no puede ofrecer una condicion
+    # que el laboratorio nunca probo.
+    cur.execute(
+        "SELECT d.dataset_slug FROM ml_datasets d "
+        "JOIN ml_models m ON m.dataset_id = d.dataset_id WHERE m.model_slug = %s",
+        (model_slug,),
+    )
+    dataset_slug = cur.fetchone()[0]
+    AXES = dict(ejes_observados(cur, dataset_slug))
+    AXES.update(AXES_FIJOS)
+    print("conjunto %s -> ejes observados:" % dataset_slug)
+    for nombre in AXES_OBSERVADOS:
+        valores = AXES[nombre]
+        print("   %-22s %d valores  %s" % (nombre, len(valores), valores))
 
     df = pd.read_sql("SELECT * FROM v_ml_features WHERE synthesis_type = 'HTS'", conn)
     modelo = cargar_modelo(conn, model_slug)

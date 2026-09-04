@@ -162,7 +162,7 @@ paso *human-in-the-loop* de esa vía.
 ## Convenciones comunes
 
 - **El texto en pantalla va en inglés**; los valores que se escriben en la base de datos
-  **no**, y no se pueden renombrar sin una migración (ver `scripts/ddl_pxrd_labels_v2.sql`).
+  **no**, y no se pueden renombrar sin una migración (ver `scripts/sql/migrations/2026-08-25_pxrd_labels_v2.sql`).
 - **Nada se guarda en memoria a la espera de un botón de guardar.** Lo que se escribe, se
   escribe al instante, para que cerrar el navegador o un corte de luz cueste como mucho
   el patrón que estaba en pantalla.

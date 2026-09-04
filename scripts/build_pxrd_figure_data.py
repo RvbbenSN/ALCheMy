@@ -220,8 +220,19 @@ def main() -> int:
                 "baseline": [round(float(v), 6) for v in base[idx]],
                 "amorphousFractionBlank": (round(float(frac_blank), 4)
                                            if frac_blank is not None else None),
+                # El marcador se dibuja SOBRE la curva que el lector ve, que es
+                # la medida completa. Guardar aqui la altura del pico ya sin
+                # fondo --que es la que usa el detector-- ponia los triangulos
+                # pegados al suelo, en la posicion que tendrian si el
+                # difractograma estuviera corregido, mientras la curva de al
+                # lado flotaba encima. Se guardan las dos: `y` para pintar, y
+                # `height` que es lo que de verdad decidio que fuera un pico.
                 "peaks": [
-                    {"x": round(float(x[p]), 3), "y": round(float(layers["crystalline"][p]), 6)}
+                    {
+                        "x": round(float(x[p]), 3),
+                        "y": round(float(layers["normalized"][p]), 6),
+                        "height": round(float(layers["crystalline"][p]), 6),
+                    }
                     for p in peaks
                 ],
                 "noise3sigma": round(float(3 * noise), 8),

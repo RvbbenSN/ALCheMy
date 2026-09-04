@@ -12,6 +12,7 @@ import Eda from './screens/Eda.jsx'
 import Modeling from './screens/Modeling.jsx'
 import TheModel from './screens/TheModel.jsx'
 import Rag from './screens/Rag.jsx'
+import DatabaseScreen from './screens/Database.jsx'
 import About from './screens/About.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="modeling" element={<Modeling />} />
           <Route path="the-model" element={<TheModel />} />
           <Route path="rag" element={<Rag />} />
+          <Route path="database" element={<DatabaseScreen />} />
           <Route path="about" element={<About />} />
           <Route path="*" element={<Overview />} />
         </Route>

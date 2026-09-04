@@ -225,7 +225,12 @@ def enrich_from_crossref(record):
     try:
         response = requests.get(
             url, timeout=15,
-            headers={"User-Agent": "ALCheMy-RAG/1.0 (mailto:rubbenserrano@gmail.com)"},
+            # Crossref pide un correo de contacto para meterte en su "polite pool",
+            # que va mas rapido y avisa antes de limitarte. Se lee del entorno en
+            # vez de estar escrito aqui: el codigo es publico y el correo no tiene
+            # por que serlo.
+            headers={"User-Agent": "ALCheMy-RAG/1.0 (mailto:%s)"
+                     % os.getenv("CROSSREF_MAILTO", "researcher@example.org")},
         )
         if response.status_code != 200:
             return False

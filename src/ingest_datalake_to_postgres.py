@@ -7,7 +7,7 @@ and inserts into characterization_measurements directly against Postgres - this 
 the backfill lane, it never touches the n8n webhook.
 
 Resumable by design: `characterization_measurements.file_hash` has an index but no
-UNIQUE constraint in scripts/init_db.sql, so nothing at the database level stops a
+UNIQUE constraint in scripts/sql/init_db.sql, so nothing at the database level stops a
 re-run from inserting duplicates. This script loads every file_hash already in the
 table once at startup and skips anything that matches, so an interrupted run (or a
 deliberate re-run after fixing one technique's parser) never double-inserts. Every

@@ -23,7 +23,7 @@ SELECT pipeline_version, COUNT(*), MIN(computed_at), MAX(computed_at)
 
 ## v3.3 — the peak threshold is corrected for multiple comparisons
 
-*`scripts/ddl_pxrd_descriptors_v33.sql` · notebook §8.2*
+*`scripts/sql/migrations/2026-08-28_pxrd_descriptors_v33.sql` · notebook §8.2*
 
 **What was wrong.** A reflection was accepted when its prominence cleared 3σ of the
 scan's own counting noise. Three sigma is the 99.73 % level **for one test**, and finding
@@ -39,7 +39,7 @@ by construction) redrawn with Poisson noise:
 | 4 | 0,1 |
 | 5 | 0,0 |
 
-On RS1765, a pattern labelled AMORFO by hand, the detector reported 8 peaks, ~5 of them
+On SMP-0006, a pattern labelled AMORFO by hand, the detector reported 8 peaks, ~5 of them
 noise. Worse than the count: `two_theta_first_peak`, `d_max_angstrom`, the widths and
 `scherrer_size_nm` were all read off that set — an interplanar spacing computed from a
 noise spike and stored with the same face as a real one.
@@ -77,7 +77,7 @@ the two is itself informative.
 
 ## v3.2 — the amorphous fraction is referenced to what the sample scattered
 
-*`scripts/ddl_pxrd_descriptors_v32.sql` · notebook §7.3, §10.0*
+*`scripts/sql/migrations/2026-08-28_pxrd_descriptors_v32.sql` · notebook §7.3, §10.0*
 
 **What was wrong.** The diffuse area was divided by the **total** integrated area of the
 scan, which includes the instrumental background. So `crystalline_fraction_blank`, being
@@ -85,7 +85,7 @@ one minus that, counted the instrument's own background as crystalline material 
 value depended on how much background happened to sit under the pattern, which varies
 with exposure and mount.
 
-Found by the anatomy figure: its phase panel showed 9 % crystalline area for LP69 while
+Found by the anatomy figure: its phase panel showed 9 % crystalline area for SMP-0005 while
 the column read 0,757. Neither was miscalculated; they were measuring different things.
 
 **The fix.**
@@ -111,7 +111,7 @@ The real gain is in the incipient subtypes, which stop overlapping: HALO_DOMINAN
 
 ## v3.1 — the blank contributes its baseline, not its raw counts
 
-*`scripts/ddl_pxrd_descriptors_v31.sql` · notebook §7.3*
+*`scripts/sql/migrations/2026-08-28_pxrd_descriptors_v31.sql` · notebook §7.3*
 
 **What was wrong.** The empty-instrument scan was subtracted as measured. At ~80 counts
 its own Poisson noise is ~11 %, so the subtraction injected that noise straight into the
@@ -126,7 +126,7 @@ diffuse curve fell by two orders of magnitude (÷73 to ÷966).
 
 ## v3.0 — the halo is measured by subtracting the empty instrument
 
-*`scripts/ddl_pxrd_descriptors_v3.sql` · notebook §7*
+*`scripts/sql/migrations/2026-08-27_pxrd_descriptors_v3.sql` · notebook §7*
 
 The version that made the amorphous fraction trustworthy. Two earlier methods were tried
 and both **fail silently**, which is why they stay documented in the module rather than
@@ -155,7 +155,7 @@ New columns: `amorphous_fraction_blank`, `crystalline_fraction_blank`, `blank_sc
 
 ## v2.0 — width-based separation
 
-*`scripts/ddl_pxrd_descriptors_v2.sql`*
+*`scripts/sql/migrations/2026-08-26_pxrd_descriptors_v2.sql`*
 
 First full descriptor vector. `crystalline_fraction` splits the net signal by **width**
 alone: narrow is Bragg, broad is halo. Superseded by v3.0 for the reasons above, but the
@@ -166,7 +166,7 @@ width, and it is useful as a feature even though it is not a phase fraction.
 
 ## v1.0 — initial schema
 
-*`scripts/ddl_pxrd_descriptors.sql`* — table creation, peak geometry and global
+*`scripts/sql/migrations/2026-08-25_pxrd_descriptors_v1.sql`* — table creation, peak geometry and global
 descriptors.
 
 ---

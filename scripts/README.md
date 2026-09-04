@@ -48,7 +48,7 @@ other.
 ## 1. `synthesis_experiments` — the lab notebook, digitised
 
 **What it is**: one row per MOF/POP synthesis batch. The parent table of the
-whole platform; `sample_code` (e.g. `RS1`, `RS102`) is its primary key and is
+whole platform; `sample_code` (e.g. `RS1`, `SMP-0100`) is its primary key and is
 what every other characterization measurement hangs off of.
 
 **Filled by**: `notebooks/01_Excel_Ingestion_and_Transformation.ipynb`, which
