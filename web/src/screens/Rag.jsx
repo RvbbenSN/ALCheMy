@@ -1,15 +1,10 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle, Term } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
 import GraphConstellation from '../components/GraphConstellation.jsx'
-import {
-  RAG_AREAS,
-  RAG_CONTEXTUAL,
-  RAG_HERO,
-  RAG_NUMBERS,
-  RAG_POWERS,
-  RAG_RETRIEVAL,
-} from '../content/rag.js'
+import * as RAG_EN from '../content/rag.js'
+import * as RAG_ES from '../content/es/rag.js'
 import {
   BookOpen,
   BrainCircuit,
@@ -31,6 +26,8 @@ const RAG_AREA_ICON = {
 }
 
 export default function Rag() {
+  const { RAG_AREAS, RAG_CONTEXTUAL, RAG_HERO, RAG_NUMBERS, RAG_POWERS, RAG_RETRIEVAL } = useBundle(RAG_EN, RAG_ES)
+
   return (
     <div className="flex flex-col gap-16">
       {/* --- Entrada --- */}

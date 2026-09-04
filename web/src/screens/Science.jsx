@@ -1,3 +1,4 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { useState } from 'react'
 import DataScale from '../components/DataScale.jsx'
 import LabDiagram from '../components/LabDiagram.jsx'
@@ -19,19 +20,10 @@ import {
   Waves,
   Wind,
 } from 'lucide-react'
-import { LAB_CYCLE } from '../content/site.js'
-import {
-  BOTTLENECK,
-  LAB_INTRO,
-  MOF_DEF,
-  MOF_FACTS,
-  MOF_NAMING,
-  NOBEL,
-  SCIENCE_INTRO,
-  TECHNIQUES,
-  DATA_SCALE,
-  WHY_CHARACTERISE,
-} from '../content/science.js'
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
+import * as SCIENCE_EN from '../content/science.js'
+import * as SCIENCE_ES from '../content/es/science.js'
 import { Badge, Card, Note, Rich, SectionTitle, Term } from '../components/ui.jsx'
 
 const FACT_ICON = { grid: Grid3x3, expand: Expand, sliders: SlidersHorizontal, flask: FlaskConical }
@@ -137,6 +129,9 @@ function TechIcon({ name, primary }) {
 }
 
 export default function Science() {
+  const { LAB_CYCLE } = useBundle(SITE_EN, SITE_ES)
+  const { BOTTLENECK, LAB_INTRO, MOF_DEF, MOF_FACTS, MOF_NAMING, NOBEL, SCIENCE_INTRO, TECHNIQUES, DATA_SCALE, WHY_CHARACTERISE } = useBundle(SCIENCE_EN, SCIENCE_ES)
+
   const [openStep, setOpenStep] = useState('1')
   const [openTech, setOpenTech] = useState(null)
 

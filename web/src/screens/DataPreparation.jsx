@@ -1,3 +1,4 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
@@ -20,28 +21,10 @@ import {
   Wand2,
   Waves,
 } from 'lucide-react'
-import {
-  ETL_DEFECTS,
-  ETL_EXCLUSION,
-  ETL_IMPUTATION,
-  ETL_STOICHIOMETRY,
-  ETL_TANNIC,
-  ETL_THERMAL,
-  ETL_ZERO_VS_NULL,
-} from '../content/screens.js'
-import {
-  DESCRIPTOR_GROUPS,
-  DESCRIPTOR_RECAP,
-  ELEMENT_INTRO,
-  LANES,
-  LINKER_FEATURES,
-  METAL_FEATURES,
-  PREP_INTRO,
-  PREP_TAKEAWAY,
-  SYNTH_GROUPS,
-  SYNTH_PREVIEW,
-  WHY_PXRD,
-} from '../content/prep.js'
+import * as SCREENS_EN from '../content/screens.js'
+import * as SCREENS_ES from '../content/es/screens.js'
+import * as PREP_EN from '../content/prep.js'
+import * as PREP_ES from '../content/es/prep.js'
 import { Badge, Card, Placeholder, ScrollTable, SectionTitle, Term, Rich } from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
@@ -133,6 +116,10 @@ const READ_TONE = {
    otra existe, y al llegar al final no habia forma de cambiar sin volver a
    subir a mano. El de abajo devuelve la vista al principio al pulsar. */
 function LaneSwitch({ lane, setLane, onPick }) {
+  /* Pide su propio paquete: es un componente aparte del de la pantalla, asi
+     que no hereda la desestructuracion de aquel. */
+  const { LANES } = useBundle(PREP_EN, PREP_ES)
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {LANES.map((l) => {
@@ -178,6 +165,9 @@ function LaneSwitch({ lane, setLane, onPick }) {
 const ETL_STEP_ICONS = { extract: Download, transform: Wand2, load: Database }
 
 export default function DataPreparation() {
+  const { ETL_DEFECTS, ETL_EXCLUSION, ETL_IMPUTATION, ETL_STOICHIOMETRY, ETL_TANNIC, ETL_THERMAL, ETL_ZERO_VS_NULL } = useBundle(SCREENS_EN, SCREENS_ES)
+  const { DESCRIPTOR_GROUPS, DESCRIPTOR_RECAP, ELEMENT_INTRO, LANES, LINKER_FEATURES, METAL_FEATURES, PREP_INTRO, PREP_TAKEAWAY, SYNTH_GROUPS, SYNTH_PREVIEW, WHY_PXRD } = useBundle(PREP_EN, PREP_ES)
+
   /* Si se llega con #descriptors (el enlace desde la pantalla 04), hay que
      abrir la via de caracterizacion: la seccion enlazada vive dentro de ella y
      con la via de sintesis activa el ancla sencillamente no existe en el DOM. */

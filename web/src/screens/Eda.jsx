@@ -1,17 +1,8 @@
-import { FUNNEL } from '../content/site.js'
-import {
-  EDA_BIVARIATE,
-  EDA_CONFOUNDER,
-  EDA_INTRO,
-  EDA_MODULATORS,
-  EDA_FUNNEL_INTRO,
-  EDA_CORRELATION,
-  EDA_DISCRETE,
-  EDA_IMBALANCE,
-  EDA_LEAKAGE,
-  EDA_MISSING,
-  EDA_PCA,
-} from '../content/screens.js'
+import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
+import * as SCREENS_EN from '../content/screens.js'
+import * as SCREENS_ES from '../content/es/screens.js'
 import { Link } from 'react-router-dom'
 import { Eye, ListChecks, ShieldAlert } from 'lucide-react'
 import { Badge, Card, Note, Placeholder, ScrollTable, SectionTitle, Rich } from '../components/ui.jsx'
@@ -40,6 +31,9 @@ function Pullquote({ children, tone = 'accent' }) {
 }
 
 export default function Eda() {
+  const { FUNNEL } = useBundle(SITE_EN, SITE_ES)
+  const { EDA_BIVARIATE, EDA_CONFOUNDER, EDA_INTRO, EDA_MODULATORS, EDA_FUNNEL_INTRO, EDA_CORRELATION, EDA_DISCRETE, EDA_IMBALANCE, EDA_LEAKAGE, EDA_MISSING, EDA_PCA } = useBundle(SCREENS_EN, SCREENS_ES)
+
   return (
     <div className="flex flex-col gap-16">
       <section>

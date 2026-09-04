@@ -1,19 +1,11 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { useState } from 'react'
 import { Contact, Download, ExternalLink, Mail, Send } from 'lucide-react'
 import SOCIAL from '../data/social_icons.json'
-import { BIO_ABOUT, SITE } from '../content/site.js'
-import {
-  EDUCATION,
-  EXPERIENCE,
-  HEADLINE,
-  METRICS,
-  FUNDING,
-  OUTREACH,
-  PROJECTS,
-  PUBLICATIONS,
-  PUBLICATION_SUMMARY,
-  SKILLS,
-} from '../content/about.js'
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
+import * as ABOUT_EN from '../content/about.js'
+import * as ABOUT_ES from '../content/es/about.js'
 import { Badge, Card, Rich, SectionTitle } from '../components/ui.jsx'
 
 function Tag({ children, tone = 'line' }) {
@@ -77,6 +69,8 @@ function LinkButton({ href, icon: Icon, brand, children, primary = false }) {
    ningun dato de nadie.
    --------------------------------------------------------------------------- */
 function ContactForm() {
+  /* Componente aparte del de la pantalla: pide su propio paquete. */
+  const { SITE } = useBundle(SITE_EN, SITE_ES)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
 
@@ -152,6 +146,9 @@ function ContactForm() {
 }
 
 export default function About() {
+  const { BIO_ABOUT, SITE } = useBundle(SITE_EN, SITE_ES)
+  const { EDUCATION, EXPERIENCE, HEADLINE, METRICS, FUNDING, OUTREACH, PROJECTS, PUBLICATIONS, PUBLICATION_SUMMARY, SKILLS } = useBundle(ABOUT_EN, ABOUT_ES)
+
   return (
     <div className="flex flex-col gap-16">
       {/* --- cabecera --- */}

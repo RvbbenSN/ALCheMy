@@ -1,0 +1,2930 @@
+[
+ {
+  "path": "about.js:EDUCATION[0].when",
+  "en": "Apr 2026 — present"
+ },
+ {
+  "path": "about.js:EDUCATION[0].what",
+  "en": "Master's in Applied AI & Process Optimisation"
+ },
+ {
+  "path": "about.js:EDUCATION[0].detail",
+  "en": "Retrieval-augmented generation, vector databases, prompt engineering, natural language to SQL and to code, autonomous agents, Docker and cloud. Mentored by practitioners from Microsoft, Cloudflare, Sanofi and Google."
+ },
+ {
+  "path": "about.js:EDUCATION[0].tags[1]",
+  "en": "RAG & agents"
+ },
+ {
+  "path": "about.js:EDUCATION[1].when",
+  "en": "Jun 2026 — present"
+ },
+ {
+  "path": "about.js:EDUCATION[1].what",
+  "en": "IBM Data Science Professional Certificate"
+ },
+ {
+  "path": "about.js:EDUCATION[1].detail",
+  "en": "CRISP-DM end to end: Python, SQL, APIs and web scraping, exploratory analysis with pandas and NumPy, and deploying scikit-learn models through Streamlit. The methodology this whole platform is structured around."
+ },
+ {
+  "path": "about.js:EDUCATION[2].when",
+  "en": "Nov 2022 — Dec 2025"
+ },
+ {
+  "path": "about.js:EDUCATION[2].what",
+  "en": "PhD in Advanced Chemistry"
+ },
+ {
+  "path": "about.js:EDUCATION[2].where",
+  "en": "Universidad Complutense de Madrid · IMDEA Energy (APMU)"
+ },
+ {
+  "path": "about.js:EDUCATION[2].detail",
+  "en": "Novel Phosphonate-based Metal-Organic Frameworks (P-MOFs): From Design to Application. Directed by Patricia Horcajada."
+ },
+ {
+  "path": "about.js:EDUCATION[2].tags[0]",
+  "en": "Sobresaliente Cum Laude"
+ },
+ {
+  "path": "about.js:EDUCATION[2].tags[1]",
+  "en": "International PhD Mention"
+ },
+ {
+  "path": "about.js:EDUCATION[3].when",
+  "en": "Sep 2020 — Sep 2021"
+ },
+ {
+  "path": "about.js:EDUCATION[3].what",
+  "en": "MSc in Chemical Science & Technology"
+ },
+ {
+  "path": "about.js:EDUCATION[3].where",
+  "en": "Universidad Complutense de Madrid"
+ },
+ {
+  "path": "about.js:EDUCATION[3].detail",
+  "en": "New electro/photoactive MOFs: synthesis, characterisation and properties — catalysis for green hydrogen and antibiotic removal from water."
+ },
+ {
+  "path": "about.js:EDUCATION[3].tags[0]",
+  "en": "Nanoscience & materials"
+ },
+ {
+  "path": "about.js:EDUCATION[4].when",
+  "en": "Sep 2015 — Jul 2020"
+ },
+ {
+  "path": "about.js:EDUCATION[4].what",
+  "en": "BSc in Chemistry"
+ },
+ {
+  "path": "about.js:EDUCATION[4].where",
+  "en": "Universidad Complutense de Madrid"
+ },
+ {
+  "path": "about.js:EDUCATION[4].detail",
+  "en": "Materials for clean energy storage based on porous metal-organic frameworks."
+ },
+ {
+  "path": "about.js:EXPERIENCE[0].when",
+  "en": "Mar 2022 — Dec 2025"
+ },
+ {
+  "path": "about.js:EXPERIENCE[0].where",
+  "en": "IMDEA Energy Institute, Madrid"
+ },
+ {
+  "path": "about.js:EXPERIENCE[0].points[0]",
+  "en": "Led the design, synthesis and optimisation of novel hybrid materials — over 2,000 syntheses, 18 novel materials, 12 structures resolved — using high-throughput, solvothermal and microwave-assisted approaches."
+ },
+ {
+  "path": "about.js:EXPERIENCE[0].points[1]",
+  "en": "Ran multi-technique characterisation across up to twelve structural, textural and spectroscopic methods."
+ },
+ {
+  "path": "about.js:EXPERIENCE[0].points[2]",
+  "en": "Designed workflows linking structure, property and function, selecting materials for photocatalytic H₂ production, wastewater remediation, CO₂ conversion to cyclic carbonates and polymerisation catalysis — reaching benchmark-level efficiencies under mild conditions."
+ },
+ {
+  "path": "about.js:EXPERIENCE[0].points[3]",
+  "en": "Held technical responsibility for laboratory instrumentation and unit inventory."
+ },
+ {
+  "path": "about.js:EXPERIENCE[1].when",
+  "en": "Jun 2023 — Oct 2023"
+ },
+ {
+  "path": "about.js:EXPERIENCE[1].where",
+  "en": "University of Glasgow, Scotland — Pablo Docampo group"
+ },
+ {
+  "path": "about.js:EXPERIENCE[1].points[0]",
+  "en": "María de Maeztu Mobility Programme. Solar-cell prototypes using bismuth-based perovskites and quantum-dot MOFs."
+ },
+ {
+  "path": "about.js:EXPERIENCE[2].when",
+  "en": "Apr 2021 — Feb 2022"
+ },
+ {
+  "path": "about.js:EXPERIENCE[2].where",
+  "en": "IMDEA Energy Institute, Madrid"
+ },
+ {
+  "path": "about.js:EXPERIENCE[2].points[0]",
+  "en": "MOFs with ionic conductivity as exchange membranes for fuel cells (PEMFCs)."
+ },
+ {
+  "path": "about.js:FUNDING.intro",
+  "en": "Four competitive pre-doctoral contracts under funded research projects, plus collaboration in two more."
+ },
+ {
+  "path": "about.js:FUNDING.contracts[0].ref",
+  "en": "FEDER 2014–2020 / OE / REACT-UE 1"
+ },
+ {
+  "path": "about.js:FUNDING.contracts[4].ref",
+  "en": "H+MOFs · Fundación Ramón Areces"
+ },
+ {
+  "path": "about.js:FUNDING.contracts[5].ref",
+  "en": "PCI2020-111998 / AEI"
+ },
+ {
+  "path": "about.js:HEADLINE",
+  "en": "PhD in Chemistry · Applied AI & Data Science · Advanced Materials"
+ },
+ {
+  "path": "about.js:METRICS[2].l",
+  "en": "Crystal structures resolved"
+ },
+ {
+  "path": "about.js:METRICS[5].l",
+  "en": "Competitive R&D projects"
+ },
+ {
+  "path": "about.js:OUTREACH[0].title",
+  "en": "Los antibióticos están llegando a nuestros grifos: ¿podemos evitarlo?"
+ },
+ {
+  "path": "about.js:OUTREACH[1].title",
+  "en": "Así mejoramos las pilas de hidrógeno para que sean más duraderas y asequibles"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[0].title",
+  "en": "Two Cu-based Phosphonate Metal-Organic Frameworks as Efficient Water Splitting Photocatalysts"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[0].journal",
+  "en": "Chemistry of Materials"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[0].tag",
+  "en": "IF 7.2 · Q1"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[0].note",
+  "en": "Outperforms the industrial benchmark MIL-125(Ti)-NH₂ in green hydrogen production."
+ },
+ {
+  "path": "about.js:PUBLICATIONS[1].title",
+  "en": "Novel pyrene phosphonate metal-organic frameworks to efficiently degrade sulfamethazine in wastewater"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[1].journal",
+  "en": "Journal of Environmental Chemical Engineering"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[1].tag",
+  "en": "IF 7.2 · Q1"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[1].note",
+  "en": "Tested on real urban water matrices."
+ },
+ {
+  "path": "about.js:PUBLICATIONS[2].title",
+  "en": "Ca-Triazine Phosphonate Metal-Organic Framework as Fungicide Active Packaging"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[2].journal",
+  "en": "Inorganic Chemistry Frontiers"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[2].tag",
+  "en": "IF 6.4 · Q1"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[3].title",
+  "en": "Novel Purine Derivative ITH15004 Facilitates Exocytosis through a Mitochondrial Calcium-Mediated Mechanism"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[3].journal",
+  "en": "International Journal of Molecular Sciences"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[3].tag",
+  "en": "IF 5.6 · Q1"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[3].note",
+  "en": "From an earlier medicinal-chemistry internship."
+ },
+ {
+  "path": "about.js:PUBLICATIONS[4].title",
+  "en": "Triazine Mg-based Phosphonate Metal-Organic Framework for ε-Caprolactone Polymerization"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[4].tag",
+  "en": "IF 4.7 · Q1"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[5].title",
+  "en": "Controlling Band-Bending for Perovskite Optoelectronic Devices Using Bismuth-Based Interlayers"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[5].tag",
+  "en": "IF 4.3 · Q1"
+ },
+ {
+  "path": "about.js:PUBLICATIONS[5].note",
+  "en": "From the Glasgow secondment; also uncovered unexpected memristive behaviour."
+ },
+ {
+  "path": "about.js:SKILLS[0].group",
+  "en": "Data science & AI"
+ },
+ {
+  "path": "about.js:SKILLS[0].items[0]",
+  "en": "Python (Pandas, NumPy, SciPy, Scikit-learn, Statsmodels)"
+ },
+ {
+  "path": "about.js:SKILLS[0].items[1]",
+  "en": "SQL & PostgreSQL"
+ },
+ {
+  "path": "about.js:SKILLS[0].items[3]",
+  "en": "GenAI & prompt engineering"
+ },
+ {
+  "path": "about.js:SKILLS[0].items[5]",
+  "en": "Plotly, Matplotlib, Seaborn, Streamlit"
+ },
+ {
+  "path": "about.js:SKILLS[0].items[6]",
+  "en": "No-code orchestration (n8n)"
+ },
+ {
+  "path": "about.js:SKILLS[1].group",
+  "en": "Chemistry & materials"
+ },
+ {
+  "path": "about.js:SKILLS[1].items[1]",
+  "en": "Solvothermal & microwave synthesis"
+ },
+ {
+  "path": "about.js:SKILLS[1].items[2]",
+  "en": "XRD (single-crystal and powder)"
+ },
+ {
+  "path": "about.js:SKILLS[1].items[3]",
+  "en": "Crystal refinement (LeBail, FullProf, Olex2)"
+ },
+ {
+  "path": "about.js:SKILLS[1].items[4]",
+  "en": "SEM, TEM, TGA, FTIR, UV-Vis"
+ },
+ {
+  "path": "about.js:SKILLS[1].items[5]",
+  "en": "ICP-OES, elemental analysis, NMR, HPLC"
+ },
+ {
+  "path": "about.js:SKILLS[1].items[6]",
+  "en": "Gas sorption & textural analysis"
+ },
+ {
+  "path": "about.js:SKILLS[2].items[2]",
+  "en": "Mandarin (HSK 2)"
+ },
+ {
+  "path": "about.js:SKILLS[2].items[3]",
+  "en": "Adobe Illustrator, Affinity, Blender 3D"
+ },
+ {
+  "path": "about.js:SKILLS[2].items[4]",
+  "en": "Scientific writing & technical reporting"
+ },
+ {
+  "path": "about.js:SKILLS[2].items[5]",
+  "en": "Agile / cross-functional R&D"
+ },
+ {
+  "path": "collection.js:COLLECTION_CANVAS_INTRO",
+  "en": "The flow as it is — **79 nodes**, **114 connections**, nine areas. Pick a stop and the map flies to it, with the card below the map saying what that area adds to the row and why."
+ },
+ {
+  "path": "collection.js:COLLECTION_HERO.lead",
+  "en": "How do you process thousands of raw instrument files without ingesting chaos? Explore the automated pipeline that fingerprints, validates, and routes measurements in real time."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.body1",
+  "en": "Thousands of instrument files across nine formats, none linked to its synthesis. Processing **6,073 raw files** by hand would mean endless manual retyping and inevitable human error."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.body2",
+  "en": "Instead, the workflow takes over. Incoming files are authenticated, fingerprinted against duplicates, and routed by technique: deterministic parsers handle tabular data, while specialized AI agents extract unstructured PDF reports and microscopy images, **logging every step to an audit trail**."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.builtWith",
+  "en": "Built in **n8n**, a workflow automation tool: every box on the canvas below is a real node in a running instance."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guaranteesTitle",
+  "en": "What the workflow guarantees"
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[0].body",
+  "en": "Every measurement is linked to the synthesis it came from, by sample code, and to the person who submitted it."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[1].body",
+  "en": "A cryptographic fingerprint of the file contents rejects a second copy before it is parsed."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[2].body",
+  "en": "Nine formats become one row shape, so a query can span techniques without knowing anything about instruments."
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[3].lead",
+  "en": "A record of every decision"
+ },
+ {
+  "path": "collection.js:COLLECTION_PROBLEM.guarantees[3].body",
+  "en": "Accepted or rejected, with the reason, in an audit table written by code and never by a language model."
+ },
+ {
+  "path": "collection.js:COLLECTION_ROW_INTRO",
+  "en": "Every path through this workflow has to arrive at the database write carrying exactly these fields. Think of the item as a snowball rolling through the pipeline, picking up more of this shape at each stage. If a field is still missing when it arrives, the insert either hard-fails on a constraint."
+ },
+ {
+  "path": "collection.js:COLLECTION_TREE.title",
+  "en": "An example of a ingested file"
+ },
+ {
+  "path": "collection.js:COLLECTION_TREE.lead",
+  "en": "A real `.xrdml` after going through the workflow."
+ },
+ {
+  "path": "collection.js:COLLECTION_TREE.point",
+  "en": "The experimental context. It stores the instrumental parameters automatically parsed from the file header such as radiation wavelength, optical setup, and acquisition timestamps. It guarantees reproducibility without manual logging."
+ },
+ {
+  "path": "collection.js:COLLECTION_TREE.contract",
+  "en": "The curve. It holds the measurement signal as normalized (X, Y) coordinate arrays along with their physical units (e.g. 2theta vs. Intensity). Every technique shares this exact structure, making all curves instantly plottable."
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[0][1]",
+  "en": "Foreign key into synthesis_experiments"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[1][1]",
+  "en": "PXRD / VT-XRD / TGA / FTIR / ADSORPTION / UV_VIS / SEM / ICP_OES / EA"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[2][0]",
+  "en": "researcher_email, researcher_name, operator_name"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[2][1]",
+  "en": "Accountability, checked against a whitelist"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[3][1]",
+  "en": "Provenance of the measurement"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[4][1]",
+  "en": "Where the original bytes live"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[5][1]",
+  "en": "Real MD5 of the actual file bytes"
+ },
+ {
+  "path": "collection.js:ROW_SHAPE[6][1]",
+  "en": "{ header_metadata, raw_data } — the parser contract"
+ },
+ {
+  "path": "database.js:DB_BOUNDARY.title",
+  "en": "What the AI agent is allowed to touch"
+ },
+ {
+  "path": "database.js:DB_BOUNDARY.body",
+  "en": "The RAG assistant **never writes SQL**. Every one of its tools is a call to a stored function with typed parameters, so what it can ask is fixed by the schema rather than by how carefully a prompt was worded. `agent_verify_owner()` decides whether the answer carries exact values or coarse ones: it receives a token, hands on a **boolean**, and stores neither."
+ },
+ {
+  "path": "database.js:DB_BOUNDARY.bracketTitle",
+  "en": "What those functions can read"
+ },
+ {
+  "path": "database.js:DB_HERO.lead",
+  "en": "Five years of chemistry lived in one spreadsheet, a folder of instrument files, and a stack of handwritten notebooks. This is what it became: a single governed schema where every column has a documented meaning and every automated action leaves a trace."
+ },
+ {
+  "path": "database.js:DB_VIEWS.title",
+  "en": "The views everything reads through"
+ },
+ {
+  "path": "database.js:DB_VIEWS.lead",
+  "en": "Nothing queries a raw table if a view exists for it. A view decides a join once, instead of having it re-invented in every script, and it can be documented, versioned and pointed at."
+ },
+ {
+  "path": "database.js:DB_WHY.title",
+  "en": "Why a database, and not a very good spreadsheet"
+ },
+ {
+  "path": "database.js:DB_WHY.cards[0].body",
+  "en": "A header reading `T` could be temperature, time or a code. **Every column carries a native `COMMENT`** with its units and allowed values, and pgAdmin, this site and the AI agent read the same one."
+ },
+ {
+  "path": "database.js:DB_WHY.cards[1].body",
+  "en": "A measurement cannot exist without its synthesis (foreign key). A model cannot be registered as irreproducible without a written reason (`CHECK`). **The database enforces this**, not the scripts that write to it."
+ },
+ {
+  "path": "database.js:DB_WHY.cards[2].body",
+  "en": "A notebook ingests the master Excel file; a workflow ingests instrument files. The notebook loads by `UPSERT` and never `DELETE`, so it **cannot erase what the workflow wrote overnight**."
+ },
+ {
+  "path": "database.js:DB_WHY.cards[3].body",
+  "en": "Every automated action lands in `audit_log` with a typed verdict and cause; every agent exchange in `agent_chat_log`. Both are **written by code, never by an LLM**, so the system being recorded cannot edit its own record."
+ },
+ {
+  "path": "database.js:DB_WHY.cards[4].body",
+  "en": "The schema documents itself in a **table**: `data_dictionary` holds one row per column, so the site and the agent read it instead of carrying a copy. Coverage is checkable, and the target is 100 % because a gap makes **\"undocumented column\" and \"column that does not exist\" indistinguishable**."
+ },
+ {
+  "path": "model.js:MODEL_HERO.lead",
+  "en": "Play with the synthesis conditions and watch the prediction move — then see what keeps this from being a loose pickle file on somebody’s laptop."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.title",
+  "en": "A compass, not an oracle"
+ },
+ {
+  "path": "model.js:MODEL_LOOP.metaphor",
+  "en": "Think of the synthesis space as a map in the dark. The experiments already run light up a few patches of it. A predictive model is not a machine that tells you the answer — it is **a compass**: it points at the direction where walking would light up the most new ground."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.method",
+  "en": "And the direction it points is not \"where crystals are most likely\". An experiment run where the model is already confident confirms what it knew. The useful place is **where it hesitates**, because either outcome there corrects it. That is what the map below measures: the entropy of the predicted distribution, cell by cell."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.readingPoints[0]",
+  "en": "**Most of the plane has never been visited.** Even for Ca, the metal with the most history behind it, the syntheses pile up in a handful of cells."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.readingPoints[1]",
+  "en": "**The model hesitates almost everywhere**, including where the laboratory has looked."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.readingPoints[2]",
+  "en": "**Because conditions were swept while the chemistry changed alongside them**, so the record cannot separate the two."
+ },
+ {
+  "path": "model.js:MODEL_LOOP.consequence",
+  "en": "The map and the model diagnostics point at the same experiment from opposite ends: the next plate worth running is **one that varies conditions finely while holding the metal and linker fixed**."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.title",
+  "en": "A model is not a file"
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.lead",
+  "en": "The usual way to keep a trained model is a `.pkl` in a folder, and it fails in a specific way: six months later the file is still there and **nothing around it is**. Which rows trained it, which columns, which version of the code, what it actually scored."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.ruling",
+  "en": "So the model lives in the database as **five related tables**, and the binary is the least important of them. The other four hold the recipe, and with a complete recipe the binary can be rebuilt."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.tables[0].body",
+  "en": "The literal SQL that selected the rows, plus its SHA-256. Two models sharing a query but differing in row count were **not** trained on the same thing, and the hash makes that difference detectable."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.tables[1].body",
+  "en": "Algorithm, hyperparameters, random seed, library versions, and the exact git commit. Also the status — active, superseded, archived or **invalid** — and a `CHECK` that refuses to mark a model irreproducible without writing why."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.tables[2].body",
+  "en": "Every input column with its position in the contract, and every **excluded** one with the reason it was excluded. `reactor_volume_ml` is recorded as zero-variance, `fill_fraction` as perfectly collinear with it."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.tables[3].body",
+  "en": "Metrics in long format — one row per metric, per class, per split — so adding a new metric never means altering the schema."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.tables[4].body",
+  "en": "The serialised pipeline with a SHA-256 checked on every load. It sits in its own table so a light backup can skip it: it is the only part that a complete recipe can regenerate."
+ },
+ {
+  "path": "model.js:MODEL_REGISTRY.slot",
+  "en": "One more thing decides which model the simulator is actually running: a **deployment slot**. The simulator does not name a model; it asks the database which one occupies the `primary` slot. When a model name was written into this file by hand instead, retraining to correct a unit error of a factor of a thousand left **the site serving the superseded model with nothing raising an error**: an obsolete model returns predictions as readily as a current one."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_GROUPS[0].blurb",
+  "en": "Where the reflections are, how many, and how sharp."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_GROUPS[1].blurb",
+  "en": "How the signal splits between sharp reflections and the broad halo."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_GROUPS[2].title",
+  "en": "Intensity & global statistics"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_GROUPS[2].blurb",
+  "en": "How strong the signal is, and how concentrated."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_GROUPS[3].title",
+  "en": "Parameters & quality flags"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_GROUPS[3].blurb",
+  "en": "Not measurements of the sample: what the pipeline did, and whether the result can be trusted."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.lead",
+  "en": "A continuous diffractogram of thousands of data points is compressed into a fixed **29-dimensional vector**. Below is the complete breakdown of these physical descriptors—grouped by traceability, peak geometry, phase composition, and global statistics—alongside median values across the 1,855 expert-labelled samples."
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[0].title",
+  "en": "Diffuse halo dominates — no Bragg peaks"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[0].points[0]",
+  "en": "Zero genuine reflections (`n_peaks` = 0)"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[0].points[1]",
+  "en": "Amorphous fraction exceeds **85–90%** of total area (0.88 on the blank-corrected split)"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[0].points[2]",
+  "en": "Spectral entropy is the highest of the three classes; peak-to-background ratio stays near zero"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[1].title",
+  "en": "Intermediate regime — broad, emerging peaks"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[1].points[0]",
+  "en": "The transition zone between disorder and crystal growth"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[1].points[1]",
+  "en": "Emerging, broader reflections — median FWHM 0.240°, even wider than amorphous"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[1].points[2]",
+  "en": "Moderate peak-to-background ratios; descriptors sit midway between halo and crystalline order, making it **the most challenging class for the classifier**"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[2].title",
+  "en": "Sharp, intense Bragg reflections"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[2].points[0]",
+  "en": "Intense, narrow peaks at low angles — median FWHM 0.162°, well under 0.20°"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[2].points[1]",
+  "en": "Signal-to-noise and peak-to-background jump orders of magnitude over amorphous (0.03 → 9.42)"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.reading[2].points[2]",
+  "en": "Crystalline fraction accounts for the vast majority of scattered intensity; the pipeline trusts 99% of these"
+ },
+ {
+  "path": "prep.js:DESCRIPTOR_RECAP.caveat",
+  "en": "`scherrer_size_nm` mathematically requires a real Bragg peak, yet it comes out **larger for amorphous samples (37.4 nm) than for incipient ones (33.8 nm)** — physically absurd, since an amorphous solid has no crystallites. Calculated over baseline noise, the formula still returns a number: a reminder that a physical formula only applies within its intended domain."
+ },
+ {
+  "path": "prep.js:ELEMENT_INTRO.problem",
+  "en": "A categorical label like \"Fe\" hides the physics and collapses **Fe(II)** (92 pm) and **Fe(III)** (78.5 pm) into the same bin. Replacing chemical symbols with **eight fundamental properties** (Shannon ionic radius, electronegativity, HSAB hardness, charge-to-radius ratio) enables the model to interpolate across the periodic table and predict outcomes for unseen metals"
+ },
+ {
+  "path": "prep.js:ELEMENT_INTRO.payoff",
+  "en": "Molecule names convey no spatial or chemical meaning. Using RDKit, each linker is featurized into **six geometric and topological descriptors**: denticity (binding points), max donor distance (pore-size proxy), acidic proton count, and rotatable bonds (flexibility)—capturing the structural rules of reticular assembly."
+ },
+ {
+  "path": "prep.js:LANES[0].sub",
+  "en": "A spreadsheet of recipes becomes a governed table"
+ },
+ {
+  "path": "prep.js:LANES[0].blurb",
+  "en": "What the chemist controls: metal, linker, solvent, temperature, time, modulator. Structured data that was never structured properly."
+ },
+ {
+  "path": "prep.js:LANES[1].tag",
+  "en": "Notebooks 02 & 05"
+ },
+ {
+  "path": "prep.js:LANES[1].sub",
+  "en": "A diffractogram becomes 29 comparable numbers"
+ },
+ {
+  "path": "prep.js:LANES[1].blurb",
+  "en": "What the material answers back. Raw instrument curves that have to be processed before any two of them can be compared."
+ },
+ {
+  "path": "prep.js:LINKER_FEATURES[0][1]",
+  "en": "The rigid core the linker is built on. Governs the size of the pore that can form."
+ },
+ {
+  "path": "prep.js:LINKER_FEATURES[1][1]",
+  "en": "How many points the linker can bind through. Two makes a chain, three or more makes a network."
+ },
+ {
+  "path": "prep.js:LINKER_FEATURES[2][1]",
+  "en": "How many protons have to leave before the linker can coordinate — which is what ties the outcome to pH and to the modulator."
+ },
+ {
+  "path": "prep.js:LINKER_FEATURES[3][1]",
+  "en": "The distance between the outermost binding points, in ångström. The first-order estimate of pore size."
+ },
+ {
+  "path": "prep.js:LINKER_FEATURES[4][1]",
+  "en": "Whether the binding groups arrive masked as esters and have to be freed in situ."
+ },
+ {
+  "path": "prep.js:LINKER_FEATURES[5][1]",
+  "en": "Conformational freedom. A floppy linker is far less likely to give an ordered framework."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[0][1]",
+  "en": "How strongly the metal pulls electron density from the linker. The classic scale."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[1][1]",
+  "en": "A second scale, computed from spectroscopic energies. Computed here, but **dropped before training**: it is undefined for the lanthanides, so for Ce, La, Nd and Dy the value does not exist rather than being missing. Screen 04 tells that story."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[2][1]",
+  "en": "Resistance to deformation of the electron cloud. Hard metals prefer hard donors — the HSAB rule, as a number."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[3][1]",
+  "en": "Affinity for oxygen donors, which is what a carboxylate linker offers."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[4][1]",
+  "en": "How easily the electron cloud distorts. Governs the softer, less directional part of the bonding."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[5][1]",
+  "en": "Recovered from the metal salt used, not from the element. This is what separates Fe(II) from Fe(III)."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[6][1]",
+  "en": "Ionic radius for that specific oxidation state and coordination number. Sets how many linkers fit around the metal."
+ },
+ {
+  "path": "prep.js:METAL_FEATURES[7][1]",
+  "en": "Charge density: the field the metal projects onto its neighbours. Derived, and the most informative of the group."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.etlTitle",
+  "en": "ETL: extract, transform, load"
+ },
+ {
+  "path": "prep.js:PREP_INTRO.etlSteps[0].body",
+  "en": "Pull the data out of wherever it lives — a spreadsheet, an instrument file, a scanned report."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.etlSteps[1].body",
+  "en": "Turn it into something consistent: same units, same names, same shape, with the errors found and fixed."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.etlSteps[2].body",
+  "en": "Put it into the store the rest of the work reads from."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.lead",
+  "en": "Two independent data streams arrive at this stage, and neither is usable as it stands. One is five years of manual synthesis records (mixtures, ratios, temperatures). The other is 1,877 raw diffractograms—thousands of noisy data points per sample that must be standardized into discrete numerical features."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.halves[0].title",
+  "en": "The synthesis table needs cleaning and enrichment"
+ },
+ {
+  "path": "prep.js:PREP_INTRO.halves[0].body",
+  "en": "Normalising headers, turning free text into numbers, and replacing elements and linkers labels with their properties that explain its behavior."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.halves[1].title",
+  "en": "The diffractograms need signal processing"
+ },
+ {
+  "path": "prep.js:PREP_INTRO.halves[1].body",
+  "en": "Separating the crystalline signal from the background, so that each curve collapses into a fixed set of comparable numbers."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.halvesNote",
+  "en": "Those are the **two sections of this screen**, and they are read one at a time — pick one below, and the buttons come back at the bottom to switch."
+ },
+ {
+  "path": "prep.js:PREP_INTRO.note",
+  "en": "**Garbage in, garbage out**. This stage sets the quality for everything downstream."
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.title",
+  "en": "Why this stage decides the ceiling"
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.lead",
+  "en": "A model is only as good as the feature matrix it trains on. Everything here exists to transform raw chemistry into rigorous, physically meaningful tabular numbers."
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.points[0].title",
+  "en": "Synthesis: Chemical plausibility over statistics"
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.points[0].body",
+  "en": "Cleaning spreadsheets required chemical insight, not just data profiling. Catching impossible units and hidden solvent fractions prevents corrupt numbers from entering training."
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.points[1].title",
+  "en": "Characterization: Signal into structured features"
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.points[1].body",
+  "en": "Diffraction patterns are compressed into discrete physical descriptors, preserving critical features like the amorphous halo without losing signal to baseline noise."
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.points[2].title",
+  "en": "The unified row: Recipes paired with outcomes"
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.points[2].body",
+  "en": "Recipes without outcomes cannot train a model; outcomes without recipes explain nothing. The true deliverable is the clean relational join: one complete experiment per row."
+ },
+ {
+  "path": "prep.js:PREP_TAKEAWAY.close",
+  "en": "Domain knowledge is irreplaceable during data preparation: only a chemist can distinguish an impossible data error from a genuine, unexpected scientific discovery."
+ },
+ {
+  "path": "prep.js:SYNTH_GROUPS[0].title",
+  "en": "Identity & audit"
+ },
+ {
+  "path": "prep.js:SYNTH_GROUPS[0].body",
+  "en": "Who ran it, when, under which unit, and in which well of the high-throughput plate. Not predictive, but it is what makes a row traceable to a physical notebook page — the ISO-17025 requirement that turns a spreadsheet into a record."
+ },
+ {
+  "path": "prep.js:SYNTH_GROUPS[1].body",
+  "en": "The chemistry the experiment was meant to be. **lm_ratio** — linker to metal — is the single most argued-over number in the whole table: it decides whether there is enough organic strut to build a framework at all."
+ },
+ {
+  "path": "prep.js:SYNTH_GROUPS[2].body",
+  "en": "Six solvents recorded as absolute volumes in millilitres. Absolute volumes are not comparable between a 1,5 mL vial and a 15 mL autoclave, so they are later converted into **fractions of the total**, plus a `fill_fraction` that says how full the reactor was."
+ },
+ {
+  "path": "prep.js:SYNTH_GROUPS[3].body",
+  "en": "Written in the notebooks as free text — *\"ramp to 120 °C over 2 h, hold 48 h, cool overnight\"*. Parsed into four numbers, because the **rate** of heating and cooling changes the product as much as the target temperature does."
+ },
+ {
+  "path": "prep.js:SYNTH_GROUPS[4].body",
+  "en": "Ten additives, each stored as **mmol of active species** rather than as microlitres of stock solution. The conversion is the single most delicate transformation in the notebook: a modulator added as an aqueous acid also contributes water, and forgetting that corrupts the solvent fractions above."
+ },
+ {
+  "path": "prep.js:SYNTH_PREVIEW.caption",
+  "en": "One row per synthesis, 46 columns. These eight are the ones a chemist would recognise first."
+ },
+ {
+  "path": "prep.js:SYNTH_PREVIEW.warning",
+  "en": "Synthetic rows. The values sit inside the real observed ranges but no row corresponds to an actual experiment; sample codes are placeholders and linker identities are withheld."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.lead",
+  "en": "In reticular chemistry, powder X-ray diffraction (PXRD) serves as the primary diagnostic benchmark. Fast and non-destructive, it provides immediate insight into long-range periodic order."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.gate",
+  "en": "PXRD requires only milligrams and minutes of scan time without consuming the sample. It immediately reveals whether the reaction produced sharp Bragg reflections (characteristic of an ordered framework) or a diffuse amorphous profile, establishing whether the target crystalline phase assembled before investing in advanced characterization."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.why_model",
+  "en": "For periodic MOFs, long-range order dictates pore architecture, internal surface area, and host-guest properties. Predicting whether a specific combination of synthetic variables will yield a crystalline network enables rational navigation of reaction space, filtering out unpromising synthesis conditions beforehand."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[0][1]",
+  "en": "Is it crystalline?"
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[0][2]",
+  "en": "Minutes. Non-destructive. Run on everything."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[1][0]",
+  "en": "FTIR · UV-Vis · ICP · EA"
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[1][1]",
+  "en": "Which groups, which gap, which composition?"
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[1][2]",
+  "en": "Confirmatory. Only once the material is worth confirming."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[2][1]",
+  "en": "Up to what temperature does it survive?"
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[2][2]",
+  "en": "Hours. Consumes the sample."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[3][1]",
+  "en": "What do the crystals look like?"
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[3][2]",
+  "en": "Booked instrument time, and a trained operator."
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[4][1]",
+  "en": "Is it actually porous, and how much?"
+ },
+ {
+  "path": "prep.js:WHY_PXRD.steps[4][2]",
+  "en": "A day per sample. Needs prior activation."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[0].subtitle",
+  "en": "Two folders, two clearances"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[0].objective",
+  "en": "Read every PDF in the corpus and stamp it with a sensitivity label before anything else happens to it."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[0].adds[0]",
+  "en": "`sensitivity` - PUBLIC or INTERNAL, decided by the folder the file was sitting in"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[0].adds[1]",
+  "en": "`doc_type` - PAPER, SUPPORTING_INFORMATION or LAB_NOTEBOOK"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[0].adds[2]",
+  "en": "`file_name` and `file_path`, so any passage can be traced back to its source"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[0].note",
+  "en": "The label comes from the folder, not from a field somebody fills in. A structural rule cannot be forgotten on a busy day - and this one decides what the assistant may repeat to a stranger."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[1].subtitle",
+  "en": "The MD5 gate"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[1].objective",
+  "en": "Compare the checksum of every file against what is already indexed, and let through only what is new."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[1].adds[0]",
+  "en": "The binary MD5 of each file"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[1].adds[1]",
+  "en": "A Merge in *keep non-matches* mode: what is already registered simply does not continue"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[1].note",
+  "en": "This is what makes the ingestion idempotent. Re-running it over the whole corpus costs a few seconds of hashing instead of re-embedding 87,765 passages - and, more importantly, it cannot silently double the corpus and fill retrieval with near-identical neighbours."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[2].subtitle",
+  "en": "Split, embed, store"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[2].objective",
+  "en": "Turn each document into passages a model can retrieve, and write them to pgvector beside their catalogue entry."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[2].adds[0]",
+  "en": "Passages of **1,200 characters with 250 of overlap** - 87,765 of them"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[2].adds[1]",
+  "en": "One 1,024-dimension vector each, from `bge-m3` running locally in Ollama"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[2].adds[2]",
+  "en": "A row in `rag_documents` per source file, one in `rag_chunks` per passage"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[2].note",
+  "en": "The embeddings node is shared with the query side on purpose. If indexing and searching used different models, the store would return plausible nonsense and never raise an error. Sharing one node makes that mismatch structurally impossible."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[3].subtitle",
+  "en": "Who is asking"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[3].objective",
+  "en": "Identify the caller and settle what they are allowed to see, before a single token reaches a language model."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[3].adds[0]",
+  "en": "A caller identity and session id, carried into every downstream tool call"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[3].adds[1]",
+  "en": "A verdict against `authorized_researchers`"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[3].adds[2]",
+  "en": "A logged, answered refusal for anyone who does not clear it"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[3].note",
+  "en": "A denied request is written to the log and gets a reply. Silent failure is the enemy here: an assistant that simply stops looks identical to one that is broken."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[4].subtitle",
+  "en": "Gemini, with a local understudy"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[4].objective",
+  "en": "Answer the question using the tools, and keep answering when the cloud model is not there."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[4].adds[0]",
+  "en": "A windowed conversation memory, shared by both agents"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[4].adds[1]",
+  "en": "A complete second Agent node wired to **Qwen3 14B** in local Ollama, hanging off the error output of the first"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[4].adds[2]",
+  "en": "A row in `agent_chat_log` for every exchange, written before the reply goes back"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[4].note",
+  "en": "The Agent node refuses two language models at once - \"Only 1 ai_languageModel sub-nodes are/is allowed to be connected\" - and the documented fallback switch does not exist in this installation. So the fallback is built at workflow level instead, and it was verified by forcing a real Gemini failure rather than by assuming."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[5].subtitle",
+  "en": "Nine powers, one switched off"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[5].objective",
+  "en": "Give the assistant everything it needs to answer, and nothing it needs to invent."
+ },
+ {
+  "path": "rag.js:RAG_AREAS[5].adds[0]",
+  "en": "Six tools that read the laboratory: syntheses, characterisation, one full sample, statistics, the bibliography and the schema dictionary"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[5].adds[1]",
+  "en": "One semantic search across the 87,765 passages"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[5].adds[2]",
+  "en": "Two that walk the knowledge graph: resolve the node, then explore up to three hops"
+ },
+ {
+  "path": "rag.js:RAG_AREAS[5].note",
+  "en": "Every one is a call to a stored SQL function with typed parameters - the assistant never writes SQL. What it can ask is bounded by the database rather than by how well the prompt is worded. The Cohere reranker is wired and deliberately disabled: it is the one component that would send passage text to a third party."
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.title",
+  "en": "Contextual retrieval, and an honest result"
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.problem",
+  "en": "Chunking destroys context. Cut a paper into 1,200-character passages and a sentence like *\"the yield rose to 68 % under these conditions\"* loses which compound, which conditions, which paper. Retrieval then returns something locally relevant and globally meaningless."
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.technique",
+  "en": "The fix, published by **Anthropic as contextual retrieval**, is to have an LLM write one short sentence situating each passage inside its own document, prepend it, and embed *that*. It is built here end to end: `rag_chunk_context` holds **87,765 context sentences**, one per passage, and `rag_chunks.embedding_v2` holds the re-embedding of passage-plus-context."
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.result",
+  "en": "**The gain was modest.** Compared live against the original embeddings on real questions, similarities came out 0.005-0.01 higher and only one or two of every four retrieved passages changed. Nothing like the improvement the technique reports."
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.why",
+  "en": "The explanation is the corpus, not the method. The published measurements come from material whose fragments lean heavily on their surroundings. A chemistry paper is written in paragraphs that already name their own compound and their own conditions, so there was less missing context to restore. **The technique is sound; this corpus had little room for it to help.**"
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.decision",
+  "en": "So `embedding_v2` is built, populated, and deliberately **not promoted** to the default search. Switching it on is one line. What is missing is the measurement that would justify it: the same comparison over enough questions to tell a real gain from noise."
+ },
+ {
+  "path": "rag.js:RAG_CONTEXTUAL.caveat",
+  "en": "One concrete thing stands between it and production: **`embedding_v2` has no HNSW index.** The original column has one; its contextual twin does not, so a query against it would scan all 87,765 vectors. The work is done and the plumbing is not."
+ },
+ {
+  "path": "rag.js:RAG_HERO.lead",
+  "en": "A laboratory assistant grounded in 958 indexed documents and 87,765 passages, wired to the same database the rest of this site describes - and built so that it cannot repeat an unpublished ligand name to a stranger."
+ },
+ {
+  "path": "rag.js:RAG_HERO.sub",
+  "en": "The chat is not opened on this site."
+ },
+ {
+  "path": "rag.js:RAG_NUMBERS[0].why",
+  "en": "955 papers, 2 digitised lab notebooks, 1 supporting information"
+ },
+ {
+  "path": "rag.js:RAG_NUMBERS[1].why",
+  "en": "1,200 characters each with 250 of overlap; 1,021 on average"
+ },
+ {
+  "path": "rag.js:RAG_NUMBERS[2].label",
+  "en": "Dimensions per vector"
+ },
+ {
+  "path": "rag.js:RAG_NUMBERS[2].why",
+  "en": "`bge-m3`, run locally, so no passage ever leaves the machine"
+ },
+ {
+  "path": "rag.js:RAG_NUMBERS[3].label",
+  "en": "Nodes in the knowledge graph"
+ },
+ {
+  "path": "rag.js:RAG_NUMBERS[3].why",
+  "en": "3,251 measurements, 3,213 samples, 23 metals, 10 modulators, 9 ligands"
+ },
+ {
+  "path": "rag.js:RAG_POWERS.title",
+  "en": "What the assistant can actually do"
+ },
+ {
+  "path": "rag.js:RAG_POWERS.lead",
+  "en": "Nine tools, each one a stored SQL function with typed parameters. **The assistant never writes SQL**, so the boundary of what it can ask is enforced by the database rather than by the wording of a prompt."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[0][1]",
+  "en": "Find syntheses by metal, linker, temperature window or date range. Every filter optional."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[1][1]",
+  "en": "The complete record of one sample: solvents, thermal ramp, modulators, masses."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[2][1]",
+  "en": "Which measurements a sample has, on which instrument and by whom - never the curves themselves."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[3][1]",
+  "en": "Counts grouped by one of seven allowed dimensions. Not free aggregation: an explicit list."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[4][1]",
+  "en": "Which documents exist and how to cite them - authors, year, journal, DOI."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[5][1]",
+  "en": "Semantic search across the 87,765 passages. For concepts and methods, never for numeric facts."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[6][1]",
+  "en": "The schema, as data. It reads what a column means instead of inferring it from the name."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[7][1]",
+  "en": "Resolve free text - a code, a ligand, a metal - to an exact graph node id."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.tools[8][1]",
+  "en": "Walk up to three hops: what two samples have in common, what shares a ligand with this one."
+ },
+ {
+  "path": "rag.js:RAG_POWERS.boundary",
+  "en": "The split between the last two is deliberate. An assistant that guesses node ids invents relationships; forcing it to resolve the id first means a wrong guess **fails loudly instead of returning a confident answer about a sample that does not exist**."
+ },
+ {
+  "path": "rag.js:RAG_RETRIEVAL.title",
+  "en": "Three retrievers, not one"
+ },
+ {
+  "path": "rag.js:RAG_RETRIEVAL.lead",
+  "en": "A vector search alone fails in a predictable way: ask it for a sample code and it returns passages *about* similar things that do not contain the code. Each layer below exists because the previous one missed something specific."
+ },
+ {
+  "path": "rag.js:RAG_RETRIEVAL.layers[0].body",
+  "en": "Cosine distance over the 1,024-dimension `bge-m3` vectors, with an **HNSW index** so a search does not read all 87,765 rows. This is what finds a concept described in words the question never used."
+ },
+ {
+  "path": "rag.js:RAG_RETRIEVAL.layers[1].body",
+  "en": "A generated `tsvector` column with a GIN index over the same passages. This is what finds the literal string of a sample code - precisely what the dense search is worst at, because an identifier carries no semantics to be similar to."
+ },
+ {
+  "path": "rag.js:RAG_RETRIEVAL.layers[2].body",
+  "en": "The `rag_hybrid_search()` function merges both rankings with **Reciprocal Rank Fusion**: a passage that does well in both lists outranks one that dominates a single list. Verified with a question whose top hit scored twice the rest - the signature of a passage that won on both sides at once."
+ },
+ {
+  "path": "rag.js:RAG_RETRIEVAL.layers[3].body",
+  "en": "Wired into the vector store node and **switched off on purpose**. The only reranker n8n offers is an external service, and using it would mean sending the text of retrieved passages - internal notebooks included - to a third party. Left in place and visibly disabled, because the decision is part of the design."
+ },
+ {
+  "path": "science.js:BOTTLENECK.title",
+  "en": "Where the data problem begins"
+ },
+ {
+  "path": "science.js:BOTTLENECK.scale",
+  "en": "Two plates a week, 24 conditions each, for five years. The diagram above is what that produces: **2,167 syntheses**, **6,073 instrument files**, across folders, notebooks and local disks."
+ },
+ {
+  "path": "science.js:BOTTLENECK.problem",
+  "en": "Nothing about that is unusual, it is how most laboratories work. But it means a simple question — *which conditions have ever produced a promising material?* — and the answer is only as good as someone's memory of where things were saved."
+ },
+ {
+  "path": "science.js:BOTTLENECK.turn",
+  "en": "The fix is a **governed database**: one row per synthesis, one row per measurement, every file fingerprinted and attributed. Once the record is a table, the question above becomes a query — and a model can learn from the whole record."
+ },
+ {
+  "path": "science.js:BOTTLENECK.hookTitle",
+  "en": "Which leaves one problem unsolved"
+ },
+ {
+  "path": "science.js:BOTTLENECK.hook",
+  "en": "Thousands of instrument files, several formats... and nothing stopping the same file being saved twice under two names. What is needed is specific: **a way to drop a file somewhere and have it end up in the database, correctly attributed, without anyone retyping anything.**"
+ },
+ {
+  "path": "science.js:DATA_SCALE.title",
+  "en": "How much data one laboratory produces"
+ },
+ {
+  "path": "science.js:DATA_SCALE.lead",
+  "en": "On the left, every synthesis ever performed. In the middle, every measurement taken on those samples, by technique. On the right, the one place all of it has to end up. **A true challenge of scale.**"
+ },
+ {
+  "path": "science.js:DATA_SCALE.databaseLabel",
+  "en": "One governed database"
+ },
+ {
+  "path": "science.js:DATA_SCALE.databaseNote",
+  "en": "One row per synthesis, one row per measurement, every file fingerprinted."
+ },
+ {
+  "path": "science.js:DATA_SCALE.footnote",
+  "en": "Measurement counts read from the database on 3 September 2026; ICP and EA, shown dashed, are still PDF reports awaiting the AI branch, so that circle counts files, not rows. Circle size scales with the count so the small techniques stay legible — read the numbers, not the areas."
+ },
+ {
+  "path": "science.js:LAB_INTRO.title",
+  "en": "What a week at the bench actually looks like"
+ },
+ {
+  "path": "science.js:LAB_INTRO.lead",
+  "en": "A structure can be designed on paper, but its **synthesis must be discovered**. The ideal recipe is found by screening countless reaction trials. This is how pipeline looks like:"
+ },
+ {
+  "path": "science.js:MOF_DEF.iupac",
+  "en": "A coordination network with organic ligands containing potential voids."
+ },
+ {
+  "path": "science.js:MOF_DEF.iupacNote",
+  "en": "IUPAC recommendation, 2013."
+ },
+ {
+  "path": "science.js:MOF_DEF.plain",
+  "en": "In a nutshell, **metal ions or clusters** act as the joints, **organic molecules** act as the struts, and together they build a rigid scaffold."
+ },
+ {
+  "path": "science.js:MOF_DEF.why",
+  "en": "Because both parts can be swapped independently, the **same architecture can be rebuilt** with a different metal or a different linker. That is what makes the family so large: they are the most diverse class of extended crystalline solids known today."
+ },
+ {
+  "path": "science.js:MOF_FACTS[0].title",
+  "en": "Built like a scaffold"
+ },
+ {
+  "path": "science.js:MOF_FACTS[0].body",
+  "en": "**Metal nodes joined by organic linkers** into a periodic network. Treating them as abstract nets — nodes and edges — is what allows a structure to be designed"
+ },
+ {
+  "path": "science.js:MOF_FACTS[1].title",
+  "en": "Surface areas without precedent"
+ },
+ {
+  "path": "science.js:MOF_FACTS[1].body",
+  "en": "A single gram can present the **surface area of a football pitch**. That is what makes them useful for storing gases, capturing CO₂ or hosting catalytic sites."
+ },
+ {
+  "path": "science.js:MOF_FACTS[2].title",
+  "en": "Tunable by design"
+ },
+ {
+  "path": "science.js:MOF_FACTS[2].body",
+  "en": "Change the linker and the pore changes size, shape and chemistry while the topology survives. This is the **isoreticular principle**."
+ },
+ {
+  "path": "science.js:MOF_FACTS[3].title",
+  "en": "Applied to real problems"
+ },
+ {
+  "path": "science.js:MOF_FACTS[3].body",
+  "en": "**Wide range of promising applications**. Green hydrogen production, water remediation, CO₂ conversion into cyclic carbonates, and polymerisation catalysis, among others."
+ },
+ {
+  "path": "science.js:MOF_NAMING.title",
+  "en": "A note on the names"
+ },
+ {
+  "path": "science.js:MOF_NAMING.body",
+  "en": "Frameworks are usually named after the institution that first reported them: MIL-n from the Materials Institute Lavoisier, UiO-n from the University of Oslo, HKUST-n from Hong Kong. IEF-n is the series from the IMDEA Energy Institute — where the syntheses behind this platform were made."
+ },
+ {
+  "path": "science.js:NOBEL.title",
+  "en": "Nobel Prize in Chemistry"
+ },
+ {
+  "path": "science.js:NOBEL.laureates",
+  "en": "Susumu Kitagawa, Richard Robson and Omar Yaghi"
+ },
+ {
+  "path": "science.js:NOBEL.reason",
+  "en": "For establishing the foundations of metal-organic frameworks and reticular chemistry."
+ },
+ {
+  "path": "science.js:NOBEL.credit",
+  "en": "© Nobel Prize Outreach. Illustration: Niklas Elmehed."
+ },
+ {
+  "path": "science.js:SCIENCE_INTRO",
+  "en": "Ever wondered what happens when you build crystalline materials like molecular *Lego*? Step inside the chemistry of Metal-Organic Frameworks (MOFs) and see why characterizing them requires an entire suite of analytical techniques."
+ },
+ {
+  "path": "science.js:SYNTHESIS_NODE.note",
+  "en": "Two 24-well plates a week, five years."
+ },
+ {
+  "path": "science.js:TECHNIQUES[0].answers",
+  "en": "Is it crystalline, and is it the phase I wanted?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[0].body",
+  "en": "X-rays scattered by an ordered lattice produce sharp peaks at specific angles. A disordered solid produces a broad hump instead. This is the first test any new sample faces, and the one this platform models."
+ },
+ {
+  "path": "science.js:TECHNIQUES[1].answers",
+  "en": "How much solvent is trapped inside, and how hot can it get?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[1].body",
+  "en": "The sample is heated while being weighed. Mass losses reveal guest molecules leaving the pores and, eventually, the framework itself decomposing."
+ },
+ {
+  "path": "science.js:TECHNIQUES[2].answers",
+  "en": "Does the structure survive heating?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[2].body",
+  "en": "Diffraction measured while the temperature rises, showing whether the lattice holds, transforms or collapses."
+ },
+ {
+  "path": "science.js:TECHNIQUES[3].answers",
+  "en": "How much empty space is really accessible?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[3].body",
+  "en": "Nitrogen or CO₂ is dosed onto the material and the uptake converted into a specific surface area in square metres per gram, plus the pore size distribution."
+ },
+ {
+  "path": "science.js:TECHNIQUES[4].answers",
+  "en": "Did the linker actually bind to the metal?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[4].body",
+  "en": "Chemical bonds absorb infrared light at characteristic frequencies. Shifts in those bands distinguish a coordinated ligand from free, unreacted starting material."
+ },
+ {
+  "path": "science.js:TECHNIQUES[5].answers",
+  "en": "How much metal is in there?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[5].body",
+  "en": "The sample is vaporised in a plasma and the light it emits quantifies each element, giving the real metal-to-ligand ratio."
+ },
+ {
+  "path": "science.js:TECHNIQUES[6].answers",
+  "en": "Does the organic composition match the formula?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[6].body",
+  "en": "Combustion analysis returns carbon, hydrogen, nitrogen and sulfur percentages, which are compared against the proposed formula."
+ },
+ {
+  "path": "science.js:TECHNIQUES[7].abbr",
+  "en": "SEM / TEM"
+ },
+ {
+  "path": "science.js:TECHNIQUES[7].answers",
+  "en": "What do the particles look like?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[7].body",
+  "en": "Electron beams image crystal morphology and size, from the shape of a facet down to the nanometre scale."
+ },
+ {
+  "path": "science.js:TECHNIQUES[8].answers",
+  "en": "Can it absorb light, and at what energy?"
+ },
+ {
+  "path": "science.js:TECHNIQUES[8].body",
+  "en": "Optical absorption gives the band gap, which decides whether a material can drive a photocatalytic reaction."
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[0].note",
+  "en": "Routine on everything"
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[3].note",
+  "en": "Did the linker bind?"
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[5].note",
+  "en": "Optical band gap"
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[7].note",
+  "en": "Structure while heated"
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[8].note",
+  "en": "Full structure solved"
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[9].label",
+  "en": "ICP · EA"
+ },
+ {
+  "path": "science.js:TECHNIQUE_COUNTS[9].note",
+  "en": "Composition, as PDF"
+ },
+ {
+  "path": "science.js:WHY_CHARACTERISE.title",
+  "en": "Why one material needs a dozen measurements"
+ },
+ {
+  "path": "science.js:WHY_CHARACTERISE.lead",
+  "en": "Making a solid is not the same as knowing what it is. **A newly formed powder has to be interrogated** from several angles before anything can be claimed about it."
+ },
+ {
+  "path": "science.js:WHY_CHARACTERISE.consequence",
+  "en": "Every promising sample generates files from several instruments, each written in its own format. Multiply that by thousands of samples and it stops being a chemistry problem — it becomes a **data management and processing challenge**."
+ },
+ {
+  "path": "science.js:WHY_CHARACTERISE.numbers[0][1]",
+  "en": "raw instrument files"
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.title",
+  "en": "Does any single variable separate the classes?"
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.whichTitle",
+  "en": "Which variables are being tested here"
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.which",
+  "en": "The **29 PXRD descriptors** extracted from each diffractogram: peak count, crystalline fraction, peak width, entropy, signal-to-noise and the rest. Not the synthesis conditions. The question is whether any single measurement taken *from the pattern* is enough, on its own, to tell the three classes apart."
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.shapesTitle",
+  "en": "What each class looks like as numbers"
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.shapes[0].body",
+  "en": "**No peaks at all** (`n_peaks` = 0). 88 % of the scattered area sits under the diffuse halo, and peak-to-background stays near **0.03**."
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.shapes[1].body",
+  "en": "A handful of **broad** reflections: median 8 peaks at **0.240°** FWHM, with about half the area crystalline and peak-to-background near **1.19**."
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.shapes[2].body",
+  "en": "Many **sharp** reflections: median 19 peaks at **0.162°** FWHM, **77 %** crystalline fraction, and peak-to-background at **9.42**."
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.shapesLink",
+  "en": "Where those 29 numbers come from, descriptor by descriptor"
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.ordering",
+  "en": "They do order the classes cleanly: every descriptor tested rises or falls **monotonically** from amorphous through incipient to crystalline. The numbers agree with the human verdicts on the direction of the effect."
+ },
+ {
+  "path": "screens.js:EDA_BIVARIATE.body",
+  "en": "But ordering is not separating. In the box plots below the boxes **overlap for every variable tested**: an incipient sample and a crystalline one can share the same peak count, the same width, the same entropy. That overlap is the definition of a multivariate problem, and the reason a model is needed instead of a threshold."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.title",
+  "en": "The confounder that nearly ruined the analysis"
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.intro",
+  "en": "The record holds three ways of making a material, and version 2 of this analysis mixed them without looking. The numbers:"
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.points[0].body",
+  "en": "**Zero amorphous samples in microwave.** Detecting that a synthesis was microwave-assisted, even indirectly through reactor volume or year, lets a model answer CRYSTALLINE and be right 96% of the time. Those 94 cases are 5% of the dataset and 27% of the crystalline class."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.points[1].label",
+  "en": "The cause is selection bias"
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.points[1].body",
+  "en": "Combinatorial screening is exploratory, so it is full of failures. Standard and microwave synthesis are used once the recipe is known to work. \"Synthesis type\" largely encodes **whether the outcome was already known**."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.points[2].label",
+  "en": "And the physics differ"
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.points[2].body",
+  "en": "Microwave heating is localised and fast, favouring kinetic phases over thermodynamic ones. Mixing the methods forces the model to learn two physics as one."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.decision[0]",
+  "en": "It is the only subset without success bias: it was designed to explore, not to confirm."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.decision[1]",
+  "en": "It is what we actually want to predict — the next plate is an HTS plate."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.decision[2]",
+  "en": "It is a single thermal regime, so the model learns one physics, not two."
+ },
+ {
+  "path": "screens.js:EDA_CONFOUNDER.price",
+  "en": "The price is stated: 90 of the 330 crystalline cases are lost, 27%, and the minority class becomes scarcer still. The alternative is **a higher score that measures the synthesis method** instead of the chemistry."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.title",
+  "en": "Correlation: two different questions"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].title",
+  "en": "Do two input variables move together?"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].lead",
+  "en": "This one is about **interpretation**, not about performance."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].points[0][0]",
+  "en": "What to look for"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].points[0][1]",
+  "en": "Not zero correlation — knowing **where** it is not zero."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].points[1][0]",
+  "en": "Why it matters"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].points[1][1]",
+  "en": "Two columns carrying nearly the same information make the model **split the credit between them arbitrarily**. Reading \"this variable barely matters\" would then be a mistake: it matters, but its twin took the credit."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].points[2][0]",
+  "en": "What is done about it"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].points[2][1]",
+  "en": "The final interpretation is read **by chemical block**, never variable by variable."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[0].note",
+  "en": "A map with red blocks is not a problem. Here they are mostly properties of the same metal, correlated **by physics**: the electronegativity and hardness of a cation are not independent in nature."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].title",
+  "en": "Does each variable relate to the target?"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].lead",
+  "en": "This is the one you **do** want to be high — it is literally the signal the model will exploit."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].points[0][0]",
+  "en": "Why Pearson does not apply"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].points[0][1]",
+  "en": "The target is **categorical with three levels**, not a number. A Pearson coefficient between \"amorphous\" and a temperature is undefined."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].points[1][0]",
+  "en": "What is used instead"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].points[1][1]",
+  "en": "The correlation ratio **η²** for numeric against categorical, and **Cramér's V** for categorical against categorical."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].points[2][0]",
+  "en": "How to read it"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.questions[1].points[2][1]",
+  "en": "Both are plotted below, on the same scale, so a weak association looks weak."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.blankTitle",
+  "en": "The blank cells are not missing data"
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.blankBody",
+  "en": "A white square means the correlation **is not defined**, not that a value was lost. `reactor_volume_ml` is 2.5 mL in every high-throughput synthesis, so its variance is zero and any correlation with it divides by zero."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.blankConsequence",
+  "en": "It follows that `fill_fraction` is exactly `total_volume_ml / 2.5`: the same variable rescaled, across all 1,516 rows. **Both columns are excluded from the model** — zero variance for one, perfect collinearity for the other."
+ },
+ {
+  "path": "screens.js:EDA_CORRELATION.causation",
+  "en": "**Correlation is not causation**. These plots measure whether two things move together, nothing more. Temperature appearing associated with crystallinity does not demonstrate that raising it causes crystallisation: the two may share a common cause, or it may be a coincidence of this record. Establishing causation requires intervening, changing only the temperature and seeing what happens."
+ },
+ {
+  "path": "screens.js:EDA_DISCRETE.title",
+  "en": "The process variables are **discrete in practice**"
+ },
+ {
+  "path": "screens.js:EDA_DISCRETE.body",
+  "en": "A continuous variable on paper is not continuous in the record. Over the training set, three of the main process variables take these values and no others:"
+ },
+ {
+  "path": "screens.js:EDA_DISCRETE.concentration",
+  "en": "And they are not evenly used either: **710 of the syntheses sit at 150 °C** and 370 at 120 °C, so two settings out of nine cover seven tenths of the record."
+ },
+ {
+  "path": "screens.js:EDA_DISCRETE.why",
+  "en": "This reflects how combinatorial synthesis is designed: **fix a grid of conditions and sweep composition**. A chemist filling a 24-well plate picks round numbers."
+ },
+ {
+  "path": "screens.js:EDA_DISCRETE.consequence",
+  "en": "It carries a consequence for interpretation: **a variable that was barely varied cannot explain much variance, however important it is chemically**. Reaction time takes three values in this record, so a model that finds it unimportant is describing the record, not the chemistry."
+ },
+ {
+  "path": "screens.js:EDA_FUNNEL_INTRO.title",
+  "en": "From the full record to the training set"
+ },
+ {
+  "path": "screens.js:EDA_FUNNEL_INTRO.lead",
+  "en": "The laboratory performed **2,167 syntheses**. The chain below counts **rows of the feature table**, which is why it starts at 2,152: those are the syntheses the pipeline could turn into features."
+ },
+ {
+  "path": "screens.js:EDA_FUNNEL_INTRO.chain",
+  "en": "Each step removes exactly one filter from the query the model registry stores for this dataset, so the last line is the number the registry holds. **Every drop is a deliberate exclusion with a stated reason.**"
+ },
+ {
+  "path": "screens.js:EDA_FUNNEL_INTRO.scope",
+  "en": "By the last row the model is no longer a model of this laboratory’s chemistry: it is a model of **combinatorial syntheses that produced a powder someone was willing to judge**. Everything below refers to those 1,516 rows unless it says otherwise."
+ },
+ {
+  "path": "screens.js:EDA_IMBALANCE.title",
+  "en": "The target: how much imbalance there is"
+ },
+ {
+  "path": "screens.js:EDA_IMBALANCE.intro",
+  "en": "Across the 1,516 training rows the three classes are far from equally common, and that is chemistry rather than sampling: most attempts land somewhere in between."
+ },
+ {
+  "path": "screens.js:EDA_IMBALANCE.trivial",
+  "en": "A model that learns nothing at all, always answering **INCIPIENT**, is right 64% of the time. That is why every metric in this project is quoted against that floor rather than against zero: reporting \"64% accuracy\" would describe a model that does nothing."
+ },
+ {
+  "path": "screens.js:EDA_IMBALANCE.ratio",
+  "en": "The gap between the largest and smallest class is **6 : 1**, and it is sharper than over the whole record, because restricting to high-throughput synthesis removed material that was almost entirely crystalline. It is handled by **weighting the classes inside each model**, which is simpler than resampling and does not invent samples that were never made."
+ },
+ {
+  "path": "screens.js:EDA_INTRO.expansion",
+  "en": "Exploratory Data Analysis"
+ },
+ {
+  "path": "screens.js:EDA_INTRO.steps[0].body",
+  "en": "Plot every variable, count what is missing, check whether the classes are balanced and whether two columns say the same thing twice."
+ },
+ {
+  "path": "screens.js:EDA_INTRO.steps[1].body",
+  "en": "It produces no model and no metric, which is why it gets skipped. What it produces is decisions: which rows to drop, which columns cannot be trusted."
+ },
+ {
+  "path": "screens.js:EDA_INTRO.steps[2].body",
+  "en": "Separate signal that comes from the chemistry from signal that comes from how the data was collected."
+ },
+ {
+  "path": "screens.js:EDA_INTRO.rule",
+  "en": "**A model cannot warn you about a problem it has learned to exploit.** If a confounder sits in the training data, cross-validation rewards the model for using it. The only place to catch it is here."
+ },
+ {
+  "path": "screens.js:EDA_INTRO.found[0][1]",
+  "en": "One synthesis method had produced no amorphous samples at all — so the method itself predicted the answer"
+ },
+ {
+  "path": "screens.js:EDA_INTRO.found[1][0]",
+  "en": "Five kinds of gap"
+ },
+ {
+  "path": "screens.js:EDA_INTRO.found[1][1]",
+  "en": "Nine per cent missing, from five unrelated causes, each needing a different fix"
+ },
+ {
+  "path": "screens.js:EDA_INTRO.found[2][0]",
+  "en": "A 6 : 1 imbalance"
+ },
+ {
+  "path": "screens.js:EDA_INTRO.found[2][1]",
+  "en": "Between the largest and smallest class, enough to make accuracy meaningless"
+ },
+ {
+  "path": "screens.js:EDA_INTRO.found[3][1]",
+  "en": "Rows that are not independent of one another, which makes a random split lie"
+ },
+ {
+  "path": "screens.js:EDA_LEAKAGE.title",
+  "en": "Hidden structure: why a random split would lie"
+ },
+ {
+  "path": "screens.js:EDA_LEAKAGE.body",
+  "en": "Each row is **one synthesis**: one well of a 24-well plate, with its conditions and the verdict on its diffractogram. Those rows are **not independent of one another**. A plate is a batch prepared on the same day, with the same linker, the same thermal ramp and often the same metal, sweeping one variable. And plates are internally homogeneous: knowing one well tells you most of what its 23 neighbours did."
+ },
+ {
+  "path": "screens.js:EDA_LEAKAGE.consequence",
+  "en": "A random split would put samples from the same plate in both training and test. The model would not need to learn any chemistry: **recognising the plate would be enough**. The score would come out inflated and false. Validation therefore groups by plate, so no plate ever appears on both sides."
+ },
+ {
+  "path": "screens.js:EDA_LEAKAGE.reminder",
+  "en": "This compounds with the class imbalance. With **64% of samples incipient** and whole plates almost uniformly one class, a lucky split can hand the test set a plate that is 90% incipient, where the do-nothing baseline scores 90% and any model looks brilliant. Grouping by plate stops the split from choosing its own difficulty."
+ },
+ {
+  "path": "screens.js:EDA_LEAKAGE.drift",
+  "en": "There is temporal drift too: the class proportions change year on year, because the laboratory was learning. Every bar carries its count, because **a proportion without its sample size misleads**: a year with seven samples shows a 100% bar that means nothing."
+ },
+ {
+  "path": "screens.js:EDA_MISSING.intro",
+  "en": "A single \"9% missing\" figure hides unrelated problems, and only some of them are what imputation assumes."
+ },
+ {
+  "path": "screens.js:EDA_MODULATORS.title",
+  "en": "Where the modulator descriptors come from"
+ },
+ {
+  "path": "screens.js:EDA_MODULATORS.problem",
+  "en": "Ten columns of acids, nearly all zero in any given row, would let the model memorise which plate used which reagent instead of learning chemistry. So they were **grouped by chemical role** (carboxylic, strong acid, HF, base, fluorinated) and summed. Two extra columns carry the **mean pKa and mean logP of the acids present**, weighted by how much of each was added, so the chemistry the sum discards is not lost."
+ },
+ {
+  "path": "screens.js:EDA_MODULATORS.caveats[0]",
+  "en": "**\"Carboxylic\" here means weak carboxylic.** Trifluoroacetic acid is grouped with the strong acids: the criterion was pKa, not functional family, and at pKa 0.23 it behaves like one. 82 syntheses."
+ },
+ {
+  "path": "screens.js:EDA_MODULATORS.caveats[1]",
+  "en": "**The pKa and logP values carry no citation.** They are standard aqueous figures at 25 °C written into the SQL. Every other chemical property in the model traces to a reference in `property_sources`."
+ },
+ {
+  "path": "screens.js:EDA_PCA.title",
+  "en": "The PCA projection"
+ },
+ {
+  "path": "screens.js:EDA_PCA.disclaimer",
+  "en": "This is a diagnostic, not a model."
+ },
+ {
+  "path": "screens.js:EDA_PCA.whatTitle",
+  "en": "What a PCA does"
+ },
+ {
+  "path": "screens.js:EDA_PCA.what[0]",
+  "en": "Each synthesis is a point in a space with one dimension per variable, which cannot be looked at directly."
+ },
+ {
+  "path": "screens.js:EDA_PCA.what[1]",
+  "en": "PCA finds the **direction along which the points are most spread out**, then the most spread-out direction perpendicular to it, and so on."
+ },
+ {
+  "path": "screens.js:EDA_PCA.what[2]",
+  "en": "Projecting onto the first two gives a flat picture that keeps as much of the original spread as any flat picture can."
+ },
+ {
+  "path": "screens.js:EDA_PCA.what[3]",
+  "en": "It is a **change of viewpoint, not a summary**: nothing is discarded."
+ },
+ {
+  "path": "screens.js:EDA_PCA.varsTitle",
+  "en": "What goes in"
+ },
+ {
+  "path": "screens.js:EDA_PCA.varsNote",
+  "en": "The **38 synthesis-condition columns**: metal properties, linker properties, solvent fractions, thermal ramp and modulators. Not the 29 PXRD descriptors, which describe the outcome. The question is whether what was *done* already separates the outcomes."
+ },
+ {
+  "path": "screens.js:EDA_PCA.stepsTitle",
+  "en": "How it is built"
+ },
+ {
+  "path": "screens.js:EDA_PCA.steps[0]",
+  "en": "**Standardise** the numeric variables after imputation. Without it, reaction time (up to 96) would crush a solvent fraction (0 to 1) through the scale of its units alone."
+ },
+ {
+  "path": "screens.js:EDA_PCA.steps[1]",
+  "en": "**Find the direction of maximum variance**, a linear combination of every variable, and call it the first component. Then the maximum remaining variance perpendicular to it, and so on."
+ },
+ {
+  "path": "screens.js:EDA_PCA.steps[2]",
+  "en": "**Project** the samples onto those components so they can be drawn."
+ },
+ {
+  "path": "screens.js:EDA_PCA.honest",
+  "en": "PCA uses every variable and **does not know the classes**: it is unsupervised, and the colours are painted on afterwards. So any separation that appears is real structure in the synthesis conditions."
+ },
+ {
+  "path": "screens.js:EDA_PCA.findings[0]",
+  "en": "There is structure, but the classes overlap heavily. The problem is genuinely multivariate and genuinely hard."
+ },
+ {
+  "path": "screens.js:EDA_PCA.findings[1]",
+  "en": "Adding a third component reveals no hidden separation. That is a useful negative result: there is **no plane that separates the classes**, which already predicts that no linear model will shine."
+ },
+ {
+  "path": "screens.js:EDA_PCA.findings[2]",
+  "en": "Reaching 90% of the variance takes many components. The information is spread across many variables rather than concentrated in two or three — so reducing dimensionality before modeling would throw away signal, and PCA is not used in the final pipeline."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[0].defect",
+  "en": "Neat liquid modulators stored as µmol but labelled mmol — a factor of 1,000"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[0].found",
+  "en": "The median formic acid value read 1,168 \"mmol\", which is 54 g of formic acid in a 2.5 mL reactor. Physically impossible."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[0].fix",
+  "en": "Formula corrected in notebook 01; stored values divided by 1,000."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[1].defect",
+  "en": "Adding mmol to µmol erased HCl from the strong-acid feature"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[1].found",
+  "en": "A consequence of defect 1: HCl contributed ~0.004 against TFA at ~600."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[1].fix",
+  "en": "With coherent units, the most-used modulator in the whole dataset — 393 syntheses — becomes visible to the model again."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[2].defect",
+  "en": "Synthesis type absent as a variable, while being the largest confounder"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[2].found",
+  "en": "Microwave runs are 95.7% crystalline against 11.0% for combinatorial screening."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[2].fix",
+  "en": "Restrict training to high-throughput synthesis only."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[3].defect",
+  "en": "1-propanol and DEF missing from the feature view"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[3].found",
+  "en": "Solvent fractions summed to 0.789 instead of 1."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[3].fix",
+  "en": "All six solvents included."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[4].defect",
+  "en": "The liquid modulator is sometimes the solvent, and was not counted as medium"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[4].found",
+  "en": "After fixing defect 4 the volume still did not close. One synthesis used 1.35 mL of propionic acid out of 1.5 mL total."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[4].fix",
+  "en": "A modulator fraction reconstructed from the millimoles."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[5].defect",
+  "en": "HF grouped with HCl despite a different chemical role"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[5].found",
+  "en": "Chemical argument: HF is a mineralising agent, and some frameworks only crystallise in its presence."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[5].fix",
+  "en": "Its own column, 25 syntheses."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[6].defect",
+  "en": "22 rows lost their ionic radius to a non-breaking space"
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[6].found",
+  "en": "A U+00A0 character inside precursor strings such as \"MgCl2 · 6H2O\" stopped them matching the lookup table."
+ },
+ {
+  "path": "screens.js:ETL_DEFECTS[6].fix",
+  "en": "The join was normalised, rather than adding typographic variants by hand — that is a race you do not win."
+ },
+ {
+  "path": "screens.js:ETL_EXCLUSION.title",
+  "en": "Exclusion as a label, never as a deletion"
+ },
+ {
+  "path": "screens.js:ETL_EXCLUSION.body",
+  "en": "Auditing the dataset uncovered 113 problematic entries: 43 duplicate scans (re-runs, washed samples) that would bias training, and 70 amorphous runs contaminated with metal oxide peaks that would poison class labels"
+ },
+ {
+  "path": "screens.js:ETL_EXCLUSION.decision",
+  "en": "Instead of destructive hard-deletions, every case was flagged with ml_include = NO. In scientific databases, deleting destroys experimental history; explicit flagging preserves the audit trail while delivering clean data to the models."
+ },
+ {
+  "path": "screens.js:ETL_EXCLUSION.pullquote",
+  "en": "In a scientific data store, **deleting destroys evidence and labelling preserves it**."
+ },
+ {
+  "path": "screens.js:ETL_IMPUTATION.title",
+  "en": "Imputation: tested, not assumed"
+ },
+ {
+  "path": "screens.js:ETL_IMPUTATION.body",
+  "en": "Numeric gaps are filled with the median and categorical ones with the mode — always inside the cross-validation pipeline, never before it."
+ },
+ {
+  "path": "screens.js:ETL_IMPUTATION.leak",
+  "en": "Imputing with the median of the whole dataset before splitting leaks information from the test fold into training: the test rows would have helped compute the median used on them. It is a subtle leak that inflates the result while nothing appears to fail. Inside the pipeline, each fold computes its median from its own data only."
+ },
+ {
+  "path": "screens.js:ETL_IMPUTATION.conclusion",
+  "en": "Flagging which values were missing adds nothing, so the simple version stays. That is worth recording precisely because it is a negative result: knowing that missingness is not informative means the gaps are recording accidents, not a pattern with chemical meaning."
+ },
+ {
+  "path": "screens.js:ETL_STOICHIOMETRY.intro",
+  "en": "Modulators reach the reactor in two physically different forms, and each needs its own arithmetic."
+ },
+ {
+  "path": "screens.js:ETL_STOICHIOMETRY.typeA.title",
+  "en": "Type A — aqueous molar solutions"
+ },
+ {
+  "path": "screens.js:ETL_STOICHIOMETRY.typeA.body",
+  "en": "HCl, HF and KOH are dosed as solutions of known molarity, so the active amount follows directly from volume times concentration."
+ },
+ {
+  "path": "screens.js:ETL_STOICHIOMETRY.typeB.title",
+  "en": "Type B — neat organic liquids"
+ },
+ {
+  "path": "screens.js:ETL_STOICHIOMETRY.typeB.body",
+  "en": "Formic, acetic, propionic, trifluoroacetic, triflic and methanesulfonic acids, plus triethylamine, are pipetted pure. The amount has to be reconstructed from density, purity and molecular weight."
+ },
+ {
+  "path": "screens.js:ETL_TANNIC.title",
+  "en": "Tannic acid: a chemical decision, then confirmed by measurement"
+ },
+ {
+  "path": "screens.js:ETL_TANNIC.body",
+  "en": "24 samples used tannic acid, a polyphenol and the only non-phosphonate chemistry in the record. Its denticity is not well defined — with roughly 25 phenolic hydroxyls there is no meaningful number of binding \"teeth\". The argument for removing them is chemical and comes first: 24 samples are not enough for a model to learn a separate chemical family, and their presence forces the linker descriptors to describe two incompatible things at once."
+ },
+ {
+  "path": "screens.js:ETL_TANNIC.measure",
+  "en": "Removing them raises macro F1 from 0.495 to 0.527, and MCC from 0.266 to 0.312."
+ },
+ {
+  "path": "screens.js:ETL_TANNIC.caution",
+  "en": "Choosing what to remove because it improves the metric is a way of cheating: the number can always be raised by dropping the hard cases. Here the order was the right one — **chemical argument first, verification second** — and that is what makes the exclusion legitimate. Had the criterion been \"let us try removing things and see what goes up\", the result would be worth nothing."
+ },
+ {
+  "path": "screens.js:ETL_THERMAL.title",
+  "en": "Parsing thermal ramps written in prose"
+ },
+ {
+  "path": "screens.js:ETL_THERMAL.body",
+  "en": "The spreadsheet recorded thermal programs as free text. They are parsed into initial, target and final temperature, plateau hours, and two slopes in °C per minute."
+ },
+ {
+  "path": "screens.js:ETL_ZERO_VS_NULL.title",
+  "en": "The correction that mattered more than the seven"
+ },
+ {
+  "path": "screens.js:ETL_ZERO_VS_NULL.body",
+  "en": "Wherever the solvent breakdown failed to account for the total volume — about 18% of rows — the fractions were being stored as 0. They are now NULL, with an explicit completeness flag."
+ },
+ {
+  "path": "screens.js:ETL_ZERO_VS_NULL.pullquote",
+  "en": "Writing a 0 where the value is unknown is not neutral: it asserts something false. \"This synthesis contained no methanol\" and \"how much methanol it contained was never recorded\" are different statements, and a model given a 0 has no way to tell them apart."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.title",
+  "en": "An honest reading of the performance"
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.lead",
+  "en": "The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31, a real but moderate association. Two features of the result matter more than that headline."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[0].title",
+  "en": "Three quarters of the crystalline syntheses are not recovered"
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[0].bullets[0]",
+  "en": "Recall on the crystalline class is **0.25** under the grouped cross-validation. That is the figure to quote: the tool exists to shortlist promising conditions, so it governs practical value far more than the aggregate does."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[0].bullets[1]",
+  "en": "The confusion matrix above reads **0.53** for the same class — because it is one held-out split, not the five-fold average. A lucky set of plates flatters the smallest class."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[0].bullets[2]",
+  "en": "Cause: **167 crystalline examples against 967 incipient**, and the crystalline class is the most heterogeneous. There are many ways for a framework to crystallise and only one way for it not to."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[1].title",
+  "en": "The actionable model sits close to the limit of the data"
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[1].bullets[0]",
+  "en": "Stripped of metal and linker chemistry, macro F1 falls to **0.393** and MCC to **0.095**."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[1].bullets[1]",
+  "en": "Above chance — and not yet a basis for recommending conditions."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.points[1].bullets[2]",
+  "en": "This is the question the laboratory actually asks, so it is the more important of the two results."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.cause.title",
+  "en": "The limit lies in the experimental record, not in the model"
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.cause.body",
+  "en": "Across five years the record contains 15 distinct target temperatures and 11 reaction times, and the subset the model was trained on is poorer still — **9 temperatures and 3 reaction times**. They were also varied in a manner confounded with chemistry: each campaign swept one factor within one metal-linker system. A supervised model cannot estimate the effect of a variable that was held nearly constant, nor separate an effect from a factor it always co-occurred with. This is a property of the data, and no choice of algorithm or hyperparameter can recover information the experiments did not generate."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.cause.expectation",
+  "en": "Hyperparameter optimisation on this dataset can reasonably be expected to yield an improvement of 0.02 to 0.05 in macro F1. It is worth doing for methodological completeness; it is not a route to a materially better model."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.title",
+  "en": "What would improve it, in order of expected return"
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[0].body",
+  "en": "Vary temperature, time and modulator finely **within a single metal-linker system**. It attacks the confounding head-on and costs one or two plates — by a wide margin the most efficient intervention available."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[1].body",
+  "en": "With **167** in the training set, the minority class is the binding constraint on every metric above. Nothing algorithmic gets around it."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[2].body",
+  "en": "**18 %** of rows lack the breakdown, and that block currently scores as noise. Its real contribution cannot even be measured until the medium is written down completely."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.next.items[3].body",
+  "en": "A continuous crystallinity index may carry more than a three-way class — though the three classes remain the judgement the bench actually recorded."
+ },
+ {
+  "path": "screens.js:MODEL_ASSESSMENT.closing",
+  "en": "The score is defensible: cross-validated with plates as groups, computed after seven data defects were corrected, and reported alongside the baseline that gives it meaning. The limitation is one of experimental design rather than of the model, which makes it a specific and actionable experiment."
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.title",
+  "en": "The chemical reading, by block rather than variable by variable"
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.why",
+  "en": "With strongly correlated variables, any importance method splits the credit arbitrarily. Interpreting Pauling electronegativity in isolation from absolute hardness would be over-reading. The block-level split is the defensible reading."
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.blocks[0].rank",
+  "en": "Dominant, by a wide margin"
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.blocks[0].body",
+  "en": "It enters through ionic radius and charge-over-radius, which together give the **charge density** of the cation. That charge density governs the strength of the metal-phosphonate interaction, and with it whether the system has time to order or precipitates amorphous."
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.blocks[1].rank",
+  "en": "Second, ahead of linker chemistry"
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.blocks[1].body",
+  "en": "This qualifies the easy reading of the headline numbers. Conditions do contribute, but only in combination with the chemistry: the actionable model, which uses them alone, stalls at 0.41. Temperature and time help decide within a metal-linker system, not between systems. Both statements are true and have to be read together."
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.blocks[2].rank",
+  "en": "Negative importance overall"
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.blocks[2].body",
+  "en": "Not a calculation error: shuffling those variables slightly improves the model, which is the operational definition of noise. It has an identifiable cause — the 18% of rows with no solvent breakdown — and a practical consequence: they are candidates for removal next time round, and their real value will not be known until the medium is recorded completely."
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.caution",
+  "en": "Permutation importance tends to split and to understate when variables are correlated: if two columns say almost the same thing, shuffling one barely hurts the model because the other covers the gap. So the absolute values should not be read as \"percentage of the chemistry explained\", and the block-level split is more reliable than any individual variable."
+ },
+ {
+  "path": "screens.js:MODEL_CHEMISTRY.distinction",
+  "en": "\"It does not matter\" and \"it was not explored\" are different claims, and only the second is actionable. The model is not saying temperature is irrelevant to phosphonate crystallisation; it is saying that in this record it **was not varied enough to be learnable**. The instruction that follows is experimental: vary it."
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.title",
+  "en": "Where it goes wrong, and whether the errors make chemical sense"
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.intro",
+  "en": "A confusion matrix shows the direction of the errors, not just how many there are. Here the ordinal pattern holds clearly one way and only half-way the other."
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.amorphous",
+  "en": "For amorphous samples the behaviour is what you would hope: when it fails, it confuses \"nothing\" with \"almost nothing\", which in the diffractogram itself is a matter of degree and something two experts could disagree about. The severe error — calling an amorphous sample crystalline — is rare."
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.crystalline",
+  "en": "For crystalline samples it is not. Roughly one in six is classified as amorphous, the most serious error available. The model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient, and the most heterogeneous class of the three (many ways to crystallise, one way not to), this was predictable. It remains the model's main weakness."
+ },
+ {
+  "path": "screens.js:MODEL_ERRORS.usage",
+  "en": "For the intended use, ranking candidates and filling the next plate, what matters is that good candidates rise in the ranking rather than that the label is exact. But the model makes a serious mistake on **22% of crystalline samples**, and that figure has to be quoted alongside the aggregate."
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[0].title",
+  "en": "There is real predictive signal, and it is modest"
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[0].body",
+  "en": "The best full model reaches a macro F1 of about 0.52 against 0.26 for the baseline, twice as good. MCC lands near 0.31: a real association, but far from strong."
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[1].title",
+  "en": "Excluding the confounded syntheses costs 0.10 of macro F1"
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[1].body",
+  "en": "Removing microwave and standard solvothermal runs drops the score from 0.62 to 0.52. That gap **measures the portion of the score that came from identifying the synthesis method** rather than the chemistry."
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[2].title",
+  "en": "The actionable model drops further, and that answers the objection"
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[2].body",
+  "en": "Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. Most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied."
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[2].caveat",
+  "en": "That does not make conditions chemically unimportant. In this record they were not varied enough to be learnable: **9 temperatures and 3 reaction times** across the training set."
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[3].title",
+  "en": "Tree-based models win"
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[3].body",
+  "en": "Random Forest and LightGBM come out ahead of k-nearest neighbours and SVM. Methods that build boundaries from thresholds benefit from variables that mean what they say, which is what the unit corrections in the previous stage delivered."
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[4].title",
+  "en": "Naive Bayes sinks below the baseline"
+ },
+ {
+  "path": "screens.js:MODEL_FINDINGS[4].body",
+  "en": "It assumes the variables are independent given the class, and the correlation map shows strong blocks. Its failure measures how much that correlation matters, which is why it is on the list."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.intro",
+  "en": "Ten models are compared, not one. Different model families assume different things about the shape of the boundary between classes, and with a new problem there is no way to know in advance which assumption is right."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[0].assumes",
+  "en": "Nothing: always the most frequent class"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[0].why",
+  "en": "The bar. Everything else must clear it"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[0].detail",
+  "en": "It looks at no variable at all. It counts which class is commonest in the training data and answers that, every time. On this data it says INCIPIENT to everything and is right 64 % of the time. That is why accuracy is a useless headline here, and why this model is on the list: to give every other number a floor."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[1].assumes",
+  "en": "A linear boundary"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[1].why",
+  "en": "Interpretable reference; if it suffices, it wins"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[1].detail",
+  "en": "Draws a straight dividing surface through the 39-dimensional space and reads each variable’s weight as its pull towards one class or another. If a straight line were enough, this would be the answer to keep: you can read the coefficients and argue about the chemistry. It is here to find out whether the problem needs anything more complicated."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[2].assumes",
+  "en": "Similar samples share an outcome"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[2].why",
+  "en": "Purely local, with no global model"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[2].detail",
+  "en": "Builds no model. For a new synthesis it finds the fifteen most similar ones already on record and takes a vote. That makes it a direct test of a chemical intuition — that similar conditions give similar products — and it is unforgiving about badly scaled variables, which is part of what made it useful for spotting the unit defects."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[3].assumes",
+  "en": "Variables independent given the class"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[3].why",
+  "en": "Its failure measures how much the correlation structure matters"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[3].detail",
+  "en": "Assumes every variable contributes independently, which in this data is plainly false: the electronegativity and the hardness of a cation are tied together by physics. It is on the list precisely so that assumption can fail visibly. It scores below the trivial baseline, and that gap is a measurement of how much the correlation structure matters."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[4].assumes",
+  "en": "A smooth non-linear boundary"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[4].why",
+  "en": "Strong in medium dimension with few samples"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[4].detail",
+  "en": "Bends the boundary instead of keeping it straight, and cares only about the samples nearest the frontier. That makes it strong when there are many variables and few rows, which is this problem exactly. The price is that its decisions cannot be read off as \"this variable mattered\"."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[5].assumes",
+  "en": "Threshold cuts, one at a time"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[5].why",
+  "en": "Interpretable; the basis of what follows"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[5].detail",
+  "en": "Asks a chain of yes/no questions about single thresholds — is the temperature above 130, is there carboxylic modulator — until it reaches a verdict. Alone it overfits badly, but it is the building block of the four models below it, and it is the only one whose reasoning you can read out loud."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[6].assumes",
+  "en": "Many decorrelated trees"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[6].why",
+  "en": "Robust, insensitive to hyperparameters"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[6].detail",
+  "en": "Grows hundreds of trees, each on a random slice of the rows and the columns, and averages them. The randomness is the point: individual trees overfit in different directions and the errors cancel. It is the model actually deployed here, chosen for being the best performer that is also hard to break by tuning it wrong."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[7].assumes",
+  "en": "Sequential trees correcting each other"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[7].why",
+  "en": "Handles missing values natively"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[7].detail",
+  "en": "Instead of averaging independent trees, each new tree is fitted to the errors the previous ones left behind. It bins the variables first, which makes it fast, and it takes missing values without imputing them — relevant here, where a null pKa means \"no carboxylic acid\" rather than \"unknown\"."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[8].why",
+  "en": "The industry reference"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[8].detail",
+  "en": "The same idea as above with a different growth strategy: it extends whichever leaf reduces the error most, rather than growing level by level. Fast and usually at the top of tabular benchmarks, which is why it is the yardstick. It is the model serving the actionable half of this project."
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[9].assumes",
+  "en": "Boosting with regularisation"
+ },
+ {
+  "path": "screens.js:MODEL_LINEUP.models[9].detail",
+  "en": "Boosting again, with an explicit penalty on tree complexity written into what it optimises. That extra brake is what usually separates it from LightGBM on small datasets, and with 1,516 rows this one qualifies as small."
+ },
+ {
+  "path": "screens.js:MODEL_METRICS.note",
+  "en": "Mean relative error, RMSE and R² do not apply here. They belong to regression and measure distance to a number. In classification you either get the class right or you do not."
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.title",
+  "en": "Reading the SHAP plot"
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.body",
+  "en": "Each point is one synthesis. Its horizontal position is how far that variable pushed the prediction towards crystalline (right) or against it (left). The colour is the value of the variable — red high, blue low. So \"red on the right\" means high values of this variable favour crystallisation."
+ },
+ {
+  "path": "screens.js:MODEL_SHAP.note",
+  "en": "It complements permutation importance: that says how much a variable matters, this says in which direction and for which samples."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.title",
+  "en": "Two models, not one"
+ },
+ {
+  "path": "screens.js:MODEL_TWO.objection",
+  "en": "The linker does not make a metal crystallise; it determines which material can exist at all. Changing it changes the chemistry, not a reaction condition."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.body",
+  "en": "So the variables split in two: **design variables** (metal and linker chemistry), which change the research target itself, and **process variables** (concentration, ligand-to-metal ratio, temperature, time, ramps, modulators, solvents), which can be changed within the same chemistry. One model is trained on each split."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.models[0].asks",
+  "en": "Is there predictive signal in this record at all?"
+ },
+ {
+  "path": "screens.js:MODEL_TWO.models[0].pro",
+  "en": "Best score of the two: **0.52 macro F1**, twice the baseline."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.models[0].limit",
+  "en": "Most of that signal is the metal-linker system, so it cannot tell you what to change."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.models[1].asks",
+  "en": "Given this chemistry, which conditions make it crystallise?"
+ },
+ {
+  "path": "screens.js:MODEL_TWO.models[1].pro",
+  "en": "The question the bench actually asks, and the one that designs the next plate."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.models[1].limit",
+  "en": "Falls to **0.393 macro F1**, MCC 0.095: above chance, not yet a basis for recommending conditions."
+ },
+ {
+  "path": "screens.js:MODEL_TWO.note",
+  "en": "The gap between the two scores measures how much of the signal comes from the chemistry rather than from the conditions."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.title",
+  "en": "Validation grouped by plate"
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.setupPoints[0]",
+  "en": "**A plate is 24 wells**: one block, one oven, one thermal programme, 24 compositions swept in parallel."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.setupPoints[1]",
+  "en": "The training set is **1,516 syntheses across 68 plates**."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.setupPoints[2]",
+  "en": "So a plate is a batch that shared a reactor, a day, a solvent bottle and an operator, not an administrative label."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.bodyPoints[0]",
+  "en": "**Stratified group k-fold, five folds.** Every plate stays entirely inside one fold, so no plate is ever in training and test at once."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.bodyPoints[1]",
+  "en": "**Without it**, a model can score well by recognising which plate a sample came from instead of learning any chemistry."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.bodyPoints[2]",
+  "en": "**The stratification** keeps class proportions even, so no fold ends up with almost no crystalline samples."
+ },
+ {
+  "path": "screens.js:MODEL_VALIDATION.consequence",
+  "en": "It costs performance. A random split would report a higher number for a model that had learned less."
+ },
+ {
+  "path": "site.js:BIO_ABOUT[0]",
+  "en": "My professional focus lies at the intersection of experimental chemistry, data science and artificial intelligence: turning complex scientific data into reproducible pipelines, predictive models and decision-support tools."
+ },
+ {
+  "path": "site.js:BIO_ABOUT[1]",
+  "en": "As a PhD in Advanced Chemistry I drove the end-to-end development of metal-organic frameworks for sustainability challenges — green hydrogen production, CO₂ valorisation, water treatment, biopolymers. That work meant generating, processing and analysing large datasets from a dozen characterisation techniques, and it is where the problem this platform solves first became obvious."
+ },
+ {
+  "path": "site.js:BIO_ABOUT[2]",
+  "en": "ALCheMy is that analytical mindset moved into the digital domain: Python, SQL, machine learning and generative AI applied to the same chemistry, with the aim of accelerating materials design and extracting decisions from data that used to sit in a folder."
+ },
+ {
+  "path": "site.js:BIO_PULLQUOTE",
+  "en": "ALCheMy is itself a living testament to that: agentic pair-programming was instrumental in architecting, coding and building the entire ecosystem from the ground up."
+ },
+ {
+  "path": "site.js:BIO_SHORT[0]",
+  "en": "Hi! I'm Rubén, a PhD in Advanced Chemistry turned Data Science and AI enthusiast."
+ },
+ {
+  "path": "site.js:BIO_SHORT[1]",
+  "en": "For over five years I worked in the laboratory synthesizing new functional materials for sustainability challenges. During thousands of hours at the bench I realized something essential: experiments generate massive amounts of rich data, yet too often it remains trapped in lab notebooks or local disks."
+ },
+ {
+  "path": "site.js:BIO_SHORT[2]",
+  "en": "That sparked a genuine idea: bridging the gap between hands-on experimental chemistry and the data lifecycle. I specialize in turning laboratory observations into automated pipelines and machine learning models that drive smarter, faster scientific decisions."
+ },
+ {
+  "path": "site.js:BIO_SHORT[3]",
+  "en": "With the recent rise of generative AI, I firmly believe artificial intelligence is not here to replace us but to **augment human potential**. For me it has been a cognitive accelerator, flattening the learning curve across adjacent disciplines — software engineering, MLOps, data science. It does not make anyone a veteran overnight; what it grants is the scaffolding to genuinely understand and connect technical domains at a speed that was not available before."
+ },
+ {
+  "path": "site.js:FUNNEL[0].label",
+  "en": "Rows in the feature table"
+ },
+ {
+  "path": "site.js:FUNNEL[0].why",
+  "en": "Every synthesis the pipeline could turn into features"
+ },
+ {
+  "path": "site.js:FUNNEL[1].label",
+  "en": "With a labelled diffractogram"
+ },
+ {
+  "path": "site.js:FUNNEL[1].why",
+  "en": "The rest never reached the diffractometer, or nobody has judged them yet"
+ },
+ {
+  "path": "site.js:FUNNEL[2].why",
+  "en": "Drops SIN_MUESTRA and anything an expert marked ml_include = NO"
+ },
+ {
+  "path": "site.js:FUNNEL[3].why",
+  "en": "Solvothermal and microwave runs excluded — the confounder above"
+ },
+ {
+  "path": "site.js:FUNNEL[4].label",
+  "en": "Rows in the training set"
+ },
+ {
+  "path": "site.js:FUNNEL[4].why",
+  "en": "No tannic acid"
+ },
+ {
+  "path": "site.js:GLOSSARY.MOF.text",
+  "en": "A hybrid solid built from metal ions or clusters joined by organic linkers, forming an extended network riddled with pores. Because both halves can be swapped, its chemistry is tunable by design."
+ },
+ {
+  "path": "site.js:GLOSSARY.PXRD.long",
+  "en": "Powder X-Ray Diffraction"
+ },
+ {
+  "path": "site.js:GLOSSARY.PXRD.text",
+  "en": "Shines X-rays on a powder and records how they scatter. Sharp peaks mean an ordered, periodic crystal; a broad hump means a disordered, amorphous solid."
+ },
+ {
+  "path": "site.js:GLOSSARY.arPLS.long",
+  "en": "Asymmetrically Reweighted Penalized Least Squares"
+ },
+ {
+  "path": "site.js:GLOSSARY.arPLS.text",
+  "en": "A method that separates the slow, drifting background of a spectrum from the real peaks, without flattening the broad amorphous halo that carries genuine information."
+ },
+ {
+  "path": "site.js:GLOSSARY.MD5.long",
+  "en": "Message Digest 5"
+ },
+ {
+  "path": "site.js:GLOSSARY.MD5.text",
+  "en": "A short fingerprint computed from a file's bytes. Two identical files always give the same fingerprint, so it detects a duplicate upload before any compute is spent on it."
+ },
+ {
+  "path": "site.js:GLOSSARY.JSONB.long",
+  "en": "Binary JSON (PostgreSQL)"
+ },
+ {
+  "path": "site.js:GLOSSARY.JSONB.text",
+  "en": "A column type that stores a whole nested document and still lets you query inside it. It lets nine different instrument formats share one table without a schema migration each time."
+ },
+ {
+  "path": "site.js:GLOSSARY.SSOT.long",
+  "en": "Single Source of Truth"
+ },
+ {
+  "path": "site.js:GLOSSARY.SSOT.text",
+  "en": "One authoritative place where a fact lives. Everything else reads from it rather than keeping its own copy that can silently drift."
+ },
+ {
+  "path": "site.js:GLOSSARY.MLOps.long",
+  "en": "Machine Learning Operations"
+ },
+ {
+  "path": "site.js:GLOSSARY.MLOps.text",
+  "en": "The practice of treating a model like production software: versioned, tested, traceable to the exact data and code that produced it, and reproducible months later."
+ },
+ {
+  "path": "site.js:GLOSSARY.F1 macro.long",
+  "en": "Macro-averaged F1 score"
+ },
+ {
+  "path": "site.js:GLOSSARY.F1 macro.text",
+  "en": "Averages the F1 score of every class equally, so a rare class counts as much as a common one. With imbalanced data it is far more honest than plain accuracy."
+ },
+ {
+  "path": "site.js:GLOSSARY.pgvector.text",
+  "en": "A PostgreSQL extension that stores embeddings and finds the nearest ones, so semantic search happens inside the same database as the rest of the data."
+ },
+ {
+  "path": "site.js:GLOSSARY.RAG.text",
+  "en": "Before answering, the system retrieves the most relevant passages from a real corpus and gives them to the model, so the answer is grounded in sources rather than recalled from memory."
+ },
+ {
+  "path": "site.js:GLOSSARY.HITL.text",
+  "en": "When an automated step is not confident enough, it stops and asks a person instead of guessing. Here it triggers on low-confidence PDF extractions."
+ },
+ {
+  "path": "site.js:GLOSSARY.BET.text",
+  "en": "The standard way to turn a gas adsorption isotherm into a specific surface area in square metres per gram — the number that says how porous a material really is."
+ },
+ {
+  "path": "site.js:GLOSSARY.CRISP-DM.long",
+  "en": "Cross-Industry Standard Process for Data Mining"
+ },
+ {
+  "path": "site.js:GLOSSARY.CRISP-DM.text",
+  "en": "A six-phase method for data projects, from understanding the problem to deployment and feedback. The tabs of this site follow it in order."
+ },
+ {
+  "path": "site.js:KPIS[0].note",
+  "en": "Five years at the bench"
+ },
+ {
+  "path": "site.js:KPIS[1].label",
+  "en": "Diffractograms labelled by hand"
+ },
+ {
+  "path": "site.js:KPIS[1].note",
+  "en": "The ground truth the model learns from"
+ },
+ {
+  "path": "site.js:KPIS[2].label",
+  "en": "Better than chance at predicting crystallinity"
+ },
+ {
+  "path": "site.js:KPIS[2].note",
+  "en": "Macro F1 0.52 against a 0.26 baseline"
+ },
+ {
+  "path": "site.js:KPIS[3].label",
+  "en": "Literature passages vectorised"
+ },
+ {
+  "path": "site.js:KPIS[3].note",
+  "en": "956 papers, powering the RAG assistant"
+ },
+ {
+  "path": "site.js:LAB_CYCLE[0].title",
+  "en": "Planning High-Throughput Synthesis"
+ },
+ {
+  "path": "site.js:LAB_CYCLE[0].short",
+  "en": "Plan the plate"
+ },
+ {
+  "path": "site.js:LAB_CYCLE[0].body",
+  "en": "Each campaign begins by designing a parameter matrix across 24-well Teflon multi-autoclave reactors: 48 individual weighings per batch, solvent mixtures and modulators, then 24 to 72-hour thermal programs in convection ovens."
+ },
+ {
+  "path": "site.js:LAB_CYCLE[1].title",
+  "en": "Recovery & Experimental Triage"
+ },
+ {
+  "path": "site.js:LAB_CYCLE[1].short",
+  "en": "Filter & triage"
+ },
+ {
+  "path": "site.js:LAB_CYCLE[1].body",
+  "en": "After cooling, each of the 24 vials is vacuum-filtered, washed and submitted for powder X-ray diffraction. The verdict is one of three: amorphous solid, incipient (broad reflections near a crystallization boundary), or a well-ordered crystalline phase."
+ },
+ {
+  "path": "site.js:LAB_CYCLE[1].highlight",
+  "en": "These three classes are exactly the target the model learns to predict."
+ },
+ {
+  "path": "site.js:LAB_CYCLE[2].title",
+  "en": "Scale-Up & Analytical Suite"
+ },
+ {
+  "path": "site.js:LAB_CYCLE[2].body",
+  "en": "Promising hits are scaled up via solvothermal liners or microwave-assisted synthesis, then characterized by TGA, VT-XRD, elemental analysis, ICP-OES, UV-Vis diffuse reflectance, FTIR and N2/CO2 physisorption."
+ },
+ {
+  "path": "site.js:LAB_CYCLE[3].body",
+  "en": "Purified materials are tested for photocatalytic hydrogen evolution, degradation of emergent pollutants, and heterogeneous CO2 valorization."
+ },
+ {
+  "path": "site.js:MODEL_NOTES.crystallinity_v4_hts_full",
+  "en": "The reference model: is there predictive signal in this data at all? First version with the volume units corrected."
+ },
+ {
+  "path": "site.js:MODEL_NOTES.crystallinity_v4_hts_actionable",
+  "en": "Process and medium only. Answers the question the bench actually asks: given this chemistry, which conditions help?"
+ },
+ {
+  "path": "site.js:MODEL_NOTES.crystallinity_v3_hts_full",
+  "en": "Same design, but trained before the volume-unit defect was found. Superseded, not wrong to have existed."
+ },
+ {
+  "path": "site.js:MODEL_NOTES.crystallinity_v3_hts_actionable",
+  "en": "The actionable model of the previous generation, kept for comparison."
+ },
+ {
+  "path": "site.js:MODEL_NOTES.crystallinity_v2_mixed",
+  "en": "The highest score on this table, and the reason the table exists. It mixed HTS, ST and microwave syntheses, so it was partly detecting the synthesis method. Marked invalid rather than deleted."
+ },
+ {
+  "path": "site.js:PILLARS[0].title",
+  "en": "Automated Data Ingestion, Quality & Enterprise Governance"
+ },
+ {
+  "path": "site.js:PILLARS[0].subtitle",
+  "en": "ISO 17025 / FAIR compliant"
+ },
+ {
+  "path": "site.js:PILLARS[0].points[0]",
+  "en": "**Orchestrated ingestion pipelines** built with n8n and PostgreSQL capture raw analytical files (PXRD, TGA, gas adsorption, FTIR, VT-XRD, EA, ICP-OES) via secure REST webhooks or forms."
+ },
+ {
+  "path": "site.js:PILLARS[0].points[1]",
+  "en": "**Cryptographic data quality gates** ensures that every incoming file passes an MD5 deduplication gate that prevents duplicate records and guarantees raw file lineage."
+ },
+ {
+  "path": "site.js:PILLARS[0].points[2]",
+  "en": "**Instrument parsers** write metadata and 2D curves into indexed JSONB containers, so adding a new technique never requires a schema migration."
+ },
+ {
+  "path": "site.js:PILLARS[0].points[3]",
+  "en": "**Agentic observability** tracks every AI interaction"
+ },
+ {
+  "path": "site.js:PILLARS[1].title",
+  "en": "Digital Twin & Machine Learning"
+ },
+ {
+  "path": "site.js:PILLARS[1].subtitle",
+  "en": "From raw diffraction to a synthesis recommendation"
+ },
+ {
+  "path": "site.js:PILLARS[1].points[0]",
+  "en": "**Raw powder diffraction patterns** are treated with arPLS to isolate baseline drift while preserving genuine amorphous halos. A 3-sigma Poisson noise model extracts a vector of 29 descriptors."
+ },
+ {
+  "path": "site.js:PILLARS[1].points[1]",
+  "en": "**Supervised classifiers** (Random Forest and LightGBM) trained on 1,877 hand-labeled diffractograms predict whether a reaction matrix yields a pure crystalline phase, an incipient phase or an amorphous solid."
+ },
+ {
+  "path": "site.js:PILLARS[1].points[2]",
+  "en": "**A PostgreSQL model registry tracks versions** (binaries, hyperparameters, git commit hashes and cross-validation metrics)."
+ },
+ {
+  "path": "site.js:PILLARS[1].points[3]",
+  "en": "**An active learning loop** identifies high-uncertainty synthesis boundaries and recommends the next experiments."
+ },
+ {
+  "path": "site.js:PILLARS[2].title",
+  "en": "Graph-Augmented Hybrid RAG"
+ },
+ {
+  "path": "site.js:PILLARS[2].subtitle",
+  "en": "A co-pilot that cites three sources of truth"
+ },
+ {
+  "path": "site.js:PILLARS[2].points[0]",
+  "en": "**A vectorized corpus powered by pgvector** indexes 956 peer-reviewed papers and patents."
+ },
+ {
+  "path": "site.js:PILLARS[2].points[1]",
+  "en": "**Contextual chunking** prevents loss of chemical meaning across synthetic procedures, stoichiometries and characterization sections."
+ },
+ {
+  "path": "site.js:PILLARS[2].points[2]",
+  "en": "**A knowledge graph** maps relationships between performed syntheses, their characterization and literature citations."
+ },
+ {
+  "path": "site.js:PILLARS[2].points[3]",
+  "en": "**Local-first retrieval** with role-based access control keeps proprietary records governed and compatible with fully local deployments."
+ },
+ {
+  "path": "site.js:PILLARS_INTRO",
+  "en": "The platform is built in three layers: the first gets the data in and keeps it trustworthy; the second learns from it; the third puts what the field already knows next to what the laboratory has measured."
+ },
+ {
+  "path": "site.js:SCREENS[1].title",
+  "en": "MOFs & Lab Daily-life"
+ },
+ {
+  "path": "site.js:SCREENS[2].title",
+  "en": "The Ingestion Workflow"
+ },
+ {
+  "path": "site.js:SCREENS[3].title",
+  "en": "ETL & PXRD Signal Processing"
+ },
+ {
+  "path": "site.js:SCREENS[4].title",
+  "en": "Exploratory data analysis"
+ },
+ {
+  "path": "site.js:SCREENS[5].title",
+  "en": "Training & Evaluation"
+ },
+ {
+  "path": "site.js:SCREENS[6].title",
+  "en": "Simulator, Registry & Active Learning"
+ },
+ {
+  "path": "site.js:SCREENS[9].title",
+  "en": "Bio, CV & Contact"
+ },
+ {
+  "path": "site.js:SITE.tagline",
+  "en": "Augmented Laboratory for Chemistry & Materials"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[0].title",
+  "en": "Entry — three ingestion lanes"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[0].adds",
+  "en": "technique, sample_code, researcher identity, the binary file"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[1].title",
+  "en": "Tags, sample_code & whitelist"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[1].adds",
+  "en": "Normalized fields, authorization gate"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[2].adds",
+  "en": "file_ext, base64 payload, the real MD5 file_hash"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[3].title",
+  "en": "Routing by technique"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[3].adds",
+  "en": "Nothing — it only decides the downstream path"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[4].title",
+  "en": "Deterministic parsers (7 techniques)"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[4].adds",
+  "en": "The full data_json payload, autonomy level L4"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[5].title",
+  "en": "AI extraction — PDF reports (ICP / EA)"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[5].adds",
+  "en": "Elemental composition, confidence, human-in-the-loop"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[6].title",
+  "en": "AI extraction — Microscopy"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[6].adds",
+  "en": "Qualitative morphology only, never a fabricated particle size"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[7].title",
+  "en": "DB write & response"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[7].adds",
+  "en": "The row itself, plus the reply to the caller"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[8].title",
+  "en": "Governance — fallbacks, audit & errors"
+ },
+ {
+  "path": "site.js:WORKFLOW_SECTIONS[8].adds",
+  "en": "audit_log with typed verdict, cause and result"
+ },
+ {
+  "path": "workflow.js:AREAS[0].subtitle",
+  "en": "Three ingestion lanes"
+ },
+ {
+  "path": "workflow.js:AREAS[0].objective",
+  "en": "Accept a file plus basic metadata from whichever source triggered the run, and normalise it into one common shape before anything downstream has to care which lane it came from."
+ },
+ {
+  "path": "workflow.js:AREAS[0].adds[0]",
+  "en": "technique, sample_code, researcher_email, researcher_name, operator_name, measurement_tag — raw, as submitted"
+ },
+ {
+  "path": "workflow.js:AREAS[0].adds[1]",
+  "en": "file_name and raw_file_path (folder-watcher lane only; the others fill these in once the file is written to disk)"
+ },
+ {
+  "path": "workflow.js:AREAS[0].adds[2]",
+  "en": "The binary itself, always ending up under $binary.data_file"
+ },
+ {
+  "path": "workflow.js:AREAS[0].note",
+  "en": "The raw webhook node renames the upload to data_file0 — n8n adds a numeric suffix to multipart uploads. Normalize Webhook Body copies it back so nothing downstream needs to know."
+ },
+ {
+  "path": "workflow.js:AREAS[1].title",
+  "en": "Tags, sample code & whitelist"
+ },
+ {
+  "path": "workflow.js:AREAS[1].subtitle",
+  "en": "Normalise, then authorise"
+ },
+ {
+  "path": "workflow.js:AREAS[1].objective",
+  "en": "Make every field look the same regardless of origin lane, reject anything without a sample code — it is the database lookup key — and gate on researcher authorisation."
+ },
+ {
+  "path": "workflow.js:AREAS[1].adds[0]",
+  "en": "technique normalised (UV-Vis → UV_VIS, ICP-OES → ICP_OES)"
+ },
+ {
+  "path": "workflow.js:AREAS[1].adds[1]",
+  "en": "sample_code regex-extracted from the filename when not submitted explicitly"
+ },
+ {
+  "path": "workflow.js:AREAS[1].adds[2]",
+  "en": "researcher_email lowercased and trimmed"
+ },
+ {
+  "path": "workflow.js:AREAS[1].adds[3]",
+  "en": "instrument_name gets a technique-based guess, overwritten later by the real parsed value"
+ },
+ {
+  "path": "workflow.js:AREAS[1].note",
+  "en": "Auto-enrolment adds a new email as active, but deliberately does not re-activate one an administrator revoked by hand."
+ },
+ {
+  "path": "workflow.js:AREAS[2].subtitle",
+  "en": "Reject before spending compute"
+ },
+ {
+  "path": "workflow.js:AREAS[2].objective",
+  "en": "Reject oversized or duplicate files before any parsing happens, and get the real bytes into a form the Python sandbox can actually read."
+ },
+ {
+  "path": "workflow.js:AREAS[2].adds[1]",
+  "en": "data_file_base64 — the native Python runner cannot read $binary when binaries are stored in filesystem mode"
+ },
+ {
+  "path": "workflow.js:AREAS[2].adds[2]",
+  "en": "file_hash — the real MD5 of the decoded bytes"
+ },
+ {
+  "path": "workflow.js:AREAS[2].note",
+  "en": "That last line was a genuine bug: the hash was being computed over the binary metadata marker rather than the file contents, so every file looked unique and deduplication silently did nothing."
+ },
+ {
+  "path": "workflow.js:AREAS[3].title",
+  "en": "Routing by technique"
+ },
+ {
+  "path": "workflow.js:AREAS[3].subtitle",
+  "en": "Three extraction strategies"
+ },
+ {
+  "path": "workflow.js:AREAS[3].objective",
+  "en": "Decide which of the three extraction strategies applies: a deterministic parser, AI over a PDF, or rejection as unrecognised."
+ },
+ {
+  "path": "workflow.js:AREAS[3].adds[0]",
+  "en": "Nothing new — this area only reads the technique field set back in area 2."
+ },
+ {
+  "path": "workflow.js:AREAS[3].tableIntro",
+  "en": "Every parser — Python and JavaScript alike — returns the same dictionary shape, and `data_json` always holds `header_metadata` and `raw_data`. Stored as **JSONB** with a GIN index, so an agent can query any technique uniformly."
+ },
+ {
+  "path": "workflow.js:AREAS[4].subtitle",
+  "en": "Seven techniques, zero AI · autonomy L4"
+ },
+ {
+  "path": "workflow.js:AREAS[4].objective",
+  "en": "For every technique with a well-understood file format, extract every real instrument-recorded value with no AI involvement whatsoever — the cheapest, fastest and most trustworthy path."
+ },
+ {
+  "path": "workflow.js:AREAS[4].adds[0]",
+  "en": "The real parsed values overwrite the earlier guesses: sample_code, technique, measurement_tag, operator_name, instrument_name, file paths"
+ },
+ {
+  "path": "workflow.js:AREAS[4].adds[1]",
+  "en": "The full data_json payload: header_metadata plus raw_data"
+ },
+ {
+  "path": "workflow.js:AREAS[4].note",
+  "en": "One standalone Python module per technique and extension, each verified against real data-lake files inside the actual runner container."
+ },
+ {
+  "path": "workflow.js:AREAS[5].title",
+  "en": "AI extraction — PDF reports"
+ },
+ {
+  "path": "workflow.js:AREAS[5].subtitle",
+  "en": "ICP-OES and elemental analysis"
+ },
+ {
+  "path": "workflow.js:AREAS[5].objective",
+  "en": "Extract elemental composition tables from reports that only exist as PDFs, with a human-in-the-loop safety net for when the model is not confident."
+ },
+ {
+  "path": "workflow.js:AREAS[5].adds[0]",
+  "en": "elemental_ratios for ICP; chns_averages and triplicate_runs for EA"
+ },
+ {
+  "path": "workflow.js:AREAS[5].adds[1]",
+  "en": "confidence and reasoning"
+ },
+ {
+  "path": "workflow.js:AREAS[5].adds[2]",
+  "en": "Restored afterwards: the agent output does not carry researcher identity, file paths or the hash — they are pulled back from before the agent ran"
+ },
+ {
+  "path": "workflow.js:AREAS[5].note",
+  "en": "Below 85% confidence the run pauses and emails a human rather than guessing. An unanswered question is better than a confident wrong number in a governed table."
+ },
+ {
+  "path": "workflow.js:AREAS[6].title",
+  "en": "AI extraction — microscopy"
+ },
+ {
+  "path": "workflow.js:AREAS[6].subtitle",
+  "en": "SEM / FESEM / TEM"
+ },
+ {
+  "path": "workflow.js:AREAS[6].objective",
+  "en": "The deterministic parser already pulled every real instrument value from the companion sidecar. The AI step only adds a qualitative morphology description and a literal transcription of any scale-bar caption."
+ },
+ {
+  "path": "workflow.js:AREAS[6].adds[0]",
+  "en": "data_json.raw_data.ai_vision_analysis, merged into the deterministic payload — never replacing it"
+ },
+ {
+  "path": "workflow.js:AREAS[6].note",
+  "en": "Deliberately never a fabricated numeric particle size. The vision agent describes what the image looks like; it does not measure."
+ },
+ {
+  "path": "workflow.js:AREAS[7].title",
+  "en": "Database write & response"
+ },
+ {
+  "path": "workflow.js:AREAS[7].subtitle",
+  "en": "Where a missing field becomes a hard failure"
+ },
+ {
+  "path": "workflow.js:AREAS[7].objective",
+  "en": "Insert the finished row and tell the caller what happened. This is the point where a field that is still missing stops being a gap and becomes a constraint violation."
+ },
+ {
+  "path": "workflow.js:AREAS[7].adds[0]",
+  "en": "The row itself, plus the reply to whoever triggered the run"
+ },
+ {
+  "path": "workflow.js:AREAS[8].subtitle",
+  "en": "Fallbacks, audit trail & error response"
+ },
+ {
+  "path": "workflow.js:AREAS[8].objective",
+  "en": "Every rejection from any point in the pipeline lands here. It always writes the audit log with a typed verdict, cause and result, and then answers according to origin."
+ },
+ {
+  "path": "workflow.js:AREAS[8].adds[0]",
+  "en": "audit_log row — written deterministically, never by an LLM"
+ },
+ {
+  "path": "workflow.js:AREAS[8].note",
+  "en": "This used to be a separate sub-workflow called eleven times. Consolidated into two shared nodes, because a webhook response cannot be sent from outside the workflow that owns the trigger — and because sharing nodes beats duplicating them."
+ }
+]

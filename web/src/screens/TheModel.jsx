@@ -1,12 +1,18 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { Badge, Card, Note, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import Simulator from '../components/Simulator.jsx'
 import KnowledgeMap from '../components/KnowledgeMap.jsx'
 import KMAP from '../data/knowledge_map.json'
 import SCORECARD from '../data/model_scorecard.json'
-import { MODEL_NOTES } from '../content/site.js'
-import { MODEL_HERO, MODEL_LOOP, MODEL_REGISTRY } from '../content/model.js'
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
+import * as MODEL_EN from '../content/model.js'
+import * as MODEL_ES from '../content/es/model.js'
 
 export default function TheModel() {
+  const { MODEL_NOTES } = useBundle(SITE_EN, SITE_ES)
+  const { MODEL_HERO, MODEL_LOOP, MODEL_REGISTRY } = useBundle(MODEL_EN, MODEL_ES)
+
   return (
     <div className="flex flex-col gap-16">
       <section>

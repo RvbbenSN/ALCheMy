@@ -71,6 +71,25 @@ export function withLocale(path, locale) {
   return `/es${path}`
 }
 
+/** Elige el paquete de contenido del idioma activo.
+ *
+ * Los ficheros de `content/` (ingles) y `content/es/` exportan los MISMOS
+ * nombres, asi que una pantalla se traduce cambiando de que modulo lee, sin
+ * tocar una linea de JSX:
+ *
+ *     import * as EN from '../content/prep.js'
+ *     import * as ES from '../content/es/prep.js'
+ *     ...
+ *     const { PREP_INTRO, LANES } = useBundle(EN, ES)
+ *
+ * El spread hace el fallback solo: un export que todavia no exista en espanol
+ * sale en ingles en vez de romper la pantalla. Por eso se puede traducir por
+ * partes y visitar /es en cualquier momento. */
+export function useBundle(en, es) {
+  const locale = useContext(LocaleContext)
+  return useMemo(() => (locale === 'es' && es ? { ...en, ...es } : en), [locale, en, es])
+}
+
 /** Dada la ruta ACTUAL (de `useLocation().pathname`), devuelve la misma
  * pantalla en el otro idioma -- para el boton EN/ES del nav, que tiene que
  * cambiar de idioma sin sacar a quien lo pulsa de donde estaba leyendo. */

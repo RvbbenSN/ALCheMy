@@ -1,3 +1,4 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import {
   Bot,
   BookOpenCheck,
@@ -9,7 +10,8 @@ import {
 import { Badge, Card, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
 import SchemaMap from '../components/SchemaMap.jsx'
 import SCHEMA from '../data/schema_map.json'
-import { DB_BOUNDARY, DB_HERO, DB_VIEWS, DB_WHY } from '../content/database.js'
+import * as DATABASE_EN from '../content/database.js'
+import * as DATABASE_ES from '../content/es/database.js'
 
 /* Un simbolo por razon. No son adornos: dicen de que clase de garantia habla
    cada tarjeta antes de que el lector se meta en el texto. */
@@ -39,6 +41,8 @@ function headline(t) {
 }
 
 export default function DatabaseScreen() {
+  const { DB_BOUNDARY, DB_HERO, DB_VIEWS, DB_WHY } = useBundle(DATABASE_EN, DATABASE_ES)
+
   const stats = headline(SCHEMA.totals)
   /* Las tablas que el agente puede leer a traves de sus funciones. Se derivan
      del propio mapa para que la lista no se quede corta al crecer el esquema. */

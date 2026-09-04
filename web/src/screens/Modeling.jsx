@@ -1,14 +1,6 @@
-import {
-  MODEL_ASSESSMENT,
-  MODEL_CHEMISTRY,
-  MODEL_ERRORS,
-  MODEL_FINDINGS,
-  MODEL_LINEUP,
-  MODEL_METRICS,
-  MODEL_SHAP,
-  MODEL_TWO,
-  MODEL_VALIDATION,
-} from '../content/screens.js'
+import { useBundle } from '../i18n/LocaleContext.jsx'
+import * as SCREENS_EN from '../content/screens.js'
+import * as SCREENS_ES from '../content/es/screens.js'
 import { Badge, Card, Note, Placeholder, ScrollTable, SectionTitle, Rich} from '../components/ui.jsx'
 import NotebookList from '../components/NotebookList.jsx'
 import NotebookFigure from '../components/NotebookFigure.jsx'
@@ -42,6 +34,8 @@ function Pullquote({ children, tone = 'accent' }) {
 }
 
 export default function Modeling() {
+  const { MODEL_ASSESSMENT, MODEL_CHEMISTRY, MODEL_ERRORS, MODEL_FINDINGS, MODEL_LINEUP, MODEL_METRICS, MODEL_SHAP, MODEL_TWO, MODEL_VALIDATION } = useBundle(SCREENS_EN, SCREENS_ES)
+
   return (
     <div className="flex flex-col gap-16">
       <section>

@@ -10,7 +10,12 @@ import {
   Microscope,
   UserRound,
 } from 'lucide-react'
-import { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, PILLARS_INTRO, SCREENS } from '../content/site.js'
+/* El contenido se lee por paquete, no por import suelto: `useBundle` devuelve
+   el modulo espanol cuando la ruta va bajo /es, y cae al ingles export por
+   export para lo que aun no este traducido. Ver src/i18n/LocaleContext.jsx. */
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { Button, Card, KpiCard, Rich, SectionTitle, Term } from '../components/ui.jsx'
 import StackGrid from '../components/StackGrid.jsx'
 
@@ -31,6 +36,9 @@ const SCREEN_ICON = {
 }
 
 export default function Overview() {
+  const { BIO_PULLQUOTE, BIO_SHORT, KPIS, PILLARS, PILLARS_INTRO, SCREENS } =
+    useBundle(SITE_EN, SITE_ES)
+
   return (
     <div className="flex flex-col gap-16">
       {/* --- Hero --- */}

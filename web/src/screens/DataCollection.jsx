@@ -1,3 +1,4 @@
+import { useBundle } from '../i18n/LocaleContext.jsx'
 import { ExternalLink, Fingerprint, Link2, ScrollText, Shapes } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Badge, Card, Rich, ScrollTable, SectionTitle } from '../components/ui.jsx'
@@ -5,15 +6,10 @@ import NotebookList from '../components/NotebookList.jsx'
 import WorkflowMap from '../components/WorkflowMap.jsx'
 import IngestedRowTree from '../components/IngestedRowTree.jsx'
 import STACK from '../data/stack_icons.json'
-import { SITE } from '../content/site.js'
-import {
-  COLLECTION_CANVAS_INTRO,
-  COLLECTION_HERO,
-  COLLECTION_PROBLEM,
-  COLLECTION_ROW_INTRO,
-  COLLECTION_TREE,
-  ROW_SHAPE,
-} from '../content/collection.js'
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
+import * as COLLECTION_EN from '../content/collection.js'
+import * as COLLECTION_ES from '../content/es/collection.js'
 
 const N8N = STACK.items.find((i) => i.label === 'n8n')
 
@@ -40,6 +36,9 @@ function N8nMark({ size = 18 }) {
 }
 
 export default function DataCollection() {
+  const { SITE } = useBundle(SITE_EN, SITE_ES)
+  const { COLLECTION_CANVAS_INTRO, COLLECTION_HERO, COLLECTION_PROBLEM, COLLECTION_ROW_INTRO, COLLECTION_TREE, ROW_SHAPE } = useBundle(COLLECTION_EN, COLLECTION_ES)
+
   return (
     <div className="flex flex-col gap-16">
       <section>

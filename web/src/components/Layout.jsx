@@ -1,8 +1,9 @@
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { SCREENS, SITE } from '../content/site.js'
+import * as SITE_EN from '../content/site.js'
+import * as SITE_ES from '../content/es/site.js'
 import { AmbientPlayer, useTheme } from './ui.jsx'
-import { useLocale, withLocale, toggleLocalePath } from '../i18n/LocaleContext.jsx'
+import { useLocale, useBundle, withLocale, toggleLocalePath } from '../i18n/LocaleContext.jsx'
 
 function LangToggle() {
   const locale = useLocale()
@@ -64,6 +65,7 @@ export default function Layout() {
   const [open, setOpen] = useState(false)
   const { pathname, hash } = useLocation()
   const locale = useLocale()
+  const { SCREENS, SITE } = useBundle(SITE_EN, SITE_ES)
   /* Al cambiar de pantalla se sube arriba, salvo que la URL traiga un ancla
      (#descriptors, por ejemplo): entonces se baja a esa seccion. El timeout de
      0 ms deja que React pinte la pantalla nueva antes de buscar el elemento;
