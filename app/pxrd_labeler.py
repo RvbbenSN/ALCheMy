@@ -460,6 +460,19 @@ def plot_pattern(x, y, sample_code, show_analysis):
 # Navigation helpers
 # ==========================================================================
 
+def _subtype_changed(mkey, skey):
+    """A subtype only exists for INCIPIENTE, so choosing one sets the main class.
+    Before 2026-10-18 the save step silently dropped a subtype chosen next to
+    AMORFO/CRISTALINO; now the screen shows the class that will be stored."""
+    if st.session_state.get(skey) is not None:
+        st.session_state[mkey] = 'INCIPIENTE'
+
+
+def _main_changed(mkey, skey):
+    if st.session_state.get(mkey) != 'INCIPIENTE':
+        st.session_state[skey] = None
+
+
 def clamp(i, n):
     return max(0, min(i, n - 1))
 
@@ -579,8 +592,18 @@ def main():
             st.header('Blind Mode Settings')
             st.caption('Double-blind self-agreement protocol (150 samples). Metadata, file names, '
                        'sample codes, and algorithm hints are hidden.')
-            only_pending = st.checkbox('Only unlabelled (blind)', value=True,
-                                       help='Turn off to review blind labels already submitted.')
+            # Repair pass (2026-10-18): the app used to drop the subtype silently when
+            # the main class was not INCIPIENTE, while Rubén's convention was
+            # "class + subtype = incipient". This walks through ALL blind AMORFO /
+            # CRISTALINO answers (not only the discrepancies, which would inflate
+            # agreement), pre-filled with his own blind answer - never the original.
+            repair_pass = st.checkbox(
+                'Repair pass: my blind AMORFO / CRISTALINO',
+                value=st.query_params.get('repair') == '1',
+                help='Tap a subtype where you meant incipient; press ✅ on every pattern, even unchanged.')
+            only_pending = False if repair_pass else st.checkbox(
+                'Only unlabelled (blind)', value=True,
+                help='Turn off to review blind labels already submitted.')
             show_analysis = False
         else:  # MODE_ADJUDICATION
             st.header('Adjudication Settings')
@@ -642,7 +665,18 @@ def main():
         view['presentation_order'] = view['file_hash'].map(order_map)
         view = view.sort_values('presentation_order').reset_index(drop=True)
 
-        if only_pending:
+        if repair_pass:
+            # Frozen at the start of the session, so a pattern switched to INCIPIENTE
+            # does not vanish from the list and shift every index after it.
+            if 'repair_set' not in st.session_state:
+                st.session_state.repair_set = {
+                    h for h in blind_done_hashes
+                    if labels[h][LABEL_TYPE_BLIND_MAIN]['label_value'] in ('AMORFO', 'CRISTALINO')}
+                st.session_state.repair_seen = set()
+            view = view[view['file_hash'].isin(st.session_state.repair_set)].reset_index(drop=True)
+            st.sidebar.caption('Reviewed in this pass: **%d / %d**'
+                               % (len(st.session_state.repair_seen), len(st.session_state.repair_set)))
+        elif only_pending:
             view = view[~view['file_hash'].isin(blind_done_hashes)].reset_index(drop=True)
 
         if view.empty:
@@ -903,7 +937,8 @@ def main():
         main_choice = st.pills(
             'Degree of crystalline order', options=main_values,
             format_func=lambda v: dict((c[0], c[1]) for c in CATEGORIES)[v],
-            default=main_default, key=mkey, label_visibility='collapsed',
+            default=None if mkey in st.session_state else main_default, key=mkey, label_visibility='collapsed',
+            on_change=_main_changed, args=(mkey, skey),
         )
 
     subtype_values = [s[0] for s in INCIPIENT_SUBTYPES]
@@ -921,8 +956,8 @@ def main():
         subtype_choice = st.pills(
             'Incipient subtype', options=subtype_values,
             format_func=lambda v: subtype_captions[v],
-            default=subtype_default, key=skey, label_visibility='collapsed',
-            help=subtype_help,
+            default=None if skey in st.session_state else subtype_default, key=skey, label_visibility='collapsed',
+            help=subtype_help, on_change=_subtype_changed, args=(mkey, skey),
         )
 
     with flags_col:
@@ -1008,6 +1043,8 @@ def main():
                               'SI' if 'OXIDO' in flags else 'NO', confidence, None, labeled_by)
                     save_label(record, LABEL_TYPE_BLIND_MEZCLA,
                               'SI' if 'MEZCLA' in flags else 'NO', confidence, None, labeled_by)
+                    if 'repair_seen' in st.session_state:
+                        st.session_state.repair_seen.add(record['file_hash'])
                     load_labels.clear()
                     st.session_state.just_saved = (value, f"Pattern #{record['presentation_order']}")
 
