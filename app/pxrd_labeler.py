@@ -598,7 +598,7 @@ def main():
             # CRISTALINO answers (not only the discrepancies, which would inflate
             # agreement), pre-filled with his own blind answer - never the original.
             repair_pass = st.checkbox(
-                'Repair pass: my blind AMORFO / CRISTALINO',
+                'Repair pass: blind AMORFO / CRISTALINO to check',
                 value=st.query_params.get('repair') == '1',
                 help='Tap a subtype where you meant incipient; press ✅ on every pattern, even unchanged.')
             only_pending = False if repair_pass else st.checkbox(
@@ -669,9 +669,16 @@ def main():
             # Frozen at the start of the session, so a pattern switched to INCIPIENTE
             # does not vanish from the list and shift every index after it.
             if 'repair_set' not in st.session_state:
+                # Narrowed at Rubén's request (2026-10-18) to the only cases where the
+                # lost subtype changes the comparison: INCIPIENTE in August, AMORFO or
+                # CRISTALINO blind. Cost, recorded in the agreement report: a lost
+                # subtype on a pattern that was AMORFO/CRISTALINO in August is not
+                # reviewed, and the filter itself hints the August answer, so kappa
+                # after this pass is an upper bound (0.68 before it is the lower one).
                 st.session_state.repair_set = {
                     h for h in blind_done_hashes
-                    if labels[h][LABEL_TYPE_BLIND_MAIN]['label_value'] in ('AMORFO', 'CRISTALINO')}
+                    if labels[h][LABEL_TYPE_BLIND_MAIN]['label_value'] in ('AMORFO', 'CRISTALINO')
+                    and labels[h].get(LABEL_TYPE_MAIN, {}).get('label_value') == 'INCIPIENTE'}
                 st.session_state.repair_seen = set()
             view = view[view['file_hash'].isin(st.session_state.repair_set)].reset_index(drop=True)
             st.sidebar.caption('Reviewed in this pass: **%d / %d**'
