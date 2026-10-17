@@ -56,6 +56,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NB_DIR = ROOT / "_lab" / "notebooks"
+if not NB_DIR.exists() and (ROOT.parent / "ALCheMy" / "_lab" / "notebooks").exists():
+    NB_DIR = ROOT.parent / "ALCheMy" / "_lab" / "notebooks"
 OUT_DIR = ROOT / "web" / "public" / "notebooks"
 TRANS_DIR = ROOT / "scripts" / "translations"
 

@@ -46,7 +46,7 @@ DB = dict(
     port=int(os.environ.get('POSTGRES_PORT', 5432)),
     dbname=os.environ.get('POSTGRES_DB', 'alchemy_db'),
     user=os.environ.get('POSTGRES_USER', 'alchemy_user'),
-    password=os.environ.get('POSTGRES_PASSWORD', 'alchemy_pass_2026'),
+    password=os.environ.get('POSTGRES_PASSWORD'),
 )
 
 BLOCKED_EMAIL = 'bloqueado.test@example.com'
@@ -70,6 +70,8 @@ AI_RETRY_WAIT = int(os.environ.get('ALCHEMY_AI_RETRY_WAIT', '75'))
 
 
 def db():
+    if not DB.get('password'):
+        sys.exit("Error: POSTGRES_PASSWORD environment variable is required but not set.")
     return psycopg2.connect(**DB)
 
 
@@ -341,6 +343,9 @@ def main():
     if args.table:
         MEASUREMENTS_TABLE = args.table
     print('Tabla de medidas: %s\n' % MEASUREMENTS_TABLE)
+
+    if not DB.get('password'):
+        sys.exit("Error: POSTGRES_PASSWORD environment variable is required but not set.")
 
     ensure_blocked_email()
 
