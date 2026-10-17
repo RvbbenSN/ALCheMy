@@ -154,6 +154,19 @@ LABEL_TYPE_MEZCLA        = 'multiphase_suspected'
 LABEL_TYPE_BLIND_MAIN    = 'crystallinity_class_blind'
 LABEL_TYPE_BLIND_SUBTYPE = 'incipient_subtype_blind'
 LABEL_TYPE_PRE_BLIND     = 'crystallinity_class_pre_blind'
+# The blind pass must never overwrite the original oxide / multiphase judgements:
+# they are human labels too, as irreplaceable as the class. Blind flags get their
+# own label_type, exactly like the blind class.
+LABEL_TYPE_BLIND_OXIDE   = 'oxide_flag_blind'
+LABEL_TYPE_BLIND_MEZCLA  = 'multiphase_suspected_blind'
+
+
+def same_class(a, b):
+    """MEZCLA is retired and cannot be chosen in the blind pass; training already
+    counts it as CRISTALINO. Comparing it literally would turn all 16 legacy MEZCLA
+    patterns into forced discrepancies."""
+    norm = lambda v: 'CRISTALINO' if v == 'MEZCLA' else v
+    return norm(a) == norm(b)
 
 MODE_NORMAL       = 'Normal'
 MODE_BLIND        = 'Blind relabeling (150)'
@@ -670,7 +683,7 @@ def main():
                 orig_by = main_entry.get('labeled_by') if main_entry else s.get('original_labeled_by')
                 is_adjudicated = False
 
-            if orig_val != blind_val:
+            if not same_class(orig_val, blind_val):
                 discrepancy_records.append({
                     'file_hash': h,
                     'sample_code': s['sample_code'],
@@ -914,8 +927,14 @@ def main():
 
     with flags_col:
         st.caption('**FLAGS**')
-        existing_oxide = existing.get(LABEL_TYPE_OXIDE)
-        existing_mezcla = existing.get(LABEL_TYPE_MEZCLA)
+        # In blind mode the defaults come ONLY from blind rows: pre-ticking the
+        # original flags would leak the earlier judgement and break the blinding.
+        if mode == MODE_BLIND:
+            existing_oxide = existing.get(LABEL_TYPE_BLIND_OXIDE)
+            existing_mezcla = existing.get(LABEL_TYPE_BLIND_MEZCLA)
+        else:
+            existing_oxide = existing.get(LABEL_TYPE_OXIDE)
+            existing_mezcla = existing.get(LABEL_TYPE_MEZCLA)
         indicator_defaults = []
         if existing_oxide and existing_oxide['label_value'] == 'SI':
             indicator_defaults.append('OXIDO')
@@ -985,9 +1004,9 @@ def main():
                     if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
                         save_label(record, LABEL_TYPE_BLIND_SUBTYPE, st.session_state[skey],
                                   confidence, None, labeled_by)
-                    save_label(record, LABEL_TYPE_OXIDE,
+                    save_label(record, LABEL_TYPE_BLIND_OXIDE,
                               'SI' if 'OXIDO' in flags else 'NO', confidence, None, labeled_by)
-                    save_label(record, LABEL_TYPE_MEZCLA,
+                    save_label(record, LABEL_TYPE_BLIND_MEZCLA,
                               'SI' if 'MEZCLA' in flags else 'NO', confidence, None, labeled_by)
                     load_labels.clear()
                     st.session_state.just_saved = (value, f"Pattern #{record['presentation_order']}")

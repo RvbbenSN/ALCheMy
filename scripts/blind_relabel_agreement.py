@@ -157,6 +157,12 @@ def compute_agreement(blind_set_payload, db_labels):
         }
 
     df_pairs = pd.DataFrame(pairs)
+    # MEZCLA is retired and cannot be chosen blind; training counts it as
+    # CRISTALINO, so agreement is measured on that same 3-class scale. The raw
+    # value is kept in 'original_raw' for the record.
+    df_pairs['original_raw'] = df_pairs['original']
+    df_pairs['original'] = df_pairs['original'].replace({'MEZCLA': 'CRISTALINO'})
+    df_pairs['match'] = df_pairs['original'] == df_pairs['blind']
     y_orig = df_pairs['original'].tolist()
     y_blind = df_pairs['blind'].tolist()
 
