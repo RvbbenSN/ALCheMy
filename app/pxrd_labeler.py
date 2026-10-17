@@ -133,14 +133,32 @@ from dotenv import load_dotenv
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(APP_DIR)
 sys.path.insert(0, os.path.join(REPO_ROOT, 'src'))
-load_dotenv(os.path.join(REPO_ROOT, '.env'))
 
-# The four independent label_type values written to pxrd_labels. See the
-# module docstring for why these are separate rows instead of one category.
-LABEL_TYPE_MAIN    = 'crystallinity_class'
-LABEL_TYPE_SUBTYPE = 'incipient_subtype'
-LABEL_TYPE_OXIDE   = 'oxide_flag'
-LABEL_TYPE_MEZCLA  = 'multiphase_suspected'
+# Load .env: check local worktree first, then fall back to the main project repository
+for env_path in [
+    os.path.join(REPO_ROOT, '.env'),
+    os.path.join(os.path.dirname(REPO_ROOT), 'ALCheMy', '.env'),
+    r'C:\Users\rubbe\Documents\ALCheMy\.env',
+]:
+    if os.path.isfile(env_path):
+        load_dotenv(env_path)
+        break
+
+# The label_type values written to pxrd_labels. See the module docstring
+# for why these are separate rows instead of one category.
+LABEL_TYPE_MAIN          = 'crystallinity_class'
+LABEL_TYPE_SUBTYPE       = 'incipient_subtype'
+LABEL_TYPE_OXIDE         = 'oxide_flag'
+LABEL_TYPE_MEZCLA        = 'multiphase_suspected'
+# Task T8: blind relabeling and adjudication label types
+LABEL_TYPE_BLIND_MAIN    = 'crystallinity_class_blind'
+LABEL_TYPE_BLIND_SUBTYPE = 'incipient_subtype_blind'
+LABEL_TYPE_PRE_BLIND     = 'crystallinity_class_pre_blind'
+
+MODE_NORMAL       = 'Normal'
+MODE_BLIND        = 'Blind relabeling (150)'
+MODE_ADJUDICATION = 'Adjudication (discrepancies)'
+
 
 # Mandatory: degree of crystalline order. (DB code, on-screen caption, help
 # text). The DB code (first element) is never translated - ~1,150 rows
@@ -220,7 +238,7 @@ def get_connection():
     conn = psycopg2.connect(
         host=os.getenv('POSTGRES_HOST', 'localhost'),
         port=int(os.getenv('POSTGRES_PORT', 5432)),
-        dbname=os.getenv('POSTGRES_DB', 'alchemy_db'),
+        dbname=os.getenv('ALCHEMY_DB_NAME', os.getenv('POSTGRES_DB', 'alchemy_db')),
         user=os.getenv('POSTGRES_USER'),
         password=os.getenv('POSTGRES_PASSWORD'),
     )
@@ -250,6 +268,20 @@ def _run(sql, params=None, fetch='all'):
             if attempt == 2:
                 raise
             get_connection.clear()      # drop the dead connection, reopen next loop
+    return None
+
+
+@st.cache_data(ttl=60)
+def load_blind_set():
+    """Loads the 150-sample blind set from JSON."""
+    paths = [
+        r'C:\Users\rubbe\Documents\ALCheMy\_lab\methodology\revisions\datos_revision_2026-10-17\blind_set.json',
+        os.path.join(REPO_ROOT, '_lab', 'methodology', 'revisions', 'datos_revision_2026-10-17', 'blind_set.json'),
+    ]
+    for p in paths:
+        if os.path.isfile(p):
+            with open(p, 'r', encoding='utf-8') as f:
+                return json.load(f)
     return None
 
 
@@ -287,7 +319,7 @@ def load_queue():
 @st.cache_data(ttl=60)
 def load_labels():
     """
-    All existing labels for all four label_types, nested by file_hash then
+    All existing labels for all label_types, nested by file_hash then
     label_type: labels[file_hash]['crystallinity_class'] -> row dict, etc.
 
     A pattern only counts as "labelled" (for progress and the pending filter)
@@ -295,13 +327,14 @@ def load_labels():
     refinements, never the thing that marks a pattern done.
     """
     rows = _run("""
-        SELECT file_hash, label_type, label_value, confidence, notes
+        SELECT file_hash, label_type, label_value, confidence, notes, labeled_by, labeled_at
         FROM pxrd_labels;
     """)
     labels = {}
     for r in rows:
         labels.setdefault(r['file_hash'], {})[r['label_type']] = dict(r)
     return labels
+
 
 
 @st.cache_data(max_entries=64, show_spinner=False)
@@ -437,20 +470,25 @@ def go_back(n):
     st.session_state.idx = clamp(st.session_state.idx - 1, n)
 
 
-def comment_key(record):
-    return f"comment_{record['file_hash']}"
+def comment_key(record, mode_prefix=''):
+    p = f"{mode_prefix}_" if mode_prefix else ""
+    return f"comment_{p}{record['file_hash']}"
 
 
-def main_key(record):
-    return f"main_{record['file_hash']}"
+def main_key(record, mode_prefix=''):
+    p = f"{mode_prefix}_" if mode_prefix else ""
+    return f"main_{p}{record['file_hash']}"
 
 
-def subtype_key(record):
-    return f"subtype_{record['file_hash']}"
+def subtype_key(record, mode_prefix=''):
+    p = f"{mode_prefix}_" if mode_prefix else ""
+    return f"subtype_{p}{record['file_hash']}"
 
 
-def indicators_key(record):
-    return f"indicators_{record['file_hash']}"
+def indicators_key(record, mode_prefix=''):
+    p = f"{mode_prefix}_" if mode_prefix else ""
+    return f"indicators_{p}{record['file_hash']}"
+
 
 
 # ==========================================================================
@@ -479,115 +517,265 @@ def main():
 
     labels = load_labels()
 
+    # ---- mode selection --------------------------------------------------
+    # Supports ?mode=blind or ?mode=adjudication query parameters
+    qp_mode = (st.query_params.get('mode') or '').lower()
+    default_mode_idx = 0
+    if qp_mode in ('blind', 'ciego'):
+        default_mode_idx = 1
+    elif qp_mode in ('adjudication', 'adjudicacion'):
+        default_mode_idx = 2
+
     # ---- sidebar ---------------------------------------------------------
     with st.sidebar:
+        st.header('Mode')
+        mode = st.radio(
+            'App Mode',
+            [MODE_NORMAL, MODE_BLIND, MODE_ADJUDICATION],
+            index=default_mode_idx,
+            help='Normal: standard labeling. Blind: 150 stratified samples without prior info. Adjudication: review discrepancies and choose final label.',
+        )
+
+        st.divider()
         st.header('Session')
         labeled_by = st.text_input('Labeled by', value=os.getenv('ALCHEMY_LABELER', 'Rubén S.N.'))
 
         st.divider()
-        st.header('What to show')
-        only_pending = st.checkbox('Only unlabelled', value=True,
-                                   help='Turn off to review what is already labelled.')
-        metals = ['(all)'] + sorted(queue['metal_center'].dropna().unique().tolist())
-        linkers = ['(all)'] + sorted(queue['linker'].dropna().unique().tolist())
-        metal_filter = st.selectbox('Metal', metals)
-        linker_filter = st.selectbox('Linker', linkers)
+        if mode == MODE_NORMAL:
+            st.header('What to show')
+            only_pending = st.checkbox('Only unlabelled', value=True,
+                                       help='Turn off to review what is already labelled.')
+            metals = ['(all)'] + sorted(queue['metal_center'].dropna().unique().tolist())
+            linkers = ['(all)'] + sorted(queue['linker'].dropna().unique().tolist())
+            metal_filter = st.selectbox('Metal', metals)
+            linker_filter = st.selectbox('Linker', linkers)
 
-        st.divider()
-        st.header('Review labelled patterns')
-        st.caption('Useful for filling in oxide/mixture on what you already classified, '
-                   'or for revisiting legacy MEZCLA rows (turn off "Only unlabelled").')
-        review_options = ['(all)'] + [c[1] for c in CATEGORIES] + ['MEZCLA (legacy)']
-        review_category = st.selectbox('Only this main category', review_options)
-        review_text = st.text_input('Search comment text', placeholder='e.g. oxide')
+            st.divider()
+            st.header('Review labelled patterns')
+            st.caption('Useful for filling in oxide/mixture on what you already classified, '
+                       'or for revisiting legacy MEZCLA rows (turn off "Only unlabelled").')
+            review_options = ['(all)'] + [c[1] for c in CATEGORIES] + ['MEZCLA (legacy)']
+            review_category = st.selectbox('Only this main category', review_options)
+            review_text = st.text_input('Search comment text', placeholder='e.g. oxide')
 
-        st.divider()
-        show_analysis = st.checkbox('Show automatic analysis', value=False)
-        st.caption('⚠️ Seeing the computed Xc while labelling makes your labels dependent on '
-                   'the algorithm they are meant to validate. Use only for doubtful cases.')
+            st.divider()
+            show_analysis = st.checkbox('Show automatic analysis', value=False)
+            st.caption('⚠️ Seeing the computed Xc while labelling makes your labels dependent on '
+                       'the algorithm they are meant to validate. Use only for doubtful cases.')
+        elif mode == MODE_BLIND:
+            st.header('Blind Mode Settings')
+            st.caption('Double-blind self-agreement protocol (150 samples). Metadata, file names, '
+                       'sample codes, and algorithm hints are hidden.')
+            only_pending = st.checkbox('Only unlabelled (blind)', value=True,
+                                       help='Turn off to review blind labels already submitted.')
+            show_analysis = False
+        else:  # MODE_ADJUDICATION
+            st.header('Adjudication Settings')
+            st.caption('Review discrepancies between original labels and blind relabels to select '
+                       'the authoritative final ground truth.')
+            only_pending = st.checkbox('Only pending adjudication', value=True,
+                                       help='Turn off to review already adjudicated patterns.')
+            show_analysis = st.checkbox('Show automatic analysis', value=False,
+                                        help='Optional deterministic descriptor overlay for difficult cases.')
 
     # ---- build the working subset ---------------------------------------
-    labeled_hashes = {h for h, d in labels.items() if LABEL_TYPE_MAIN in d}
-    main_code_by_caption = {c[1]: c[0] for c in CATEGORIES}
+    if mode == MODE_NORMAL:
+        labeled_hashes = {h for h, d in labels.items() if LABEL_TYPE_MAIN in d}
+        main_code_by_caption = {c[1]: c[0] for c in CATEGORIES}
 
-    view = queue
-    if metal_filter != '(all)':
-        view = view[view['metal_center'] == metal_filter]
-    if linker_filter != '(all)':
-        view = view[view['linker'] == linker_filter]
-    if only_pending:
-        view = view[~view['file_hash'].isin(labeled_hashes)]
-    if review_category != '(all)':
-        if review_category == 'MEZCLA (legacy)':
-            wanted = {h for h, d in labels.items()
-                     if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == 'MEZCLA'}
-        else:
-            code = main_code_by_caption[review_category]
-            wanted = {h for h, d in labels.items()
-                     if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == code}
-        view = view[view['file_hash'].isin(wanted)]
-    if review_text:
-        needle = review_text.lower()
-        wanted_text = {h for h, d in labels.items()
-                      if needle in (d.get(LABEL_TYPE_MAIN, {}).get('notes') or '').lower()}
-        view = view[view['file_hash'].isin(wanted_text)]
-    view = view.reset_index(drop=True)
+        view = queue
+        if metal_filter != '(all)':
+            view = view[view['metal_center'] == metal_filter]
+        if linker_filter != '(all)':
+            view = view[view['linker'] == linker_filter]
+        if only_pending:
+            view = view[~view['file_hash'].isin(labeled_hashes)]
+        if review_category != '(all)':
+            if review_category == 'MEZCLA (legacy)':
+                wanted = {h for h, d in labels.items()
+                         if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == 'MEZCLA'}
+            else:
+                code = main_code_by_caption[review_category]
+                wanted = {h for h, d in labels.items()
+                         if d.get(LABEL_TYPE_MAIN, {}).get('label_value') == code}
+            view = view[view['file_hash'].isin(wanted)]
+        if review_text:
+            needle = review_text.lower()
+            wanted_text = {h for h, d in labels.items()
+                          if needle in (d.get(LABEL_TYPE_MAIN, {}).get('notes') or '').lower()}
+            view = view[view['file_hash'].isin(wanted_text)]
+        view = view.reset_index(drop=True)
 
-    if view.empty:
-        st.balloons()
-        st.success('Nothing pending with these filters. Turn off "Only unlabelled" to review.')
-        st.stop()
+        if view.empty:
+            st.balloons()
+            st.success('Nothing pending with these filters. Turn off "Only unlabelled" to review.')
+            st.stop()
 
-    # record is computed here, before the header, so the metal/linker/tally
-    # row can live in the same tight header block as the title and progress
-    # line instead of its own section further down.
+    elif mode == MODE_BLIND:
+        blind_payload = load_blind_set()
+        if not blind_payload:
+            st.error('Blind set file not found (`blind_set.json`). Run `python scripts/build_blind_relabel_set.py` first.')
+            st.stop()
+
+        blind_samples = blind_payload['samples']
+        order_map = {s['file_hash']: s['presentation_order'] for s in blind_samples}
+        blind_hashes = set(order_map.keys())
+
+        blind_done_hashes = {h for h in blind_hashes if LABEL_TYPE_BLIND_MAIN in labels.get(h, {})}
+        total_blind = len(blind_hashes)
+        done_blind = len(blind_done_hashes)
+
+        view = queue[queue['file_hash'].isin(blind_hashes)].copy()
+        view['presentation_order'] = view['file_hash'].map(order_map)
+        view = view.sort_values('presentation_order').reset_index(drop=True)
+
+        if only_pending:
+            view = view[~view['file_hash'].isin(blind_done_hashes)].reset_index(drop=True)
+
+        if view.empty:
+            st.balloons()
+            st.success('🎉 All 150 blind labels completed! Run `python scripts/blind_relabel_agreement.py` to evaluate agreement.')
+            st.stop()
+
+    else:  # MODE_ADJUDICATION
+        blind_payload = load_blind_set()
+        if not blind_payload:
+            st.error('Blind set file not found (`blind_set.json`). Run `python scripts/build_blind_relabel_set.py` first.')
+            st.stop()
+
+        blind_samples = blind_payload['samples']
+        orig_by_hash = {s['file_hash']: s for s in blind_samples}
+
+        discrepancy_records = []
+        for h, s in orig_by_hash.items():
+            db_for_hash = labels.get(h, {})
+            blind_entry = db_for_hash.get(LABEL_TYPE_BLIND_MAIN)
+            if not blind_entry or not blind_entry.get('label_value'):
+                continue
+
+            blind_val = blind_entry['label_value']
+            pre_entry = db_for_hash.get(LABEL_TYPE_PRE_BLIND)
+            main_entry = db_for_hash.get(LABEL_TYPE_MAIN)
+
+            if pre_entry:
+                orig_val = pre_entry['label_value']
+                orig_conf = pre_entry.get('confidence', 'alta')
+                orig_notes = pre_entry.get('notes')
+                orig_by = pre_entry.get('labeled_by')
+                is_adjudicated = True
+            else:
+                orig_val = main_entry['label_value'] if main_entry else s['original_crystallinity_class']
+                orig_conf = main_entry.get('confidence', 'alta') if main_entry else s.get('original_confidence', 'alta')
+                orig_notes = main_entry.get('notes') if main_entry else s.get('original_notes')
+                orig_by = main_entry.get('labeled_by') if main_entry else s.get('original_labeled_by')
+                is_adjudicated = False
+
+            if orig_val != blind_val:
+                discrepancy_records.append({
+                    'file_hash': h,
+                    'sample_code': s['sample_code'],
+                    'presentation_order': s['presentation_order'],
+                    'orig_val': orig_val,
+                    'orig_conf': orig_conf,
+                    'orig_notes': orig_notes,
+                    'orig_by': orig_by,
+                    'blind_val': blind_val,
+                    'blind_conf': blind_entry.get('confidence', 'alta'),
+                    'blind_notes': blind_entry.get('notes'),
+                    'blind_by': blind_entry.get('labeled_by'),
+                    'is_adjudicated': is_adjudicated,
+                })
+
+        total_discrepancies = len(discrepancy_records)
+        adjudicated_count = sum(1 for d in discrepancy_records if d['is_adjudicated'])
+
+        if total_discrepancies == 0:
+            st.info('No discrepancies detected between original and blind labels yet. '
+                    '(Complete blind labeling first in Blind mode).')
+            st.stop()
+
+        disc_hashes = {d['file_hash']: d for d in discrepancy_records}
+        view = queue[queue['file_hash'].isin(disc_hashes.keys())].copy()
+        view['presentation_order'] = view['file_hash'].map(lambda h: disc_hashes[h]['presentation_order'])
+        view['is_adjudicated'] = view['file_hash'].map(lambda h: disc_hashes[h]['is_adjudicated'])
+        view = view.sort_values('presentation_order').reset_index(drop=True)
+
+        if only_pending:
+            view = view[~view['is_adjudicated']].reset_index(drop=True)
+
+        if view.empty:
+            st.balloons()
+            st.success(f'🎉 All {total_discrepancies} discrepancies have been adjudicated!')
+            st.stop()
+
     st.session_state.idx = clamp(st.session_state.idx, len(view))
     record = view.iloc[st.session_state.idx].to_dict()
     existing = labels.get(record['file_hash'], {})
     existing_main = existing.get(LABEL_TYPE_MAIN)
+    existing_blind = existing.get(LABEL_TYPE_BLIND_MAIN)
+    existing_pre = existing.get(LABEL_TYPE_PRE_BLIND)
 
     # ---- header: title, progress, metadata - grouped and kept tight ------
-    # Scoped via key= instead of a blanket stVerticalBlock rule: a global gap
-    # override caused captions to overlap the element above them earlier in
-    # this pass (see the CSS comment above), because some Streamlit elements
-    # already carry their own offset tuned to the *default* spacing. Scoping
-    # the tighter gap to just this container's own block sidesteps that.
     with st.container(key='header_block'):
-        st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
-                   'line-height:1.4;">🔬 PXRD Labeling</h3>',
-                    unsafe_allow_html=True)
-
-        # A single compact horizontal line instead of 4 stacked st.metric
-        # blocks: on a phone, 4 metrics stack to fill most of the screen
-        # before you even see the plot. This stays one line regardless of
-        # screen width.
-        total, done = len(queue), len(labeled_hashes)
-        pct = 100 * done / total if total else 0.0
-        st.markdown(f"""
-        <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
-                    font-size:0.82em; color:var(--text-color, inherit);
-                    padding:0.35em 0; white-space:nowrap;">
-            <span><b>{done:,}</b>/{total:,} labelled</span>
-            <span>·</span>
-            <span><b>{pct:.1f}%</b> progress</span>
-            <span>·</span>
-            <span><b>{len(view):,}</b> in view</span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(done / total if total else 0.0)
+        if mode == MODE_NORMAL:
+            st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
+                       'line-height:1.4;">🔬 PXRD Labeling</h3>',
+                        unsafe_allow_html=True)
+            total, done = len(queue), len(labeled_hashes)
+            pct = 100 * done / total if total else 0.0
+            st.markdown(f"""
+            <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
+                        font-size:0.82em; color:var(--text-color, inherit);
+                        padding:0.35em 0; white-space:nowrap;">
+                <span><b>{done:,}</b>/{total:,} labelled</span>
+                <span>·</span>
+                <span><b>{pct:.1f}%</b> progress</span>
+                <span>·</span>
+                <span><b>{len(view):,}</b> in view</span>
+            </div>
+            """, unsafe_allow_html=True)
+            st.progress(done / total if total else 0.0)
+        elif mode == MODE_BLIND:
+            st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
+                       'line-height:1.4;">🔬 PXRD Labeling · Blind Mode</h3>',
+                        unsafe_allow_html=True)
+            pct = 100 * done_blind / total_blind if total_blind else 0.0
+            st.markdown(f"""
+            <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
+                        font-size:0.82em; color:var(--text-color, inherit);
+                        padding:0.35em 0; white-space:nowrap;">
+                <span><b>{done_blind:,}</b>/{total_blind:,} blind labelled</span>
+                <span>·</span>
+                <span><b>{pct:.1f}%</b> progress</span>
+                <span>·</span>
+                <span><b>{len(view):,}</b> in view</span>
+            </div>
+            """, unsafe_allow_html=True)
+            st.progress(done_blind / total_blind if total_blind else 0.0)
+        else:  # MODE_ADJUDICATION
+            st.markdown('<h3 style="margin:0 0 0.15em 0; padding-top:0.15em; '
+                       'line-height:1.4;">⚖️ PXRD Labeling · Adjudication Mode</h3>',
+                        unsafe_allow_html=True)
+            pct = 100 * adjudicated_count / total_discrepancies if total_discrepancies else 0.0
+            st.markdown(f"""
+            <div style="display:flex; gap:0.9em; flex-wrap:nowrap; overflow-x:auto;
+                        font-size:0.82em; color:var(--text-color, inherit);
+                        padding:0.35em 0; white-space:nowrap;">
+                <span><b>{adjudicated_count:,}</b>/{total_discrepancies:,} adjudicated</span>
+                <span>·</span>
+                <span><b>{pct:.1f}%</b> progress</span>
+                <span>·</span>
+                <span><b>{len(view):,}</b> in view</span>
+            </div>
+            """, unsafe_allow_html=True)
+            st.progress(adjudicated_count / total_discrepancies if total_discrepancies else 0.0)
 
         if st.session_state.just_saved:
-            value, code = st.session_state.just_saved
+            value, code_or_num = st.session_state.just_saved
             caption = dict((c[0], c[1]) for c in CATEGORIES).get(value, value)
-            # st.toast is a small floating notification that auto-dismisses
-            # and never occupies layout space - unlike st.success, which was
-            # an always-on banner pushing everything else down the screen.
-            st.toast(f'{code} → {caption}', icon='✅')
+            st.toast(f'{code_or_num} → {caption}', icon='✅')
             st.session_state.just_saved = None
 
-        # Metal/linker/conditions on one line, with the tally and file-info
-        # popovers riding the same row on the right - not their own section
-        # elsewhere, to actually use that horizontal space.
         extra = []
         if pd.notna(record.get('temp_target_c')):
             extra.append(f"{record['temp_target_c']:.0f}°C")
@@ -596,46 +784,78 @@ def main():
         extra_txt = (' · ' + ' · '.join(extra)) if extra else ''
 
         with st.container(horizontal=True, horizontal_alignment='distribute'):
-            st.caption(f"**{record['metal_center']}** | **{record['linker']}**{extra_txt} · "
-                      f"{st.session_state.idx + 1}/{len(view)}")
-            with st.container(horizontal=True):
-                if labels:
-                    with st.popover('📊', help='Tally of what has been labelled so far'):
-                        main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
-                                    if LABEL_TYPE_MAIN in d]
-                        tally = pd.Series(main_seen).value_counts()
-                        for value, caption, _h in CATEGORIES:
-                            st.caption(f"{caption}: **{int(tally.get(value, 0))}**")
-                        if tally.get('MEZCLA', 0):
-                            st.caption(f"MEZCLA (legacy): **{int(tally.get('MEZCLA', 0))}**")
-                with st.popover('📄', help='File name and path'):
-                    st.caption(f"`{record['file_name']}`")
-                    st.caption(f"`{record['raw_file_path']}`")
-                    if pd.notna(record.get('synthesis_date')):
-                        st.caption(f"Synthesis: {record['synthesis_date']}")
+            if mode == MODE_BLIND:
+                st.caption(f"**Blind Pattern #{record['presentation_order']}** · "
+                          f"Sample {st.session_state.idx + 1}/{len(view)}")
+                with st.container(horizontal=True):
+                    if blind_done_hashes:
+                        with st.popover('📊', help='Blind relabeling tally'):
+                            blind_seen = [labels[h][LABEL_TYPE_BLIND_MAIN]['label_value']
+                                         for h in blind_done_hashes if h in labels and LABEL_TYPE_BLIND_MAIN in labels[h]]
+                            tally = pd.Series(blind_seen).value_counts()
+                            for val, cap, _h in CATEGORIES:
+                                st.caption(f"{cap}: **{int(tally.get(val, 0))}**")
+            elif mode == MODE_ADJUDICATION:
+                st.caption(f"**{record['sample_code']}** · {record['metal_center']} | {record['linker']}{extra_txt} · "
+                          f"Discrepancy {st.session_state.idx + 1}/{len(view)}")
+                with st.container(horizontal=True):
+                    with st.popover('📄', help='File name and path'):
+                        st.caption(f"`{record['file_name']}`")
+                        st.caption(f"`{record['raw_file_path']}`")
+            else:
+                st.caption(f"**{record['metal_center']}** | **{record['linker']}**{extra_txt} · "
+                          f"{st.session_state.idx + 1}/{len(view)}")
+                with st.container(horizontal=True):
+                    if labels:
+                        with st.popover('📊', help='Tally of what has been labelled so far'):
+                            main_seen = [d[LABEL_TYPE_MAIN]['label_value'] for d in labels.values()
+                                        if LABEL_TYPE_MAIN in d]
+                            tally = pd.Series(main_seen).value_counts()
+                            for val, cap, _h in CATEGORIES:
+                                st.caption(f"{cap}: **{int(tally.get(val, 0))}**")
+                            if tally.get('MEZCLA', 0):
+                                st.caption(f"MEZCLA (legacy): **{int(tally.get('MEZCLA', 0))}**")
+                    with st.popover('📄', help='File name and path'):
+                        st.caption(f"`{record['file_name']}`")
+                        st.caption(f"`{record['raw_file_path']}`")
+                        if pd.notna(record.get('synthesis_date')):
+                            st.caption(f"Synthesis: {record['synthesis_date']}")
 
     st.markdown('<div id="patron-anchor"></div>', unsafe_allow_html=True)
 
-    # ---- main layout: plot on the left, the three judgement groups to its
-    # right (main | incipient subtype | oxide+mixture) so nothing needs a
-    # scroll - that was the whole point of the one-click design.
+    # ---- main layout: plot on the left, the three judgement groups to its right
     plot_col, main_col, subtype_col, flags_col = st.columns([3, 1, 1, 1])
 
     with plot_col:
-        if existing:
-            parts = []
-            if LABEL_TYPE_MAIN in existing:
-                e = existing[LABEL_TYPE_MAIN]
-                parts.append(f"{e['label_value']} ({e['confidence']})")
-            if LABEL_TYPE_SUBTYPE in existing:
-                parts.append(existing[LABEL_TYPE_SUBTYPE]['label_value'])
-            if LABEL_TYPE_OXIDE in existing and existing[LABEL_TYPE_OXIDE]['label_value'] == 'SI':
-                parts.append('oxide')
-            if LABEL_TYPE_MEZCLA in existing and existing[LABEL_TYPE_MEZCLA]['label_value'] == 'SI':
-                parts.append('mixture')
-            note = existing_main.get('notes') if existing_main else None
-            st.caption('ℹ️ Already labelled: ' + ' · '.join(parts)
-                      + (f' · note: _{note}_' if note else ''))
+        if mode == MODE_NORMAL:
+            if existing:
+                parts = []
+                if LABEL_TYPE_MAIN in existing:
+                    e = existing[LABEL_TYPE_MAIN]
+                    parts.append(f"{e['label_value']} ({e['confidence']})")
+                if LABEL_TYPE_SUBTYPE in existing:
+                    parts.append(existing[LABEL_TYPE_SUBTYPE]['label_value'])
+                if LABEL_TYPE_OXIDE in existing and existing[LABEL_TYPE_OXIDE]['label_value'] == 'SI':
+                    parts.append('oxide')
+                if LABEL_TYPE_MEZCLA in existing and existing[LABEL_TYPE_MEZCLA]['label_value'] == 'SI':
+                    parts.append('mixture')
+                note = existing_main.get('notes') if existing_main else None
+                st.caption('ℹ️ Already labelled: ' + ' · '.join(parts)
+                          + (f' · note: _{note}_' if note else ''))
+        elif mode == MODE_BLIND:
+            if existing_blind:
+                st.caption(f"ℹ️ Blind label saved: **{existing_blind['label_value']}** "
+                           f"({existing_blind['confidence']})")
+        else:  # MODE_ADJUDICATION
+            disc_info = disc_hashes[record['file_hash']]
+            adj_status = " *(Already Adjudicated)*" if disc_info['is_adjudicated'] else ""
+            st.warning(
+                f"**Discrepancy to adjudicate{adj_status}:**  \n"
+                f"• **Original:** `{disc_info['orig_val']}` ({disc_info['orig_conf']}) "
+                f"— *{disc_info['orig_by'] or 'Rubén'}*  \n"
+                f"• **Blind:** `{disc_info['blind_val']}` ({disc_info['blind_conf']}) "
+                f"— *{disc_info['blind_by'] or 'Rubén'}*"
+            )
 
         # ---- the diffractogram --------------------------------------------
         try:
@@ -648,22 +868,22 @@ def main():
             st.warning('This measurement has no usable curve. You can mark it as '
                        'No sample or skip it.')
         else:
-            fig = plot_pattern(x, y, record['sample_code'], show_analysis)
+            plot_title = f"Pattern #{record['presentation_order']}" if mode == MODE_BLIND else record['sample_code']
+            plot_show_analysis = False if mode == MODE_BLIND else show_analysis
+            fig = plot_pattern(x, y, plot_title, plot_show_analysis)
             st.pyplot(fig, width='stretch')
-            plt.close(fig)      # matplotlib figures leak across re-runs if not closed
+            plt.close(fig)
 
-    # Widget keys, all scoped to this pattern's file_hash - see the note
-    # above `advance` for why fixed keys would break navigation.
-    mkey, skey = main_key(record), subtype_key(record)
-    ikey, ckey = indicators_key(record), comment_key(record)
+    # Widget keys, scoped to this pattern's file_hash and active mode
+    mode_prefix = 'norm' if mode == MODE_NORMAL else ('blind' if mode == MODE_BLIND else 'adj')
+    mkey, skey = main_key(record, mode_prefix), subtype_key(record, mode_prefix)
+    ikey, ckey = indicators_key(record, mode_prefix), comment_key(record, mode_prefix)
 
-    # Pills instead of radio/checkbox lists: a pill group lays its options
-    # out horizontally and wraps only if it must, so each judgement group
-    # collapses to one or two short rows instead of one row per option -
-    # that's what actually eliminates the scroll on a phone.
     main_values = [c[0] for c in CATEGORIES]
-    main_default = (existing_main['label_value']
-                    if existing_main and existing_main['label_value'] in main_values else None)
+    if mode == MODE_BLIND:
+        main_default = existing_blind['label_value'] if existing_blind and existing_blind['label_value'] in main_values else None
+    else:
+        main_default = existing_main['label_value'] if existing_main and existing_main['label_value'] in main_values else None
 
     with main_col:
         st.caption('**MAIN** · required')
@@ -674,14 +894,12 @@ def main():
         )
 
     subtype_values = [s[0] for s in INCIPIENT_SUBTYPES]
-    existing_subtype = existing.get(LABEL_TYPE_SUBTYPE)
-    subtype_default = (existing_subtype['label_value']
-                       if existing_subtype and existing_subtype['label_value'] in subtype_values
-                       else None)
+    if mode == MODE_BLIND:
+        existing_sub = existing.get(LABEL_TYPE_BLIND_SUBTYPE)
+    else:
+        existing_sub = existing.get(LABEL_TYPE_SUBTYPE)
+    subtype_default = existing_sub['label_value'] if existing_sub and existing_sub['label_value'] in subtype_values else None
 
-    # Short (1-2 word) captions instead of the full sentence - the full
-    # explanation lives in the tooltip, so the row stays compact without
-    # losing the detail.
     subtype_captions = {s[0]: s[1] for s in INCIPIENT_SUBTYPES}
     subtype_help = '  \n'.join(f"**{s[1]}**: {s[2]}" for s in INCIPIENT_SUBTYPES)
 
@@ -703,7 +921,8 @@ def main():
             indicator_defaults.append('OXIDO')
         if existing_mezcla and existing_mezcla['label_value'] == 'SI':
             indicator_defaults.append('MEZCLA')
-        if existing_main and existing_main.get('confidence') == 'dudosa':
+        target_main_row = existing_blind if mode == MODE_BLIND else existing_main
+        if target_main_row and target_main_row.get('confidence') == 'dudosa':
             indicator_defaults.append('DUDOSA')
         indicator_labels = {
             'OXIDO': 'Oxide', 'MEZCLA': 'Mixture',
@@ -718,27 +937,19 @@ def main():
                  'flags this pattern to revisit later (does not block saving).',
         )
 
-        # Previous/Accept/Skip come right after the pills, ahead of the
-        # comment box - the comment is the one thing you don't need to reach
-        # on every single pattern, so it's the one pushed lowest.
-        #
-        # st.columns wraps to a vertical stack once each column's computed
-        # width drops below its internal minimum - on a phone that happens
-        # even for 3 narrow icon buttons nested inside an already-narrow
-        # column. st.container(horizontal=True) is a plain flexbox row with
-        # no such breakpoint, so these three stay side by side regardless of
-        # screen width.
         with st.container(horizontal=True, horizontal_alignment='distribute'):
             prev_clicked = st.button('←', help='Previous',
                                      disabled=st.session_state.idx == 0, key='btn_prev')
             accept_clicked = st.button('✅', type='primary',
                                        help='Accept and next',
-                                       key=f'accept_{record["file_hash"]}')
+                                       key=f'accept_{mode_prefix}_{record["file_hash"]}')
             skip_clicked = st.button('→', help='Skip', key='btn_skip')
 
+        comment_default = (target_main_row or {}).get('notes') or ''
+        comment_placeholder = 'adjudication rationale...' if mode == MODE_ADJUDICATION else 'optional comment...'
         st.text_input('Comment', key=ckey,
-                      value=(existing_main or {}).get('notes') or '',
-                      placeholder='optional comment...', label_visibility='collapsed')
+                      value=comment_default,
+                      placeholder=comment_placeholder, label_visibility='collapsed')
 
         if prev_clicked:
             go_back(len(view))
@@ -754,22 +965,74 @@ def main():
                 flags = st.session_state.get(ikey) or []
                 confidence = 'dudosa' if 'DUDOSA' in flags else 'alta'
                 notes = st.session_state.get(ckey, '')
-                save_label(record, LABEL_TYPE_MAIN, value, confidence, notes, labeled_by)
-                if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
-                    save_label(record, LABEL_TYPE_SUBTYPE, st.session_state[skey],
-                              confidence, None, labeled_by)
-                save_label(record, LABEL_TYPE_OXIDE,
-                          'SI' if 'OXIDO' in flags else 'NO', confidence, None, labeled_by)
-                save_label(record, LABEL_TYPE_MEZCLA,
-                          'SI' if 'MEZCLA' in flags else 'NO', confidence, None, labeled_by)
-                load_labels.clear()
-                st.session_state.just_saved = (value, record['sample_code'])
-                # With "only pending" on, the labelled row drops out of the view,
-                # so the same index already points at the next pattern. Otherwise
-                # move forward explicitly.
+
+                if mode == MODE_NORMAL:
+                    save_label(record, LABEL_TYPE_MAIN, value, confidence, notes, labeled_by)
+                    if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
+                        save_label(record, LABEL_TYPE_SUBTYPE, st.session_state[skey],
+                                  confidence, None, labeled_by)
+                    save_label(record, LABEL_TYPE_OXIDE,
+                              'SI' if 'OXIDO' in flags else 'NO', confidence, None, labeled_by)
+                    save_label(record, LABEL_TYPE_MEZCLA,
+                              'SI' if 'MEZCLA' in flags else 'NO', confidence, None, labeled_by)
+                    load_labels.clear()
+                    st.session_state.just_saved = (value, record['sample_code'])
+
+                elif mode == MODE_BLIND:
+                    # Blind mode: write exclusively to label_type='crystallinity_class_blind'
+                    # and incipient_subtype_blind. NEVER touch crystallinity_class!
+                    save_label(record, LABEL_TYPE_BLIND_MAIN, value, confidence, notes, labeled_by)
+                    if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
+                        save_label(record, LABEL_TYPE_BLIND_SUBTYPE, st.session_state[skey],
+                                  confidence, None, labeled_by)
+                    save_label(record, LABEL_TYPE_OXIDE,
+                              'SI' if 'OXIDO' in flags else 'NO', confidence, None, labeled_by)
+                    save_label(record, LABEL_TYPE_MEZCLA,
+                              'SI' if 'MEZCLA' in flags else 'NO', confidence, None, labeled_by)
+                    load_labels.clear()
+                    st.session_state.just_saved = (value, f"Pattern #{record['presentation_order']}")
+
+                else:  # MODE_ADJUDICATION
+                    disc_info = disc_hashes[record['file_hash']]
+                    adjudicator_sig = 'Rubén (adjudicación ciega 2026-10)'
+
+                    # 1. Preserve original label in crystallinity_class_pre_blind
+                    save_label(record, LABEL_TYPE_PRE_BLIND,
+                               disc_info['orig_val'], disc_info['orig_conf'],
+                               disc_info['orig_notes'], disc_info['orig_by'] or 'Rubén S.N.')
+
+                    # 2. Update crystallinity_class with adjudicator signature
+                    save_label(record, LABEL_TYPE_MAIN,
+                               value, confidence, notes, adjudicator_sig)
+
+                    if value == 'INCIPIENTE' and st.session_state.get(skey) is not None:
+                        save_label(record, LABEL_TYPE_SUBTYPE, st.session_state[skey],
+                                  confidence, None, adjudicator_sig)
+                    save_label(record, LABEL_TYPE_OXIDE,
+                              'SI' if 'OXIDO' in flags else 'NO', confidence, None, adjudicator_sig)
+                    save_label(record, LABEL_TYPE_MEZCLA,
+                              'SI' if 'MEZCLA' in flags else 'NO', confidence, None, adjudicator_sig)
+
+                    # 3. Insert deterministic audit record into audit_log
+                    _run("""
+                        INSERT INTO audit_log (
+                            agent, action, verdict, cause, result
+                        ) VALUES (%s, %s, %s, %s, %s);
+                    """, (
+                        'ALCheMy-pxrd-adjudication',
+                        'ADJUDICATE_CRYSTALLINITY_LABEL',
+                        'RESOLVED',
+                        f"Blind discrepancy: original={disc_info['orig_val']} vs blind={disc_info['blind_val']}. Adjudicated to {value} by {adjudicator_sig}.",
+                        f"sample_code={record['sample_code']} file_hash={record['file_hash']} final_label={value}"
+                    ), fetch=None)
+
+                    load_labels.clear()
+                    st.session_state.just_saved = (value, record['sample_code'])
+
                 if not only_pending:
                     advance(len(view))
                 st.rerun()
+
 
     # ---- keep the scroll position pinned to the pattern, not the page ----
     # Every widget change reruns the whole script, and on a phone that made
