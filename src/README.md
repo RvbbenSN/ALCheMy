@@ -11,6 +11,33 @@ describing what it does, why it exists, and how it can be reused. See
 
 ---
 
+## Synthesis data ingestion & thermal ramps (Excel → synthesis_experiments)
+
+### `thermal_ramp_parser.py`
+Parses free-text thermal ramp profiles from laboratory notebook synthesis records
+(e.g., `'r.t.(8h)-150ºC(48h)-30ºC(8h)'`, `'150ºC(48h)-r.t.'`, `'r.t.(1h)-120ºC(12h)-r.t.(-)'`).
+Extracted as a clean, testable module from cell 8 of `01_Excel_Ingestion_and_Transformation.ipynb`
+during the 2026-10-17 deep review (findings A1, A2; Rubén's decision R3).
+
+**Problem solved:**
+1. *Parenthesis-aware hyphen splitting:* Delimiter `-` is split strictly outside parentheses,
+   preventing strings like `'r.t.(1h)-120ºC(12h)-r.t.(-)'` from being broken into 4 parts and
+   misparsed as 25 °C / 1 h (which corrupted 24 HTS syntheses RS1502–RS1525 in the database).
+2. *Elimination of spurious default speeds:* When heating or cooling times were not annotated,
+   the historical parser returned 0.0 °C/min or assumed 10 minutes (12.5 °C/min). The revised
+   parser returns `np.nan` (SQL `NULL`) unless explicit durations are known, preventing machine
+   learning models from learning laboratory notation conventions rather than chemistry.
+3. *Explicit cooling mode classification:* Introduces `cooling_mode` (`'programmed'`, `'fan_asap'`
+   for 10 min microwave cooling, `'free_oven_off'` for natural cooling to room temperature with
+   the oven switched off, or `None`) and `ramp_profile_known` (`True` only when both heating
+   and cooling durations are explicitly known).
+
+**Reuse:** Call `parse_full_thermal_ramp_c_min(s)` passing a ramp string (or Series via `.apply()`),
+or use helper functions `split_ramp_stages(s)`, `parse_time_unit(t_str)`, and `parse_temp_value(tp_str)`
+directly. Tested across all 77 unique synthesis ramp strings in `_lab/scratch/review/test_thermal_ramp.py`.
+
+---
+
 ## Characterization ingestion (raw instrument files → PostgreSQL)
 
 ### `characterization_parser.py`
