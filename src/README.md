@@ -36,6 +36,23 @@ during the 2026-10-17 deep review (findings A1, A2; Rubén's decision R3).
 or use helper functions `split_ramp_stages(s)`, `parse_time_unit(t_str)`, and `parse_temp_value(tp_str)`
 directly. Tested across all 77 unique synthesis ramp strings in `_lab/scratch/review/test_thermal_ramp.py`.
 
+### `fix_thermal_ramps_2026_10.py`
+One-off correction of the live `synthesis_experiments` table with the parser above (applied
+2026-10-18, 788 rows changed, backup `alchemy_20261018_134420`).
+
+**Problem solved:** the first proposal guessed which rows were wrong from the stored value
+(`cooling_rate = 12.5`). A dry run showed it would have marked 210 syntheses as "programmed"
+with invented rates. The only way to know whether a time was written is to read the original
+string, so this script re-reads Excel column 30 (`Ti (ti) - T (t) - Tf (tf)`), matches codes
+with the same disambiguation as notebook 01 (`desambiguar` from `fix_volume_units_2026_09.py`),
+and rewrites the 8 ramp columns plus the new `cooling_mode` and `ramp_profile_known`. Rows
+outside the Excel (n8n placeholders) and `UNK` strings are left untouched. It also adds the two
+columns to `data_dictionary` and drops the "(Default: 0.0)" wording from the rate descriptions.
+
+**Reuse:** `python src/fix_thermal_ramps_2026_10.py` is a dry run (everything inside one
+transaction, rolled back, with the change report and `_lab/scratch/review/rampas_cambios.csv`);
+`--apply` commits it and writes one `audit_log` row. Idempotent: running it again changes nothing.
+
 ---
 
 ## Characterization ingestion (raw instrument files → PostgreSQL)
