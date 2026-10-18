@@ -1760,3 +1760,39 @@ los comandos de GitHub pero no los ejecuta: publicar es una decisión, no un efe
 
 Verificado de punta a punta: 252 ficheros, 1 commit, sin rastro de `_lab/`, `data/` ni `.env`,
 y el comprobador diciendo "Limpio: se puede publicar" sobre la copia.
+
+---
+
+## PXRD blind relabeling and reliability measurement (Revision 2026-10, Task T8)
+
+### `scripts/build_blind_relabel_set.py`
+
+Generates a fixed, stratified sample of 150 PXRD diffractograms for blind relabeling without touching the database.
+
+**What it does.** Queries measurements with valid curves (`>100` raw data points) and existing human labels (`AMORFO`, `INCIPIENTE`, `CRISTALINO`, `MEZCLA`). Samples 150 patterns proportionally to class sizes while enforcing a strict minimum quota of 30 per class (or `min(N_k, 30)` for scarce classes like legacy `MEZCLA` with 16 patterns). Uses a fixed pseudorandom seed (default `20261017`) and shuffles the presentation order deterministically. The resulting dataset is exported to `_lab/methodology/revisions/datos_revision_2026-10-17/blind_set.json`.
+
+```bash
+python scripts/build_blind_relabel_set.py
+python scripts/build_blind_relabel_set.py --allocation surplus
+```
+
+**Why it exists.** Decision R4 / Finding M7: Measuring expert self-agreement establishes the empirical upper bound of supervised model performance (especially for the ambiguous `INCIPIENTE` class).
+
+### `scripts/blind_relabel_agreement.py`
+
+Calculates self-agreement statistics between original labels and blind relabels.
+
+**What it does.** Evaluates:
+1. Overall observed accuracy and unweighted Cohen's Kappa.
+2. Per-class binary Cohen's Kappa (One-vs-Rest) to diagnose class-specific reliability.
+3. Full confusion matrix comparing original vs blind classes.
+4. Linear weighted Cohen's Kappa reflecting the ordinal degree of crystalline order (`AMORFO < INCIPIENTE < CRISTALINO`).
+5. Discrepancy inventory identifying candidate patterns for expert adjudication.
+
+```bash
+python scripts/blind_relabel_agreement.py
+python scripts/blind_relabel_agreement.py --db-name alchemy_review
+```
+
+**Why it exists.** Enables transparent monitoring of agreement throughout the labeling session, and serves as input for the adjudication phase in `app/pxrd_labeler.py`.
+

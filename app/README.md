@@ -70,10 +70,21 @@ antes por qué está así.**
   del fichero no cambia, así que las etiquetas sobreviven — y son lo único del proyecto
   que **no se puede reconstruir de ningún fichero**.
 
+**Modos de operación (Revisión 2026-10, Tarea T8):**
+Además del modo estándar, la aplicación cuenta con un selector en la barra lateral o mediante parámetro URL:
+
+1. **Modo Normal (`?mode=normal`):** flujo de trabajo histórico con filtros por metal, ligando, comentarios y estado de etiquetado.
+2. **Modo Ciego (`?mode=blind`):** recorre un conjunto estratificado y fijo de 150 difractogramas (`blind_set.json`) en orden aleatorio prefijado. Oculta el `sample_code`, nombre de archivo, condiciones de síntesis, etiquetas previas y cualquier superposición analítica de picos/cristalinidad para evitar sesgos cognitivos. Las decisiones se registran con `label_type = 'crystallinity_class_blind'` (e `incipient_subtype_blind`), protegiendo de forma absoluta la tabla de etiquetas primarias `crystallinity_class`. Permite pausar y reanudar el proceso en cualquier momento.
+3. **Modo Adjudicación (`?mode=adjudication`):** filtra exclusivamente las discrepancias entre la etiqueta original y la ciega, presentando ambos veredictos en paralelo para que el experto determine la clase final definitiva. Al guardar:
+   - Se preserva el valor histórico en `label_type = 'crystallinity_class_pre_blind'`.
+   - Se actualiza `crystallinity_class` con firma `labeled_by = 'Rubén (adjudicación ciega 2026-10)'`.
+   - Se inserta un registro inmutable en `audit_log` con agente `ALCheMy-pxrd-adjudication`, acción `ADJUDICATE_CRYSTALLINITY_LABEL` y veredicto `RESOLVED`.
+
 **Cómo se reutiliza.** Los patrones de caché (conexión como `cache_resource`, cola y
 curvas como `cache_data`, prefetch del siguiente) y el reintento ante conexión caída
 —Docker Desktop tira el reenvío de puertos cuando el equipo se suspende— sirven para
 cualquier app de este repositorio. `pxrd_explorer.py` los hereda.
+
 
 ---
 
