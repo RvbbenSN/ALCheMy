@@ -2,7 +2,7 @@
 --  ALCheMy - esquema de la base de datos
 --  ======================================
 --
---  GENERADO, NO ESCRITO A MANO.  2026-09-04
+--  GENERADO, NO ESCRITO A MANO.  2026-10-18
 --
 --  Este fichero es la fotografia del esquema tal y como esta hoy en la base
 --  viva. Se produce con:
@@ -2301,7 +2301,7 @@ CREATE TABLE public.synthesis_experiments (
     linker character varying(100) NOT NULL,
     metal_conc_m numeric(10,4),
     lm_ratio numeric(10,4),
-    metal_mass_mg numeric(12,4) DEFAULT 10.63,
+    metal_mass_mg numeric(12,4),
     linker_mass_mg numeric(12,4),
     secondary_linker_mg numeric(10,4) DEFAULT 0,
     reactor_volume_ml numeric(10,4),
@@ -2337,7 +2337,9 @@ CREATE TABLE public.synthesis_experiments (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     acoh_gl_ml numeric(12,4),
     h2po4_ml numeric(12,4),
-    nh4oh_ml numeric(12,4)
+    nh4oh_ml numeric(12,4),
+    cooling_mode character varying(20),
+    ramp_profile_known boolean
 );
 
 
@@ -2450,7 +2452,7 @@ COMMENT ON COLUMN public.synthesis_experiments.total_volume_ml IS 'Total reactio
 -- Name: COLUMN synthesis_experiments.heating_rate_c_min; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.synthesis_experiments.heating_rate_c_min IS 'Heating ramp rate in °C/min';
+COMMENT ON COLUMN public.synthesis_experiments.heating_rate_c_min IS 'Heating rate in °C/min = (T - Ti) / heating time. NULL when the heating time was not written (never imputed in the database).';
 
 
 --
@@ -2471,7 +2473,7 @@ COMMENT ON COLUMN public.synthesis_experiments.time_hours IS 'Isothermal reactio
 -- Name: COLUMN synthesis_experiments.cooling_rate_c_min; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.synthesis_experiments.cooling_rate_c_min IS 'Cooling ramp rate in °C/min';
+COMMENT ON COLUMN public.synthesis_experiments.cooling_rate_c_min IS 'Cooling rate in °C/min = (T - Tf) / cooling time. NULL when the cooling time was not written; see cooling_mode for how it cooled.';
 
 
 --
@@ -2514,6 +2516,20 @@ COMMENT ON COLUMN public.synthesis_experiments.h2po4_ml IS 'Acido fosforico anad
 --
 
 COMMENT ON COLUMN public.synthesis_experiments.nh4oh_ml IS 'Hidroxido de amonio anadido, en mL. Del bloque Q:AB del Excel maestro, es decir en mililitros, no en microlitros.';
+
+
+--
+-- Name: COLUMN synthesis_experiments.cooling_mode; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.synthesis_experiments.cooling_mode IS 'Cooling regime parsed from the ramp text: programmed (explicit time), fan_asap (microwave fan, 10 min), free_oven_off (ends in r.t. with no time: oven switched off, natural cooling), NULL (no cooling stage written).';
+
+
+--
+-- Name: COLUMN synthesis_experiments.ramp_profile_known; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.synthesis_experiments.ramp_profile_known IS 'TRUE only when both the heating and the cooling durations were written in the notebook. FALSE means at least one rate is NULL because it was never recorded.';
 
 
 --

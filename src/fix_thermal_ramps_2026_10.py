@@ -12,8 +12,8 @@ tenia dos defectos:
       velocidad: 0,0 °C/min al calentar y 0,0 o 12,5 °C/min al enfriar. Esos
       numeros falsos no son quimica, son la forma de escribir del cuaderno, y
       el modelo los aprendia como si lo fueran (codifican la epoca).
-  A2. Partia la cadena por TODOS los guiones, tambien el de 'r.t.(-)'. Las 24
-      sintesis RS1502-RS1525 ('r.t.(1h)-120ºC(12h)-r.t.(-)') quedaron
+  A2. Partia la cadena por TODOS los guiones, tambien el de 'r.t.(-)'. Una placa
+      HTS entera (24 sintesis, 'r.t.(1h)-120ºC(12h)-r.t.(-)') quedo
       guardadas a 25 °C durante 1 h en vez de a 120 °C durante 12 h.
 
 POR QUE SE RELEE EL EXCEL Y NO SE DEDUCE DE LA BASE
@@ -134,15 +134,17 @@ def main():
     for c in NUM:
         a = pd.to_numeric(comp[c + '_antes'], errors='coerce').astype(float)
         b = pd.to_numeric(comp[c], errors='coerce').astype(float)
-        dif = ~(((a - b).abs() < 5e-4) | (a.isna() & b.isna()))
+        # 5e-3: los tiempos se guardan con 2 decimales (5' = 0,0833 h queda en 0,08),
+        # y eso no es un cambio real.
+        dif = ~(((a - b).abs() < 5e-3) | (a.isna() & b.isna()))
         cambia |= dif
         print('  %-20s cambia en %4d filas' % (c, dif.sum()))
     print('filas con algun cambio numerico: %d' % cambia.sum())
     print('\ncooling_mode:\n%s' % nuevo.cooling_mode.fillna('NULL').value_counts().to_string())
     print('\nramp_profile_known:\n%s' % nuevo.ramp_profile_known.value_counts().to_string())
 
-    a2 = comp[comp.sample_code.str.match(r'^RS15(0[2-9]|1\d|2[0-5])$')]
-    print('\nA2 (RS1502-RS1525): %d filas, T objetivo antes %s -> ahora %s'
+    a2 = comp[comp.rampa.str.contains('(-)', regex=False)]
+    print('\nA2 (cadenas con "(-)"): %d filas, T objetivo antes %s -> ahora %s'
           % (len(a2), sorted(a2.temp_target_c_antes.dropna().unique().tolist()),
              sorted(a2.temp_target_c.dropna().unique().tolist())))
 

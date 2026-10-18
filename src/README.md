@@ -22,7 +22,7 @@ during the 2026-10-17 deep review (findings A1, A2; Rubén's decision R3).
 **Problem solved:**
 1. *Parenthesis-aware hyphen splitting:* Delimiter `-` is split strictly outside parentheses,
    preventing strings like `'r.t.(1h)-120ºC(12h)-r.t.(-)'` from being broken into 4 parts and
-   misparsed as 25 °C / 1 h (which corrupted 24 HTS syntheses RS1502–RS1525 in the database).
+   misparsed as 25 °C / 1 h (which corrupted a whole 24-well HTS plate in the database).
 2. *Elimination of spurious default speeds:* When heating or cooling times were not annotated,
    the historical parser returned 0.0 °C/min or assumed 10 minutes (12.5 °C/min). The revised
    parser returns `np.nan` (SQL `NULL`) unless explicit durations are known, preventing machine
