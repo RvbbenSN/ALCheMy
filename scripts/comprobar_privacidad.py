@@ -47,6 +47,7 @@ PATRONES = [
     ("codigo de muestra", re.compile(r"\b(RSMix\d+|RS\d{3,}|LP\d{2,}|IEF-\d+)\b")),
     ("ligando sin publicar", re.compile(r"\b(H8ptp|Et8ptp|H6ttbmp|Et6ttbmp)\b", re.I)),
     ("IP privada", re.compile(r"\b(?:192\.168|10\.\d+|172\.(?:1[6-9]|2\d|3[01]))\.\d+\.\d+\b")),
+    ("credencial postgres", re.compile(r"postgres(?:ql)?://[^:\s]+:[^@\s]+@")),
 ]
 
 # Lo que puede contener esos patrones con razon. Se lista a la vista, no se
@@ -93,11 +94,14 @@ BINARIOS = (".png", ".jpg", ".jpeg", ".pdf", ".mp4", ".mp3", ".ico", ".woff",
 
 
 def disculpado(que, hallazgo):
-    """Coincidencias que no son una fuga: correos ajenos y dominios de ejemplo."""
-    if que != "correo personal":
-        return False
-    h = hallazgo.lower()
-    return h in CORREOS_AJENOS or h.endswith((".example", "@example.org", "@example.com"))
+    """Coincidencias que no son una fuga: correos ajenos y marcadores de password."""
+    if que == "correo personal":
+        h = hallazgo.lower()
+        return h in CORREOS_AJENOS or h.endswith((".example", "@example.org", "@example.com"))
+    if que == "credencial postgres":
+        h = hallazgo.lower()
+        return "<password>" in h or "&lt;password&gt;" in h
+    return False
 
 
 def ficheros(solo_staged: bool):

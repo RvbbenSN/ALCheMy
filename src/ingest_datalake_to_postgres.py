@@ -53,7 +53,7 @@ DB_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
 DB_PORT = int(os.environ.get('POSTGRES_PORT', 5432))
 DB_NAME = os.environ.get('POSTGRES_DB', 'alchemy_db')
 DB_USER = os.environ.get('POSTGRES_USER', 'alchemy_user')
-DB_PASS = os.environ.get('POSTGRES_PASSWORD', 'alchemy_pass_2026')
+DB_PASS = os.environ.get('POSTGRES_PASSWORD')
 
 DATALAKE_DIR = os.path.join(ROOT_DIR, 'data', 'raw_datalake_historico')
 
@@ -98,6 +98,8 @@ INSERT_MEASUREMENT_SQL = """
 
 
 def get_db_connection():
+    if not DB_PASS:
+        sys.exit("Error: POSTGRES_PASSWORD environment variable is required but not set.")
     return psycopg2.connect(host=DB_HOST, port=DB_PORT, dbname=DB_NAME, user=DB_USER, password=DB_PASS)
 
 

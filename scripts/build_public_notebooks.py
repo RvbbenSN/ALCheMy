@@ -66,6 +66,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # Los .ipynb crudos viven en _lab/ porque llevan dentro codigos de muestra
 # y ligandos sin publicar. Lo que se publica es la salida de este script.
 NB_DIR = ROOT / "_lab" / "notebooks"
+if not NB_DIR.exists() and (ROOT.parent / "ALCheMy" / "_lab" / "notebooks").exists():
+    NB_DIR = ROOT.parent / "ALCheMy" / "_lab" / "notebooks"
 # Se escriben dentro de web/public/ y no en docs/, para que la propia aplicacion
 # los sirva y pueda enlazarlos. Tenerlos en los dos sitios seria duplicar 6 MB
 # que se desincronizarian a la primera regeneracion.
@@ -89,6 +91,9 @@ RE_PERSON = re.compile("|".join(re.escape(n) for n in sorted(PERSON_NAMES, key=l
 
 RE_ABSPATH = re.compile(r"[A-Za-z]:\\\\?(?:[^\\\s\"']+\\\\?)*|/(?:home|Users)/[^\s\"':]+")
 RE_EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.]+\b")
+RE_POSTGRES_URI = re.compile(
+    r"postgres(?:ql)?(?:\+[a-zA-Z0-9_]+)?://(?!<[^>]+>|&lt;[^&]+&gt;|\{[^}]+\})[^:\s'\"`]+:(?!<[^>]+>|&lt;[^&]+&gt;|\{[^}]+\})[^@\s'\"`]+@[^\s'\"`)]+"
+)
 
 THEME_CSS = """
 /* Tema ALCheMy para los cuadernos publicados. Deliberadamente ligero: sobrescribe
@@ -140,7 +145,7 @@ class Sanitizer:
         self.samples: dict[str, str] = {}
         self.ligands: dict[str, str] = {}
         self.persons: dict[str, str] = {}
-        self.counts = {"sample": 0, "ligand": 0, "path": 0, "email": 0, "person": 0}
+        self.counts = {"sample": 0, "ligand": 0, "path": 0, "email": 0, "person": 0, "db_uri": 0}
 
     def collect(self, text: str):
         for m in RE_SAMPLE.findall(text):
@@ -180,10 +185,15 @@ class Sanitizer:
             self.counts["email"] += 1
             return "researcher@hidden"
 
+        def sub_db_uri(m):
+            self.counts["db_uri"] += 1
+            return "postgresql://<user>:<password>@localhost:5432/<db>"
+
         text = RE_SAMPLE.sub(sub_sample, text)
         text = RE_LIGAND.sub(sub_ligand, text)
         text = RE_PERSON.sub(sub_person, text)
         text = RE_ABSPATH.sub(sub_path, text)
+        text = RE_POSTGRES_URI.sub(sub_db_uri, text)
         text = RE_EMAIL.sub(sub_email, text)
         return text
 
@@ -301,9 +311,9 @@ def main() -> int:
     for out, size in written:
         print("escrito %-58s %8.1f KB" % (out.relative_to(ROOT), size / 1024))
     print()
-    print("Sustituciones: %d codigos de muestra, %d ligandos, %d personas, %d rutas, %d correos."
+    print("Sustituciones: %d codigos de muestra, %d ligandos, %d personas, %d rutas, %d correos, %d URIs de BD."
           % (san.counts["sample"], san.counts["ligand"], san.counts["person"],
-             san.counts["path"], san.counts["email"]))
+             san.counts["path"], san.counts["email"], san.counts["db_uri"]))
     if not args.strip_images and total_img:
         print("AVISO: %d figuras publicadas sin sanear. Revisar sus titulos a mano." % total_img)
     return 0
