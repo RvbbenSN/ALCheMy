@@ -1179,6 +1179,31 @@ contradiction — cross-validation estimates how good a procedure is, it does no
 final model, and throwing away 20% of the data in the model you actually deploy would make
 no sense.
 
+---
+
+### `src/train_crystallinity_v5.py`
+
+Trains, validates and registers the v5 crystallinity models (full + actionable) after the
+2026-10-17 deep review, and moves both deployment slots from v4 to v5 in one transaction
+(with one `audit_log` row). Same dataset definition as v4; what changed is the data under it
+(re-parsed ramps, 49 metal masses, 28 adjudicated labels) and one decision: **the ramp rates
+leave the model**. A third of the HTS syntheses have no ramp time written, and that gap
+encodes which notebook era a synthesis came from — invented zeros, a median fill and a
+missing-indicator all hand the era back to the model. Measured: dropping them costs nothing.
+
+**Problem solved:** the v4 headline (F1 0.517) was partly era and borderline labels. v5 reports
+0.465 by plate, and also stores the numbers that say whether the model generalises:
+`split='cv_3seeds'` (mean of three plate partitions — one partition swings ±0.03),
+`cv_group_metal` (unseen metal) and `cv_group_system` (unseen metal+linker). Those two did
+not move from v4 (0.42 / 0.42), which is how we know the lost 0.05 was the part that did
+not generalise. The algorithm is chosen on the 3-seed mean, not on the lucky partition.
+
+**Reuse:** `python src/train_crystallinity_v5.py` trains and compares RandomForest vs LightGBM
+for both roles and writes nothing; `--registrar` registers and deploys. Then
+`scripts/register_class_metrics.py --registrar` (both slots), `scripts/build_model_scorecard.py`,
+`scripts/build_simulator_grid.py` and `npm run build` refresh the web. The helpers
+(`preparar`, `pipeline`, `evaluar`) are importable for a v6 with a different feature set.
+
 
 ---
 

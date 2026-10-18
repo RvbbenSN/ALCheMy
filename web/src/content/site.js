@@ -39,7 +39,7 @@ export const SCREENS = [
 export const KPIS = [
   { value: '2,167', label: 'Syntheses performed', note: 'Five years at the bench' },
   { value: '1,877', label: 'Diffractograms labelled by hand', note: 'The ground truth the model learns from' },
-  { value: '2×', label: 'Better than chance at predicting crystallinity', note: 'Macro F1 0.52 against a 0.26 baseline' },
+  { value: '1.8×', label: 'Better than chance at predicting crystallinity', note: 'Macro F1 0.47 against a 0.26 baseline' },
   { value: '87,765', label: 'Literature passages vectorised', note: '956 papers, powering the RAG assistant' },
 ]
 

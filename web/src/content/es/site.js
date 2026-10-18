@@ -112,9 +112,9 @@ export const KPIS = [
     "note": "La verdad de referencia con la que aprende el modelo"
   },
   {
-    "value": "2×",
+    "value": "1.8×",
     "label": "Mejor que el azar prediciendo cristalinidad",
-    "note": "F1 macro de 0,52 frente a una línea base de 0,26"
+    "note": "F1 macro de 0,47 frente a una línea base de 0,26"
   },
   {
     "value": "87,765",

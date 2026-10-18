@@ -283,18 +283,18 @@ export const EDA_IMBALANCE = {
   intro:
     'Across the 1,516 training rows the three classes are far from equally common, and that is chemistry rather than sampling: most attempts land somewhere in between.',
   /* Recuentos tomados de ml_datasets.class_distribution para el conjunto
-     crystallinity_v4_hts_2026_09_02 (1.516 filas). No editar a mano: si cambian,
+     crystallinity_v5_hts_2026_10_18 (1.516 filas). No editar a mano: si cambian,
      cambian ahi primero. */
   tableHead: ['Class', 'What it means', 'Samples', 'Share'],
   tableRows: [
-    ['Incipient', 'Broad reflections near a crystallisation boundary', '967', '63.8%'],
-    ['Amorphous', 'No reflections at all', '382', '25.2%'],
-    ['Crystalline', 'Sharp, well-ordered reflections', '167', '11.0%'],
+    ['Incipient', 'Broad reflections near a crystallisation boundary', '951', '62.7%'],
+    ['Amorphous', 'No reflections at all', '393', '25.9%'],
+    ['Crystalline', 'Sharp, well-ordered reflections', '172', '11.3%'],
   ],
   trivial:
-    'A model that learns nothing at all, always answering **INCIPIENT**, is right 64% of the time. That is why every metric in this project is quoted against that floor rather than against zero: reporting "64% accuracy" would describe a model that does nothing.',
+    'A model that learns nothing at all, always answering **INCIPIENT**, is right 63% of the time. That is why every metric in this project is quoted against that floor rather than against zero: reporting "63% accuracy" would describe a model that does nothing.',
   ratio:
-    'The gap between the largest and smallest class is **6 : 1**, and it is sharper than over the whole record, because restricting to high-throughput synthesis removed material that was almost entirely crystalline. It is handled by **weighting the classes inside each model**, which is simpler than resampling and does not invent samples that were never made.',
+    'The gap between the largest and smallest class is **5.5 : 1**, and it is sharper than over the whole record, because restricting to high-throughput synthesis removed material that was almost entirely crystalline. It is handled by **weighting the classes inside each model**, which is simpler than resampling and does not invent samples that were never made.',
 }
 
 export const EDA_DISCRETE = {
@@ -467,7 +467,7 @@ export const EDA_TAKEAWAY = [
    ninguno paso por la extraccion de titulos porque son parrafos de cuerpo, ni
    por la de content/ porque no vivian ahi. */
 export const MODEL_HERO_LEAD =
-  'Ten model families are trained on the same 1,516 syntheses and compared under one validation scheme, grouped by plate. The headline figure is **0.52 macro F1** against 0.26 for a model that always answers the majority class.'
+  'Ten model families are trained on the same 1,516 syntheses and compared under one validation scheme, grouped by plate. The deployed model (v5, trained on the reviewed data) scores **0.47 macro F1** against 0.26 for a model that always answers the majority class.'
 
 export const MODEL_FRAMING =
   'The target is the same three-way verdict the bench already used when triaging a 24-well plate: amorphous, incipient, or a well-ordered crystalline phase. Framing it as classification rather than regression is a decision that cannot be repaired later — there is no continuous "degree of crystallinity" that the human labels actually recorded, and inventing one would mean scoring the model against a quantity nobody measured.'
@@ -476,10 +476,10 @@ export const MODEL_WEIGHTS_NOTE =
   'Every model that supports it carries balanced class weights, which offsets the 6:1 imbalance by penalising errors on the minority classes more heavily.'
 
 export const MODEL_SCORECARD_INTRO =
-  'The figures first. Every number below is cross-validated with plates as groups, and is shown against the trivial baseline — without that reference an F1 of 0.52 could mean anything.'
+  'The figures first. Every number below is cross-validated with plates as groups, and is shown against the trivial baseline — without that reference an F1 of 0.47 could mean anything.'
 
 export const MODEL_TAKEAWAY = {
-  body: 'There is real predictive signal in five years of laboratory records, and it is modest: roughly twice the trivial baseline. Most of what the model distinguishes is which metal-linker system was used rather than which conditions were applied. The record varied those conditions across only 9 temperatures and 3 reaction times, which is too narrow for their effect to be learnable.',
+  body: 'There is real predictive signal in five years of laboratory records, and it is modest: a little under twice the trivial baseline. Most of what the model distinguishes is which metal-linker system was used rather than which conditions were applied. The record varied those conditions across only 9 temperatures and 3 reaction times, which is too narrow for their effect to be learnable.',
   close: 'That is a negative result, and it converts directly into an experimental instruction: the next campaign should sweep temperature and time far more widely than the last five years did.',
 }
 
@@ -600,9 +600,9 @@ export const MODEL_TWO = {
   models: [
     {
       name: 'Full model',
-      inputs: 'All 39 variables',
+      inputs: 'All 37 variables',
       asks: 'Is there predictive signal in this record at all?',
-      pro: 'Best score of the two: **0.52 macro F1**, twice the baseline.',
+      pro: 'Best score of the two: **0.47 macro F1**, 1.8 times the baseline.',
       limit: 'Most of that signal is the metal-linker system, so it cannot tell you what to change.',
     },
     {
@@ -610,7 +610,7 @@ export const MODEL_TWO = {
       inputs: 'Process variables only',
       asks: 'Given this chemistry, which conditions make it crystallise?',
       pro: 'The question the bench actually asks, and the one that designs the next plate.',
-      limit: 'Falls to **0.393 macro F1**, MCC 0.095: above chance, not yet a basis for recommending conditions.',
+      limit: 'Falls to **0.41 macro F1**, MCC 0.15: above chance, not yet a basis for recommending conditions.',
     },
   ],
   note: 'The gap between the two scores measures how much of the signal comes from the chemistry rather than from the conditions.',
@@ -619,10 +619,10 @@ export const MODEL_TWO = {
 export const MODEL_METRICS = {
   tableHead: ['Metric', 'What it measures', 'Why it is here'],
   tableRows: [
-    ['F1 macro', 'The mean F1 of each class, weighting all three equally', 'The headline metric. Ignoring the 167 crystalline samples sinks it'],
+    ['F1 macro', 'The mean F1 of each class, weighting all three equally', 'The headline metric. Ignoring the 172 crystalline samples sinks it'],
     ['Balanced accuracy', 'Mean accuracy within each class', 'Directly interpretable: "it gets X% of the crystalline ones right"'],
     ['MCC', 'Correlation between prediction and truth, −1 to +1', 'The most demanding: 0 means chance, however high the accuracy'],
-    ['Accuracy', 'Percentage correct', 'Present only as a warning: the trivial baseline already scores ~64%'],
+    ['Accuracy', 'Percentage correct', 'Present only as a warning: the trivial baseline already scores ~63%'],
   ],
   note: 'Mean relative error, RMSE and R² do not apply here. They belong to regression and measure distance to a number. In classification you either get the class right or you do not.',
 }
@@ -630,15 +630,15 @@ export const MODEL_METRICS = {
 export const MODEL_FINDINGS = [
   {
     title: 'There is real predictive signal, and it is modest',
-    body: 'The best full model reaches a macro F1 of about 0.52 against 0.26 for the baseline, twice as good. MCC lands near 0.31: a real association, but far from strong.',
+    body: 'The deployed full model reaches a macro F1 of about 0.47 against 0.26 for the baseline, 1.8 times better. MCC lands near 0.26: a real association, but far from strong.',
   },
   {
     title: 'Excluding the confounded syntheses costs 0.10 of macro F1',
-    body: 'Removing microwave and standard solvothermal runs drops the score from 0.62 to 0.52. That gap **measures the portion of the score that came from identifying the synthesis method** rather than the chemistry.',
+    body: 'Removing microwave and standard solvothermal runs dropped the score from 0.62 to 0.52 (model v3). That gap **measures the portion of the score that came from identifying the synthesis method** rather than the chemistry.',
   },
   {
     title: 'The actionable model drops further, and that answers the objection',
-    body: 'Without metal and linker chemistry the best model falls to 0.393 with MCC near 0.095: above chance, but weak. Most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
+    body: 'Without metal and linker chemistry the best model falls to 0.41 with MCC near 0.15: above chance, but weak. Most of what the model distinguishes in this record is which metal-linker system was used, not which conditions were applied.',
     caveat:
       'That does not make conditions chemically unimportant. In this record they were not varied enough to be learnable: **9 temperatures and 3 reaction times** across the training set.',
   },
@@ -649,6 +649,10 @@ export const MODEL_FINDINGS = [
   {
     title: 'Naive Bayes sinks below the baseline',
     body: 'It assumes the variables are independent given the class, and the correlation map shows strong blocks. Its failure measures how much that correlation matters, which is why it is on the list.',
+  },
+  {
+    title: 'Correcting the data lowered the score, and that is the point',
+    body: 'Model v4 scored 0.52; v5 scores 0.47 on the same 1,516 syntheses after a deep review: 652 invented ramp rates removed, a whole plate re-parsed from 25 °C to 120 °C, 49 metal masses fixed and 28 labels re-adjudicated after a blind relabelling. Undoing each fix separately shows where the 0.05 went: the fake ramp rates encoded which notebook era a synthesis came from, and the borderline labels were the easy ones to fit. What did not move is the score on a metal the model has never seen (0.42) or a new metal-linker system (0.42) — the same as v4. **The part of the score that was lost is the part that did not generalise.**',
   },
 ]
 
@@ -664,7 +668,7 @@ export const MODEL_ERRORS = {
   amorphous:
     'For amorphous samples the behaviour is what you would hope: when it fails, it confuses "nothing" with "almost nothing", which in the diffractogram itself is a matter of degree and something two experts could disagree about. The severe error — calling an amorphous sample crystalline — is rare.',
   crystalline:
-    'For crystalline samples it is not. Roughly one in six is classified as amorphous, the most serious error available. The model does not recognise the minority class well, and when it loses it, it loses it completely. With 167 cases against 967 incipient, and the most heterogeneous class of the three (many ways to crystallise, one way not to), this was predictable. It remains the model\'s main weakness.',
+    'For crystalline samples it is not. Roughly one in seven is classified as amorphous, the most serious error available, and most of the rest land in incipient. The model does not recognise the minority class well, and when it loses it, it loses it completely. With 172 cases against 951 incipient, and the most heterogeneous class of the three (many ways to crystallise, one way not to), this was predictable. It remains the model\'s main weakness.',
   usage:
     'For the intended use, ranking candidates and filling the next plate, what matters is that good candidates rise in the ranking rather than that the label is exact. But the model makes a serious mistake on **22% of crystalline samples**, and that figure has to be quoted alongside the aggregate.',
   asHopedBadge: 'As hoped',
@@ -705,20 +709,20 @@ export const MODEL_CHEMISTRY = {
 export const MODEL_ASSESSMENT = {
   title: 'An honest reading of the performance',
   lead:
-    'The full model roughly doubles the trivial baseline and reaches a Matthews correlation of 0.31, a real but moderate association. Two features of the result matter more than that headline.',
+    'The full model scores 1.8 times the trivial baseline and reaches a Matthews correlation of 0.26, a real but moderate association. Two features of the result matter more than that headline.',
   points: [
     {
-      title: 'Three quarters of the crystalline syntheses are not recovered',
+      title: 'Most crystalline syntheses are not recovered',
       bullets: [
-        'Recall on the crystalline class is **0.25** under the grouped cross-validation. That is the figure to quote: the tool exists to shortlist promising conditions, so it governs practical value far more than the aggregate does.',
-        'The confusion matrix above reads **0.53** for the same class — because it is one held-out split, not the five-fold average. A lucky set of plates flatters the smallest class.',
-        'Cause: **167 crystalline examples against 967 incipient**, and the crystalline class is the most heterogeneous. There are many ways for a framework to crystallise and only one way for it not to.',
+        'Recall on the crystalline class is **0.12** under the grouped cross-validation, and between 0.11 and 0.21 depending on which plates are held out. That is the figure to quote: the tool exists to shortlist promising conditions, so it governs practical value far more than the aggregate does.',
+        'The confusion matrix above (model v4) reads **0.53** for the same class — because it is one held-out split, not the five-fold average. A lucky set of plates flatters the smallest class.',
+        'Cause: **172 crystalline examples against 951 incipient**, and the crystalline class is the most heterogeneous. There are many ways for a framework to crystallise and only one way for it not to.',
       ],
     },
     {
       title: 'The actionable model sits close to the limit of the data',
       bullets: [
-        'Stripped of metal and linker chemistry, macro F1 falls to **0.393** and MCC to **0.095**.',
+        'Stripped of metal and linker chemistry, macro F1 falls to **0.41** and MCC to **0.15**.',
         'Above chance — and not yet a basis for recommending conditions.',
         'This is the question the laboratory actually asks, so it is the more important of the two results.',
       ],
@@ -743,7 +747,7 @@ export const MODEL_ASSESSMENT = {
         icon: 'minority',
         head: 'More crystalline examples',
         cost: 'bench time',
-        body: 'With **167** in the training set, the minority class is the binding constraint on every metric above. Nothing algorithmic gets around it.',
+        body: 'With **172** in the training set, the minority class is the binding constraint on every metric above. Nothing algorithmic gets around it.',
       },
       {
         icon: 'record',

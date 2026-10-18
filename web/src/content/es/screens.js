@@ -189,24 +189,24 @@ export const EDA_IMBALANCE = {
     [
       "Incipient",
       "Broad reflections near a crystallisation boundary",
-      "967",
-      "63.8%"
+      "951",
+      "62.7%"
     ],
     [
       "Amorphous",
       "No reflections at all",
-      "382",
-      "25.2%"
+      "393",
+      "25.9%"
     ],
     [
       "Crystalline",
       "Sharp, well-ordered reflections",
-      "167",
-      "11.0%"
+      "172",
+      "11.3%"
     ]
   ],
-  "trivial": "Un modelo que no aprende nada, que responde siempre **INCIPIENTE**, acierta el 64 % de las veces. Por eso cada métrica de este proyecto se da contra ese suelo y no contra cero: informar de un \"64 % de exactitud\" describiría un modelo que no hace nada.",
-  "ratio": "La diferencia entre la clase mayor y la menor es de **6 : 1**, y es más marcada que en el registro completo, porque restringir a síntesis de alto rendimiento quitó material que era casi todo cristalino. Se trata **ponderando las clases dentro de cada modelo**, que es más simple que remuestrear y no inventa muestras que nunca se hicieron."
+  "trivial": "Un modelo que no aprende nada, que responde siempre **INCIPIENTE**, acierta el 63 % de las veces. Por eso cada métrica de este proyecto se da contra ese suelo y no contra cero: informar de un \"63 % de exactitud\" describiría un modelo que no hace nada.",
+  "ratio": "La diferencia entre la clase mayor y la menor es de **5,5 : 1**, y es más marcada que en el registro completo, porque restringir a síntesis de alto rendimiento quitó material que era casi todo cristalino. Se trata **ponderando las clases dentro de cada modelo**, que es más simple que remuestrear y no inventa muestras que nunca se hicieron."
 }
 
 export const EDA_INTRO = {
@@ -494,20 +494,20 @@ export const ETL_ZERO_VS_NULL = {
 
 export const MODEL_ASSESSMENT = {
   "title": "Una lectura honesta del rendimiento",
-  "lead": "El modelo completo duplica aproximadamente la línea base trivial y alcanza una correlación de Matthews de 0,31, una asociación real pero moderada. Dos rasgos del resultado importan más que ese titular.",
+  "lead": "El modelo completo puntúa 1,8 veces la línea base trivial y alcanza una correlación de Matthews de 0,26, una asociación real pero moderada. Dos rasgos del resultado importan más que ese titular.",
   "points": [
     {
-      "title": "Tres cuartas partes de las síntesis cristalinas no se recuperan",
+      "title": "La mayoría de las síntesis cristalinas no se recuperan",
       "bullets": [
-        "La exhaustividad sobre la clase cristalina es de **0,25** bajo la validación cruzada agrupada. Esa es la cifra que hay que citar: la herramienta existe para preseleccionar condiciones prometedoras, así que gobierna el valor práctico mucho más que el agregado.",
-        "La matriz de confusión de arriba marca **0,53** para esa misma clase, porque es una única partición reservada y no la media de los cinco pliegues. Un conjunto afortunado de placas favorece a la clase más pequeña.",
-        "Causa: **167 ejemplos cristalinos frente a 967 incipientes**, y la clase cristalina es la más heterogénea. Hay muchas formas de que una red cristalice y solo una de que no lo haga."
+        "La exhaustividad sobre la clase cristalina es de **0,12** bajo la validación cruzada agrupada, y oscila entre 0,11 y 0,21 según qué placas queden fuera. Esa es la cifra que hay que citar: la herramienta existe para preseleccionar condiciones prometedoras, así que gobierna el valor práctico mucho más que el agregado.",
+        "La matriz de confusión de arriba (modelo v4) marca **0,53** para esa misma clase, porque es una única partición reservada y no la media de los cinco pliegues. Un conjunto afortunado de placas favorece a la clase más pequeña.",
+        "Causa: **172 ejemplos cristalinos frente a 951 incipientes**, y la clase cristalina es la más heterogénea. Hay muchas formas de que una red cristalice y solo una de que no lo haga."
       ]
     },
     {
       "title": "El modelo accionable está cerca del límite de los datos",
       "bullets": [
-        "Sin la química del metal y del conector, el F1 macro cae a **0,393** y el MCC a **0,095**.",
+        "Sin la química del metal y del conector, el F1 macro cae a **0,41** y el MCC a **0,15**.",
         "Por encima del azar, y todavía no una base para recomendar condiciones.",
         "Esta es la pregunta que de verdad se hace el laboratorio, así que es el más importante de los dos resultados."
       ]
@@ -531,7 +531,7 @@ export const MODEL_ASSESSMENT = {
         "icon": "minority",
         "head": "Más ejemplos cristalinos",
         "cost": "bench time",
-        "body": "Con **167** en el conjunto de entrenamiento, la clase minoritaria es la restricción que limita todas las métricas de arriba. Nada algorítmico la esquiva."
+        "body": "Con **172** en el conjunto de entrenamiento, la clase minoritaria es la restricción que limita todas las métricas de arriba. Nada algorítmico la esquiva."
       },
       {
         "icon": "record",
@@ -595,7 +595,7 @@ export const MODEL_ERRORS = {
     ]
   ],
   "amorphous": "En las muestras amorfas el comportamiento es el que uno esperaría: cuando falla, confunde \"nada\" con \"casi nada\", que en el propio difractograma es una cuestión de grado y algo en lo que dos expertos podrían discrepar. El error grave —llamar cristalina a una muestra amorfa— es raro.",
-  "crystalline": "En las cristalinas, no. Aproximadamente una de cada seis se clasifica como amorfa, el error más grave posible. El modelo no reconoce bien la clase minoritaria y, cuando la pierde, la pierde del todo. Con 167 casos frente a 967 incipientes, y siendo la más heterogénea de las tres (muchas formas de cristalizar, una sola de no hacerlo), era previsible. Sigue siendo la principal debilidad del modelo.",
+  "crystalline": "En las cristalinas, no. Aproximadamente una de cada siete se clasifica como amorfa, el error más grave posible, y casi todas las demás acaban en incipiente. El modelo no reconoce bien la clase minoritaria y, cuando la pierde, la pierde del todo. Con 172 casos frente a 951 incipientes, y siendo la más heterogénea de las tres (muchas formas de cristalizar, una sola de no hacerlo), era previsible. Sigue siendo la principal debilidad del modelo.",
   "usage": "Para el uso previsto, ordenar candidatos y llenar la siguiente placa, lo que importa es que los buenos candidatos suban en el ranking más que el que la etiqueta sea exacta. Pero el modelo comete un error grave en el **22 % de las muestras cristalinas**, y esa cifra hay que darla junto al agregado.",
   "asHopedBadge": "Como se esperaba",
   "mainWeaknessBadge": "La principal debilidad",
@@ -606,15 +606,15 @@ export const MODEL_ERRORS = {
 export const MODEL_FINDINGS = [
   {
     "title": "Hay señal predictiva real, y es modesta",
-    "body": "El mejor modelo completo llega a un F1 macro de unos 0,52 frente a 0,26 de la línea base, el doble de bueno. El MCC se queda cerca de 0,31: una asociación real, pero lejos de ser fuerte."
+    "body": "El modelo completo desplegado llega a un F1 macro de unos 0,47 frente a 0,26 de la línea base, 1,8 veces mejor. El MCC se queda cerca de 0,26: una asociación real, pero lejos de ser fuerte."
   },
   {
     "title": "Excluir las síntesis confundidas cuesta 0,10 de F1 macro",
-    "body": "Quitar las ejecuciones por microondas y las solvotermales estándar baja la puntuación de 0,62 a 0,52. Esa diferencia **mide la parte de la puntuación que venía de identificar el método de síntesis** y no la química."
+    "body": "Quitar las ejecuciones por microondas y las solvotermales estándar bajó la puntuación de 0,62 a 0,52 (modelo v3). Esa diferencia **mide la parte de la puntuación que venía de identificar el método de síntesis** y no la química."
   },
   {
     "title": "El modelo accionable cae más, y eso responde a la objeción",
-    "body": "Sin la química del metal y del conector, el mejor modelo cae a 0,393 con un MCC cercano a 0,095: por encima del azar, pero débil. La mayor parte de lo que el modelo distingue en este registro es qué sistema metal-conector se usó, no qué condiciones se aplicaron.",
+    "body": "Sin la química del metal y del conector, el mejor modelo cae a 0,41 con un MCC cercano a 0,15: por encima del azar, pero débil. La mayor parte de lo que el modelo distingue en este registro es qué sistema metal-conector se usó, no qué condiciones se aplicaron.",
     "caveat": "Eso no hace que las condiciones sean químicamente irrelevantes. En este registro no se variaron lo suficiente como para poder aprenderse: **9 temperaturas y 3 tiempos de reacción** en todo el conjunto de entrenamiento."
   },
   {
@@ -624,12 +624,16 @@ export const MODEL_FINDINGS = [
   {
     "title": "Naive Bayes se hunde por debajo de la línea base",
     "body": "Supone que las variables son independientes dada la clase, y el mapa de correlación enseña bloques marcados. Su fracaso mide cuánto importa esa correlación, que es por lo que está en la lista."
+  },
+  {
+    "title": "Corregir los datos bajó la puntuación, y de eso se trata",
+    "body": "El modelo v4 puntuaba 0,52; el v5 puntúa 0,47 sobre las mismas 1.516 síntesis tras una revisión a fondo: 652 velocidades de rampa inventadas eliminadas, una placa entera re-leída de 25 °C a 120 °C, 49 masas de metal corregidas y 28 etiquetas re-adjudicadas tras un reetiquetado a ciegas. Deshacer cada corrección por separado muestra a dónde fue ese 0,05: las rampas falsas delataban de qué época del cuaderno venía cada síntesis, y las etiquetas frontera eran las fáciles de ajustar. Lo que no se movió es la puntuación ante un metal que el modelo nunca ha visto (0,42) o un sistema metal-conector nuevo (0,42), igual que en el v4. **La parte de la puntuación que se perdió es la que no generalizaba.**"
   }
 ]
 
 export const MODEL_FRAMING = "La variable objetivo es el mismo veredicto de tres clases que ya usaba la poyata al triar una placa de 24 pocillos: amorfo, incipiente, o una fase cristalina bien ordenada. Plantearlo como clasificación y no como regresión es una decisión que no se puede reparar después: no existe un \"grado de cristalinidad\" continuo que las etiquetas humanas registraran de verdad, e inventar uno significaría puntuar al modelo contra una cantidad que nadie midió."
 
-export const MODEL_HERO_LEAD = "Se entrenan diez familias de modelos sobre las mismas 1.516 síntesis y se comparan bajo un único esquema de validación, agrupado por placa. La cifra principal es **0,52 de F1 macro** frente a 0,26 de un modelo que siempre responde la clase mayoritaria."
+export const MODEL_HERO_LEAD = "Se entrenan diez familias de modelos sobre las mismas 1.516 síntesis y se comparan bajo un único esquema de validación, agrupado por placa. El modelo desplegado (v5, entrenado con los datos revisados) logra **0,47 de F1 macro** frente a 0,26 de un modelo que siempre responde la clase mayoritaria."
 
 export const MODEL_LINEUP = {
   "intro": "Se comparan diez modelos, no uno. Distintas familias de modelos suponen cosas distintas sobre la forma de la frontera entre clases, y ante un problema nuevo no hay manera de saber de antemano qué suposición es la acertada.",
@@ -724,7 +728,7 @@ export const MODEL_METRICS = {
     [
       "F1 macro",
       "The mean F1 of each class, weighting all three equally",
-      "The headline metric. Ignoring the 167 crystalline samples sinks it"
+      "The headline metric. Ignoring the 172 crystalline samples sinks it"
     ],
     [
       "Balanced accuracy",
@@ -739,13 +743,13 @@ export const MODEL_METRICS = {
     [
       "Accuracy",
       "Percentage correct",
-      "Present only as a warning: the trivial baseline already scores ~64%"
+      "Present only as a warning: the trivial baseline already scores ~63%"
     ]
   ],
   "note": "El error relativo medio, el RMSE y el R² no aplican aquí. Pertenecen a la regresión y miden distancia a un número. En clasificación, o aciertas la clase o no."
 }
 
-export const MODEL_SCORECARD_INTRO = "Primero las cifras. Cada número de abajo está validado cruzadamente con las placas como grupos, y se muestra junto a la línea base trivial: sin esa referencia, un F1 de 0,52 podría significar cualquier cosa."
+export const MODEL_SCORECARD_INTRO = "Primero las cifras. Cada número de abajo está validado cruzadamente con las placas como grupos, y se muestra junto a la línea base trivial: sin esa referencia, un F1 de 0,47 podría significar cualquier cosa."
 
 export const MODEL_SHAP = {
   "title": "Cómo leer el gráfico SHAP",
@@ -758,7 +762,7 @@ export const MODEL_SHAP = {
 }
 
 export const MODEL_TAKEAWAY = {
-  "body": "Hay señal predictiva real en cinco años de registros de laboratorio, y es modesta: aproximadamente el doble de la línea base trivial. La mayor parte de lo que distingue el modelo es qué sistema metal-conector se usó, no qué condiciones se aplicaron. El registro varió esas condiciones a lo largo de solo 9 temperaturas y 3 tiempos de reacción, demasiado poco para que su efecto se pueda aprender.",
+  "body": "Hay señal predictiva real en cinco años de registros de laboratorio, y es modesta: algo menos del doble de la línea base trivial. La mayor parte de lo que distingue el modelo es qué sistema metal-conector se usó, no qué condiciones se aplicaron. El registro varió esas condiciones a lo largo de solo 9 temperaturas y 3 tiempos de reacción, demasiado poco para que su efecto se pueda aprender.",
   "close": "Eso es un resultado negativo, y se convierte directamente en una instrucción experimental: la próxima campaña debería barrer temperatura y tiempo con mucha más amplitud de lo que hicieron los últimos cinco años."
 }
 
@@ -769,9 +773,9 @@ export const MODEL_TWO = {
   "models": [
     {
       "name": "Full model",
-      "inputs": "All 39 variables",
+      "inputs": "All 37 variables",
       "asks": "¿Hay algo de señal predictiva en este registro?",
-      "pro": "La mejor puntuación de los dos: **0,52 de F1 macro**, el doble que la línea base.",
+      "pro": "La mejor puntuación de los dos: **0,47 de F1 macro**, 1,8 veces la línea base.",
       "limit": "La mayor parte de esa señal es el sistema metal-conector, así que no te dice qué cambiar."
     },
     {
@@ -779,7 +783,7 @@ export const MODEL_TWO = {
       "inputs": "Process variables only",
       "asks": "Dada esta química, ¿qué condiciones la hacen cristalizar?",
       "pro": "La pregunta que de verdad se hace en la poyata, y la que diseña la siguiente placa.",
-      "limit": "Cae a **0,393 de F1 macro**, con MCC de 0,095: por encima del azar, todavía no una base para recomendar condiciones."
+      "limit": "Cae a **0,41 de F1 macro**, con MCC de 0,15: por encima del azar, todavía no una base para recomendar condiciones."
     }
   ],
   "note": "La diferencia entre las dos puntuaciones mide cuánta de la señal viene de la química y no de las condiciones."
