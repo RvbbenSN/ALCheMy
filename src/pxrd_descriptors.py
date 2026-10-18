@@ -683,7 +683,7 @@ def amorphous_from_blank(x, y_grid, blank_grid, baseline=None,
     if blank_grid.size != y_grid.size:
         return None, None, None
 
-    total_area = float(np.trapezoid(y_grid, x))
+    total_area = integrate(y_grid, x)
     if not np.isfinite(total_area) or total_area <= 0:
         return None, None, None
 
@@ -739,10 +739,10 @@ def amorphous_from_blank(x, y_grid, blank_grid, baseline=None,
     #
     # Median by hand-assigned class: AMORFO 0.931, INCIPIENTE 0.649, CRISTALINO 0.011.
     crystalline = np.maximum(y_grid - baseline, 0.0)
-    sample_area = float(np.trapezoid(amorphous, x) + np.trapezoid(crystalline, x))
+    sample_area = integrate(amorphous, x) + integrate(crystalline, x)
     if sample_area <= 0:
         return None, None, None
-    fraction = float(np.trapezoid(amorphous, x) / sample_area)
+    fraction = integrate(amorphous, x) / sample_area
 
     # WHAT THIS NUMBER CANNOT SEE
     # ---------------------------
